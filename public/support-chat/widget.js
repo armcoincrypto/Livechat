@@ -1,12 +1,55 @@
 /**
- * Exswaping Support Chat widget V2.4 — persistent visitor attachment messages (P4.1).
- * SC_WIDGET_BUILD=20260531-support-chat-ui-2
- * Integration: <script src="/support-chat/widget.js" defer data-chat-enabled="1" data-api-base="https://api-host"></script>
- * data-chat-enabled must be "1" to mount (safe default: omit or != "1" => no-op).
- * data-api-base: API origin only (no path); empty = window.location.origin
+ * Healthy Spine live chat widget — plain operator chat (no AI).
+ * SC_WIDGET_BUILD=20260706-healthy-spine-plain-operator-chat
+ * Integration: <script src="/support-chat/widget.js" defer data-chat-enabled="1" data-api-base=""></script>
  */
 (function () {
   'use strict';
+
+  var LOCALE = (function () {
+    var l = (navigator.language || 'en').toLowerCase();
+    if (l.indexOf('hy') === 0) return 'hy';
+    if (l.indexOf('ru') === 0) return 'ru';
+    return 'en';
+  })();
+
+  var STR = {
+    en: {
+      brand: 'Healthy Spine',
+      title: 'Healthy Spine',
+      launcherOpen: 'Open chat with our team',
+      launcherClose: 'Close chat',
+      launcherTitle: 'Chat with our team',
+      operator: 'Team',
+      you: 'You',
+      system: 'System',
+    },
+    ru: {
+      brand: 'Healthy Spine',
+      title: 'Healthy Spine',
+      launcherOpen: 'Открыть чат с нашей командой',
+      launcherClose: 'Закрыть чат',
+      launcherTitle: 'Чат с нашей командой',
+      operator: 'Команда',
+      you: 'Вы',
+      system: 'Система',
+    },
+    hy: {
+      brand: 'Healthy Spine',
+      title: 'Healthy Spine',
+      launcherOpen: 'Բացել խոսել մեր թիմի հետ',
+      launcherClose: 'Փակել չատը',
+      launcherTitle: 'Խոսել մեր թիմի հետ',
+      operator: 'Թիմ',
+      you: 'Դուք',
+      system: 'Համակարգ',
+    },
+  };
+
+  function t(key) {
+    var bucket = STR[LOCALE] || STR.en;
+    return bucket[key] || STR.en[key] || key;
+  }
 
   /**
    * deferred/async scripts often have document.currentScript === null.
@@ -39,12 +82,12 @@
   if (!script) {
     return;
   }
-  if (document.getElementById('exswaping-support-chat-host')) {
+  if (document.getElementById('healthy-spine-support-chat-host')) {
     return;
   }
 
-  var STORAGE_UUID = 'exswaping_support_chat_conversation_uuid';
-  var STORAGE_TOKEN = 'exswaping_support_chat_access_token';
+  var STORAGE_UUID = 'healthy_spine_support_chat_conversation_uuid';
+  var STORAGE_TOKEN = 'healthy_spine_support_chat_access_token';
 
   function normalizeStoredSessionValue(raw) {
     if (raw == null) return null;
@@ -67,11 +110,8 @@
   }
 
   var API_BASE = normalizeApiBase(script.getAttribute('data-api-base'));
-  var MESSENGER_TELEGRAM_URL = 'tg://resolve?domain=exswaping';
-  var MESSENGER_WHATSAPP_URL =
-    'https://api.whatsapp.com/send/?phone=%2B17477580645&text&type=phone_number&app_absent=0';
-  var FALLBACK_TELEGRAM_URL = (script.getAttribute('data-telegram-url') || '').trim() || MESSENGER_TELEGRAM_URL;
-  var FALLBACK_WHATSAPP_URL = (script.getAttribute('data-whatsapp-url') || '').trim() || MESSENGER_WHATSAPP_URL;
+  var FALLBACK_TELEGRAM_URL = (script.getAttribute('data-telegram-url') || '').trim();
+  var FALLBACK_WHATSAPP_URL = (script.getAttribute('data-whatsapp-url') || '').trim();
   var pollMsMin = BASE_POLL_MS;
   try {
     var p = parseInt(script.getAttribute('data-poll-ms') || '', 10);
@@ -83,12 +123,12 @@
   var pollIntervalMs = pollMsMin;
   var SC_DEBUG =
     script.getAttribute('data-sc-debug') === '1' ||
-    (typeof window !== 'undefined' && window.__EXSWAPING_SC_DEBUG === true);
+    (typeof window !== 'undefined' && window.__HEALTHY_SPINE_SC_DEBUG === true);
   var ECHO_PREVIEW_GRACE_MS = 30000;
 
   function scDebug() {
     if (!SC_DEBUG || typeof console === 'undefined' || !console.log) return;
-    var args = ['[exswaping-sc]'].concat(Array.prototype.slice.call(arguments));
+    var args = ['[healthy-spine-sc]'].concat(Array.prototype.slice.call(arguments));
     console.log.apply(console, args);
   }
 
@@ -139,7 +179,7 @@
   }
 
   var host = document.createElement('div');
-  host.id = 'exswaping-support-chat-host';
+  host.id = 'healthy-spine-support-chat-host';
   host.setAttribute('aria-live', 'polite');
   var shadow = host.attachShadow({ mode: 'open' });
 
@@ -321,7 +361,7 @@
     '.sc-composer-shell .sc-btn.sc-send{min-width:44px;height:38px;padding:0 12px;font-size:16px}}' +
     '</style>' +
     '<div class="sc-wrap">' +
-    '<button type="button" class="sc-launcher" aria-label="Open Exswaping support chat" title="Chat with support">' +
+    '<button type="button" class="sc-launcher" aria-label="' + t('launcherOpen') + '" title="' + t('launcherTitle') + '">' +
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
     '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>' +
     '</button></div>' +
@@ -331,7 +371,7 @@
     '<div class="sc-avatar" aria-hidden="true">' +
     '<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M12 2l7 4v6c0 5-3.5 9.2-7 10C8.5 21.2 5 17 5 12V6l7-4z"/></svg></div>' +
     '<div class="sc-head-text">' +
-    '<div class="sc-title-row"><span id="sc-panel-title" class="sc-title">Exswaping Support</span><span class="sc-online-dot" aria-hidden="true"></span></div>' +
+    '<div class="sc-title-row"><span id="sc-panel-title" class="sc-title">' + t('title') + '</span><span class="sc-online-dot" aria-hidden="true"></span></div>' +
     '<div id="sc-panel-sub" class="sc-sub">Our support team is here to help</div>' +
     '</div></div>' +
     '<button type="button" class="sc-close" aria-label="Close chat">' +
@@ -1059,7 +1099,7 @@
         var prev = i > 0 ? session.messagesById[ids[i - 1]] : null;
         var prevSt = prev ? prev.sender_type || 'visitor' : null;
         var groupSame = prevSt === st;
-        var who = st === 'visitor' ? 'You' : st === 'operator' ? 'Support' : 'System';
+        var who = st === 'visitor' ? t('you') : st === 'operator' ? t('operator') : t('system');
         var row = document.createElement('div');
         row.className =
           'sc-msg-row ' +
@@ -1911,7 +1951,7 @@
     panelOpen = true;
     panel.classList.add('open');
     if (launcher) {
-      launcher.setAttribute('aria-label', 'Close Exswaping support chat');
+      launcher.setAttribute('aria-label', t('launcherClose'));
       launcher.setAttribute('title', 'Close chat');
       launcher.classList.add('sc-launcher--open');
     }
@@ -1967,7 +2007,7 @@
     bumpComposerEpoch();
     safeResetComposerState();
     if (launcher) {
-      launcher.setAttribute('aria-label', 'Open Exswaping support chat');
+      launcher.setAttribute('aria-label', t('launcherOpen'));
       launcher.setAttribute('title', 'Chat with support');
       launcher.classList.remove('sc-launcher--open');
     }

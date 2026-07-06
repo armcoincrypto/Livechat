@@ -25,18 +25,11 @@ final class SupportTelegramInboundService
         private readonly SupportTelegramOperatorCommandService $operatorCommands,
         private readonly SupportTelegramInboundMediaService $inboundMedia,
         private readonly SupportAttachmentStorageService $attachmentStorage,
-        private readonly SupportAiLearningService $aiLearning,
-        private readonly SupportAiSuggestionAcceptanceService $acceptanceTracking,
-        private readonly SupportAiConversationOutcomeService $outcomeTracking,
-        private readonly SupportTelegramAiActionService $telegramAiActions,
     ) {}
 
     public function processWebhookUpdate(array $update): void
     {
-        $callbackQuery = $update['callback_query'] ?? null;
-        if (is_array($callbackQuery)) {
-            $this->telegramAiActions->handleCallbackQuery($callbackQuery);
-
+        if (isset($update['callback_query'])) {
             return;
         }
 
@@ -610,43 +603,6 @@ final class SupportTelegramInboundService
 
             $savedOperatorMessage = $operatorMessage;
         });
-
-        if ($savedOperatorMessage !== null) {
-            try {
-                $this->aiLearning->recordOperatorReply($conversation, $savedOperatorMessage, $visitorAnchor);
-            } catch (Throwable $e) {
-                Log::warning('support-chat ai:learning_record_failed', [
-                    'stage' => 'operator_integration',
-                    'support_message_id' => $savedOperatorMessage->id,
-                    'exception' => SupportChatDiagnosticsLog::sanitizeError($e->getMessage()),
-                ]);
-            }
-
-            try {
-                $this->acceptanceTracking->recordForOperatorReply($conversation, $savedOperatorMessage, $visitorAnchor);
-            } catch (Throwable $e) {
-                Log::warning('support-chat ai:acceptance_record_failed', [
-                    'stage' => 'operator_integration',
-                    'support_message_id' => $savedOperatorMessage->id,
-                    'exception' => SupportChatDiagnosticsLog::sanitizeError($e->getMessage()),
-                ]);
-            }
-
-            try {
-                $this->outcomeTracking->syncFromConversation(
-                    $conversation->fresh(),
-                    'telegram_operator_reply',
-                    $savedOperatorMessage,
-                    ['trigger' => 'operator_reply'],
-                );
-            } catch (Throwable $e) {
-                Log::warning('support-chat ai:outcome_record_failed', [
-                    'stage' => 'operator_integration',
-                    'support_message_id' => $savedOperatorMessage->id,
-                    'exception' => SupportChatDiagnosticsLog::sanitizeError($e->getMessage()),
-                ]);
-            }
-        }
     }
 
     /**

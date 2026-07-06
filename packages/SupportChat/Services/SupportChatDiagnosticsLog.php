@@ -31,14 +31,6 @@ final class SupportChatDiagnosticsLog
 
     public const EVENT_SPAM_REJECTED = 'support_chat_spam_rejected';
 
-    public const EVENT_AI_OUTCOME_SYNCED = 'support_chat_ai_outcome_synced';
-
-    public const EVENT_AI_DRAFT_GENERATED = 'support_chat_ai_draft_generated';
-
-    public const EVENT_OPERATOR_USAGE_DRAFT_RECORDED = 'support_chat_ai_operator_usage_draft_recorded';
-
-    public const EVENT_OPERATOR_USAGE_OUTCOME_RECORDED = 'support_chat_ai_operator_usage_outcome_recorded';
-
     /**
      * @param  array<string, mixed>  $context
      */
@@ -126,46 +118,6 @@ final class SupportChatDiagnosticsLog
     public static function adminRetry(string $action, array $context = []): void
     {
         self::write('support_chat_admin_retry', 'info', array_merge(['action' => $action], $context));
-    }
-
-    /**
-     * AI outcome telemetry sync (no message bodies or secrets).
-     *
-     * @param  array<string, mixed>  $context
-     */
-    public static function aiOutcomeSynced(array $context = []): void
-    {
-        self::write(self::EVENT_AI_OUTCOME_SYNCED, 'info', $context);
-    }
-
-    /**
-     * Operator-assist draft generation summary (no draft text or PII).
-     *
-     * @param  array<string, mixed>  $context
-     */
-    public static function aiDraftGenerated(array $context = []): void
-    {
-        self::write(self::EVENT_AI_DRAFT_GENERATED, 'info', $context);
-    }
-
-    /**
-     * LC-H operator usage draft telemetry (hashes + flags only).
-     *
-     * @param  array<string, mixed>  $context
-     */
-    public static function operatorUsageDraftRecorded(array $context = []): void
-    {
-        self::write(self::EVENT_OPERATOR_USAGE_DRAFT_RECORDED, 'info', $context);
-    }
-
-    /**
-     * LC-H operator usage outcome telemetry (decision + response time only).
-     *
-     * @param  array<string, mixed>  $context
-     */
-    public static function operatorUsageOutcomeRecorded(array $context = []): void
-    {
-        self::write(self::EVENT_OPERATOR_USAGE_OUTCOME_RECORDED, 'info', $context);
     }
 
     /**

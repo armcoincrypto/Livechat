@@ -102,7 +102,7 @@ return [
     ],
 
     /*
-     * Dedicated support bot + operators group (separate from order notify bot).
+     * Dedicated support bot + operators group.
      * When disabled or misconfigured, visitor APIs still succeed; jobs are not dispatched from SupportChatService.
      */
     'telegram' => [
@@ -137,181 +137,16 @@ return [
          * P2.4: store operator photo/document from Telegram forum topic for visitor widget (admin/creator only).
          */
         'inbound_attachments_enabled' => filter_var(env('SUPPORT_TELEGRAM_INBOUND_ATTACHMENTS_ENABLED', '0'), FILTER_VALIDATE_BOOLEAN),
-
-        /*
-         * LC-P10: privacy-safe hourly aggregate report (support chat scope only).
-         * Reuses bot_token; target chat/channel via SUPPORT_TELEGRAM_HOURLY_REPORT_CHAT_ID.
-         */
-        'hourly_report' => [
-            'enabled' => filter_var(env('SUPPORT_TELEGRAM_HOURLY_REPORT_ENABLED', '0'), FILTER_VALIDATE_BOOLEAN),
-            'chat_id' => env('SUPPORT_TELEGRAM_HOURLY_REPORT_CHAT_ID', ''),
-        ],
     ],
 
     /*
      * Public site widget (static JS under public/support-chat/widget.js).
-     * Script tag gates on data-chat-enabled="1"; backend still requires SUPPORT_CHAT_ENABLED for API routes.
      */
     'widget' => [
         'poll_interval_ms' => (int) env('SUPPORT_CHAT_WIDGET_POLL_MS', 4000),
     ],
 
-    /*
-     * P4.2: structured logs + admin health/diagnostics (internal only).
-     */
     'diagnostics' => [
         'enabled' => filter_var(env('SUPPORT_CHAT_DIAGNOSTICS_ENABLED', '1'), FILTER_VALIDATE_BOOLEAN),
-    ],
-
-    /*
-     * AI-SUPPORT-1: operator-assist draft replies (OpenAI). Default disabled.
-     * Never auto-sends to visitors — drafts appear in Telegram for operator review only.
-     */
-    'ai' => [
-        'enabled' => filter_var(env('SUPPORT_AI_ENABLED', '0'), FILTER_VALIDATE_BOOLEAN),
-        'provider' => env('SUPPORT_AI_PROVIDER', 'openai'),
-        'model' => env('OPENAI_SUPPORT_MODEL', 'gpt-4o-mini'),
-        'openai_api_key' => env('OPENAI_API_KEY', ''),
-        'timeout_seconds' => max(5, min(60, (int) env('SUPPORT_AI_TIMEOUT_SECONDS', 15))),
-        'max_context_messages' => max(2, min(20, (int) env('SUPPORT_AI_MAX_CONTEXT_MESSAGES', 8))),
-        'operator_assist_only' => filter_var(env('SUPPORT_AI_OPERATOR_ASSIST_ONLY', '1'), FILTER_VALIDATE_BOOLEAN),
-        'telegram_preview_enabled' => filter_var(
-            env('SUPPORT_AI_TELEGRAM_PREVIEW_ENABLED', env('SUPPORT_AI_ENABLED', '0')),
-            FILTER_VALIDATE_BOOLEAN
-        ),
-        'telegram_choices' => max(1, min(4, (int) env('SUPPORT_AI_TELEGRAM_CHOICES', 4))),
-        'telegram_separate_message' => filter_var(
-            env('SUPPORT_AI_TELEGRAM_SEPARATE_MESSAGE', env('SUPPORT_AI_ENABLED', '0')),
-            FILTER_VALIDATE_BOOLEAN
-        ),
-
-        /*
-         * Phase A.1: operator AI suggestion acceptance telemetry (deterministic, non-blocking).
-         */
-        'acceptance_tracking' => [
-            'enabled' => filter_var(env('SUPPORT_AI_ACCEPTANCE_TRACKING_ENABLED', '1'), FILTER_VALIDATE_BOOLEAN),
-            'recent_window_minutes' => max(1, min(120, (int) env('SUPPORT_AI_ACCEPTANCE_RECENT_WINDOW_MINUTES', 15))),
-            'exact_threshold' => max(0.9, min(1.0, (float) env('SUPPORT_AI_ACCEPTANCE_EXACT_THRESHOLD', 0.98))),
-            'modified_threshold' => max(0.4, min(0.97, (float) env('SUPPORT_AI_ACCEPTANCE_MODIFIED_THRESHOLD', 0.60))),
-            'min_meaningful_length' => max(8, min(80, (int) env('SUPPORT_AI_ACCEPTANCE_MIN_MEANINGFUL_LENGTH', 20))),
-        ],
-
-        /*
-         * LC-H: operator AI draft usage monitoring (telemetry only; no AI behavior changes).
-         */
-        'usage_monitoring' => [
-            'enabled' => filter_var(env('SUPPORT_AI_USAGE_MONITORING_ENABLED', '1'), FILTER_VALIDATE_BOOLEAN),
-            'record_in_console' => filter_var(env('SUPPORT_AI_USAGE_MONITOR_RECORD_IN_CONSOLE', '0'), FILTER_VALIDATE_BOOLEAN),
-        ],
-
-        /*
-         * Phase A.2: conversation outcome telemetry for AI learning correlation.
-         */
-        'outcome_tracking' => [
-            'enabled' => filter_var(env('SUPPORT_AI_OUTCOME_TRACKING_ENABLED', '1'), FILTER_VALIDATE_BOOLEAN),
-        ],
-
-        /*
-         * Phase A.3: matching diagnostics (read-only CLI reports).
-         */
-        'matching_diagnostics' => [
-            'enabled' => filter_var(env('SUPPORT_AI_MATCHING_DIAGNOSTICS_ENABLED', '1'), FILTER_VALIDATE_BOOLEAN),
-        ],
-
-        /*
-         * Phase A.4: deterministic quarantine filter before candidate promotion.
-         */
-        'candidate_filtering' => [
-            'enabled' => filter_var(env('SUPPORT_AI_CANDIDATE_FILTERING_ENABLED', '1'), FILTER_VALIDATE_BOOLEAN),
-            'block_ignored_usage' => filter_var(env('SUPPORT_AI_CANDIDATE_FILTER_BLOCK_IGNORED', '1'), FILTER_VALIDATE_BOOLEAN),
-            'block_unknown_usage' => filter_var(env('SUPPORT_AI_CANDIDATE_FILTER_BLOCK_UNKNOWN', '1'), FILTER_VALIDATE_BOOLEAN),
-            'block_failed_outcome' => filter_var(env('SUPPORT_AI_CANDIDATE_FILTER_BLOCK_FAILED', '1'), FILTER_VALIDATE_BOOLEAN),
-            'block_reopened_outcome' => filter_var(env('SUPPORT_AI_CANDIDATE_FILTER_BLOCK_REOPENED', '1'), FILTER_VALIDATE_BOOLEAN),
-        ],
-
-        /*
-         * Phase A.5: accepted-only promotion threshold (deterministic, non-blocking on generation).
-         */
-        'promotion_thresholds' => [
-            'enabled' => filter_var(env('SUPPORT_AI_PROMOTION_THRESHOLDS_ENABLED', '1'), FILTER_VALIDATE_BOOLEAN),
-            'min_accepted_samples' => max(1, min(50, (int) env('SUPPORT_AI_PROMOTION_MIN_ACCEPTED_SAMPLES', 3))),
-            'allow_unlinked_candidates' => filter_var(env('SUPPORT_AI_PROMOTION_ALLOW_UNLINKED', '0'), FILTER_VALIDATE_BOOLEAN),
-        ],
-
-        /*
-         * Phase A wrap-up: weekly read-only audit (CLI + admin diagnostics widget).
-         */
-        'weekly_audit' => [
-            'enabled' => filter_var(env('SUPPORT_AI_WEEKLY_AUDIT_ENABLED', '1'), FILTER_VALIDATE_BOOLEAN),
-            'lookback_days' => max(1, min(90, (int) env('SUPPORT_AI_WEEKLY_AUDIT_LOOKBACK_DAYS', 7))),
-            'milestone_min_accepted' => max(1, (int) env('SUPPORT_AI_MILESTONE_MIN_ACCEPTED', 10)),
-            'milestone_min_resolved' => max(1, (int) env('SUPPORT_AI_MILESTONE_MIN_RESOLVED', 10)),
-        ],
-
-        /*
-         * AI-SUPPORT-AUTOLEARN-4: optional runtime overlay from staged/approved learning candidates.
-         * Disabled by default — injects read-only context at draft time; never edits playbook files.
-         */
-        'learning_overlay' => [
-            'enabled' => filter_var(env('SUPPORT_AI_LEARNING_OVERLAY_ENABLED', '0'), FILTER_VALIDATE_BOOLEAN),
-            'min_status' => env('SUPPORT_AI_LEARNING_OVERLAY_MIN_STATUS', 'approved'),
-            'max_candidates' => max(1, min(50, (int) env('SUPPORT_AI_LEARNING_OVERLAY_MAX_CANDIDATES', 12))),
-            'max_chars' => max(500, min(10000, (int) env('SUPPORT_AI_LEARNING_OVERLAY_MAX_CHARS', 3000))),
-            'allowed_types' => array_values(array_filter(array_map(
-                static fn (string $type): string => trim($type),
-                explode(',', (string) env(
-                    'SUPPORT_AI_LEARNING_OVERLAY_ALLOWED_TYPES',
-                    'playbook_example,tone_rule,safety_rule,intent_rule,followup_rule,operator_action_rule,edge_case_rule'
-                ))
-            ))),
-        ],
-
-        /*
-         * AI-SUPPORT-KNOWLEDGE-BASE-1B: operator-derived business knowledge for AI drafts.
-         * Additive context only — never auto-sends, never overrides safety rules.
-         */
-        'knowledge' => [
-            'enabled' => filter_var(env('SUPPORT_AI_KNOWLEDGE_ENABLED', '1'), FILTER_VALIDATE_BOOLEAN),
-            'max_rules' => max(1, min(10, (int) env('SUPPORT_AI_KNOWLEDGE_MAX_RULES', 5))),
-            'max_chars' => max(500, min(5000, (int) env('SUPPORT_AI_KNOWLEDGE_MAX_CHARS', 2500))),
-            'include_unvalidated' => filter_var(env('SUPPORT_AI_KNOWLEDGE_INCLUDE_UNVALIDATED', '0'), FILTER_VALIDATE_BOOLEAN),
-        ],
-
-        /*
-         * AI-SUPPORT-TEMPLATE-LAYER-1: operator reply wording patterns for AI drafts.
-         * Additive context only — never auto-sends, never overrides safety or knowledge rules.
-         */
-        'templates' => [
-            'enabled' => filter_var(env('SUPPORT_AI_TEMPLATES_ENABLED', '1'), FILTER_VALIDATE_BOOLEAN),
-            'max' => max(1, min(10, (int) env('SUPPORT_AI_TEMPLATES_MAX', 3))),
-            'max_chars' => max(300, min(5000, (int) env('SUPPORT_AI_TEMPLATES_MAX_CHARS', 1500))),
-            'include_unvalidated' => filter_var(env('SUPPORT_AI_TEMPLATES_INCLUDE_UNVALIDATED', '0'), FILTER_VALIDATE_BOOLEAN),
-        ],
-
-        /*
-         * AI-SUPPORT-UX-1: operator presentation layer (dynamic counts, dedup, compact Telegram).
-         */
-        'ux' => [
-            'enabled' => filter_var(env('SUPPORT_AI_UX_ENABLED', '1'), FILTER_VALIDATE_BOOLEAN),
-            'dynamic_choices' => filter_var(env('SUPPORT_AI_UX_DYNAMIC_CHOICES', '1'), FILTER_VALIDATE_BOOLEAN),
-            'dedup_enabled' => filter_var(env('SUPPORT_AI_UX_DEDUP_ENABLED', '1'), FILTER_VALIDATE_BOOLEAN),
-            'policy_protection' => filter_var(env('SUPPORT_AI_UX_POLICY_PROTECTION', '1'), FILTER_VALIDATE_BOOLEAN),
-        ],
-
-        /*
-         * AI-SUPPORT-UI-2: optional debug metadata in Telegram AI assistant messages.
-         */
-        'debug' => filter_var(env('SUPPORT_AI_DEBUG', '0'), FILTER_VALIDATE_BOOLEAN),
-
-        /*
-         * AI-SUPPORT-TELEGRAM-UX-3/4/5: optional inline buttons + expand (disabled by default in UX-6).
-         * AI-SUPPORT-TELEGRAM-UX-6: buttons off — copy-ready compact card only.
-         */
-        'telegram_actions' => [
-            'enabled' => filter_var(env('SUPPORT_AI_TELEGRAM_ACTIONS_ENABLED', '0'), FILTER_VALIDATE_BOOLEAN),
-            'collapse_long' => filter_var(env('SUPPORT_AI_TELEGRAM_COLLAPSE_LONG', '0'), FILTER_VALIDATE_BOOLEAN),
-            'collapse_chars' => max(200, min(1200, (int) env('SUPPORT_AI_TELEGRAM_COLLAPSE_CHARS', 420))),
-            'show_debug' => filter_var(env('SUPPORT_AI_TELEGRAM_SHOW_DEBUG', '0'), FILTER_VALIDATE_BOOLEAN),
-        ],
     ],
 ];

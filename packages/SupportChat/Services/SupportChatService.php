@@ -23,7 +23,6 @@ final class SupportChatService implements SupportChatServiceInterface
     public function __construct(
         private readonly SupportConversationLifecycleService $lifecycle,
         private readonly SupportTelegramForumTopicService $forumTopics,
-        private readonly SupportAiConversationOutcomeService $outcomeTracking,
     ) {}
 
     public function createConversation(array $validated, ?string $ip, ?string $userAgent): array
@@ -71,14 +70,6 @@ final class SupportChatService implements SupportChatServiceInterface
             ];
         });
 
-        if (isset($result['first_message']) && $result['first_message'] instanceof SupportMessage) {
-            $this->syncOutcomeAfterVisitorMessage(
-                $result['conversation'],
-                $result['first_message'],
-                false,
-            );
-        }
-
         unset($result['first_message']);
 
         return $result;
@@ -110,34 +101,7 @@ final class SupportChatService implements SupportChatServiceInterface
             return $message;
         });
 
-        $this->syncOutcomeAfterVisitorMessage($conversation, $message, $reopenedByVisitor);
-
         return $message;
-    }
-
-    private function syncOutcomeAfterVisitorMessage(
-        SupportConversation $conversation,
-        SupportMessage $message,
-        bool $reopenedByVisitor,
-    ): void {
-        try {
-            $this->outcomeTracking->syncFromConversation(
-                $conversation->fresh(),
-                'visitor_message',
-                $message,
-                [
-                    'trigger' => 'visitor_reply',
-                    'reopened_by' => $reopenedByVisitor ? 'visitor' : null,
-                ],
-            );
-        } catch (Throwable $e) {
-            Log::warning('support-chat ai:outcome_record_failed', [
-                'stage' => 'visitor_integration',
-                'support_conversation_id' => $conversation->id,
-                'support_message_id' => $message->id,
-                'exception' => SupportChatDiagnosticsLog::sanitizeError($e->getMessage()),
-            ]);
-        }
     }
 
     public function getMessagesSince(SupportConversation $conversation, int $afterId, int $limit): array

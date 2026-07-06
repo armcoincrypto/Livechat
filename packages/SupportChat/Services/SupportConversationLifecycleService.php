@@ -6,21 +6,14 @@ namespace iEXPackages\SupportChat\Services;
 
 use App\Models\SupportConversation;
 use Illuminate\Support\Facades\Log;
-use Throwable;
 
 /**
  * Single source of truth for support conversation lifecycle field transitions and related logs.
  */
 final class SupportConversationLifecycleService
 {
-    public function __construct(
-        private readonly SupportAiConversationOutcomeService $outcomeTracking,
-    ) {}
-
     /**
-     * Operator-triggered close (admin UI or CLI). Idempotent when already closed (no log).
-     *
-     * @param  array<string, mixed>  $logExtra  Merged into the log context (e.g. CLI reason).
+     * @param  array<string, mixed>  $logExtra
      */
     public function closeByOperator(SupportConversation $conversation, string $context, array $logExtra = []): void
     {
@@ -37,15 +30,8 @@ final class SupportConversationLifecycleService
             'conversation_uuid' => $conversation->uuid,
             'public_support_id' => $conversation->public_support_id,
         ], $logExtra));
-
-        $this->syncOutcome($conversation->fresh(), 'lifecycle_close_'.$context, [
-            'trigger' => 'close',
-        ]);
     }
 
-    /**
-     * Operator-triggered reopen (admin UI or CLI). Always applies status / closed_at like legacy CLI.
-     */
     public function reopenByOperator(SupportConversation $conversation, string $waiting, string $context): void
     {
         $waiting = strtolower(trim($waiting));
@@ -64,18 +50,8 @@ final class SupportConversationLifecycleService
             'public_support_id' => $conversation->public_support_id,
             'status' => $conversation->status,
         ]);
-
-        $this->syncOutcome($conversation->fresh(), 'lifecycle_reopen_'.$context, [
-            'trigger' => 'reopen',
-            'reopened_by' => 'operator',
-        ]);
     }
 
-    /**
-     * Visitor message on a closed thread: reopen so the message can be stored and Telegram notify can run.
-     *
-     * @return bool True if the conversation was closed and is now reopened.
-     */
     public function reopenIfClosedForVisitor(SupportConversation $conversation): bool
     {
         if (! $conversation->isClosed()) {
@@ -93,30 +69,6 @@ final class SupportConversationLifecycleService
             'status' => $conversation->status,
         ]);
 
-        $this->syncOutcome($conversation->fresh(), 'lifecycle_reopen_visitor', [
-            'trigger' => 'reopen',
-            'reopened_by' => 'visitor',
-        ]);
-
         return true;
-    }
-
-    /**
-     * @param  array<string, mixed>  $context
-     */
-    private function syncOutcome(
-        SupportConversation $conversation,
-        string $source,
-        array $context = [],
-    ): void {
-        try {
-            $this->outcomeTracking->syncFromConversation($conversation, $source, null, $context);
-        } catch (Throwable $e) {
-            Log::warning('support-chat ai:outcome_record_failed', [
-                'stage' => 'lifecycle_integration',
-                'support_conversation_id' => $conversation->id,
-                'exception' => SupportChatDiagnosticsLog::sanitizeError($e->getMessage()),
-            ]);
-        }
     }
 }
