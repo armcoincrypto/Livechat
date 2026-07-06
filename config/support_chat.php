@@ -140,11 +140,11 @@ return [
 
         /*
          * LC-P10: privacy-safe hourly aggregate report (support chat scope only).
-         * Reuses bot_token; target chat/channel via HOURLY_REPORT_CHAT_ID (e.g. @exswapinglivebot).
+         * Reuses bot_token; target chat/channel via SUPPORT_TELEGRAM_HOURLY_REPORT_CHAT_ID.
          */
         'hourly_report' => [
             'enabled' => filter_var(env('SUPPORT_TELEGRAM_HOURLY_REPORT_ENABLED', '0'), FILTER_VALIDATE_BOOLEAN),
-            'chat_id' => env('SUPPORT_TELEGRAM_HOURLY_REPORT_CHAT_ID', '@exswapinglivebot'),
+            'chat_id' => env('SUPPORT_TELEGRAM_HOURLY_REPORT_CHAT_ID', ''),
         ],
     ],
 

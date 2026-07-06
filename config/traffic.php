@@ -29,7 +29,7 @@ return [
             'enabled' => filter_var(env('TRAFFIC_REPORT_NGINX_ENABLED', '1'), FILTER_VALIDATE_BOOLEAN),
             'access_log_path' => env(
                 'TRAFFIC_REPORT_NGINX_ACCESS_LOG_PATH',
-                '/var/www/exswaping_co_usr/data/logs/exswaping.com-frontend.access.log'
+                ''
             ),
             'max_lines' => max(1000, (int) env('TRAFFIC_REPORT_NGINX_MAX_LINES', 250000)),
             'top_pages_limit' => max(1, (int) env('TRAFFIC_REPORT_NGINX_TOP_PAGES_LIMIT', 5)),
