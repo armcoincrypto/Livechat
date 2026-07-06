@@ -120,6 +120,7 @@ final class SupportChatServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->loadMigrationsFrom(base_path('database/migrations/11.0.5'));
         $this->configureRateLimiting();
         $this->registerRoutes();
 
