@@ -1,0 +1,80 @@
+PRE_MAIN=fef1ba87eb9d83b9618dce64c3013b92fb2e4fd6
+error: The following untracked working tree files would be overwritten by merge:
+	app/Console/Commands/RatesAuditCommand.php
+	app/Services/Rates/BestChangeCurrencyCatalogGuard.php
+	app/Services/Rates/IndependentMarketBaseline.php
+	app/Services/Rates/PeerRateSelector.php
+	app/Services/Rates/RateConfiguredExpectation.php
+	app/Services/Rates/RateExportQuarantine.php
+	app/Services/Rates/RateSanityGuard.php
+	docs/audits/rate-post-fix-20260719T163143Z/flagged_critical.json
+	docs/audits/rate-post-fix-20260719T163143Z/flagged_extreme.json
+	docs/audits/rate-post-fix-20260719T163143Z/flagged_high.json
+	docs/audits/rate-post-fix-20260719T163143Z/flagged_invalid.json
+	docs/audits/rate-post-fix-20260719T163143Z/flagged_no_baseline.json
+	docs/audits/rate-post-fix-20260719T163143Z/flagged_warning.json
+	docs/audits/rate-post-fix-20260719T163143Z/observation_post_deploy.txt
+	docs/audits/rate-post-fix-20260719T163143Z/rates_audit_all.json
+	docs/audits/rate-post-fix-20260719T163143Z/rates_audit_stderr.txt
+	packages/BestChange/DTO/ComputedRate.php
+	packages/BestChange/Services/RatesUpdateService.php
+	packages/Courses/Export/Concerns/ExportFormatHelpers.php
+	tests/Unit/Rates/RatePostFixRemediationTest.php
+	tests/Unit/Rates/RateSanityGuardTest.php
+	xml-changer/main.py
+	xml-changer/test_xml_changer_safety.py
+Please move or remove them before you merge.
+Aborting
+Merge with strategy ort failed.
+Merge made by the 'ort' strategy.
+ RATE_CATALOG_MARKET_AUDIT.json                     |     1 +
+ ROLLBACK.md                                        |    25 +
+ app/Console/Commands/RatesAuditCommand.php         |   307 +
+ .../Rates/BestChangeCurrencyCatalogGuard.php       |   143 +
+ app/Services/Rates/IndependentMarketBaseline.php   |   204 +
+ app/Services/Rates/PeerRateSelector.php            |   156 +
+ app/Services/Rates/RateConfiguredExpectation.php   |   160 +
+ app/Services/Rates/RateExportQuarantine.php        |   125 +
+ app/Services/Rates/RateSanityGuard.php             |   214 +
+ .../flagged_critical.json                          |     1 +
+ .../flagged_extreme.json                           |  2026 +
+ .../flagged_high.json                              |     1 +
+ .../flagged_invalid.json                           |  2417 ++
+ .../flagged_no_baseline.json                       |  1106 +
+ .../flagged_warning.json                           |     1 +
+ .../observation_post_deploy.txt                    |    23 +
+ .../rates_audit_all.json                           | 43334 +++++++++++++++++++
+ .../rates_audit_stderr.txt                         |     0
+ packages/BestChange/DTO/ComputedRate.php           |    18 +
+ .../BestChange/Services/RatesUpdateService.php     |   527 +
+ .../Export/Concerns/ExportFormatHelpers.php        |   402 +
+ tests/Unit/Rates/RatePostFixRemediationTest.php    |   171 +
+ tests/Unit/Rates/RateSanityGuardTest.php           |    91 +
+ xml-changer/main.py                                |   197 +
+ xml-changer/test_xml_changer_safety.py             |    75 +
+ 25 files changed, 51725 insertions(+)
+ create mode 100644 RATE_CATALOG_MARKET_AUDIT.json
+ create mode 100644 ROLLBACK.md
+ create mode 100644 app/Console/Commands/RatesAuditCommand.php
+ create mode 100644 app/Services/Rates/BestChangeCurrencyCatalogGuard.php
+ create mode 100644 app/Services/Rates/IndependentMarketBaseline.php
+ create mode 100644 app/Services/Rates/PeerRateSelector.php
+ create mode 100644 app/Services/Rates/RateConfiguredExpectation.php
+ create mode 100644 app/Services/Rates/RateExportQuarantine.php
+ create mode 100644 app/Services/Rates/RateSanityGuard.php
+ create mode 100644 docs/audits/rate-post-fix-20260719T163143Z/flagged_critical.json
+ create mode 100644 docs/audits/rate-post-fix-20260719T163143Z/flagged_extreme.json
+ create mode 100644 docs/audits/rate-post-fix-20260719T163143Z/flagged_high.json
+ create mode 100644 docs/audits/rate-post-fix-20260719T163143Z/flagged_invalid.json
+ create mode 100644 docs/audits/rate-post-fix-20260719T163143Z/flagged_no_baseline.json
+ create mode 100644 docs/audits/rate-post-fix-20260719T163143Z/flagged_warning.json
+ create mode 100644 docs/audits/rate-post-fix-20260719T163143Z/observation_post_deploy.txt
+ create mode 100644 docs/audits/rate-post-fix-20260719T163143Z/rates_audit_all.json
+ create mode 100644 docs/audits/rate-post-fix-20260719T163143Z/rates_audit_stderr.txt
+ create mode 100644 packages/BestChange/DTO/ComputedRate.php
+ create mode 100644 packages/BestChange/Services/RatesUpdateService.php
+ create mode 100644 packages/Courses/Export/Concerns/ExportFormatHelpers.php
+ create mode 100644 tests/Unit/Rates/RatePostFixRemediationTest.php
+ create mode 100644 tests/Unit/Rates/RateSanityGuardTest.php
+ create mode 100644 xml-changer/main.py
+ create mode 100644 xml-changer/test_xml_changer_safety.py
