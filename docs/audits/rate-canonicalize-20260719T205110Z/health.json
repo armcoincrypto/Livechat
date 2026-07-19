@@ -1,0 +1,14 @@
+{
+    "generated_at": "2026-07-19T23:58:34+03:00",
+    "invalid_active_rate_count": 0,
+    "quarantined_direction_count": 178,
+    "unexplained_extreme_count": 1,
+    "unexplained_critical_count": 0,
+    "no_baseline_active_count": 11,
+    "stale_baseline_gap_count": 1,
+    "baseline_gaps": [
+        "TONUSDT missing_or_stale"
+    ],
+    "xml_mutator_guard_present": true,
+    "critical": true
+}

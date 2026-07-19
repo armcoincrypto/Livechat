@@ -1,0 +1,465 @@
+{
+  "generated_at": "2026-07-19T20:51:27.011689+00:00",
+  "worktree_head": "60fea945742e849ee80b60b9fba6ab806cd39497",
+  "app_head": "fef1ba87eb9d83b9618dce64c3013b92fb2e4fd6",
+  "files": [
+    {
+      "path": "RATE_CATALOG_MARKET_AUDIT.json",
+      "worktree_sha256": "f962b2b3425ce20f63e0e8e6b4911c61d933492057145f75385d29a227e1d068",
+      "production_sha256": null,
+      "identical_wt_prod": false,
+      "worktree_meta": {
+        "mtime": "2026-07-19T16:10:33.799339+00:00",
+        "size": 108763,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/RATE_CATALOG_MARKET_AUDIT.json"
+      },
+      "production_meta": null,
+      "git_blob_60fea945_wt": "3eb1b32ed18992e6af09948da0d97a0bc661805d",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": null,
+      "matches_certified_blob": false
+    },
+    {
+      "path": "ROLLBACK.md",
+      "worktree_sha256": "5b7551c331f77fc083c072a0db7e3c3487688fe1e2403942d672863f9db25c4e",
+      "production_sha256": null,
+      "identical_wt_prod": false,
+      "worktree_meta": {
+        "mtime": "2026-07-19T17:16:45.672150+00:00",
+        "size": 1275,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/ROLLBACK.md"
+      },
+      "production_meta": null,
+      "git_blob_60fea945_wt": "914e27d4e0825345960f063e1de2c5f349b59025",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": null,
+      "matches_certified_blob": false
+    },
+    {
+      "path": "app/Console/Commands/RatesAuditCommand.php",
+      "worktree_sha256": "c7669e38afad836ed4f36f2dd3963983536ea76f379184489237b4480399f4d4",
+      "production_sha256": "c7669e38afad836ed4f36f2dd3963983536ea76f379184489237b4480399f4d4",
+      "identical_wt_prod": true,
+      "worktree_meta": {
+        "mtime": "2026-07-19T16:47:02.205055+00:00",
+        "size": 12599,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/app/Console/Commands/RatesAuditCommand.php"
+      },
+      "production_meta": {
+        "mtime": "2026-07-19T16:47:02.205055+00:00",
+        "size": 12599,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/app/Console/Commands/RatesAuditCommand.php"
+      },
+      "git_blob_60fea945_wt": "bb8a7185227897e8fa22040da46a4b08a7d123af",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": "bb8a7185227897e8fa22040da46a4b08a7d123af",
+      "matches_certified_blob": true
+    },
+    {
+      "path": "app/Services/Rates/BestChangeCurrencyCatalogGuard.php",
+      "worktree_sha256": "bfbb87ac36706b67e9d10d210bda018b9e061868fe0d29e808541ff20b7be625",
+      "production_sha256": "bfbb87ac36706b67e9d10d210bda018b9e061868fe0d29e808541ff20b7be625",
+      "identical_wt_prod": true,
+      "worktree_meta": {
+        "mtime": "2026-07-19T16:28:40.575832+00:00",
+        "size": 4474,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/app/Services/Rates/BestChangeCurrencyCatalogGuard.php"
+      },
+      "production_meta": {
+        "mtime": "2026-07-19T16:28:40.575832+00:00",
+        "size": 4474,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/app/Services/Rates/BestChangeCurrencyCatalogGuard.php"
+      },
+      "git_blob_60fea945_wt": "79d142d17fc01dce2a2d62f3e0af99548729a750",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": "79d142d17fc01dce2a2d62f3e0af99548729a750",
+      "matches_certified_blob": true
+    },
+    {
+      "path": "app/Services/Rates/IndependentMarketBaseline.php",
+      "worktree_sha256": "0ca85e76337888d7d4e60ec448b5c9934fd4b1211eec9a05c8adf6cc7a8ec62c",
+      "production_sha256": "0ca85e76337888d7d4e60ec448b5c9934fd4b1211eec9a05c8adf6cc7a8ec62c",
+      "identical_wt_prod": true,
+      "worktree_meta": {
+        "mtime": "2026-07-19T16:29:12.607727+00:00",
+        "size": 6806,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/app/Services/Rates/IndependentMarketBaseline.php"
+      },
+      "production_meta": {
+        "mtime": "2026-07-19T16:29:12.607727+00:00",
+        "size": 6806,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/app/Services/Rates/IndependentMarketBaseline.php"
+      },
+      "git_blob_60fea945_wt": "280a0489fb1277ee4f4565413835ae751cd0b676",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": "280a0489fb1277ee4f4565413835ae751cd0b676",
+      "matches_certified_blob": true
+    },
+    {
+      "path": "app/Services/Rates/PeerRateSelector.php",
+      "worktree_sha256": "252790658debf70e5eaec7d1a373d9cc572dae011e14d194c78f99ab0e2f1006",
+      "production_sha256": "252790658debf70e5eaec7d1a373d9cc572dae011e14d194c78f99ab0e2f1006",
+      "identical_wt_prod": true,
+      "worktree_meta": {
+        "mtime": "2026-07-19T16:28:05.447947+00:00",
+        "size": 4747,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/app/Services/Rates/PeerRateSelector.php"
+      },
+      "production_meta": {
+        "mtime": "2026-07-19T16:28:05.447947+00:00",
+        "size": 4747,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/app/Services/Rates/PeerRateSelector.php"
+      },
+      "git_blob_60fea945_wt": "2ad9c290178000d8f2963244c7ec7c7348fdaff7",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": "2ad9c290178000d8f2963244c7ec7c7348fdaff7",
+      "matches_certified_blob": true
+    },
+    {
+      "path": "app/Services/Rates/RateConfiguredExpectation.php",
+      "worktree_sha256": "e0a99d72b83828b862f3f7ab159736f86dfcc0acf05747e1aa6ec6e44b38aa8e",
+      "production_sha256": "e0a99d72b83828b862f3f7ab159736f86dfcc0acf05747e1aa6ec6e44b38aa8e",
+      "identical_wt_prod": true,
+      "worktree_meta": {
+        "mtime": "2026-07-19T16:28:14.055919+00:00",
+        "size": 5528,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/app/Services/Rates/RateConfiguredExpectation.php"
+      },
+      "production_meta": {
+        "mtime": "2026-07-19T16:28:14.055919+00:00",
+        "size": 5528,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/app/Services/Rates/RateConfiguredExpectation.php"
+      },
+      "git_blob_60fea945_wt": "25db94fa2488f832f4e6a21be3c842ae014fb03a",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": "25db94fa2488f832f4e6a21be3c842ae014fb03a",
+      "matches_certified_blob": true
+    },
+    {
+      "path": "app/Services/Rates/RateExportQuarantine.php",
+      "worktree_sha256": "118f90a78c53e93a8e653ac4c233ff4829777d0edd0c2dcd018a55201fa0d514",
+      "production_sha256": "118f90a78c53e93a8e653ac4c233ff4829777d0edd0c2dcd018a55201fa0d514",
+      "identical_wt_prod": true,
+      "worktree_meta": {
+        "mtime": "2026-07-19T16:28:24.367885+00:00",
+        "size": 4391,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/app/Services/Rates/RateExportQuarantine.php"
+      },
+      "production_meta": {
+        "mtime": "2026-07-19T16:28:24.367885+00:00",
+        "size": 4391,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/app/Services/Rates/RateExportQuarantine.php"
+      },
+      "git_blob_60fea945_wt": "1f606fc40260e04a66219c4431986da789f1017d",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": "1f606fc40260e04a66219c4431986da789f1017d",
+      "matches_certified_blob": true
+    },
+    {
+      "path": "app/Services/Rates/RateSanityGuard.php",
+      "worktree_sha256": "1b5b0de426cc87b88679f01d22a6ba942760c19b0dabf65e866dc368fd6df07b",
+      "production_sha256": "1b5b0de426cc87b88679f01d22a6ba942760c19b0dabf65e866dc368fd6df07b",
+      "identical_wt_prod": true,
+      "worktree_meta": {
+        "mtime": "2026-07-19T16:07:07.787976+00:00",
+        "size": 6493,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/app/Services/Rates/RateSanityGuard.php"
+      },
+      "production_meta": {
+        "mtime": "2026-07-19T16:07:07.787976+00:00",
+        "size": 6493,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/app/Services/Rates/RateSanityGuard.php"
+      },
+      "git_blob_60fea945_wt": "bd56608c579f9deaf39960fcae33cce713161da4",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": "bd56608c579f9deaf39960fcae33cce713161da4",
+      "matches_certified_blob": true
+    },
+    {
+      "path": "packages/BestChange/DTO/ComputedRate.php",
+      "worktree_sha256": "7d874b5131b2b96314998f7a06658c42dccd3bc6633dd0ff1632c17a31b4855e",
+      "production_sha256": "7d874b5131b2b96314998f7a06658c42dccd3bc6633dd0ff1632c17a31b4855e",
+      "identical_wt_prod": true,
+      "worktree_meta": {
+        "mtime": "2025-12-26T09:45:09+00:00",
+        "size": 364,
+        "mode": "0o100644",
+        "uid": 1002,
+        "gid": 1006,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/packages/BestChange/DTO/ComputedRate.php"
+      },
+      "production_meta": {
+        "mtime": "2025-12-26T09:45:09+00:00",
+        "size": 364,
+        "mode": "0o100644",
+        "uid": 1002,
+        "gid": 1006,
+        "is_symlink": false,
+        "realpath": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/packages/BestChange/DTO/ComputedRate.php"
+      },
+      "git_blob_60fea945_wt": "a2d1ce43acfa8720460dfebd4ee1027a61eb37bd",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": "a2d1ce43acfa8720460dfebd4ee1027a61eb37bd",
+      "matches_certified_blob": true
+    },
+    {
+      "path": "packages/BestChange/Services/RatesUpdateService.php",
+      "worktree_sha256": "8664e6e63f19e2eeb5d602a92eb68fc262c08ae87901c0dab548f72ac569a90a",
+      "production_sha256": "8664e6e63f19e2eeb5d602a92eb68fc262c08ae87901c0dab548f72ac569a90a",
+      "identical_wt_prod": true,
+      "worktree_meta": {
+        "mtime": "2026-07-19T16:30:24.611491+00:00",
+        "size": 18866,
+        "mode": "0o100644",
+        "uid": 1002,
+        "gid": 1006,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/packages/BestChange/Services/RatesUpdateService.php"
+      },
+      "production_meta": {
+        "mtime": "2026-07-19T16:30:24.611491+00:00",
+        "size": 18866,
+        "mode": "0o100644",
+        "uid": 1002,
+        "gid": 1006,
+        "is_symlink": false,
+        "realpath": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/packages/BestChange/Services/RatesUpdateService.php"
+      },
+      "git_blob_60fea945_wt": "c0d963c83d665dbfbdbe46f443fb2265e9c6f75d",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": "c0d963c83d665dbfbdbe46f443fb2265e9c6f75d",
+      "matches_certified_blob": true
+    },
+    {
+      "path": "packages/Courses/Export/Concerns/ExportFormatHelpers.php",
+      "worktree_sha256": "a9253f1d0cfbfba5304d53950a7e24f8bf8b3bb03647c3b8897748ca0ca582d6",
+      "production_sha256": "a9253f1d0cfbfba5304d53950a7e24f8bf8b3bb03647c3b8897748ca0ca582d6",
+      "identical_wt_prod": true,
+      "worktree_meta": {
+        "mtime": "2026-07-19T16:29:13.551724+00:00",
+        "size": 13744,
+        "mode": "0o100644",
+        "uid": 1002,
+        "gid": 1006,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/packages/Courses/Export/Concerns/ExportFormatHelpers.php"
+      },
+      "production_meta": {
+        "mtime": "2026-07-19T16:29:13.551724+00:00",
+        "size": 13744,
+        "mode": "0o100644",
+        "uid": 1002,
+        "gid": 1006,
+        "is_symlink": false,
+        "realpath": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/packages/Courses/Export/Concerns/ExportFormatHelpers.php"
+      },
+      "git_blob_60fea945_wt": "c859759a3c47634c852a54b90040eda92920c040",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": "c859759a3c47634c852a54b90040eda92920c040",
+      "matches_certified_blob": true
+    },
+    {
+      "path": "tests/Unit/Rates/RatePostFixRemediationTest.php",
+      "worktree_sha256": "0a8fb24cafae79010f1782f458c3274ea61a7f1fbadeb35d33dfdd2017e0314a",
+      "production_sha256": "0a8fb24cafae79010f1782f458c3274ea61a7f1fbadeb35d33dfdd2017e0314a",
+      "identical_wt_prod": true,
+      "worktree_meta": {
+        "mtime": "2026-07-19T16:31:00.111375+00:00",
+        "size": 6938,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/tests/Unit/Rates/RatePostFixRemediationTest.php"
+      },
+      "production_meta": {
+        "mtime": "2026-07-19T16:31:00.111375+00:00",
+        "size": 6938,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/tests/Unit/Rates/RatePostFixRemediationTest.php"
+      },
+      "git_blob_60fea945_wt": "5deb510e2b31867d814c61dab321542f1d01b170",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": "5deb510e2b31867d814c61dab321542f1d01b170",
+      "matches_certified_blob": true
+    },
+    {
+      "path": "tests/Unit/Rates/RateSanityGuardTest.php",
+      "worktree_sha256": "ad625db26a15b3fc5016bcda17bac9585cf68a9e79d0f97d6d987c81c6cb3767",
+      "production_sha256": "ad625db26a15b3fc5016bcda17bac9585cf68a9e79d0f97d6d987c81c6cb3767",
+      "identical_wt_prod": true,
+      "worktree_meta": {
+        "mtime": "2026-07-19T16:07:36.155889+00:00",
+        "size": 3330,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/tests/Unit/Rates/RateSanityGuardTest.php"
+      },
+      "production_meta": {
+        "mtime": "2026-07-19T16:07:36.155889+00:00",
+        "size": 3330,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/tests/Unit/Rates/RateSanityGuardTest.php"
+      },
+      "git_blob_60fea945_wt": "3422a4c2f4eaedad134a0f92fa4f183c2d60a57e",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": "3422a4c2f4eaedad134a0f92fa4f183c2d60a57e",
+      "matches_certified_blob": true
+    },
+    {
+      "path": "xml-changer/main.py",
+      "worktree_sha256": "d3faa4b25e6d9bc8ca8bdc5a0fa9f466aac49c6fc613df575b9415963edd8d7f",
+      "production_sha256": "d3faa4b25e6d9bc8ca8bdc5a0fa9f466aac49c6fc613df575b9415963edd8d7f",
+      "identical_wt_prod": true,
+      "worktree_meta": {
+        "mtime": "2026-07-19T16:06:27.660098+00:00",
+        "size": 6266,
+        "mode": "0o100644",
+        "uid": 1002,
+        "gid": 1006,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/xml-changer/main.py"
+      },
+      "production_meta": {
+        "mtime": "2026-07-19T16:08:27.403732+00:00",
+        "size": 6266,
+        "mode": "0o100644",
+        "uid": 1002,
+        "gid": 1006,
+        "is_symlink": false,
+        "realpath": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/xml-changer/main.py"
+      },
+      "git_blob_60fea945_wt": "458005818e44fd22d18a1af7fdd8ed3a87e0415e",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": "458005818e44fd22d18a1af7fdd8ed3a87e0415e",
+      "matches_certified_blob": true
+    },
+    {
+      "path": "xml-changer/test_xml_changer_safety.py",
+      "worktree_sha256": "7afbaafea76d519831ac95573d73cd8cec31d46654886ae1d27528ebecb46eea",
+      "production_sha256": "7afbaafea76d519831ac95573d73cd8cec31d46654886ae1d27528ebecb46eea",
+      "identical_wt_prod": true,
+      "worktree_meta": {
+        "mtime": "2026-07-19T16:08:07.115794+00:00",
+        "size": 2662,
+        "mode": "0o100644",
+        "uid": 0,
+        "gid": 0,
+        "is_symlink": false,
+        "realpath": "/opt/exswaping-rate-pipeline-worktree-20260719T160507Z/xml-changer/test_xml_changer_safety.py"
+      },
+      "production_meta": {
+        "mtime": "2026-07-19T16:08:27.623731+00:00",
+        "size": 2662,
+        "mode": "0o100644",
+        "uid": 1002,
+        "gid": 1006,
+        "is_symlink": false,
+        "realpath": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/xml-changer/test_xml_changer_safety.py"
+      },
+      "git_blob_60fea945_wt": "033852e57af58d2c97c0566479832cb552329d3d",
+      "git_blob_APP_HEAD": null,
+      "in_APP_HEAD_tree": false,
+      "production_git_hash_object": "033852e57af58d2c97c0566479832cb552329d3d",
+      "matches_certified_blob": true
+    }
+  ],
+  "summary": {
+    "count": 16,
+    "identical_wt_prod": 14,
+    "matches_certified_blob": 14,
+    "missing_prod": [
+      "RATE_CATALOG_MARKET_AUDIT.json",
+      "ROLLBACK.md"
+    ],
+    "drift": []
+  }
+}

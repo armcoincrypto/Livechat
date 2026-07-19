@@ -1,0 +1,81 @@
+{
+    "generated_at": "2026-07-19T23:55:42+03:00",
+    "commit": null,
+    "head": null,
+    "drift": 12,
+    "missing": 0,
+    "files": [
+        {
+            "path": "xml-changer\/main.py",
+            "certified_blob": null,
+            "live_blob": "458005818e44fd22d18a1af7fdd8ed3a87e0415e",
+            "ok": false
+        },
+        {
+            "path": "app\/Services\/Rates\/RateSanityGuard.php",
+            "certified_blob": null,
+            "live_blob": "bd56608c579f9deaf39960fcae33cce713161da4",
+            "ok": false
+        },
+        {
+            "path": "app\/Services\/Rates\/RateConfiguredExpectation.php",
+            "certified_blob": null,
+            "live_blob": "25db94fa2488f832f4e6a21be3c842ae014fb03a",
+            "ok": false
+        },
+        {
+            "path": "app\/Services\/Rates\/RateExportQuarantine.php",
+            "certified_blob": null,
+            "live_blob": "1f606fc40260e04a66219c4431986da789f1017d",
+            "ok": false
+        },
+        {
+            "path": "app\/Services\/Rates\/PeerRateSelector.php",
+            "certified_blob": null,
+            "live_blob": "2ad9c290178000d8f2963244c7ec7c7348fdaff7",
+            "ok": false
+        },
+        {
+            "path": "app\/Services\/Rates\/BestChangeCurrencyCatalogGuard.php",
+            "certified_blob": null,
+            "live_blob": "79d142d17fc01dce2a2d62f3e0af99548729a750",
+            "ok": false
+        },
+        {
+            "path": "app\/Services\/Rates\/IndependentMarketBaseline.php",
+            "certified_blob": null,
+            "live_blob": "688ea944530390dcf947b7566f58f7b55e8db70c",
+            "ok": false
+        },
+        {
+            "path": "app\/Console\/Commands\/RatesAuditCommand.php",
+            "certified_blob": null,
+            "live_blob": "bb8a7185227897e8fa22040da46a4b08a7d123af",
+            "ok": false
+        },
+        {
+            "path": "packages\/BestChange\/Services\/RatesUpdateService.php",
+            "certified_blob": null,
+            "live_blob": "c0d963c83d665dbfbdbe46f443fb2265e9c6f75d",
+            "ok": false
+        },
+        {
+            "path": "packages\/Courses\/Export\/Concerns\/ExportFormatHelpers.php",
+            "certified_blob": null,
+            "live_blob": "c859759a3c47634c852a54b90040eda92920c040",
+            "ok": false
+        },
+        {
+            "path": "tests\/Unit\/Rates\/RateSanityGuardTest.php",
+            "certified_blob": null,
+            "live_blob": "3422a4c2f4eaedad134a0f92fa4f183c2d60a57e",
+            "ok": false
+        },
+        {
+            "path": "tests\/Unit\/Rates\/RatePostFixRemediationTest.php",
+            "certified_blob": null,
+            "live_blob": "5deb510e2b31867d814c61dab321542f1d01b170",
+            "ok": false
+        }
+    ]
+}

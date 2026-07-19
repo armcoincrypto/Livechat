@@ -1,0 +1,81 @@
+{
+    "generated_at": "2026-07-20T00:01:01+03:00",
+    "commit": "942a30cf64660ab2998d8d74096e14662f6b4529",
+    "head": "942a30cf64660ab2998d8d74096e14662f6b4529",
+    "drift": 2,
+    "missing": 0,
+    "files": [
+        {
+            "path": "xml-changer\/main.py",
+            "certified_blob": "458005818e44fd22d18a1af7fdd8ed3a87e0415e",
+            "live_blob": "458005818e44fd22d18a1af7fdd8ed3a87e0415e",
+            "ok": true
+        },
+        {
+            "path": "app\/Services\/Rates\/RateSanityGuard.php",
+            "certified_blob": "bd56608c579f9deaf39960fcae33cce713161da4",
+            "live_blob": "bd56608c579f9deaf39960fcae33cce713161da4",
+            "ok": true
+        },
+        {
+            "path": "app\/Services\/Rates\/RateConfiguredExpectation.php",
+            "certified_blob": "25db94fa2488f832f4e6a21be3c842ae014fb03a",
+            "live_blob": "25db94fa2488f832f4e6a21be3c842ae014fb03a",
+            "ok": true
+        },
+        {
+            "path": "app\/Services\/Rates\/RateExportQuarantine.php",
+            "certified_blob": "1f606fc40260e04a66219c4431986da789f1017d",
+            "live_blob": "1f606fc40260e04a66219c4431986da789f1017d",
+            "ok": true
+        },
+        {
+            "path": "app\/Services\/Rates\/PeerRateSelector.php",
+            "certified_blob": "2ad9c290178000d8f2963244c7ec7c7348fdaff7",
+            "live_blob": "2ad9c290178000d8f2963244c7ec7c7348fdaff7",
+            "ok": true
+        },
+        {
+            "path": "app\/Services\/Rates\/BestChangeCurrencyCatalogGuard.php",
+            "certified_blob": "79d142d17fc01dce2a2d62f3e0af99548729a750",
+            "live_blob": "79d142d17fc01dce2a2d62f3e0af99548729a750",
+            "ok": true
+        },
+        {
+            "path": "app\/Services\/Rates\/IndependentMarketBaseline.php",
+            "certified_blob": "280a0489fb1277ee4f4565413835ae751cd0b676",
+            "live_blob": "688ea944530390dcf947b7566f58f7b55e8db70c",
+            "ok": false
+        },
+        {
+            "path": "app\/Console\/Commands\/RatesAuditCommand.php",
+            "certified_blob": "bb8a7185227897e8fa22040da46a4b08a7d123af",
+            "live_blob": "1ce3f053998298a9896e76a403e059358f584767",
+            "ok": false
+        },
+        {
+            "path": "packages\/BestChange\/Services\/RatesUpdateService.php",
+            "certified_blob": "c0d963c83d665dbfbdbe46f443fb2265e9c6f75d",
+            "live_blob": "c0d963c83d665dbfbdbe46f443fb2265e9c6f75d",
+            "ok": true
+        },
+        {
+            "path": "packages\/Courses\/Export\/Concerns\/ExportFormatHelpers.php",
+            "certified_blob": "c859759a3c47634c852a54b90040eda92920c040",
+            "live_blob": "c859759a3c47634c852a54b90040eda92920c040",
+            "ok": true
+        },
+        {
+            "path": "tests\/Unit\/Rates\/RateSanityGuardTest.php",
+            "certified_blob": "3422a4c2f4eaedad134a0f92fa4f183c2d60a57e",
+            "live_blob": "3422a4c2f4eaedad134a0f92fa4f183c2d60a57e",
+            "ok": true
+        },
+        {
+            "path": "tests\/Unit\/Rates\/RatePostFixRemediationTest.php",
+            "certified_blob": "5deb510e2b31867d814c61dab321542f1d01b170",
+            "live_blob": "5deb510e2b31867d814c61dab321542f1d01b170",
+            "ok": true
+        }
+    ]
+}

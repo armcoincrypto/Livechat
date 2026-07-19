@@ -1,0 +1,234 @@
+{
+    "generated_at": "2026-07-19T23:52:34+03:00",
+    "symbols": {
+        "BTCUSDT": {
+            "matches": [
+                {
+                    "id": 6862,
+                    "name": "BTC - USDT",
+                    "code": "[coinmarketcap_btc-usdt]",
+                    "summa": "63989.1034683023",
+                    "status": 1,
+                    "updated_at": "2026-07-18 09:26:49",
+                    "id_group": 3,
+                    "is_not_update": 0,
+                    "code_in": "BTC",
+                    "code_out": "USDT"
+                }
+            ],
+            "best": {
+                "id": 6862,
+                "name": "BTC - USDT",
+                "code": "[coinmarketcap_btc-usdt]",
+                "summa": "63989.1034683023",
+                "status": 1,
+                "updated_at": "2026-07-18 09:26:49",
+                "id_group": 3,
+                "is_not_update": 0,
+                "code_in": "BTC",
+                "code_out": "USDT"
+            },
+            "age_seconds": 138345,
+            "fresh_crypto_15m": false,
+            "fresh_fiat_6h": false
+        },
+        "ETHUSDT": {
+            "matches": [],
+            "best": null,
+            "age_seconds": null,
+            "fresh_crypto_15m": false,
+            "fresh_fiat_6h": false
+        },
+        "BNBUSDT": {
+            "matches": [
+                {
+                    "id": 6367,
+                    "name": "BNB - USDT",
+                    "code": "[whitebit_bnb-usdt]",
+                    "summa": "596.330000000000000000",
+                    "status": 1,
+                    "updated_at": "2026-07-19 23:52:29",
+                    "id_group": 27,
+                    "is_not_update": 1,
+                    "code_in": "BNB",
+                    "code_out": "USDT"
+                },
+                {
+                    "id": 10776,
+                    "name": "BNB - USDT",
+                    "code": "[coinmarketcap_bnb-usdt]",
+                    "summa": "756.911673808113492998",
+                    "status": 1,
+                    "updated_at": "2026-07-18 09:26:49",
+                    "id_group": 3,
+                    "is_not_update": 1,
+                    "code_in": "BNB",
+                    "code_out": "USDT"
+                }
+            ],
+            "best": {
+                "id": 6367,
+                "name": "BNB - USDT",
+                "code": "[whitebit_bnb-usdt]",
+                "summa": "596.330000000000000000",
+                "status": 1,
+                "updated_at": "2026-07-19 23:52:29",
+                "id_group": 27,
+                "is_not_update": 1,
+                "code_in": "BNB",
+                "code_out": "USDT"
+            },
+            "age_seconds": 5,
+            "fresh_crypto_15m": true,
+            "fresh_fiat_6h": true
+        },
+        "TRXUSDT": {
+            "matches": [],
+            "best": null,
+            "age_seconds": null,
+            "fresh_crypto_15m": false,
+            "fresh_fiat_6h": false
+        },
+        "TONUSDT": {
+            "matches": [
+                {
+                    "id": 11581,
+                    "name": "TON - USDT",
+                    "code": "[rapira_ton-usdt_ask]",
+                    "summa": "1.3042",
+                    "status": 1,
+                    "updated_at": "2026-04-27 19:12:06",
+                    "id_group": 47,
+                    "is_not_update": 0,
+                    "code_in": "TON",
+                    "code_out": "USDT"
+                }
+            ],
+            "best": {
+                "id": 11581,
+                "name": "TON - USDT",
+                "code": "[rapira_ton-usdt_ask]",
+                "summa": "1.3042",
+                "status": 1,
+                "updated_at": "2026-04-27 19:12:06",
+                "id_group": 47,
+                "is_not_update": 0,
+                "code_in": "TON",
+                "code_out": "USDT"
+            },
+            "age_seconds": 7188028,
+            "fresh_crypto_15m": false,
+            "fresh_fiat_6h": false
+        },
+        "USDCUSDT": {
+            "matches": [],
+            "best": null,
+            "age_seconds": null,
+            "fresh_crypto_15m": false,
+            "fresh_fiat_6h": false
+        },
+        "USDGEL": {
+            "matches": [],
+            "best": null,
+            "age_seconds": null,
+            "fresh_crypto_15m": false,
+            "fresh_fiat_6h": false
+        },
+        "USDEUR": {
+            "matches": [],
+            "best": null,
+            "age_seconds": null,
+            "fresh_crypto_15m": false,
+            "fresh_fiat_6h": false
+        },
+        "USDRUB": {
+            "matches": [
+                {
+                    "id": 6269,
+                    "name": "USD - RUB",
+                    "code": "[russiancentralbank_usd-rub]",
+                    "summa": "78.3987",
+                    "status": 1,
+                    "updated_at": "2026-07-19 23:52:29",
+                    "id_group": 1,
+                    "is_not_update": 0,
+                    "code_in": "USD",
+                    "code_out": "RUB"
+                }
+            ],
+            "best": {
+                "id": 6269,
+                "name": "USD - RUB",
+                "code": "[russiancentralbank_usd-rub]",
+                "summa": "78.3987",
+                "status": 1,
+                "updated_at": "2026-07-19 23:52:29",
+                "id_group": 1,
+                "is_not_update": 0,
+                "code_in": "USD",
+                "code_out": "RUB"
+            },
+            "age_seconds": 5,
+            "fresh_crypto_15m": true,
+            "fresh_fiat_6h": true
+        },
+        "USDAMD": {
+            "matches": [
+                {
+                    "id": 9648,
+                    "name": "USD - AMD",
+                    "code": "[floatrates_usd-amd]",
+                    "summa": "366.410144",
+                    "status": 1,
+                    "updated_at": "2026-07-19 23:52:29",
+                    "id_group": 21,
+                    "is_not_update": 0,
+                    "code_in": "USD",
+                    "code_out": "AMD"
+                },
+                {
+                    "id": 10804,
+                    "name": "USD - AMD",
+                    "code": "[coinbase_usd-amd]",
+                    "summa": "365.934347",
+                    "status": 1,
+                    "updated_at": "2026-07-19 23:52:29",
+                    "id_group": 39,
+                    "is_not_update": 0,
+                    "code_in": "USD",
+                    "code_out": "AMD"
+                },
+                {
+                    "id": 6854,
+                    "name": "USD - AMD",
+                    "code": "[coinmarketcap_usd-amd]",
+                    "summa": "78.600286105041422350",
+                    "status": 1,
+                    "updated_at": "2026-03-08 01:57:40",
+                    "id_group": 3,
+                    "is_not_update": 0,
+                    "code_in": "USD",
+                    "code_out": "AMD"
+                }
+            ],
+            "best": {
+                "id": 9648,
+                "name": "USD - AMD",
+                "code": "[floatrates_usd-amd]",
+                "summa": "366.410144",
+                "status": 1,
+                "updated_at": "2026-07-19 23:52:29",
+                "id_group": 21,
+                "is_not_update": 0,
+                "code_in": "USD",
+                "code_out": "AMD"
+            },
+            "age_seconds": 5,
+            "fresh_crypto_15m": true,
+            "fresh_fiat_6h": true
+        }
+    },
+    "file_parser_groups_sample": [],
+    "schedule_kernel_hits": [],
+    "parser_command_files": []
+}
