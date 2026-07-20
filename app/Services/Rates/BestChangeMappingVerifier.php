@@ -59,9 +59,17 @@ final class BestChangeMappingVerifier
 
         $matches = $this->findCatalogEntriesByCode($localCode);
         if ($matches === []) {
-            $status = in_array($localCode, ['PRUSD', 'PREUR', 'PRRUB', 'TON'], true)
-                ? 'DRIFTED'
-                : 'AMBIGUOUS';
+            $absent = $this->mappingRegistry()->absentReason($localCode);
+            if ($absent !== null) {
+                $status = 'ABSENT';
+                $note = $absent['reason'];
+            } elseif (in_array($localCode, ['PRUSD', 'PREUR', 'PRRUB', 'TON'], true)) {
+                $status = 'DRIFTED';
+                $note = 'no_exact_bracket_code_in_live_catalog';
+            } else {
+                $status = 'AMBIGUOUS';
+                $note = 'no_exact_bracket_code_in_live_catalog';
+            }
 
             return [
                 'local_currency_id' => null,
@@ -72,7 +80,8 @@ final class BestChangeMappingVerifier
                 'verified_at' => $verifiedAt,
                 'verification_source' => 'live_currencies.json',
                 'status' => $status,
-                'note' => 'no_exact_bracket_code_in_live_catalog',
+                'note' => $note,
+                'export_allowed' => false,
             ];
         }
 
@@ -100,6 +109,17 @@ final class BestChangeMappingVerifier
             $note = 'local_codes_json_maps_id_to_' . $localCodesMeta;
         }
 
+        $status = 'VERIFIED';
+        if ($note !== null && str_starts_with($note, 'local_codes_json_maps_id_to_')) {
+            // Effective registry overrides should already align; residual drift stays non-exportable.
+            $effective = $this->mappingRegistry()->loadEffectiveCodes()[$id]['code'] ?? null;
+            if ($effective !== null && strtoupper((string) $effective) === $localCode) {
+                $note = 'aligned_via_mapping_registry_override';
+            } else {
+                $status = 'DRIFTED';
+            }
+        }
+
         return [
             'local_currency_id' => $id,
             'local_code' => $localCode,
@@ -108,15 +128,37 @@ final class BestChangeMappingVerifier
             'bestchange_name' => $m['name'],
             'verified_at' => $verifiedAt,
             'verification_source' => 'live_currencies.json',
-            'status' => 'VERIFIED',
+            'status' => $status,
             'note' => $note,
             'local_codes_json_code' => $localCodesMeta,
+            'export_allowed' => $status === 'VERIFIED',
         ];
     }
 
     public function catalogGuard(): BestChangeCurrencyCatalogGuard
     {
         return $this->catalogGuard ?? new BestChangeCurrencyCatalogGuard($this->catalogPath, $this->codesPath);
+    }
+
+    private function mappingRegistry(): BestChangeMappingRegistry
+    {
+        $storageApp = dirname($this->codesPath);
+        // Prefer .../storage/app → app base via dirname x3 when layout is standard.
+        $baseGuess = dirname($this->codesPath, 3);
+        $overrides = $baseGuess . '/resources/rates/bestchange-codes.overrides.json';
+        if (!is_file($overrides) && function_exists('base_path')) {
+            $overrides = base_path('resources/rates/bestchange-codes.overrides.json');
+            $baseGuess = function_exists('base_path') ? base_path() : $baseGuess;
+        }
+        if (!is_file($overrides)) {
+            // Unit-test / shallow layouts: allow overrides beside codes file.
+            $sibling = $storageApp . '/bestchange-codes.overrides.json';
+            if (is_file($sibling)) {
+                return new BestChangeMappingRegistry($this->codesPath, $sibling);
+            }
+        }
+
+        return new BestChangeMappingRegistry($this->codesPath, $overrides);
     }
 
     /**

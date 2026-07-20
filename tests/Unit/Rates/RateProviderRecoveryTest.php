@@ -132,7 +132,9 @@ final class RateProviderRecoveryTest extends TestCase
         $btc = $v->verifyCode('BTC');
         $this->assertSame('VERIFIED', $btc['status']);
         $pr = $v->verifyCode('PRUSD');
-        $this->assertSame('DRIFTED', $pr['status']);
+        // ABSENT (versioned registry) or legacy DRIFTED — never VERIFIED / exportable.
+        $this->assertContains($pr['status'], ['ABSENT', 'DRIFTED']);
+        $this->assertNotSame('VERIFIED', $pr['status']);
         $card = $v->verifyCode('CARDVND');
         $this->assertSame('VERIFIED', $card['status']);
         // Local codes claim TON for 209 but live is GRAM — validateId(209,'TON') remains drifted.

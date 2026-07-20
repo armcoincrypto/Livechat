@@ -118,6 +118,14 @@ final class BestChangeCurrencyCatalogGuard
      */
     private function loadCodes(): array
     {
+        // Prefer versioned overrides so drifted storage codes cannot silently win.
+        if (function_exists('base_path')) {
+            $overrides = base_path('resources/rates/bestchange-codes.overrides.json');
+            if (is_file($overrides)) {
+                return (new BestChangeMappingRegistry($this->codesPath, $overrides))->loadEffectiveCodes();
+            }
+        }
+
         if (!is_file($this->codesPath)) {
             return [];
         }

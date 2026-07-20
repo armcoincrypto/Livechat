@@ -1,0 +1,44 @@
+{
+  "generated_for": "EXSWAPING_RATE_CATALOG_FINAL_CLEANUP",
+  "source": "live storage/app/bestchange/currencies.json verified 2026-07-20",
+  "id_corrections": {
+    "108": {
+      "id": "108",
+      "code": "CARDVND",
+      "name": "Банковская карта VND",
+      "reason": "live_catalog_is_CARDVND_not_PRUSD"
+    },
+    "117": {
+      "id": "117",
+      "code": "CARDARS",
+      "name": "Банковская карта ARS",
+      "reason": "live_catalog_is_CARDARS_not_PRRUB"
+    },
+    "122": {
+      "id": "122",
+      "code": "ZENEUR",
+      "name": "ZEN EUR",
+      "reason": "live_catalog_is_ZENEUR_not_PREUR"
+    },
+    "209": {
+      "id": "209",
+      "code": "GRAM",
+      "name": "Gram (Toncoin) (GRAM)",
+      "reason": "live_catalog_is_GRAM_not_TON"
+    }
+  },
+  "absent_local_codes": {
+    "PRUSD": "no_exact_bracket_code_in_live_catalog",
+    "PREUR": "no_exact_bracket_code_in_live_catalog",
+    "PRRUB": "no_exact_bracket_code_in_live_catalog",
+    "TON": "no_exact_bracket_code_in_live_catalog_do_not_use_209",
+    "BNB": "ambiguous_use_BNBBEP20_explicitly"
+  },
+  "verified_keep": {
+    "19": {
+      "id": "19",
+      "code": "BNBBEP20",
+      "name": "BinanceCoin BEP20 (BNB)"
+    }
+  }
+}
