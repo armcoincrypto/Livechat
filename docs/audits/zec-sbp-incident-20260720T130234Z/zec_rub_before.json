@@ -1,0 +1,29 @@
+[
+    {
+        "id": 540,
+        "status": 1,
+        "allow_export": 0,
+        "course_value": "44517.921233869460447696",
+        "profit": 0,
+        "parser_source_name": "BestChange",
+        "updated_at": "2026-07-20 16:03:51"
+    },
+    {
+        "id": 541,
+        "status": 1,
+        "allow_export": 0,
+        "course_value": "43286.997609395908945509",
+        "profit": 0,
+        "parser_source_name": "BestChange",
+        "updated_at": "2026-07-20 16:03:51"
+    },
+    {
+        "id": 542,
+        "status": 1,
+        "allow_export": 0,
+        "course_value": "43169.683651742293011458",
+        "profit": 0,
+        "parser_source_name": "BestChange",
+        "updated_at": "2026-07-20 16:03:51"
+    }
+]

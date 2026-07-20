@@ -1,0 +1,37 @@
+{
+  "binance_zecusdt": {
+    "bid": "536.50000000",
+    "ask": "536.51000000",
+    "symbol": "ZECUSDT"
+  },
+  "whitebit_zec_usdt": {
+    "error": "HTTP Error 403: Forbidden"
+  },
+  "coinbase_zec_usd": {
+    "data": {
+      "amount": "535.86",
+      "base": "ZEC",
+      "currency": "USD"
+    }
+  },
+  "binance_USDTRUB": {
+    "symbol": "USDTRUB",
+    "bidPrice": "0.00000000",
+    "bidQty": "0.00000000",
+    "askPrice": "0.00000000",
+    "askQty": "0.00000000"
+  },
+  "binance_BTCRUB": {
+    "symbol": "BTCRUB",
+    "bidPrice": "0.00000000",
+    "bidQty": "0.00000000",
+    "askPrice": "0.00000000",
+    "askQty": "0.00000000"
+  }
+}
+CALC {
+  "zec_usdt_bid": 536.5,
+  "usd_rub": 78.26450512,
+  "implied_zec_rub_bid": 41988.906996879996,
+  "age_note": "spot_now"
+}

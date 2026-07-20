@@ -1,0 +1,37 @@
+ZEC → SBPRUB (direction_id=541) calculation ledger
+==================================================
+
+Identity:
+  local: ZEC → SBPRUB
+  BestChange: zcash-to-sbp
+  siblings quarantined: 540 ZEC→SBERRUB, 542 ZEC→ACRUB
+
+Before (incident / freeze window):
+  XML/API course ≈ 43286.90 … 45722.79 RUB per 1 ZEC (varies by scrape time)
+  direction.profit = 0
+  parser_source_name = BestChange
+  add_course / bc_your_add_course = 0
+  Independent parsers: ZECUSDT rows status=0, stale summa≈54 (updated 2024–2026, not live)
+
+Independent reconstruction (read-only probes 2026-07-20):
+  Binance ZECUSDT bid ≈ 536.50 USDT
+  CBR / russiancentralbank USD→RUB ≈ 78.26–78.40
+  implied baseline ≈ 536.50 × 78.2645 ≈ 41,988.9 RUB / ZEC
+  BestChange market reference (reported): 41,670.51
+  Exswaping exported (reported): 45,722.79
+  uplift vs BC ref ≈ +9.7%
+  uplift vs independent ≈ +8.9% (at 45722) / ≈ +3.1% (at 43287)
+
+Orientation:
+  Exswaping XML <in>1</in><out>RUB_AMOUNT</out> = RUB received per 1 ZEC sent.
+  Matches BestChange "1 ZEC = X RUB" representation. Not inverted.
+
+Root cause:
+  1) Circular BestChange pricing without independent ZEC baseline
+  2) Health/audit treated BestChange peer rate as baseline (false NORMAL)
+  3) RateExportQuarantine previously allowed no_baseline_pass_through
+
+After:
+  status=0, allow_export=2 (quarantined)
+  absent from /currencies.xml
+  order/export/quote eligibility = false

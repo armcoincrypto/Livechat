@@ -1,0 +1,32 @@
+{
+    "direction_id": 541,
+    "from": "ZEC",
+    "to": "SBPRUB",
+    "active": false,
+    "quarantined": true,
+    "deprecated": false,
+    "eligible_for_quote": false,
+    "eligible_for_order": false,
+    "eligible_for_export": false,
+    "reasons": [
+        "quarantined_status0_allow_export2",
+        "direction_not_active",
+        "export_hard_disabled"
+    ],
+    "mapping_status": {
+        "ZEC": "VERIFIED",
+        "SBPRUB": "VERIFIED"
+    },
+    "provider_status": "BestChange",
+    "reserve_status": "adequate",
+    "rate_quarantine": {
+        "status": "EXPORT_ALLOWED",
+        "allowed": true,
+        "reason": "no_baseline_pass_through"
+    },
+    "course_value": "43286.997609395908945509",
+    "status": 0,
+    "allow_export": 2,
+    "reserve_value": "10000000",
+    "reserve_source": "currency2_effective_reserve"
+}

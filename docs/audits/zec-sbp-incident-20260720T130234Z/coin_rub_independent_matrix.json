@@ -1,0 +1,412 @@
+[
+    {
+        "id": 14,
+        "pair": "BTC->SBERRUB",
+        "status": 1,
+        "course": "5472116.108953079977378096",
+        "profit": 0,
+        "base": "5067691.96800000",
+        "dev_pct": 7.980440474812217,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 15,
+        "pair": "USDTTRC20->SBERRUB",
+        "status": 1,
+        "course": "83.380968010051075408",
+        "profit": 1,
+        "base": "78.3987",
+        "dev_pct": 6.355039063212875,
+        "class": "REVIEW"
+    },
+    {
+        "id": 20,
+        "pair": "BTC->SBPRUB",
+        "status": 1,
+        "course": "5380770.203446921392328097",
+        "profit": 0,
+        "base": "5067691.96800000",
+        "dev_pct": 6.177925521595566,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 21,
+        "pair": "BTC->ACRUB",
+        "status": 1,
+        "course": "5372011.818426000537201181",
+        "profit": 0,
+        "base": "5067691.96800000",
+        "dev_pct": 6.005097633155917,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 25,
+        "pair": "USDTTRC20->ACRUB",
+        "status": 1,
+        "course": "83.699147017543341215",
+        "profit": 0.3,
+        "base": "78.3987",
+        "dev_pct": 6.760886363604669,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 26,
+        "pair": "USDTTRC20->RFBRUB",
+        "status": 1,
+        "course": "83.851588293404569472",
+        "profit": 0.3,
+        "base": "78.3987",
+        "dev_pct": 6.955329990681694,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 27,
+        "pair": "USDTTRC20->TCSBRUB",
+        "status": 1,
+        "course": "83.511549017518301149",
+        "profit": 1,
+        "base": "78.3987",
+        "dev_pct": 6.5215992325361265,
+        "class": "REVIEW"
+    },
+    {
+        "id": 28,
+        "pair": "USDTTRC20->TBRUB",
+        "status": 1,
+        "course": "83.657173299867152409",
+        "profit": 0.3,
+        "base": "78.3987",
+        "dev_pct": 6.707347570644854,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 160,
+        "pair": "LTC->SBPRUB",
+        "status": 1,
+        "course": "3947.701999793876266863",
+        "profit": 0,
+        "base": null,
+        "dev_pct": null,
+        "class": "NO_BASELINE"
+    },
+    {
+        "id": 161,
+        "pair": "ETH->SBPRUB",
+        "status": 1,
+        "course": "156585.337408977207601918",
+        "profit": 0,
+        "base": "146926.21968300",
+        "dev_pct": 6.574127985336582,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 168,
+        "pair": "TRX->SBERRUB",
+        "status": 1,
+        "course": "27.16379999764647404",
+        "profit": 0,
+        "base": "25.54229646",
+        "dev_pct": 6.348307561874081,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 187,
+        "pair": "BTC->RFBRUB",
+        "status": 1,
+        "course": "5373667.854976290222085255",
+        "profit": 0,
+        "base": "5067691.96800000",
+        "dev_pct": 6.037775952216075,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 212,
+        "pair": "BTC->TCSBRUB",
+        "status": 1,
+        "course": "5472116.108953079977378096",
+        "profit": 0,
+        "base": "5067691.96800000",
+        "dev_pct": 7.980440474812217,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 214,
+        "pair": "BTC->TBRUB",
+        "status": 1,
+        "course": "5372011.818426000537201181",
+        "profit": 0,
+        "base": "5067691.96800000",
+        "dev_pct": 6.005097633155917,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 223,
+        "pair": "LTC->SBERRUB",
+        "status": 1,
+        "course": "3948.881400148591431497",
+        "profit": 0,
+        "base": null,
+        "dev_pct": null,
+        "class": "NO_BASELINE"
+    },
+    {
+        "id": 224,
+        "pair": "LTC->ACRUB",
+        "status": 1,
+        "course": "3931.006199467229786344",
+        "profit": 0,
+        "base": null,
+        "dev_pct": null,
+        "class": "NO_BASELINE"
+    },
+    {
+        "id": 225,
+        "pair": "LTC->TCSBRUB",
+        "status": 1,
+        "course": "3953.863000520372258747",
+        "profit": 0,
+        "base": null,
+        "dev_pct": null,
+        "class": "NO_BASELINE"
+    },
+    {
+        "id": 226,
+        "pair": "LTC->RFBRUB",
+        "status": 1,
+        "course": "3930.996199979483108773",
+        "profit": 0,
+        "base": null,
+        "dev_pct": null,
+        "class": "NO_BASELINE"
+    },
+    {
+        "id": 268,
+        "pair": "USDTTRC20->SBPRUB",
+        "status": 1,
+        "course": "84.092662948558635478",
+        "profit": 0.3,
+        "base": "78.3987",
+        "dev_pct": 7.26282827209971,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 325,
+        "pair": "BNBBEP20->SBERRUB",
+        "status": 1,
+        "course": "47239.530003939002074036",
+        "profit": 0,
+        "base": "44645.70768900",
+        "dev_pct": 5.809791017330145,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 326,
+        "pair": "BNBBEP20->SBPRUB",
+        "status": 1,
+        "course": "47070.300110306377020196",
+        "profit": 0,
+        "base": "44645.70768900",
+        "dev_pct": 5.430740258830657,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 373,
+        "pair": "ETH->SBERRUB",
+        "status": 1,
+        "course": "156585.33750705307922928",
+        "profit": 0,
+        "base": "146926.21968300",
+        "dev_pct": 6.57412805208836,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 374,
+        "pair": "ETH->ACRUB",
+        "status": 1,
+        "course": "156585.337310901336097414",
+        "profit": 0,
+        "base": "146926.21968300",
+        "dev_pct": 6.5741279185848045,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 375,
+        "pair": "ETH->TCSBRUB",
+        "status": 1,
+        "course": "157242.080975261376372414",
+        "profit": 0,
+        "base": "146926.21968300",
+        "dev_pct": 7.021116662851809,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 376,
+        "pair": "ETH->RFBRUB",
+        "status": 1,
+        "course": "156594.630085320061175922",
+        "profit": 0,
+        "base": "146926.21968300",
+        "dev_pct": 6.580452708291344,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 1011,
+        "pair": "BNBBEP20->TBRUB",
+        "status": 1,
+        "course": "47093.440000175865742336",
+        "profit": 0,
+        "base": "44645.70768900",
+        "dev_pct": 5.4825703026742305,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 1029,
+        "pair": "USDTBEP20->SBPRUB",
+        "status": 1,
+        "course": "83.923971477674964727",
+        "profit": 0.5,
+        "base": "78.3987",
+        "dev_pct": 7.047657011755248,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 1030,
+        "pair": "USDTBEP20->TCSBRUB",
+        "status": 1,
+        "course": "84.168235516426272844",
+        "profit": 0.3,
+        "base": "78.3987",
+        "dev_pct": 7.359223451952995,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 1056,
+        "pair": "USDTBEP20->SBERRUB",
+        "status": 1,
+        "course": "84.013290730690773725",
+        "profit": 0.3,
+        "base": "78.3987",
+        "dev_pct": 7.1615865195351,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 1057,
+        "pair": "USDTBEP20->ACRUB",
+        "status": 1,
+        "course": "83.688180030362071715",
+        "profit": 0.3,
+        "base": "78.3987",
+        "dev_pct": 6.7468976275908545,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 1058,
+        "pair": "USDTBEP20->RFBRUB",
+        "status": 1,
+        "course": "83.848896396636653068",
+        "profit": 0.3,
+        "base": "78.3987",
+        "dev_pct": 6.951896391951196,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 1059,
+        "pair": "USDTBEP20->TBRUB",
+        "status": 1,
+        "course": "83.20722723053505542",
+        "profit": 0.3,
+        "base": "78.3987",
+        "dev_pct": 6.133427251389434,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 1305,
+        "pair": "USDTTRC20->CARDRUB",
+        "status": 1,
+        "course": "80.128224998058493109",
+        "profit": 5,
+        "base": "78.3987",
+        "dev_pct": 2.2060633633701756,
+        "class": "REVIEW"
+    },
+    {
+        "id": 1307,
+        "pair": "USDTBEP20->CARDRUB",
+        "status": 1,
+        "course": "80.128414978684639689",
+        "profit": 5,
+        "base": "78.3987",
+        "dev_pct": 2.2063056896155677,
+        "class": "REVIEW"
+    },
+    {
+        "id": 1415,
+        "pair": "USDTTRC20->YAMRUB",
+        "status": 1,
+        "course": "82.235187528566448268",
+        "profit": 1.5,
+        "base": "78.3987",
+        "dev_pct": 4.893560133734917,
+        "class": "REVIEW"
+    },
+    {
+        "id": 1417,
+        "pair": "USDTBEP20->YAMRUB",
+        "status": 1,
+        "course": "82.096992015137371776",
+        "profit": 1.5,
+        "base": "78.3987",
+        "dev_pct": 4.71728742330851,
+        "class": "REVIEW"
+    },
+    {
+        "id": 1419,
+        "pair": "BTC->YAMRUB",
+        "status": 1,
+        "course": "5302524.7398345797975588",
+        "profit": 0,
+        "base": "5067691.96800000",
+        "dev_pct": 4.63391960911266,
+        "class": "REVIEW"
+    },
+    {
+        "id": 1420,
+        "pair": "LTC->YAMRUB",
+        "status": 1,
+        "course": "3941.818700790865021214",
+        "profit": 0,
+        "base": null,
+        "dev_pct": null,
+        "class": "NO_BASELINE"
+    },
+    {
+        "id": 1422,
+        "pair": "BNBBEP20->YAMRUB",
+        "status": 1,
+        "course": "46191.363696161086157989",
+        "profit": 0,
+        "base": "44645.70768900",
+        "dev_pct": 3.4620483965178703,
+        "class": "REVIEW"
+    },
+    {
+        "id": 1423,
+        "pair": "ETH->YAMRUB",
+        "status": 1,
+        "course": "154577.778820511382836425",
+        "profit": 0,
+        "base": "146926.21968300",
+        "dev_pct": 5.20775607922124,
+        "class": "QUARANTINE_REQUIRED"
+    },
+    {
+        "id": 1973,
+        "pair": "BTC->CARDRUB",
+        "status": 1,
+        "course": "5157310.459372118403145186",
+        "profit": 4,
+        "base": "5067691.96800000",
+        "dev_pct": 1.7684281510797177,
+        "class": "REVIEW"
+    }
+]

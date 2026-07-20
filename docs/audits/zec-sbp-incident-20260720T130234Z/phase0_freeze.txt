@@ -1,0 +1,46 @@
+UTC=2026-07-20T13:02:34Z
+hostname=exswaping.com
+pwd=/var/www/app_exswapin_usr/data/www/app.exswaping.com
+HEAD=59a18959110b751b533c55cee2fd29656d8d46b7
+origin_main=bd2bd81adb0277d3acbc5595534e1637f40811eb
+git_status_sb:
+## main...origin/main [ahead 7, behind 8]
+ M app/Console/Commands/RatesDeployVerifyCommand.php
+M  app/Console/Commands/RatesHealthMonitorCommand.php
+A  app/Console/Commands/RatesProviderProbeCommand.php
+A  app/Console/Commands/RatesQuarantineTriageCommand.php
+M  app/Console/Commands/UpdateSitemapCommand.php
+ M app/Services/Rates/BestChangeCurrencyCatalogGuard.php
+AM app/Services/Rates/BestChangeMappingVerifier.php
+A  app/Services/Rates/CoinMarketCapFailureClassifier.php
+A  docs/ops/rate-pipeline/OPERATOR_HANDOFF_CMC_TON_MAPPINGS.md
+ M packages/Courses/Export/Concerns/ExportFormatHelpers.php
+A  packages/Courses/Services/DefaultSources/CoinMarketCapSource.php
+M  packages/KYCPlugin/Services/KycProviderResolver.php
+AM tests/Unit/Rates/RateProviderRecoveryTest.php
+?? .DS_Store
+?? .env
+?? .env.backup-before-concurrency-2026-05-27-220057
+?? .env.backup-before-real-test-20260610-191437
+?? .env.backup-before-sync-2026-05-27-220416
+?? .env.bak-didit-20260716T200139Z
+?? .env.bak-didit-20260716T200159Z
+?? .env.bak-didit-20260716T200828Z
+?? .env.bak-didit-allowlist-canary-20260716T225628Z
+?? .env.bak-didit-allowlist-canary-enable-20260716T225639Z
+?? .env.bak-didit-allowlist-canary-post-20260716T230323Z
+?? .env.bak-didit-default-cutover-20260719T020727Z
+?? .env.bak-didit-operator-canary-allowlist-20260718T173857Z
+?? .env.bak-didit-webhook-20260716T202344Z
+?? .env.bak-didit-webhook-secret-sync-20260719T010138Z
+?? .env.bak.20260330-151124
+?? .env.bak.forum.20260516_002752
+?? .phpunit.result.cache
+?? .version
+?? app/.DS_Store
+?? app/Ai/
+?? app/Console/.DS_Store
+?? app/Console/Commands/ApplyProductUpdateCommand.php
+?? app/Console/Commands/BansPurgeCommand.php
+?? app/Console/Commands/CleanupIexLogsCommand.php
+?? app/Console/Commands/ClearLogsCommand.php

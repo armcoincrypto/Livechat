@@ -79,14 +79,19 @@ final class RatePostFixRemediationTest extends TestCase
         $this->assertSame(RateExportQuarantine::EXPORT_BLOCKED_INVALID, $q->evaluate('0')['status']);
     }
 
-    public function testMissingSourceNoBaselinePassThroughUnlessForced(): void
+    public function testMissingBaselineFailsClosedUnlessExplicitlyAllowed(): void
     {
         $q = new RateExportQuarantine();
-        $ok = $q->evaluate('100', []);
-        $this->assertTrue($ok['allowed']);
-        $blocked = $q->evaluate('100', ['force_block_reason' => 'stale_source']);
+        $blocked = $q->evaluate('100', []);
         $this->assertFalse($blocked['allowed']);
-        $this->assertSame(RateExportQuarantine::EXPORT_BLOCKED_STALE, $blocked['status']);
+        $this->assertSame(RateExportQuarantine::EXPORT_BLOCKED_NO_BASELINE, $blocked['status']);
+
+        $ok = $q->evaluate('100', ['allow_no_baseline' => true]);
+        $this->assertTrue($ok['allowed']);
+
+        $forced = $q->evaluate('100', ['force_block_reason' => 'stale_source']);
+        $this->assertFalse($forced['allowed']);
+        $this->assertSame(RateExportQuarantine::EXPORT_BLOCKED_STALE, $forced['status']);
     }
 
     public function testDirectAndReciprocalPeerInversion(): void
