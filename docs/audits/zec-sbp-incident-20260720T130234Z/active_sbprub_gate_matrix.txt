@@ -1,0 +1,16 @@
+20 BTC->SBPRUB profit=0 raw_dev=6.07 decision=EXPORT_ALLOWED:
+109 USDTERC20->SBPRUB profit=1 raw_dev=6.51 decision=EXPORT_BLOCKED_OUTLIER:unexplained_critical_deviation
+128 DASH->SBPRUB profit=0 raw_dev=n/a decision=EXPORT_BLOCKED_NO_BASELINE:no_independent_baseline
+160 LTC->SBPRUB profit=0 raw_dev=n/a decision=EXPORT_BLOCKED_NO_BASELINE:no_independent_baseline
+161 ETH->SBPRUB profit=0 raw_dev=6.51 decision=EXPORT_ALLOWED:
+268 USDTTRC20->SBPRUB profit=0.3 raw_dev=7.26 decision=EXPORT_BLOCKED_OUTLIER:unexplained_critical_deviation
+326 BNBBEP20->SBPRUB profit=0 raw_dev=5.49 decision=EXPORT_ALLOWED:
+440 BCH->SBPRUB profit=0 raw_dev=n/a decision=EXPORT_BLOCKED_NO_BASELINE:no_independent_baseline
+456 ETC->SBPRUB profit=0 raw_dev=n/a decision=EXPORT_BLOCKED_NO_BASELINE:no_independent_baseline
+504 XMR->SBPRUB profit=2 raw_dev=n/a decision=EXPORT_BLOCKED_NO_BASELINE:no_independent_baseline
+1029 USDTBEP20->SBPRUB profit=0.5 raw_dev=7.05 decision=EXPORT_BLOCKED_OUTLIER:unexplained_critical_deviation
+1076 USDTSOL->SBPRUB profit=1.5 raw_dev=5.97 decision=EXPORT_BLOCKED_OUTLIER:unexplained_critical_deviation
+1113 USDTTON->SBPRUB profit=1.5 raw_dev=4.82 decision=EXPORT_ALLOWED:
+1158 USDCERC20->SBPRUB profit=0.3 raw_dev=6.87 decision=EXPORT_BLOCKED_OUTLIER:unexplained_critical_deviation
+1512 CASHUSD->SBPRUB profit=5 raw_dev=n/a decision=EXPORT_BLOCKED_NO_BASELINE:no_independent_baseline
+1541 ZELLEUSD->SBPRUB profit=6 raw_dev=n/a decision=EXPORT_BLOCKED_NO_BASELINE:no_independent_baseline

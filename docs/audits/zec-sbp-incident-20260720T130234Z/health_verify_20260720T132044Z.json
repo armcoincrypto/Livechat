@@ -1,0 +1,274 @@
+{
+    "generated_at": "2026-07-20T16:20:45+03:00",
+    "runtime_drift": 0,
+    "invalid_active_rate_count": 0,
+    "active_no_baseline_count": 0,
+    "unexplained_high_count": 0,
+    "unexplained_critical_count": 0,
+    "unexplained_extreme_count": 0,
+    "stale_provider_count": 0,
+    "failing_provider_count": 0,
+    "disabled_provider_count": 15,
+    "mapping_drift_count": 0,
+    "xml_parity_count": null,
+    "quarantined_direction_count": 114,
+    "restored_regression_count": null,
+    "stale_baseline_gap_count": 3,
+    "baseline_gaps": [
+        "TONUSDT missing_or_stale",
+        "ZECUSDT missing_or_stale",
+        "LTCUSDT missing_or_stale"
+    ],
+    "providers": [
+        {
+            "id": 1,
+            "alias": "russiancentralbank",
+            "status": 1,
+            "last_total": 47,
+            "last_updated": 39,
+            "last_errors": 8,
+            "health": "ok"
+        },
+        {
+            "id": 2,
+            "alias": "exmo",
+            "status": 1,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "ok"
+        },
+        {
+            "id": 3,
+            "alias": "coinmarketcap",
+            "status": 0,
+            "last_total": 104,
+            "last_updated": 0,
+            "last_errors": 104,
+            "health": "disabled"
+        },
+        {
+            "id": 4,
+            "alias": "europeancentralbank",
+            "status": 0,
+            "last_total": 1,
+            "last_updated": 0,
+            "last_errors": 1,
+            "health": "disabled"
+        },
+        {
+            "id": 5,
+            "alias": "nationalbankofromania",
+            "status": 0,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "disabled"
+        },
+        {
+            "id": 8,
+            "alias": "nationalbankofkazakhstan",
+            "status": 1,
+            "last_total": 2,
+            "last_updated": 1,
+            "last_errors": 1,
+            "health": "ok"
+        },
+        {
+            "id": 9,
+            "alias": "nationalbankofmoldova",
+            "status": 0,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "disabled"
+        },
+        {
+            "id": 10,
+            "alias": "binance",
+            "status": 1,
+            "last_total": 4,
+            "last_updated": 4,
+            "last_errors": 0,
+            "health": "ok"
+        },
+        {
+            "id": 11,
+            "alias": "blockchain",
+            "status": 1,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "ok"
+        },
+        {
+            "id": 13,
+            "alias": "bitfinex",
+            "status": 0,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "disabled"
+        },
+        {
+            "id": 14,
+            "alias": "hitbtc",
+            "status": 1,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "ok"
+        },
+        {
+            "id": 15,
+            "alias": "kucoin",
+            "status": 1,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "ok"
+        },
+        {
+            "id": 18,
+            "alias": "bitpay",
+            "status": 0,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "disabled"
+        },
+        {
+            "id": 20,
+            "alias": "bitmart",
+            "status": 0,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "disabled"
+        },
+        {
+            "id": 21,
+            "alias": "floatrates",
+            "status": 1,
+            "last_total": 7,
+            "last_updated": 7,
+            "last_errors": 0,
+            "health": "ok"
+        },
+        {
+            "id": 25,
+            "alias": "uzbekistancentralbank",
+            "status": 0,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "disabled"
+        },
+        {
+            "id": 26,
+            "alias": "nationalbankofisrael",
+            "status": 0,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "disabled"
+        },
+        {
+            "id": 27,
+            "alias": "whitebit",
+            "status": 1,
+            "last_total": 6,
+            "last_updated": 6,
+            "last_errors": 0,
+            "health": "ok"
+        },
+        {
+            "id": 28,
+            "alias": "wmexchanger",
+            "status": 0,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "disabled"
+        },
+        {
+            "id": 38,
+            "alias": "gateio",
+            "status": 0,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "disabled"
+        },
+        {
+            "id": 39,
+            "alias": "coinbase",
+            "status": 1,
+            "last_total": 12,
+            "last_updated": 10,
+            "last_errors": 2,
+            "health": "ok"
+        },
+        {
+            "id": 41,
+            "alias": "mexcexchange",
+            "status": 1,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "ok"
+        },
+        {
+            "id": 43,
+            "alias": "moex",
+            "status": 1,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "ok"
+        },
+        {
+            "id": 46,
+            "alias": "bybit",
+            "status": 0,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "disabled"
+        },
+        {
+            "id": 47,
+            "alias": "rapira",
+            "status": 0,
+            "last_total": 1,
+            "last_updated": 0,
+            "last_errors": 1,
+            "health": "disabled"
+        },
+        {
+            "id": 53,
+            "alias": "heleket",
+            "status": 0,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "disabled"
+        },
+        {
+            "id": 75,
+            "alias": "cryptocash",
+            "status": 0,
+            "last_total": 0,
+            "last_updated": 0,
+            "last_errors": 0,
+            "health": "disabled"
+        }
+    ],
+    "provider_warnings": [
+        "coinmarketcap_disabled_plan_or_credential_failure",
+        "rapira_disabled_stale_ton_source",
+        "ton_baseline_unavailable_keep_quarantined"
+    ],
+    "xml_mutator_guard_present": true,
+    "critical": false
+}
