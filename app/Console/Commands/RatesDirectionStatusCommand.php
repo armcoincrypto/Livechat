@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Models\Currency;
 use App\Services\Rates\RateDirectionEligibility;
+use App\Services\Reserves\ReserveLinkResolver;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 /**
  * Explain why a direction is active / quarantined / not exportable.
@@ -35,7 +38,10 @@ final class RatesDirectionStatusCommand extends Command
                 'd.deleted_at',
                 'd.parser_source_name',
                 'd.direction_reserve',
+                'd.reserve_max_limit',
                 'd.type_reserve',
+                'd.id_currency1',
+                'd.id_currency2',
                 'c1.designation_xml as from',
                 'c2.designation_xml as to',
                 'c1.max_display_reserve as from_reserve',
@@ -48,11 +54,9 @@ final class RatesDirectionStatusCommand extends Command
             return self::FAILURE;
         }
 
-        $reserveRaw = $row->direction_reserve;
-        if ($reserveRaw === null || $reserveRaw === '' || (is_numeric($reserveRaw) && (float) $reserveRaw <= 0)) {
-            $reserveRaw = $row->to_reserve ?: $row->from_reserve;
-        }
-        $reserveOk = is_numeric($reserveRaw) && (float) $reserveRaw > 0;
+        $resolved = $this->resolveCanonicalReserve($row);
+        $reserveRaw = $resolved['value'];
+        $reserveOk = $reserveRaw !== null && is_numeric($reserveRaw) && (float) $reserveRaw > 0;
 
         $payload = RateDirectionEligibility::make()->explain([
             'id' => (int) $row->id,
@@ -67,6 +71,8 @@ final class RatesDirectionStatusCommand extends Command
             'reserve_ok' => $reserveOk,
             'require_verified_export_mapping' => true,
         ]);
+        $payload['reserve_value'] = $reserveRaw;
+        $payload['reserve_source'] = $resolved['source'];
 
         if ((string) $this->option('format') === 'table') {
             $this->table(
@@ -78,5 +84,52 @@ final class RatesDirectionStatusCommand extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Match export / order reserve semantics:
+     * type_reserve=0 → effective destination currency reserve
+     * type_reserve=1 → direction_reserve
+     * plus optional reserve_max_limit as capacity ceiling metadata.
+     *
+     * @return array{value:?string,source:string}
+     */
+    private function resolveCanonicalReserve(object $row): array
+    {
+        $type = (int) ($row->type_reserve ?? 0);
+
+        if ($type === 1) {
+            $raw = $row->direction_reserve;
+            if ($raw !== null && $raw !== '' && is_numeric((string) $raw) && (float) $raw > 0) {
+                return ['value' => (string) $raw, 'source' => 'direction_reserve'];
+            }
+
+            return ['value' => null, 'source' => 'direction_reserve_missing'];
+        }
+
+        try {
+            $currency = Currency::query()->with('reserve')->find((int) $row->id_currency2);
+            if ($currency && $currency->reserve) {
+                $effective = app(ReserveLinkResolver::class)->getEffectiveSumma($currency->reserve, 18);
+                if ($effective !== '' && is_numeric($effective) && (float) $effective > 0) {
+                    return ['value' => $effective, 'source' => 'currency2_effective_reserve'];
+                }
+            }
+        } catch (Throwable) {
+            // fall through
+        }
+
+        foreach ([
+            ['reserve_max_limit', $row->reserve_max_limit ?? null],
+            ['direction_reserve', $row->direction_reserve],
+            ['to_max_display_reserve', $row->to_reserve],
+            ['from_max_display_reserve', $row->from_reserve],
+        ] as [$source, $candidate]) {
+            if ($candidate !== null && $candidate !== '' && is_numeric((string) $candidate) && (float) $candidate > 0) {
+                return ['value' => (string) $candidate, 'source' => $source];
+            }
+        }
+
+        return ['value' => null, 'source' => 'none'];
     }
 }

@@ -6,6 +6,7 @@ namespace iEXPackages\Courses\Export\Concerns;
 
 use App\Models\Currency;
 use App\Models\DirectionExchange;
+use App\Services\Rates\BestChangeMappingVerifier;
 use App\Services\Rates\RateExportQuarantine;
 use Carbon\Carbon;
 use iEXPackages\Calculator\Traits\InteractsWithNumbers;
@@ -86,6 +87,17 @@ trait ExportFormatHelpers
                 return false;
             }
 
+            // Fail closed: drifted / absent / ambiguous BestChange identities must not export.
+            // Prevents TON (ABSENT; ID 209 is GRAM) and Payeer PR* from public feeds.
+            $fromCode = strtoupper((string) ($rate->currency1->designation_xml ?? ''));
+            $toCode = strtoupper((string) ($rate->currency2->designation_xml ?? ''));
+            if ($fromCode !== '' && !$this->isExportMappingAllowed($fromCode)) {
+                return false;
+            }
+            if ($toCode !== '' && !$this->isExportMappingAllowed($toCode)) {
+                return false;
+            }
+
             $allowExport = (int) ($rate->allow_export ?? 0);
 
             if ($allowExport === 2) {
@@ -131,6 +143,32 @@ trait ExportFormatHelpers
 
             return false;
         }
+    }
+
+    /**
+     * Only VERIFIED BestChange identities may appear in public XML export.
+     * ABSENT / DRIFTED / AMBIGUOUS / DEPRECATED → blocked.
+     */
+    protected function isExportMappingAllowed(string $localCode): bool
+    {
+        static $cache = [];
+        $code = strtoupper(trim($localCode));
+        if ($code === '') {
+            return false;
+        }
+        if (array_key_exists($code, $cache)) {
+            return $cache[$code];
+        }
+
+        try {
+            $status = strtoupper((string) (BestChangeMappingVerifier::fromStorageApp()->verifyCode($code)['status'] ?? ''));
+            $cache[$code] = $status === 'VERIFIED';
+        } catch (Throwable $e) {
+            // Fail closed on verifier errors.
+            $cache[$code] = false;
+        }
+
+        return $cache[$code];
     }
 
     /**

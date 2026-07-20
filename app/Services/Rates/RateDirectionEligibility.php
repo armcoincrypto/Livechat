@@ -93,9 +93,19 @@ final class RateDirectionEligibility
             $reasons[] = 'reserve_inadequate';
         }
 
+        $mappingBlocksExport = false;
+        if (!empty($row['require_verified_export_mapping'])) {
+            foreach ($mappingStatuses as $st) {
+                if (strtoupper((string) $st) !== 'VERIFIED') {
+                    $mappingBlocksExport = true;
+                    break;
+                }
+            }
+        }
+
         $eligibleForQuote = $active && $q['allowed'] && !$quarantined && !$deprecated;
         // Export may proceed without display-reserve metadata; order creation still requires reserve when evaluated.
-        $eligibleForExport = $eligibleForQuote && $allowExport !== 2;
+        $eligibleForExport = $eligibleForQuote && $allowExport !== 2 && !$mappingBlocksExport;
         $eligibleForOrder = $eligibleForQuote && (array_key_exists('reserve_ok', $row) ? $reserveOk : true);
 
         // Deduplicate reasons while preserving order.
