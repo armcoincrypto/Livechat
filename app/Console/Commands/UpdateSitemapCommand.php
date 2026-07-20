@@ -374,12 +374,39 @@ final class UpdateSitemapCommand extends Command
      */
     private function guideDirectoryRoutes(): array
     {
-        return [
-            'ru/guides',
-            'en/guides',
-            'ru/blog',
-            'en/blog',
+        return array_merge(
+            [
+                'ru/guides',
+                'en/guides',
+                'ru/blog',
+                'en/blog',
+            ],
+            // SEO P1.1 — payment-method + USDT topical hubs (owned Next.js routes).
+            $this->seoTopicHubRoutes()
+        );
+    }
+
+    /**
+     * Owned SEO topic hubs (payment methods + USDT). Paths are locale-prefixed.
+     *
+     * @return list<string>
+     */
+    private function seoTopicHubRoutes(): array
+    {
+        $paths = [
+            'usdt',
+            'methods/sber',
+            'methods/sbp',
+            'methods/tbank',
         ];
+        $routes = [];
+        foreach (['en', 'ru'] as $locale) {
+            foreach ($paths as $path) {
+                $routes[] = $locale . '/' . $path;
+            }
+        }
+
+        return $routes;
     }
 
     /**
