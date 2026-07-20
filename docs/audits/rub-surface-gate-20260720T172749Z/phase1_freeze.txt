@@ -1,0 +1,36 @@
+utc=2026-07-20T17:27:49Z
+hostname=exswaping.com
+repo=/opt/exswaping-zec-sbp-20260720
+app=/var/www/app_exswapin_usr/data/www/app.exswaping.com
+prod_git_tip=59a18959110b751b533c55cee2fd29656d8d46b7
+=== HEAD ===
+e11a6e01eddec558c578fe052630ccb52f19585f
+e11a6e01eddec558c578fe052630ccb52f19585f feat(rates): RUB premium policy gate and operator decision package
+=== origin/main ===
+6fdebcda006205430d8fd1884006abaab46fae1a
+6fdebcda006205430d8fd1884006abaab46fae1a test(rates): document ZEC→SBP incident quarantine and Kate handoff
+=== status ===
+## release/exswaping-zec-rate-incident-20260720
+ M app/Console/Commands/RatesDirectionStatusCommand.php
+ M app/Console/Commands/RatesEconomicAuditCommand.php
+ M app/Console/Commands/RatesRubFamilyPolicyStatusCommand.php
+ M app/Services/Rates/RubFamilyPremiumPolicy.php
+ M packages/Courses/Export/Concerns/ExportFormatHelpers.php
+ M resources/rates/rub-family-premium-policy.json
+ M tests/Unit/Rates/RubFamilyPremiumPolicyTest.php
+ M tests/Unit/Rates/TrustedBaselineRecoveryTest.php
+?? docs/audits/full-rate-audit-20260720T171248Z/
+?? docs/audits/rub-policy-approval-20260720T142523Z/
+?? docs/audits/rub-surface-gate-20260720T172749Z/
+=== porcelain ===
+ M app/Console/Commands/RatesDirectionStatusCommand.php
+ M app/Console/Commands/RatesEconomicAuditCommand.php
+ M app/Console/Commands/RatesRubFamilyPolicyStatusCommand.php
+ M app/Services/Rates/RubFamilyPremiumPolicy.php
+ M packages/Courses/Export/Concerns/ExportFormatHelpers.php
+ M resources/rates/rub-family-premium-policy.json
+ M tests/Unit/Rates/RubFamilyPremiumPolicyTest.php
+ M tests/Unit/Rates/TrustedBaselineRecoveryTest.php
+?? docs/audits/full-rate-audit-20260720T171248Z/
+?? docs/audits/rub-policy-approval-20260720T142523Z/
+?? docs/audits/rub-surface-gate-20260720T172749Z/

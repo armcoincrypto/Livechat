@@ -1,0 +1,96 @@
+{
+  "prod_tip": "59a18959110b751b533c55cee2fd29656d8d46b7",
+  "drift_unique": 20,
+  "by_class": {
+    "RATE_ELIGIBILITY": 10,
+    "RATE_POLICY": 2,
+    "RATE_COMMAND": 4,
+    "RATE_TEST": 4
+  },
+  "files": [
+    {
+      "path": "app/Services/Rates/RateExportQuarantine.php",
+      "class": "RATE_ELIGIBILITY"
+    },
+    {
+      "path": "app/Services/Rates/BestChangeCurrencyCatalogGuard.php",
+      "class": "RATE_ELIGIBILITY"
+    },
+    {
+      "path": "app/Services/Rates/BestChangeMappingRegistry.php",
+      "class": "RATE_ELIGIBILITY"
+    },
+    {
+      "path": "app/Services/Rates/BestChangeMappingVerifier.php",
+      "class": "RATE_ELIGIBILITY"
+    },
+    {
+      "path": "app/Services/Rates/RateDirectionEligibility.php",
+      "class": "RATE_ELIGIBILITY"
+    },
+    {
+      "path": "resources/rates/bestchange-codes.overrides.json",
+      "class": "RATE_ELIGIBILITY"
+    },
+    {
+      "path": "app/Services/Rates/AtomicPublicXmlPublisher.php",
+      "class": "RATE_ELIGIBILITY"
+    },
+    {
+      "path": "app/Services/Rates/IndependentMarketBaseline.php",
+      "class": "RATE_ELIGIBILITY"
+    },
+    {
+      "path": "app/Services/Rates/RubFamilyPremiumPolicy.php",
+      "class": "RATE_POLICY"
+    },
+    {
+      "path": "resources/rates/rub-family-premium-policy.json",
+      "class": "RATE_POLICY"
+    },
+    {
+      "path": "app/Console/Commands/RatesRubFamilyPolicyStatusCommand.php",
+      "class": "RATE_COMMAND"
+    },
+    {
+      "path": "packages/Courses/Export/ExportCourses.php",
+      "class": "RATE_ELIGIBILITY"
+    },
+    {
+      "path": "packages/Courses/Export/Concerns/ExportFormatHelpers.php",
+      "class": "RATE_ELIGIBILITY"
+    },
+    {
+      "path": "app/Console/Commands/RatesEconomicAuditCommand.php",
+      "class": "RATE_COMMAND"
+    },
+    {
+      "path": "app/Console/Commands/RatesDirectionStatusCommand.php",
+      "class": "RATE_COMMAND"
+    },
+    {
+      "path": "app/Console/Commands/RatesAuditCommand.php",
+      "class": "RATE_COMMAND"
+    },
+    {
+      "path": "tests/Unit/Rates/RatePostFixRemediationTest.php",
+      "class": "RATE_TEST"
+    },
+    {
+      "path": "tests/Unit/Rates/ZecSbpRateIncidentTest.php",
+      "class": "RATE_TEST"
+    },
+    {
+      "path": "tests/Unit/Rates/TrustedBaselineRecoveryTest.php",
+      "class": "RATE_TEST"
+    },
+    {
+      "path": "tests/Unit/Rates/RubFamilyPremiumPolicyTest.php",
+      "class": "RATE_TEST"
+    }
+  ],
+  "unrelated": 0,
+  "sensitive": 0,
+  "runtime_generated": 0,
+  "release_ok": true
+}
