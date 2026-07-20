@@ -76,7 +76,10 @@ final class RateDirectionEligibility
      */
     public function evaluateDirection(DirectionExchange $direction): array
     {
-        $direction->loadMissing(['currency1:id,designation_xml', 'currency2:id,designation_xml']);
+        // Load full currency rows. Constraining columns to id,designation_xml
+        // strips id_payment and poisons $currency->payment as a null relation,
+        // which then 500s CurrencyResource during /rates/operations serialization.
+        $direction->loadMissing(['currency1', 'currency2']);
         $from = strtoupper((string) ($direction->currency1?->designation_xml ?? ''));
         $to = strtoupper((string) ($direction->currency2?->designation_xml ?? ''));
         $isCryptoRub = str_contains($to, 'RUB')
