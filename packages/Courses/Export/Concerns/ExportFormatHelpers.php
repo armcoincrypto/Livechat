@@ -8,7 +8,9 @@ use App\Models\Currency;
 use App\Models\DirectionExchange;
 use App\Services\Rates\BestChangeMappingVerifier;
 use App\Services\Rates\IndependentMarketBaseline;
+use App\Services\Rates\RateConfiguredExpectation;
 use App\Services\Rates\RateExportQuarantine;
+use App\Services\Rates\RubFamilyPremiumPolicy;
 use Carbon\Carbon;
 use iEXPackages\Calculator\Traits\InteractsWithNumbers;
 use Illuminate\Support\Facades\Log;
@@ -99,8 +101,7 @@ trait ExportFormatHelpers
                 return false;
             }
 
-            // Crypto→RUB: require independent baseline and block critical unexplained deviation.
-            // Prevents BestChange-circular outliers (e.g. ZEC→SBPRUB) from public XML.
+            // Crypto→RUB: one canonical eligibility decision (same as API/order).
             if (!$this->passesIndependentCryptoRubExportGate($rate, $fromCode, $toCode)) {
                 return false;
             }
@@ -168,39 +169,9 @@ trait ExportFormatHelpers
         }
 
         try {
-            $policy = \App\Services\Rates\RubFamilyPremiumPolicy::fromStorageApp();
-            if (!$policy->isFamilyExportAllowed($toCode)) {
-                // Unapproved / KEEP_BLOCKED families must not enter public XML.
-                return false;
-            }
+            $surface = \App\Services\Rates\RateDirectionEligibility::make()->evaluateDirection($rate);
 
-            $baseline = new IndependentMarketBaseline();
-            $quote = $asset === 'USDT' || $asset === 'USDC'
-                ? $baseline->quote('USDRUB')
-                : $baseline->cryptoRub($asset);
-            if ($quote === null) {
-                return false;
-            }
-            $analysis = (new RateConfiguredExpectation())->analyze(
-                baseline: $quote['rate'],
-                actual: (string) $rate->course_value,
-                profitPercent: (string) ($rate->profit ?? '0'),
-            );
-            $raw = $analysis['raw_market_deviation'];
-            $overBand = $policy->unexplainedVersusApprovedBand(
-                $raw === null ? null : (float) $raw,
-                $toCode,
-            );
-            if ($overBand === null) {
-                return false;
-            }
-            $thresholds = $policy->thresholdsForDestination($toCode);
-            // Treasury risk: customer-favorable rate above approved OTC band.
-            if ($overBand > $thresholds['critical']) {
-                return false;
-            }
-
-            return true;
+            return !empty($surface['export_allowed']) && !empty($surface['BestChange_allowed']);
         } catch (Throwable $e) {
             Log::error('crypto_rub_export_gate_failed', [
                 'direction_exchange_id' => $rate->id ?? null,
