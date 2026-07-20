@@ -24,6 +24,8 @@ final class RateExportQuarantine
 
     public const EXPORT_BLOCKED_MAPPING = 'EXPORT_BLOCKED_MAPPING';
 
+    public const EXPORT_BLOCKED_NO_BASELINE = 'EXPORT_BLOCKED_NO_BASELINE';
+
     public function __construct(
         private readonly RateSanityGuard $guard = new RateSanityGuard(),
         private readonly RateConfiguredExpectation $expectation = new RateConfiguredExpectation(),
@@ -78,11 +80,20 @@ final class RateExportQuarantine
 
         $unexplained = $analysis['unexplained_deviation'];
         if ($unexplained === null && $baseline === null) {
-            // No independent/peer baseline: allow only if allow_export already gated elsewhere.
+            // Fail closed: positive course alone is not enough for public export/order.
+            // Opt-in pass-through only for explicitly reviewed internal tooling.
+            if (!empty($context['allow_no_baseline'])) {
+                return [
+                    'status' => self::EXPORT_ALLOWED,
+                    'allowed' => true,
+                    'reason' => 'no_baseline_pass_through',
+                ];
+            }
+
             return [
-                'status' => self::EXPORT_ALLOWED,
-                'allowed' => true,
-                'reason' => 'no_baseline_pass_through',
+                'status' => self::EXPORT_BLOCKED_NO_BASELINE,
+                'allowed' => false,
+                'reason' => 'no_independent_baseline',
             ];
         }
 

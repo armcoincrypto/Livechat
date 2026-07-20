@@ -7,6 +7,7 @@ namespace iEXPackages\Courses\Export\Concerns;
 use App\Models\Currency;
 use App\Models\DirectionExchange;
 use App\Services\Rates\BestChangeMappingVerifier;
+use App\Services\Rates\IndependentMarketBaseline;
 use App\Services\Rates\RateExportQuarantine;
 use Carbon\Carbon;
 use iEXPackages\Calculator\Traits\InteractsWithNumbers;
@@ -98,6 +99,12 @@ trait ExportFormatHelpers
                 return false;
             }
 
+            // Crypto→RUB: require independent baseline and block critical unexplained deviation.
+            // Prevents BestChange-circular outliers (e.g. ZEC→SBPRUB) from public XML.
+            if (!$this->passesIndependentCryptoRubExportGate($rate, $fromCode, $toCode)) {
+                return false;
+            }
+
             $allowExport = (int) ($rate->allow_export ?? 0);
 
             if ($allowExport === 2) {
@@ -143,6 +150,65 @@ trait ExportFormatHelpers
 
             return false;
         }
+    }
+
+    /**
+     * When an independent crypto→RUB baseline exists, refuse export on critical outliers.
+     * When the pair is crypto→RUB but no trusted baseline exists, fail closed.
+     */
+    protected function passesIndependentCryptoRubExportGate(DirectionExchange $rate, string $fromCode, string $toCode): bool
+    {
+        if (!$this->isRubDestination($toCode)) {
+            return true;
+        }
+        $asset = $this->cryptoAssetForExportBaseline($fromCode);
+        if ($asset === null) {
+            return true;
+        }
+
+        try {
+            $baseline = new IndependentMarketBaseline();
+            $quote = $asset === 'USDT' || $asset === 'USDC'
+                ? $baseline->quote('USDRUB')
+                : $baseline->cryptoRub($asset);
+            $quarantine = new RateExportQuarantine();
+            if ($quote === null) {
+                // No trusted independent feed (e.g. disabled/stale ZECUSDT parsers).
+                return false;
+            }
+            $decision = $quarantine->evaluate((string) $rate->course_value, [
+                'baseline' => $quote['rate'],
+                'profit_percent' => (string) ($rate->profit ?? '0'),
+            ]);
+
+            return $decision['allowed'];
+        } catch (Throwable $e) {
+            Log::error('crypto_rub_export_gate_failed', [
+                'direction_exchange_id' => $rate->id ?? null,
+                'message' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    protected function isRubDestination(string $toCode): bool
+    {
+        $to = strtoupper($toCode);
+
+        return str_contains($to, 'RUB') || str_ends_with($to, 'RUB');
+    }
+
+    protected function cryptoAssetForExportBaseline(string $fromCode): ?string
+    {
+        $from = strtoupper($fromCode);
+        foreach (['USDT', 'USDC', 'BTC', 'ETH', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC'] as $asset) {
+            if ($from === $asset || str_starts_with($from, $asset)) {
+                return $asset;
+            }
+        }
+
+        return null;
     }
 
     /**

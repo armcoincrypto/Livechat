@@ -100,9 +100,47 @@ final class IndependentMarketBaseline
     /**
      * @return array{assets:list<string>,fiats:list<string>,sources:list<string>,freshness:array,gaps:list<string>}
      */
+
+    /**
+     * Independent crypto→RUB baseline: crypto/USDT (or USD) × USD/RUB.
+     *
+     * @return array{rate:string,source:string,as_of:string,age_seconds:int,components:array}|null
+     */
+    public function cryptoRub(string $asset): ?array
+    {
+        $asset = strtoupper($asset);
+        $crypto = $this->quote($asset . 'USDT');
+        if ($crypto === null) {
+            $crypto = $this->quote($asset . 'USD');
+        }
+        $rub = $this->quote('USDRUB');
+        if ($crypto === null || $rub === null) {
+            return null;
+        }
+        if ($crypto['age_seconds'] > self::CRYPTO_MAX_AGE_SECONDS) {
+            return null;
+        }
+        if ($rub['age_seconds'] > self::FIAT_MAX_AGE_SECONDS) {
+            return null;
+        }
+
+        $rate = bcmul($crypto['rate'], $rub['rate'], self::SCALE);
+
+        return [
+            'rate' => $rate,
+            'source' => $crypto['source'] . '*' . $rub['source'],
+            'as_of' => max($crypto['as_of'], $rub['as_of']),
+            'age_seconds' => max($crypto['age_seconds'], $rub['age_seconds']),
+            'components' => [
+                'crypto_usdt' => $crypto,
+                'usd_rub' => $rub,
+            ],
+        ];
+    }
+
     public function coverage(): array
     {
-        $assets = ['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'TRX', 'TON'];
+        $assets = ['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC'];
         $fiats = ['USD', 'EUR', 'GEL', 'AMD', 'RUB'];
         $gaps = [];
         foreach ($assets as $a) {
@@ -246,7 +284,11 @@ final class IndependentMarketBaseline
             'BNBUSDT' => [['BNB', 'USDT'], ['BNB', 'USD']],
             'TRXUSDT' => [['TRX', 'USDT'], ['TRX', 'USD']],
             'TONUSDT' => [['TON', 'USDT'], ['TON', 'USD']],
+            'ZECUSDT' => [['ZEC', 'USDT'], ['ZEC', 'USD']],
+            'ZECUSD' => [['ZEC', 'USD']],
+            'LTCUSDT' => [['LTC', 'USDT'], ['LTC', 'USD']],
             'USDCUSDT' => [['USDC', 'USDT'], ['USDC', 'USD']],
+            'USDTRUB' => [['USDT', 'RUB'], ['USD', 'RUB']],
             'USDGEL' => [['USD', 'GEL']],
             'USDEUR' => [['USD', 'EUR']],
             'USDRUB' => [['USD', 'RUB']],
