@@ -5,11 +5,12 @@
 | Field | Value |
 |-------|-------|
 | Path | `/var/www/app_exswapin_usr/data/www/app.exswaping.com` |
-| Branch (live checkout) | `fix/rates-operations-partial-currency-load-20260720` |
-| `main` tip (worktree `/opt/exswaping-zec-sbp-20260720`) | same SHA |
-| Starting SHA (investigation) | `13431b0f6204aee44b96b5b164ab1667cb4471f0` |
-| Fix SHA | `c2c3e1464e881929475182d23b49eb787383b815` |
-| PHP CLI for artisan | `/usr/bin/php8.4` (default `php` 8.5 cannot load ionCube) |
+| Canonical / live branch | `main` |
+| Local HEAD | `4565600b7fcc35b792dbd5a86c3261a7a50a07b9` |
+| Remote `origin/main` | `4565600b7fcc35b792dbd5a86c3261a7a50a07b9` |
+| Functional fix | `c2c3e1464e881929475182d23b49eb787383b815` |
+| Incident docs tip (pre-canonicalize update) | `4565600` |
+| PHP CLI for artisan | `/usr/bin/php8.4` |
 | PHP-FPM | `php8.4-fpm` pool `app.exswaping.com` → `unix:/var/run/app.exswaping.com.sock` |
 | Laravel | 12.62.0 |
 | Environment | production, debug OFF |
@@ -28,10 +29,10 @@
 | PM2 | `exswaping-owned-production` online on `:3010` |
 | Marker | `data-exs-visual-redesign="20260720"` on `/en/` |
 
-## Deploy method
+## Deploy / sync method
 
-Live tree **is** the Laravel application root. Fix committed on production path; `systemctl reload php8.4-fpm` for opcache worker refresh. No migration required.
+Live tree **is** the Laravel application root. Fix already live at `c2c3e14`. Canonicalization: checkout `main` on live path; push `origin/main` to `4565600` with writable Livechat deploy key. No migration; no frontend change.
 
 ## Concurrent workstreams
 
-Multiple rate-audit worktrees under `/opt/exswaping-*` exist. Functional fix isolated to `RateDirectionEligibility` + unit test. Unrelated untracked files were **not** committed.
+Other rate-audit worktrees under `/opt/exswaping-*` remain. `/opt/exswaping-zec-sbp-20260720` left detached at `4565600` so production can own `main`. Unrelated untracked files were **not** committed.

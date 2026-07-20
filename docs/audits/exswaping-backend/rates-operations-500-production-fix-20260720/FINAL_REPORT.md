@@ -3,30 +3,67 @@
 ## Verdict
 
 ```text
-EXSWAPING_RATES_OPERATIONS_500_PRODUCTION_FIX_PASS_WITH_WARNINGS
+EXSWAPING_RATES_OPERATIONS_FIX_CANONICALIZED_PASS_WITH_WARNINGS
 ```
 
-Warnings: (1) origin/main may still lag local tip until push; (2) malformed asset IDs can return HTTP 200 with `code:-1` Not Found (pre-existing contract quirk, not 500); (3) live checkout branch name is the fix branch while `main` tip shares the same SHA.
+Warning: malformed asset IDs may still return HTTP 200 with `{"code":-1,"message":"Not Found"}` (pre-existing; follow-up only).
 
-## Main-goal result
+## Canonical identity (final)
 
-Public calculator quote **operations load again** (HTTP 200 + course + currency metadata) on production apex API. Frontend redesign unchanged.
+| Field | Value |
+|-------|-------|
+| Backend path | `/var/www/app_exswapin_usr/data/www/app.exswaping.com` |
+| Canonical branch | `main` |
+| Live checkout | `main` |
+| Local HEAD | `4565600b7fcc35b792dbd5a86c3261a7a50a07b9` |
+| Remote `origin/main` | `4565600b7fcc35b792dbd5a86c3261a7a50a07b9` |
+| Functional commit | `c2c3e1464e881929475182d23b49eb787383b815` |
+| Documentation commit (incident pack) | `4565600b7fcc35b792dbd5a86c3261a7a50a07b9` |
+| Production runtime SHA | `4565600` (same tree) |
+| PHP-FPM | `php8.4-fpm` active; pool `app.exswaping.com` |
+| Frontend | unchanged `7414aef` / release `20260720T174951Z-7414aef5611a` |
 
-## Root cause (summary)
+## Integration
 
-Partial `loadMissing(['currency1:id,designation_xml', …])` in `RateDirectionEligibility::evaluateDirection` stripped `id_payment`, nullified `payment`, crashed `CurrencyResource` → HTTP 500 for every found direction. Frontend release not causal.
+Path A — both `c2c3e14` and `4565600` were already ancestors of local `main`. No cherry-pick. Newer valid commits `14f81e0` and `13431b0` preserved. Live checkout switched from fix branch name → `main` (same SHA).
 
-## Success criteria checklist
+## Remote synchronization
 
-| Criterion | Status |
-|-----------|--------|
-| Supported pair works | PASS |
-| Blocked pair remains blocked | PASS (404 / quote=0) |
-| Unsupported fails safely | PASS (404) |
-| No HTTP 500 on matrix | PASS |
-| Frontend calculator recovers | PASS (API + redesign marker) |
-| No orders/funds in validation | PASS |
-| No policy regression | PASS |
+```text
+git fetch origin
+GIT_SSH_COMMAND='ssh -i /root/.ssh/exswaping_livechat_deploy -o IdentitiesOnly=yes' \
+  git push origin main
+# 6d5ddbe..4565600  main -> main
+```
+
+Default `id_rsa` / agent key is read-only for this repo; Livechat deploy key is write-capable.
+
+## Production proof (re-verified after canonicalize)
+
+| Pair | HTTP |
+|------|------|
+| USDTTRC20/SBERRUB | 200 + course.rate + buy icon |
+| BTC/USDTTRC20 | 200 |
+| USDTTRC20/SBPRUB | 404 |
+| NOTACOIN/FAKE | 404 |
+
+No new `rate_public_surface_quote_gate_failed` after fix window. PHP-FPM active. Frontend PM2 still on `7414aef` release.
+
+## Safety
+
+```text
+ORDERS_CREATED=0
+FUNDS_MOVED=0
+DATABASE_WRITES=0
+FRONTEND_CHANGED=NO
+```
+
+## Remaining follow-up
+
+```text
+Malformed identifiers may return HTTP 200 with code:-1.
+Handle separately after defining the API contract.
+```
 
 ## Audit location
 

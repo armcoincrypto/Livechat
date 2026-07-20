@@ -33,6 +33,17 @@ Production Laravel root **is** `/var/www/app_exswapin_usr/data/www/app.exswaping
 systemctl reload php8.4-fpm
 ```
 
+## Remote canonicalize (2026-07-20T20:14Z)
+
+```bash
+git checkout main   # live path now on canonical branch
+GIT_SSH_COMMAND='ssh -i /root/.ssh/exswaping_livechat_deploy -o IdentitiesOnly=yes' \
+  git push origin main
+# 6d5ddbe..4565600  main -> main
+```
+
+Final: `origin/main` = `4565600` = local `main` = live HEAD.
+
 ## Rollback command
 
 ```bash
