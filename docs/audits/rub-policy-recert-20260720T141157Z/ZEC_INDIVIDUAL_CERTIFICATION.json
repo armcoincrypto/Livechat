@@ -1,0 +1,41 @@
+[
+  {
+    "direction_id": 540,
+    "pair": "ZEC\u2192SBERRUB",
+    "baseline": "41470.560339000000000000",
+    "baseline_age_seconds": 38,
+    "course": "44517.921233869460447696",
+    "profit": 0,
+    "raw_dev_pct": 7.348251,
+    "classification": "NO_POLICY",
+    "outcome": "KEEP_QUARANTINED_NO_POLICY",
+    "reason": "RUB family premium policy approved=false; direction remains status=0 allow_export=2",
+    "restored": false
+  },
+  {
+    "direction_id": 541,
+    "pair": "ZEC\u2192SBPRUB",
+    "baseline": "41470.560339000000000000",
+    "baseline_age_seconds": 38,
+    "course": "43286.997609395908945509",
+    "profit": 0,
+    "raw_dev_pct": 4.380064,
+    "classification": "NO_POLICY",
+    "outcome": "KEEP_QUARANTINED_NO_POLICY",
+    "reason": "RUB family premium policy approved=false; direction remains status=0 allow_export=2",
+    "restored": false
+  },
+  {
+    "direction_id": 542,
+    "pair": "ZEC\u2192ACRUB",
+    "baseline": "41470.560339000000000000",
+    "baseline_age_seconds": 38,
+    "course": "43169.683651742293011458",
+    "profit": 0,
+    "raw_dev_pct": 4.097179,
+    "classification": "NO_POLICY",
+    "outcome": "KEEP_QUARANTINED_NO_POLICY",
+    "reason": "RUB family premium policy approved=false; direction remains status=0 allow_export=2",
+    "restored": false
+  }
+]

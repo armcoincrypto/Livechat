@@ -8,6 +8,7 @@ use App\Models\DirectionExchange;
 use App\Services\Rates\IndependentMarketBaseline;
 use App\Services\Rates\RateConfiguredExpectation;
 use App\Services\Rates\RateSanityGuard;
+use App\Services\Rates\RubFamilyPremiumPolicy;
 use Illuminate\Console\Command;
 
 /**
@@ -30,6 +31,7 @@ final class RatesEconomicAuditCommand extends Command
         IndependentMarketBaseline $baseline,
     ): int {
         $limit = max(0, (int) $this->option('limit'));
+        $policy = RubFamilyPremiumPolicy::fromStorageApp();
         $query = DirectionExchange::query()
             ->with(['currency1:id,designation_xml', 'currency2:id,designation_xml'])
             ->where('status', 1)
@@ -46,13 +48,16 @@ final class RatesEconomicAuditCommand extends Command
             'REVIEW' => 0,
             'QUARANTINE_REQUIRED' => 0,
             'NO_BASELINE' => 0,
+            'NO_POLICY' => 0,
         ];
+        $noBaselineFamilies = [];
         $rows = [];
 
         foreach ($query->cursor() as $direction) {
             $totals['reviewed']++;
             $from = strtoupper((string) ($direction->currency1?->designation_xml ?? ''));
             $to = strtoupper((string) ($direction->currency2?->designation_xml ?? ''));
+            $family = $this->familyKey($from, $to);
             $course = $guard->normalize((string) ($direction->course_value ?? ''));
             $profit = (string) ($direction->profit ?? '0');
             $ind = $this->independentBaseline($baseline, $from, $to);
@@ -65,22 +70,51 @@ final class RatesEconomicAuditCommand extends Command
                 $class = 'NO_BASELINE';
                 $unexplained = null;
                 $raw = null;
-            } else {
+                $noBaselineFamilies[$family] = ($noBaselineFamilies[$family] ?? 0) + 1;
+            } elseif (str_contains($to, 'RUB')) {
                 $analysis = $expectation->analyze(
                     baseline: $ind['rate'],
                     actual: $course,
                     profitPercent: $profit,
                 );
+                $raw = $analysis['raw_market_deviation'];
+                $eval = $policy->evaluateCoinRub(
+                    $to,
+                    $raw === null ? null : (float) $raw,
+                    (float) $profit,
+                );
+                $class = $eval['classification'];
+                $unexplained = $eval['unexplained_vs_expected_percent'];
+                if ($class === 'NO_BASELINE') {
+                    $noBaselineFamilies[$family] = ($noBaselineFamilies[$family] ?? 0) + 1;
+                }
+            } else {
+                $paymentPremium = '0';
+                if ($policy->isApproved() && str_contains($to, 'RUB')) {
+                    $explained = $policy->explainedPremiumPercent($to);
+                    if ($explained !== null) {
+                        // Family premium is documented commercial band; do not double-count direction.profit.
+                        $paymentPremium = (string) max(0.0, $explained - (float) $profit);
+                    }
+                }
+                $analysis = $expectation->analyze(
+                    baseline: $ind['rate'],
+                    actual: $course,
+                    profitPercent: $profit,
+                    paymentSystemFeePercent: $paymentPremium,
+                );
                 $unexplained = $analysis['unexplained_deviation'];
                 $raw = $analysis['raw_market_deviation'];
                 $abs = $unexplained === null ? null : abs((float) $unexplained);
+                $thresholds = $policy->thresholdsForDestination($to);
                 if ($abs === null) {
                     $class = 'NO_BASELINE';
+                    $noBaselineFamilies[$family] = ($noBaselineFamilies[$family] ?? 0) + 1;
                 } elseif ($abs <= 1.0 && $raw !== null && abs((float) $raw) > 1.0) {
                     $class = 'PASS_EXPLAINED_SPREAD';
-                } elseif ($abs <= 3.0) {
+                } elseif ($abs <= $thresholds['pass']) {
                     $class = 'PASS';
-                } elseif ($abs <= 7.0) {
+                } elseif ($abs <= $thresholds['review']) {
                     $class = 'REVIEW';
                 } else {
                     $class = 'QUARANTINE_REQUIRED';
@@ -92,26 +126,36 @@ final class RatesEconomicAuditCommand extends Command
                 'direction_id' => (int) $direction->id,
                 'from' => $from,
                 'to' => $to,
+                'family' => $family,
                 'course_value' => $direction->course_value,
                 'profit' => $profit,
                 'baseline' => $ind['rate'] ?? null,
                 'baseline_source' => $ind['source'] ?? null,
+                'baseline_path' => $ind['path'] ?? null,
                 'raw_market_deviation' => $raw,
                 'unexplained_deviation' => $unexplained,
                 'classification' => $class,
                 'source' => (string) ($direction->parser_source_name ?? ''),
                 'allow_export' => (int) $direction->allow_export,
+                'rub_policy_approved' => $policy->isApproved(),
             ];
         }
 
+        arsort($noBaselineFamilies);
         $payload = [
             'generated_at' => now()->toIso8601String(),
+            'rub_family_policy' => $policy->summary(),
             'totals' => $totals,
+            'no_baseline_by_family' => $noBaselineFamilies,
             'directions' => $rows,
         ];
 
         if ((string) $this->option('format') === 'table') {
             $this->table(['metric', 'count'], collect($totals)->map(fn ($v, $k) => [$k, $v])->values()->all());
+            $this->table(
+                ['no_baseline_family', 'count'],
+                collect($noBaselineFamilies)->map(fn ($v, $k) => [$k, $v])->values()->all()
+            );
         } else {
             $this->line(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         }
@@ -120,34 +164,66 @@ final class RatesEconomicAuditCommand extends Command
     }
 
     /**
-     * @return array{rate:string,source:string}|null
+     * @return array{rate:string,source:string,path?:string}|null
      */
     private function independentBaseline(IndependentMarketBaseline $baseline, string $from, string $to): ?array
     {
+        $fromAsset = IndependentMarketBaseline::assetFromCode($from);
+        $toAsset = IndependentMarketBaseline::assetFromCode($to);
+
         if (str_contains($to, 'RUB')) {
-            if (str_starts_with($from, 'USDT') || str_starts_with($from, 'USDC')) {
+            if ($fromAsset === 'USDT' || $fromAsset === 'USDC') {
                 $q = $baseline->quote('USDRUB');
 
-                return $q ? ['rate' => $q['rate'], 'source' => $q['source']] : null;
+                return $q ? ['rate' => $q['rate'], 'source' => $q['source'], 'path' => 'stable_to_rub'] : null;
             }
-            foreach (['BTC', 'ETH', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC'] as $asset) {
-                if ($from === $asset || str_starts_with($from, $asset)) {
-                    $q = $baseline->cryptoRub($asset);
+            if ($fromAsset !== null) {
+                $q = $baseline->cryptoRub($fromAsset);
 
-                    return $q ? ['rate' => $q['rate'], 'source' => $q['source']] : null;
-                }
+                return $q ? [
+                    'rate' => $q['rate'],
+                    'source' => $q['source'],
+                    'path' => 'crypto_to_rub',
+                ] : null;
             }
         }
-        if (str_contains($to, 'GEL')) {
-            foreach (['BTC', 'ETH', 'BNB', 'TRX', 'TON'] as $asset) {
-                if (str_starts_with($from, $asset)) {
-                    $q = $baseline->cryptoGel($asset);
 
-                    return $q ? ['rate' => $q['rate'], 'source' => $q['source']] : null;
-                }
-            }
+        if (str_contains($to, 'GEL') && $fromAsset !== null && !in_array($fromAsset, ['USDT', 'USDC'], true)) {
+            $q = $baseline->cryptoGel($fromAsset);
+
+            return $q ? ['rate' => $q['rate'], 'source' => $q['source'], 'path' => 'crypto_to_gel'] : null;
+        }
+
+        if ($fromAsset !== null && $toAsset !== null) {
+            $q = $baseline->cryptoViaUsdt($fromAsset, $toAsset);
+
+            return $q ? [
+                'rate' => $q['rate'],
+                'source' => $q['source'],
+                'path' => $q['path'] ?? 'crypto_via_usdt',
+            ] : null;
         }
 
         return null;
+    }
+
+    private function familyKey(string $from, string $to): string
+    {
+        $fromAsset = IndependentMarketBaseline::assetFromCode($from) ?? 'OTHER';
+        if (str_contains($to, 'RUB')) {
+            return 'crypto_rub:' . $fromAsset;
+        }
+        if (str_contains($to, 'GEL')) {
+            return 'crypto_gel:' . $fromAsset;
+        }
+        $toAsset = IndependentMarketBaseline::assetFromCode($to);
+        if ($fromAsset !== 'OTHER' && $toAsset !== null) {
+            return 'crypto_crypto:' . $fromAsset . '_to_' . $toAsset;
+        }
+        if ($fromAsset !== 'OTHER') {
+            return 'source_asset:' . $fromAsset . '_uncovered_dest';
+        }
+
+        return 'unsupported_or_internal:' . ($from !== '' ? $from : 'UNKNOWN');
     }
 }

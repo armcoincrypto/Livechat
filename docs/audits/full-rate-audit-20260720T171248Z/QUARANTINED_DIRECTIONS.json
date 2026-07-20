@@ -1,0 +1,30 @@
+{
+  "generated_at": "2026-07-20T17:20:54.500517+00:00",
+  "focus": [
+    {
+      "id": 268,
+      "pair": "USDTTRC20\u2192SBPRUB",
+      "reason": "unexplained>2% vs SBP target",
+      "status": "quarantined_this_audit"
+    },
+    {
+      "id": 540,
+      "pair": "ZEC\u2192SBERRUB",
+      "reason": "kept quarantined from prior incident; economically PASS_EXPLAINED now but not auto-restored",
+      "status": "keep_quarantined"
+    },
+    {
+      "id": 541,
+      "pair": "ZEC\u2192SBPRUB",
+      "reason": "restored prior phase",
+      "status": "active_certified"
+    },
+    {
+      "id": 542,
+      "pair": "ZEC\u2192ACRUB",
+      "reason": "restored prior phase",
+      "status": "active_certified"
+    }
+  ],
+  "catalog_quarantined_count": 113
+}

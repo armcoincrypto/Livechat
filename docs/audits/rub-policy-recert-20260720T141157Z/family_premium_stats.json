@@ -1,0 +1,66 @@
+{
+  "SBERRUB": {
+    "n": 11,
+    "median_raw_premium_pct": 6.349,
+    "p75": 7.21,
+    "p90": 7.237,
+    "max": 8.436,
+    "median_configured_profit_pct": 0.0
+  },
+  "SBPRUB": {
+    "n": 10,
+    "median_raw_premium_pct": 6.284,
+    "p75": 7.211,
+    "p90": 7.237,
+    "max": 7.536,
+    "median_configured_profit_pct": 0.15
+  },
+  "ACRUB": {
+    "n": 9,
+    "median_raw_premium_pct": 5.955,
+    "p75": 6.728,
+    "p90": 6.761,
+    "max": 7.189,
+    "median_configured_profit_pct": 0.15
+  },
+  "TCSBRUB": {
+    "n": 9,
+    "median_raw_premium_pct": 7.178,
+    "p75": 7.237,
+    "p90": 7.812,
+    "max": 8.44,
+    "median_configured_profit_pct": 0.3
+  },
+  "YAMRUB": {
+    "n": 9,
+    "median_raw_premium_pct": 4.896,
+    "p75": 5.064,
+    "p90": 5.865,
+    "max": 7.136,
+    "median_configured_profit_pct": 0.3
+  },
+  "RFBRUB": {
+    "n": 8,
+    "median_raw_premium_pct": 5.444,
+    "p75": 6.225,
+    "p90": 6.225,
+    "max": 6.226,
+    "median_configured_profit_pct": 0.3
+  },
+  "TBRUB": {
+    "n": 8,
+    "median_raw_premium_pct": 5.309,
+    "p75": 6.092,
+    "p90": 6.092,
+    "max": 6.509,
+    "median_configured_profit_pct": 0.3
+  },
+  "CARDRUB": {
+    "n": 4,
+    "median_raw_premium_pct": 1.018,
+    "p75": 1.237,
+    "p90": 2.165,
+    "max": 2.165,
+    "median_configured_profit_pct": 5.0
+  }
+}

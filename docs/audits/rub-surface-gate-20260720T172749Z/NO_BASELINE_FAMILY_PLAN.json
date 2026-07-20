@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-07-20T17:35:00Z",
+  "note": "Prioritized plan only — no mass mutations in this release.",
+  "families": [
+    {"family": "TON→*", "choice": "KEEP_INTERNAL_ONLY", "reason": "TONUSDT NO_APPROVED_PROVIDER / Binance BREAK"},
+    {"family": "unsupported assets (DASH,XMR,SOL,XRP,ADA,…)", "choice": "KEEP_INTERNAL_ONLY", "reason": "assetFromCode null → NO_BASELINE"},
+    {"family": "USDT/USDC→non-RUB uncovered dest", "choice": "KEEP_INTERNAL_ONLY", "reason": "destination bridge not certified"},
+    {"family": "CARDAMD duplicates", "choice": "DEPRECATE", "reason": "operator mapping decision required"},
+    {"family": "PPUSD premium rails", "choice": "KEEP_INTERNAL_ONLY", "reason": "needs separate USD premium policy"}
+  ]
+}

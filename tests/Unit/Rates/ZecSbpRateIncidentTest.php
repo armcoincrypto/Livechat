@@ -65,4 +65,16 @@ final class ZecSbpRateIncidentTest extends TestCase
         $this->assertNotNull($ton);
         $this->assertEqualsWithDelta(400.0, (float) $ton['rate'], 0.01);
     }
+
+    public function testCircularBestChangeSourceIsNotAnIndependentBaseline(): void
+    {
+        // IndependentMarketBaseline only reads parser_exchange / injected fixtures —
+        // never BestChange competitor XML. A missing ZEC feed must fail closed.
+        $base = new IndependentMarketBaseline([], allowDatabase: false);
+        $this->assertNull($base->cryptoRub('ZEC'));
+        $q = new RateExportQuarantine();
+        $decision = $q->evaluate('42000', []);
+        $this->assertFalse($decision['allowed']);
+        $this->assertSame(RateExportQuarantine::EXPORT_BLOCKED_NO_BASELINE, $decision['status']);
+    }
 }

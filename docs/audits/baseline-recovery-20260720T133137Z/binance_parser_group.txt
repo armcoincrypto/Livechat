@@ -1,0 +1,80 @@
+PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'app_exswapin.parsers' doesn't exist in /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php:420
+Stack trace:
+#0 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(420): PDO->prepare()
+#1 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(827): Illuminate\Database\Connection->{closure:Illuminate\Database\Connection::select():411}()
+#2 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(794): Illuminate\Database\Connection->runQueryCallback()
+#3 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(411): Illuminate\Database\Connection->run()
+#4 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php(491): Illuminate\Database\Connection->select()
+#5 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(363): Illuminate\Database\DatabaseManager->__call()
+#6 Command line code(5): Illuminate\Support\Facades\Facade::__callStatic()
+#7 {main}
+
+Next Illuminate\Database\QueryException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'app_exswapin.parsers' doesn't exist (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: app_exswapin, SQL: SELECT id,name,alias,status,last_total,last_updated,last_errors,updated_at FROM parsers WHERE id=10 OR alias="binance") in /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php:838
+Stack trace:
+#0 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(794): Illuminate\Database\Connection->runQueryCallback()
+#1 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(411): Illuminate\Database\Connection->run()
+#2 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php(491): Illuminate\Database\Connection->select()
+#3 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(363): Illuminate\Database\DatabaseManager->__call()
+#4 Command line code(5): Illuminate\Support\Facades\Facade::__callStatic()
+#5 {main}
+  thrown in /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php on line 838
+
+   Symfony\Component\ErrorHandler\Error\FatalError 
+
+  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'app_exswapin.parsers' doesn't exist in /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php:420
+Stack trace:
+#0 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(420): PDO->prepare()
+#1 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(827): Illuminate\Database\Connection->{closure:Illuminate\Database\Connection::select():411}()
+#2 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(794): Illuminate\Database\Connection->runQueryCallback()
+#3 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(411): Illuminate\Database\Connection->run()
+#4 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php(491): Illuminate\Database\Connection->select()
+#5 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(363): Illuminate\Database\DatabaseManager->__call()
+#6 Command line code(5): Illuminate\Support\Facades\Facade::__callStatic()
+#7 {main}
+
+Next Illuminate\Database\QueryException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'app_exswapin.parsers' doesn't exist (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: app_exswapin, SQL: SELECT id,name,alias,status,last_total,last_updated,last_errors,updated_at FROM parsers WHERE id=10 OR alias="binance") in /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php:838
+Stack trace:
+#0 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(794): Illuminate\Database\Connection->runQueryCallback()
+#1 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(411): Illuminate\Database\Connection->run()
+#2 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php(491): Illuminate\Database\Connection->select()
+#3 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(363): Illuminate\Database\DatabaseManager->__call()
+#4 Command line code(5): Illuminate\Support\Facades\Facade::__callStatic()
+#5 {main}
+  thrown
+
+  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:838
+    834▕             $exceptionType = $this->isUniqueConstraintError($e)
+    835▕                 ? UniqueConstraintViolationException::class
+    836▕                 : QueryException::class;
+    837▕ 
+  ➜ 838▕             throw new $exceptionType(
+    839▕                 $this->getNameWithReadWriteType(),
+    840▕                 $query,
+    841▕                 $this->prepareBindings($bindings),
+    842▕                 $e,
+
+
+   Whoops\Exception\ErrorException 
+
+  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'app_exswapin.parsers' doesn't exist in /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php:420
+Stack trace:
+#0 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(420): PDO->prepare()
+#1 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(827): Illuminate\Database\Connection->{closure:Illuminate\Database\Connection::select():411}()
+#2 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(794): Illuminate\Database\Connection->runQueryCallback()
+#3 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(411): Illuminate\Database\Connection->run()
+#4 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php(491): Illuminate\Database\Connection->select()
+#5 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(363): Illuminate\Database\DatabaseManager->__call()
+#6 Command line code(5): Illuminate\Support\Facades\Facade::__callStatic()
+#7 {main}
+
+Next Illuminate\Database\QueryException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'app_exswapin.parsers' doesn't exist (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: app_exswapin, SQL: SELECT id,name,alias,status,last_total,last_updated,last_errors,updated_at FROM parsers WHERE id=10 OR alias="binance") in /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php:838
+Stack trace:
+#0 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(794): Illuminate\Database\Connection->runQueryCallback()
+#1 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/Connection.php(411): Illuminate\Database\Connection->run()
+#2 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php(491): Illuminate\Database\Connection->select()
+#3 /var/www/app_exswapin_usr/data/www/app.exswaping.com/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(363): Illuminate\Database\DatabaseManager->__call()
+#4 Command line code(5): Illuminate\Support\Facades\Facade::__callStatic()
+#5 {main}
+  thrown
+
+  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:838

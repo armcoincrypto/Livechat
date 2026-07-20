@@ -1,0 +1,588 @@
+{
+    "generated_at": "2026-07-20T17:20:26+00:00",
+    "eligible_count": 58,
+    "parity_fail_count": 0,
+    "eligible": [
+        {
+            "direction_id": 15,
+            "from": "USDTTRC20",
+            "to": "SBERRUB",
+            "db": 82.81359901984769,
+            "xml": 82.8136,
+            "diff_pct": 1.183564437920833e-6,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 20,
+            "from": "BTC",
+            "to": "SBPRUB",
+            "db": 5397615.333545639,
+            "xml": 5397615.33,
+            "diff_pct": 6.568899200921879e-8,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 21,
+            "from": "BTC",
+            "to": "ACRUB",
+            "db": 5371838.672940974,
+            "xml": 5371838.6729,
+            "diff_pct": 7.627643063664435e-10,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 27,
+            "from": "USDTTRC20",
+            "to": "TCSBRUB",
+            "db": 83.55619803988722,
+            "xml": 83.5562,
+            "diff_pct": 2.345861622687818e-6,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 28,
+            "from": "USDTTRC20",
+            "to": "TBRUB",
+            "db": 83.33822663301949,
+            "xml": 83.3382,
+            "diff_pct": 3.195774683910068e-5,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 108,
+            "from": "USDTERC20",
+            "to": "SBERRUB",
+            "db": 82.80369898877497,
+            "xml": 82.8037,
+            "diff_pct": 1.221231720656618e-6,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 109,
+            "from": "USDTERC20",
+            "to": "SBPRUB",
+            "db": 82.88478002038634,
+            "xml": 82.88,
+            "diff_pct": 0.005767066505060572,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 110,
+            "from": "USDTERC20",
+            "to": "ACRUB",
+            "db": 82.63627905183654,
+            "xml": 82.6363,
+            "diff_pct": 2.5349838723791432e-5,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 111,
+            "from": "USDTERC20",
+            "to": "TCSBRUB",
+            "db": 83.46285800603937,
+            "xml": 83.4629,
+            "diff_pct": 5.031454905718532e-5,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 161,
+            "from": "ETH",
+            "to": "SBPRUB",
+            "db": 157291.63930447525,
+            "xml": 157291.64,
+            "diff_pct": 4.421880078421469e-7,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 168,
+            "from": "TRX",
+            "to": "SBERRUB",
+            "db": 26.895699997973434,
+            "xml": 26.8957,
+            "diff_pct": 7.534912118009616e-9,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 187,
+            "from": "BTC",
+            "to": "RFBRUB",
+            "db": 5397616.332850643,
+            "xml": 5397616.3329,
+            "diff_pct": 9.144105123576895e-10,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 212,
+            "from": "BTC",
+            "to": "TCSBRUB",
+            "db": 5481979.998530007,
+            "xml": 5481979.9985,
+            "diff_pct": 5.473791105067358e-10,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 214,
+            "from": "BTC",
+            "to": "TBRUB",
+            "db": 5393099.061737371,
+            "xml": 5393099.0617,
+            "diff_pct": 6.929271871557646e-10,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 224,
+            "from": "LTC",
+            "to": "ACRUB",
+            "db": 3925.5257005233393,
+            "xml": 3925.5257,
+            "diff_pct": 1.3331696376045988e-8,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 225,
+            "from": "LTC",
+            "to": "TCSBRUB",
+            "db": 3962.849999546016,
+            "xml": 3962.85,
+            "diff_pct": 1.1455993291099439e-8,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 226,
+            "from": "LTC",
+            "to": "RFBRUB",
+            "db": 3931.326999705283,
+            "xml": 3931.327,
+            "diff_pct": 7.496634359291464e-9,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 325,
+            "from": "BNBBEP20",
+            "to": "SBERRUB",
+            "db": 47030.3412022942,
+            "xml": 47030.3412,
+            "diff_pct": 4.878120567688951e-9,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 326,
+            "from": "BNBBEP20",
+            "to": "SBPRUB",
+            "db": 47082.65900921331,
+            "xml": 47082.66,
+            "diff_pct": 2.1043558549903224e-6,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 373,
+            "from": "ETH",
+            "to": "SBERRUB",
+            "db": 157282.73319599658,
+            "xml": 157282.7332,
+            "diff_pct": 2.545356645931152e-9,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 374,
+            "from": "ETH",
+            "to": "ACRUB",
+            "db": 156904.69270004192,
+            "xml": 156904.6927,
+            "diff_pct": 2.6710173632483926e-11,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 375,
+            "from": "ETH",
+            "to": "TCSBRUB",
+            "db": 157329.36301148287,
+            "xml": 157329.363,
+            "diff_pct": 7.298610939017963e-9,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 376,
+            "from": "ETH",
+            "to": "RFBRUB",
+            "db": 157285.71201212684,
+            "xml": 157285.712,
+            "diff_pct": 7.71007003778228e-9,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 541,
+            "from": "ZEC",
+            "to": "SBPRUB",
+            "db": 44792.3499912295,
+            "xml": 44792.35,
+            "diff_pct": 1.9580346906368854e-8,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 542,
+            "from": "ZEC",
+            "to": "ACRUB",
+            "db": 44423.2899947742,
+            "xml": 44423.29,
+            "diff_pct": 1.1763657671217268e-8,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1011,
+            "from": "BNBBEP20",
+            "to": "TBRUB",
+            "db": 46874.06700099264,
+            "xml": 46874.067,
+            "diff_pct": 2.117667898134765e-9,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1030,
+            "from": "USDTBEP20",
+            "to": "TCSBRUB",
+            "db": 83.55926791363595,
+            "xml": 83.5593,
+            "diff_pct": 3.8399527479239964e-5,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 1057,
+            "from": "USDTBEP20",
+            "to": "ACRUB",
+            "db": 83.01151612768426,
+            "xml": 83.0115,
+            "diff_pct": 1.942824925283798e-5,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 1059,
+            "from": "USDTBEP20",
+            "to": "TBRUB",
+            "db": 83.18967996991861,
+            "xml": 83.1897,
+            "diff_pct": 2.407760360964592e-5,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 1071,
+            "from": "USDTERC20",
+            "to": "TBRUB",
+            "db": 83.18967996991861,
+            "xml": 83.1897,
+            "diff_pct": 2.407760360964592e-5,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 1076,
+            "from": "USDTSOL",
+            "to": "SBPRUB",
+            "db": 82.17362502773359,
+            "xml": 82.17,
+            "diff_pct": 0.004411424873087347,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1077,
+            "from": "USDTSOL",
+            "to": "ACRUB",
+            "db": 81.18192142187512,
+            "xml": 81.1819,
+            "diff_pct": 2.6387494583799398e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1079,
+            "from": "USDTSOL",
+            "to": "TCSBRUB",
+            "db": 82.17362502773359,
+            "xml": 82.1736,
+            "diff_pct": 3.0457137056947246e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1080,
+            "from": "USDTSOL",
+            "to": "TBRUB",
+            "db": 82.17362502773359,
+            "xml": 82.1736,
+            "diff_pct": 3.0457137056947246e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1112,
+            "from": "USDTTON",
+            "to": "SBERRUB",
+            "db": 81.93642092093998,
+            "xml": 81.9364,
+            "diff_pct": 2.553313866903697e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1113,
+            "from": "USDTTON",
+            "to": "SBPRUB",
+            "db": 81.93642092093998,
+            "xml": 81.94,
+            "diff_pct": 0.004368117401016155,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1114,
+            "from": "USDTTON",
+            "to": "ACRUB",
+            "db": 80.95301299249176,
+            "xml": 80.953,
+            "diff_pct": 1.6049423339895194e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1115,
+            "from": "USDTTON",
+            "to": "RFBRUB",
+            "db": 81.93642092093998,
+            "xml": 81.9364,
+            "diff_pct": 2.553313866903697e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1116,
+            "from": "USDTTON",
+            "to": "TCSBRUB",
+            "db": 81.93642092093998,
+            "xml": 81.9364,
+            "diff_pct": 2.553313866903697e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1117,
+            "from": "USDTTON",
+            "to": "TBRUB",
+            "db": 81.93642092093998,
+            "xml": 81.9364,
+            "diff_pct": 2.553313866903697e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1157,
+            "from": "USDCERC20",
+            "to": "SBERRUB",
+            "db": 82.62866812298547,
+            "xml": 82.6287,
+            "diff_pct": 3.857863771190883e-5,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 1158,
+            "from": "USDCERC20",
+            "to": "SBPRUB",
+            "db": 82.628369001641,
+            "xml": 82.63,
+            "diff_pct": 0.0019738963490350606,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 1159,
+            "from": "USDCERC20",
+            "to": "ACRUB",
+            "db": 81.8408386786469,
+            "xml": 81.8408,
+            "diff_pct": 4.726081443774882e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1160,
+            "from": "USDCERC20",
+            "to": "RFBRUB",
+            "db": 82.628369001641,
+            "xml": 82.6284,
+            "diff_pct": 3.751539497738716e-5,
+            "parity_ok": true,
+            "class": "PASS"
+        },
+        {
+            "direction_id": 1161,
+            "from": "USDCERC20",
+            "to": "TCSBRUB",
+            "db": 82.628369001641,
+            "xml": 82.6284,
+            "diff_pct": 3.751539497738716e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1162,
+            "from": "USDCERC20",
+            "to": "TBRUB",
+            "db": 82.628369001641,
+            "xml": 82.6284,
+            "diff_pct": 3.751539497738716e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1305,
+            "from": "USDTTRC20",
+            "to": "CARDRUB",
+            "db": 79.25384503762473,
+            "xml": 79.2538,
+            "diff_pct": 5.682705325992698e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1306,
+            "from": "USDTERC20",
+            "to": "CARDRUB",
+            "db": 79.25375002674814,
+            "xml": 79.2538,
+            "diff_pct": 6.305474737168992e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1307,
+            "from": "USDTBEP20",
+            "to": "CARDRUB",
+            "db": 79.25384503762473,
+            "xml": 79.2538,
+            "diff_pct": 5.682705325992698e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1415,
+            "from": "USDTTRC20",
+            "to": "YAMRUB",
+            "db": 82.01247899382528,
+            "xml": 82.0125,
+            "diff_pct": 2.5613388325031375e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1416,
+            "from": "USDTERC20",
+            "to": "YAMRUB",
+            "db": 82.01247899382528,
+            "xml": 82.0125,
+            "diff_pct": 2.5613388325031375e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1417,
+            "from": "USDTBEP20",
+            "to": "YAMRUB",
+            "db": 81.51850148668436,
+            "xml": 81.5185,
+            "diff_pct": 1.8237385712166076e-6,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1418,
+            "from": "USDTTON",
+            "to": "YAMRUB",
+            "db": 82.01247899382528,
+            "xml": 82.0125,
+            "diff_pct": 2.5613388325031375e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1419,
+            "from": "BTC",
+            "to": "YAMRUB",
+            "db": 5365223.477707169,
+            "xml": 5365223.4777,
+            "diff_pct": 1.336257699083537e-10,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1422,
+            "from": "BNBBEP20",
+            "to": "YAMRUB",
+            "db": 46229.561398913145,
+            "xml": 46229.5614,
+            "diff_pct": 2.3509923340994866e-9,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1423,
+            "from": "ETH",
+            "to": "YAMRUB",
+            "db": 156052.30279941403,
+            "xml": 156052.3028,
+            "diff_pct": 3.755000803602859e-10,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1428,
+            "from": "USDCERC20",
+            "to": "YAMRUB",
+            "db": 80.32779153215522,
+            "xml": 80.3278,
+            "diff_pct": 1.0541612831167963e-5,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        },
+        {
+            "direction_id": 1973,
+            "from": "BTC",
+            "to": "CARDRUB",
+            "db": 5183345.465898277,
+            "xml": 5183345.4659,
+            "diff_pct": 3.324005267204484e-11,
+            "parity_ok": true,
+            "class": "PASS_EXPLAINED_SPREAD"
+        }
+    ],
+    "parity_failures": []
+}

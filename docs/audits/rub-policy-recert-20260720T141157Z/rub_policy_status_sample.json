@@ -1,0 +1,127 @@
+{
+    "generated_at": "2026-07-20T17:14:28+03:00",
+    "policy": {
+        "approved": false,
+        "approved_at": null,
+        "approved_by": null,
+        "family_count": 8,
+        "version": 2,
+        "schema": "rub_family_premium_policy_v2"
+    },
+    "direction_count": 5,
+    "directions": [
+        {
+            "direction_id": 14,
+            "from": "BTC",
+            "to": "SBERRUB",
+            "family": "SBERRUB",
+            "policy_approved": false,
+            "family_decision": "APPROVE",
+            "baseline": "5045971.608165000000000000",
+            "baseline_source": "parser_exchange:[binance_btc-usdt]+median*parser_exchange:[russiancentralbank_usd-rub]",
+            "actual_rate": "5474329.998681162737027725",
+            "configured_profit_percent": "0",
+            "explained_family_premium_percent": null,
+            "raw_market_deviation": 8.489116,
+            "unexplained_deviation": 8.489116,
+            "order_eligibility": false,
+            "export_eligibility": false,
+            "blocking_reasons": [
+                "rub_policy_not_approved",
+                "critical_unexplained_deviation"
+            ],
+            "direction_status": 1,
+            "allow_export": 0
+        },
+        {
+            "direction_id": 15,
+            "from": "USDTTRC20",
+            "to": "SBERRUB",
+            "family": "SBERRUB",
+            "policy_approved": false,
+            "family_decision": "APPROVE",
+            "baseline": "78.398700000000000000",
+            "baseline_source": "parser_exchange:[russiancentralbank_usd-rub]",
+            "actual_rate": "83.387006980733181876",
+            "configured_profit_percent": "1",
+            "explained_family_premium_percent": null,
+            "raw_market_deviation": 6.362741,
+            "unexplained_deviation": 7.437113,
+            "order_eligibility": false,
+            "export_eligibility": false,
+            "blocking_reasons": [
+                "rub_policy_not_approved",
+                "critical_unexplained_deviation"
+            ],
+            "direction_status": 1,
+            "allow_export": 0
+        },
+        {
+            "direction_id": 20,
+            "from": "BTC",
+            "to": "SBPRUB",
+            "family": "SBPRUB",
+            "policy_approved": false,
+            "family_decision": "APPROVE",
+            "baseline": "5045971.608165000000000000",
+            "baseline_source": "parser_exchange:[binance_btc-usdt]+median*parser_exchange:[russiancentralbank_usd-rub]",
+            "actual_rate": "5372531.321857606429845485",
+            "configured_profit_percent": "0",
+            "explained_family_premium_percent": null,
+            "raw_market_deviation": 6.471691,
+            "unexplained_deviation": 6.471691,
+            "order_eligibility": false,
+            "export_eligibility": false,
+            "blocking_reasons": [
+                "rub_policy_not_approved"
+            ],
+            "direction_status": 1,
+            "allow_export": 0
+        },
+        {
+            "direction_id": 21,
+            "from": "BTC",
+            "to": "ACRUB",
+            "family": "ACRUB",
+            "policy_approved": false,
+            "family_decision": "APPROVE",
+            "baseline": "5045971.608165000000000000",
+            "baseline_source": "parser_exchange:[binance_btc-usdt]+median*parser_exchange:[russiancentralbank_usd-rub]",
+            "actual_rate": "5337831.345880795550383790",
+            "configured_profit_percent": "0",
+            "explained_family_premium_percent": null,
+            "raw_market_deviation": 5.784014,
+            "unexplained_deviation": 5.784014,
+            "order_eligibility": false,
+            "export_eligibility": false,
+            "blocking_reasons": [
+                "rub_policy_not_approved"
+            ],
+            "direction_status": 1,
+            "allow_export": 0
+        },
+        {
+            "direction_id": 25,
+            "from": "USDTTRC20",
+            "to": "ACRUB",
+            "family": "ACRUB",
+            "policy_approved": false,
+            "family_decision": "APPROVE",
+            "baseline": "78.398700000000000000",
+            "baseline_source": "parser_exchange:[russiancentralbank_usd-rub]",
+            "actual_rate": "83.699047309823673484",
+            "configured_profit_percent": "0.3",
+            "explained_family_premium_percent": null,
+            "raw_market_deviation": 6.760759,
+            "unexplained_deviation": 7.082005,
+            "order_eligibility": false,
+            "export_eligibility": false,
+            "blocking_reasons": [
+                "rub_policy_not_approved",
+                "critical_unexplained_deviation"
+            ],
+            "direction_status": 1,
+            "allow_export": 0
+        }
+    ]
+}

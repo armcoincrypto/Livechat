@@ -138,6 +138,101 @@ final class IndependentMarketBaseline
         ];
     }
 
+    /**
+     * Bridged crypto→crypto baseline via USDT (never BestChange).
+     * Orientation: destination units received per 1 source unit.
+     *
+     * @return array{rate:string,source:string,as_of:string,age_seconds:int,components:array,path:string}|null
+     */
+    public function cryptoViaUsdt(string $fromAsset, string $toAsset): ?array
+    {
+        $fromAsset = strtoupper($fromAsset);
+        $toAsset = strtoupper($toAsset);
+        if ($fromAsset === '' || $toAsset === '' || $fromAsset === $toAsset) {
+            return null;
+        }
+
+        if ($fromAsset === 'USDT' || $fromAsset === 'USDC') {
+            $to = $this->quote($toAsset . 'USDT') ?? $this->quote($toAsset . 'USD');
+            if ($to === null || $to['age_seconds'] > self::CRYPTO_MAX_AGE_SECONDS) {
+                return null;
+            }
+            if (bccomp($to['rate'], '0', self::SCALE) !== 1) {
+                return null;
+            }
+            $rate = bcdiv('1', $to['rate'], self::SCALE);
+
+            return [
+                'rate' => $rate,
+                'source' => '1/' . $to['source'],
+                'as_of' => $to['as_of'],
+                'age_seconds' => $to['age_seconds'],
+                'path' => 'stable_to_crypto_via_usdt',
+                'components' => ['to_usdt' => $to],
+            ];
+        }
+
+        if ($toAsset === 'USDT' || $toAsset === 'USDC') {
+            $from = $this->quote($fromAsset . 'USDT') ?? $this->quote($fromAsset . 'USD');
+            if ($from === null || $from['age_seconds'] > self::CRYPTO_MAX_AGE_SECONDS) {
+                return null;
+            }
+
+            return [
+                'rate' => $from['rate'],
+                'source' => $from['source'],
+                'as_of' => $from['as_of'],
+                'age_seconds' => $from['age_seconds'],
+                'path' => 'crypto_to_stable_via_usdt',
+                'components' => ['from_usdt' => $from],
+            ];
+        }
+
+        $from = $this->quote($fromAsset . 'USDT') ?? $this->quote($fromAsset . 'USD');
+        $to = $this->quote($toAsset . 'USDT') ?? $this->quote($toAsset . 'USD');
+        if ($from === null || $to === null) {
+            return null;
+        }
+        if ($from['age_seconds'] > self::CRYPTO_MAX_AGE_SECONDS || $to['age_seconds'] > self::CRYPTO_MAX_AGE_SECONDS) {
+            return null;
+        }
+        if (bccomp($to['rate'], '0', self::SCALE) !== 1) {
+            return null;
+        }
+
+        $rate = bcdiv($from['rate'], $to['rate'], self::SCALE);
+
+        return [
+            'rate' => $rate,
+            'source' => $from['source'] . '/' . $to['source'],
+            'as_of' => max($from['as_of'], $to['as_of']),
+            'age_seconds' => max($from['age_seconds'], $to['age_seconds']),
+            'path' => 'crypto_to_crypto_via_usdt',
+            'components' => [
+                'from_usdt' => $from,
+                'to_usdt' => $to,
+            ],
+        ];
+    }
+
+    /**
+     * Map local designation_xml (e.g. USDTTRC20, BNBBEP20) to baseline asset code.
+     */
+    public static function assetFromCode(string $code): ?string
+    {
+        $code = strtoupper(trim($code));
+        if ($code === '') {
+            return null;
+        }
+        foreach (['USDT', 'USDC', 'BTC', 'ETH', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC'] as $asset) {
+            if ($code === $asset || str_starts_with($code, $asset)) {
+                return $asset;
+            }
+        }
+
+        return null;
+    }
+
     public function coverage(): array
     {
         $assets = ['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC'];

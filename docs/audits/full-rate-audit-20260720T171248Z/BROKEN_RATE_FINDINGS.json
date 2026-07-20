@@ -1,0 +1,85 @@
+{
+  "generated_at": "2026-07-20T17:20:54.501129+00:00",
+  "findings": [
+    {
+      "finding": "USDTTRC20→SBPRUB over-premium",
+      "severity": "critical_for_orders",
+      "id": "DEF-001",
+      "direction_id": 268,
+      "pair": "USDTTRC20→SBPRUB",
+      "old_rate": "83.910112185286697468",
+      "correct_baseline": "78.3159 USDRUB (CBR)",
+      "expected_at_target_5pct": 82.231695,
+      "deviation_raw_pct": 7.143137,
+      "unexplained_vs_target_pct": 2.143137,
+      "root_cause": "BestChange-sourced commercial rate exceeds approved SBP target by >2%; order path did not enforce RubFamilyPremiumPolicy",
+      "impact": "orders_not_affected_in_audit_window (last order 2026-07-01); treasury risk if left active",
+      "fix": "DB quarantine status=0 allow_export=2; direction-status overlay for family policy; regression test",
+      "final_status": "KEEP_QUARANTINED"
+    },
+    {
+      "finding": "CARDAMD duplicate active directions",
+      "severity": "identity_catalog",
+      "evidence": "30 active *→CARDAMD rows including 7× USDTTRC20→CARDAMD (ids 81-88)",
+      "root_cause": "duplicate economic exports / catalog aliases",
+      "fix": "not mutated — requires operator mapping decision; fail-closed mapping already for some codes",
+      "final_status": "DOCUMENTED_KEEP_OPEN"
+    },
+    {
+      "finding": "PPUSD stablecoin directions ~5.6–5.8% vs 1.0",
+      "severity": "rates_audit_critical_non_rub",
+      "evidence": "rates:audit critical on USDT/USDC→PPUSD; active Payeer USD rails",
+      "root_cause": "commercial premium vs USD parity; not RUB family policy",
+      "fix": "not mutated this phase — needs separate PPUSD policy decision",
+      "final_status": "DOCUMENTED_OPERATOR_DECISION"
+    },
+    {
+      "finding": "enabled stale parser rows",
+      "severity": "provider",
+      "rows": [
+        {
+          "id": 6264,
+          "name": "BGN - RUB",
+          "code": "[russiancentralbank_bgn-rub]",
+          "from": "BGN",
+          "to": "RUB",
+          "age": 14079531,
+          "summa": "30.1043"
+        },
+        {
+          "id": 9454,
+          "name": "USDT - USD",
+          "code": "[russiancentralbank_usdt-usd]",
+          "from": "USDT",
+          "to": "USD",
+          "age": 36008176,
+          "summa": "0"
+        },
+        {
+          "id": 9466,
+          "name": "USD - KZT",
+          "code": "[nationalbankofkazakhstan_usd-kzt]",
+          "from": "USD",
+          "to": "KZT",
+          "age": 34974904,
+          "summa": "508.4200000000"
+        },
+        {
+          "id": 11407,
+          "name": "USDT - USD",
+          "code": "[coinbase_usdt-usd]",
+          "from": "USDT",
+          "to": "USD",
+          "age": 10707896,
+          "summa": "1.000105"
+        }
+      ],
+      "final_status": "DOCUMENTED"
+    },
+    {
+      "finding": "TONUSDT missing",
+      "severity": "baseline_gap",
+      "final_status": "KEEP_TON_DISABLED"
+    }
+  ]
+}

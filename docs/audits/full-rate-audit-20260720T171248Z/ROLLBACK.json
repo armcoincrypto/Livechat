@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-07-20T17:20:54.501389+00:00",
+  "mutations": [
+    {
+      "id": "dir_268_quarantine",
+      "apply": "/opt/exswaping-zec-sbp-20260720/docs/audits/full-rate-audit-20260720T171248Z/dir_268_quarantine_apply.sql",
+      "rollback": "/opt/exswaping-zec-sbp-20260720/docs/audits/full-rate-audit-20260720T171248Z/dir_268_quarantine_rollback.sql",
+      "before": "/opt/exswaping-zec-sbp-20260720/docs/audits/full-rate-audit-20260720T171248Z/dir_268_before_quarantine.json",
+      "after": "/opt/exswaping-zec-sbp-20260720/docs/audits/full-rate-audit-20260720T171248Z/dir_268_after_quarantine.json"
+    },
+    {
+      "id": "direction_status_family_overlay",
+      "files": [
+        "app/Console/Commands/RatesDirectionStatusCommand.php",
+        "tests/Unit/Rates/RubFamilyPremiumPolicyTest.php"
+      ],
+      "rollback": "git checkout -- those files; resync to APP"
+    }
+  ],
+  "not_mutated": [
+    "ZEC 540 not restored",
+    "no premium auto-increase",
+    "no PPUSD/CARDAMD mass changes"
+  ]
+}

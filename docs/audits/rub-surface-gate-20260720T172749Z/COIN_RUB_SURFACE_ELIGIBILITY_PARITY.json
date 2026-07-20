@@ -1,0 +1,893 @@
+{
+    "generated_at": "2026-07-20T17:32:51+00:00",
+    "totals": {
+        "reviewed": 69,
+        "quote": 68,
+        "order": 61,
+        "export": 61,
+        "bc": 61,
+        "blocked_consistent": 8
+    },
+    "mismatch": 0,
+    "orderable_review": 0,
+    "focus": [
+        {
+            "direction_id": 268,
+            "from": "USDTTRC20",
+            "to": "SBPRUB",
+            "quote_allowed": false,
+            "order_allowed": false,
+            "export_allowed": false,
+            "BestChange_allowed": false,
+            "eligible_for_quote": false,
+            "eligible_for_order": false,
+            "eligible_for_export": false,
+            "classification": "QUARANTINE_REQUIRED",
+            "baseline_status": "OK",
+            "policy_status": "approved",
+            "reserve_status": "adequate",
+            "mapping_status": {
+                "USDTTRC20": "VERIFIED",
+                "SBPRUB": "VERIFIED"
+            },
+            "parity_status": "not_evaluated",
+            "blocking_reasons": [
+                "quarantined_status0_allow_export2",
+                "direction_not_active",
+                "export_hard_disabled",
+                "rate_unexplained_critical_deviation",
+                "unexplained_above_expected_block",
+                "rub_family_quarantine_required"
+            ],
+            "reasons": [
+                "quarantined_status0_allow_export2",
+                "direction_not_active",
+                "export_hard_disabled",
+                "rate_unexplained_critical_deviation",
+                "unexplained_above_expected_block",
+                "rub_family_quarantine_required"
+            ],
+            "error_code": "DIRECTION_TEMPORARILY_UNAVAILABLE",
+            "course_value": "83.910112185286697468",
+            "baseline_rate": "78.315900000000000000",
+            "baseline_source": "parser_exchange:[russiancentralbank_usd-rub]",
+            "baseline_age_seconds": 36,
+            "raw_market_deviation": 7.143137,
+            "unexplained_vs_expected_percent": 2.1431370000000003,
+            "active": false,
+            "quarantined": true,
+            "deprecated": false,
+            "status": 0,
+            "allow_export": 2,
+            "rate_quarantine": {
+                "status": "EXPORT_BLOCKED_OUTLIER",
+                "allowed": false,
+                "reason": "unexplained_critical_deviation"
+            },
+            "provider_status": "BestChange"
+        },
+        {
+            "direction_id": 540,
+            "from": "ZEC",
+            "to": "SBERRUB",
+            "quote_allowed": false,
+            "order_allowed": false,
+            "export_allowed": false,
+            "BestChange_allowed": false,
+            "eligible_for_quote": false,
+            "eligible_for_order": false,
+            "eligible_for_export": false,
+            "classification": "PASS_EXPLAINED_SPREAD",
+            "baseline_status": "OK",
+            "policy_status": "approved",
+            "reserve_status": "adequate",
+            "mapping_status": {
+                "ZEC": "VERIFIED",
+                "SBERRUB": "VERIFIED"
+            },
+            "parity_status": "not_evaluated",
+            "blocking_reasons": [
+                "quarantined_status0_allow_export2",
+                "direction_not_active",
+                "export_hard_disabled"
+            ],
+            "reasons": [
+                "quarantined_status0_allow_export2",
+                "direction_not_active",
+                "export_hard_disabled"
+            ],
+            "error_code": "DIRECTION_TEMPORARILY_UNAVAILABLE",
+            "course_value": "44517.921233869460447696",
+            "baseline_rate": "43261.703160000000000000",
+            "baseline_source": "parser_exchange:[binance_zec-usdt]*parser_exchange:[russiancentralbank_usd-rub]",
+            "baseline_age_seconds": 36,
+            "raw_market_deviation": 2.903764,
+            "unexplained_vs_expected_percent": -2.096236,
+            "active": false,
+            "quarantined": true,
+            "deprecated": false,
+            "status": 0,
+            "allow_export": 2,
+            "rate_quarantine": {
+                "status": "EXPORT_ALLOWED",
+                "allowed": true,
+                "reason": null
+            },
+            "provider_status": "BestChange"
+        },
+        {
+            "direction_id": 541,
+            "from": "ZEC",
+            "to": "SBPRUB",
+            "quote_allowed": true,
+            "order_allowed": true,
+            "export_allowed": true,
+            "BestChange_allowed": true,
+            "eligible_for_quote": true,
+            "eligible_for_order": true,
+            "eligible_for_export": true,
+            "classification": "PASS_EXPLAINED_SPREAD",
+            "baseline_status": "OK",
+            "policy_status": "approved",
+            "reserve_status": "adequate",
+            "mapping_status": {
+                "ZEC": "VERIFIED",
+                "SBPRUB": "VERIFIED"
+            },
+            "parity_status": "not_evaluated",
+            "blocking_reasons": [],
+            "reasons": [],
+            "error_code": null,
+            "course_value": "44792.949999615138973603",
+            "baseline_rate": "43261.703160000000000000",
+            "baseline_source": "parser_exchange:[binance_zec-usdt]*parser_exchange:[russiancentralbank_usd-rub]",
+            "baseline_age_seconds": 36,
+            "raw_market_deviation": 3.539497,
+            "unexplained_vs_expected_percent": -1.460503,
+            "active": true,
+            "quarantined": false,
+            "deprecated": false,
+            "status": 1,
+            "allow_export": 0,
+            "rate_quarantine": {
+                "status": "EXPORT_ALLOWED",
+                "allowed": true,
+                "reason": null
+            },
+            "provider_status": "BestChange"
+        },
+        {
+            "direction_id": 542,
+            "from": "ZEC",
+            "to": "ACRUB",
+            "quote_allowed": true,
+            "order_allowed": true,
+            "export_allowed": true,
+            "BestChange_allowed": true,
+            "eligible_for_quote": true,
+            "eligible_for_order": true,
+            "eligible_for_export": true,
+            "classification": "PASS_EXPLAINED_SPREAD",
+            "baseline_status": "OK",
+            "policy_status": "approved",
+            "reserve_status": "adequate",
+            "mapping_status": {
+                "ZEC": "VERIFIED",
+                "ACRUB": "VERIFIED"
+            },
+            "parity_status": "not_evaluated",
+            "blocking_reasons": [],
+            "reasons": [],
+            "error_code": null,
+            "course_value": "44328.879999967303018112",
+            "baseline_rate": "43261.703160000000000000",
+            "baseline_source": "parser_exchange:[binance_zec-usdt]*parser_exchange:[russiancentralbank_usd-rub]",
+            "baseline_age_seconds": 36,
+            "raw_market_deviation": 2.466793,
+            "unexplained_vs_expected_percent": -2.533207,
+            "active": true,
+            "quarantined": false,
+            "deprecated": false,
+            "status": 1,
+            "allow_export": 0,
+            "rate_quarantine": {
+                "status": "EXPORT_ALLOWED",
+                "allowed": true,
+                "reason": null
+            },
+            "provider_status": "BestChange"
+        }
+    ],
+    "directions": [
+        {
+            "id": 14,
+            "from": "BTC",
+            "to": "SBERRUB",
+            "class": "REVIEW",
+            "quote": true,
+            "order": false,
+            "export": false,
+            "bc": false
+        },
+        {
+            "id": 15,
+            "from": "USDTTRC20",
+            "to": "SBERRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 20,
+            "from": "BTC",
+            "to": "SBPRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 21,
+            "from": "BTC",
+            "to": "ACRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 25,
+            "from": "USDTTRC20",
+            "to": "ACRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 26,
+            "from": "USDTTRC20",
+            "to": "RFBRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 27,
+            "from": "USDTTRC20",
+            "to": "TCSBRUB",
+            "class": "PASS",
+            "quote": false,
+            "order": false,
+            "export": false,
+            "bc": false
+        },
+        {
+            "id": 28,
+            "from": "USDTTRC20",
+            "to": "TBRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 108,
+            "from": "USDTERC20",
+            "to": "SBERRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 109,
+            "from": "USDTERC20",
+            "to": "SBPRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 110,
+            "from": "USDTERC20",
+            "to": "ACRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 111,
+            "from": "USDTERC20",
+            "to": "TCSBRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 160,
+            "from": "LTC",
+            "to": "SBPRUB",
+            "class": "REVIEW",
+            "quote": true,
+            "order": false,
+            "export": false,
+            "bc": false
+        },
+        {
+            "id": 161,
+            "from": "ETH",
+            "to": "SBPRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 168,
+            "from": "TRX",
+            "to": "SBERRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 187,
+            "from": "BTC",
+            "to": "RFBRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 212,
+            "from": "BTC",
+            "to": "TCSBRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 214,
+            "from": "BTC",
+            "to": "TBRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 223,
+            "from": "LTC",
+            "to": "SBERRUB",
+            "class": "REVIEW",
+            "quote": true,
+            "order": false,
+            "export": false,
+            "bc": false
+        },
+        {
+            "id": 224,
+            "from": "LTC",
+            "to": "ACRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 225,
+            "from": "LTC",
+            "to": "TCSBRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 226,
+            "from": "LTC",
+            "to": "RFBRUB",
+            "class": "REVIEW",
+            "quote": true,
+            "order": false,
+            "export": false,
+            "bc": false
+        },
+        {
+            "id": 325,
+            "from": "BNBBEP20",
+            "to": "SBERRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 326,
+            "from": "BNBBEP20",
+            "to": "SBPRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 373,
+            "from": "ETH",
+            "to": "SBERRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 374,
+            "from": "ETH",
+            "to": "ACRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 375,
+            "from": "ETH",
+            "to": "TCSBRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 376,
+            "from": "ETH",
+            "to": "RFBRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 541,
+            "from": "ZEC",
+            "to": "SBPRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 542,
+            "from": "ZEC",
+            "to": "ACRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1011,
+            "from": "BNBBEP20",
+            "to": "TBRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1029,
+            "from": "USDTBEP20",
+            "to": "SBPRUB",
+            "class": "REVIEW",
+            "quote": true,
+            "order": false,
+            "export": false,
+            "bc": false
+        },
+        {
+            "id": 1030,
+            "from": "USDTBEP20",
+            "to": "TCSBRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1056,
+            "from": "USDTBEP20",
+            "to": "SBERRUB",
+            "class": "REVIEW",
+            "quote": true,
+            "order": false,
+            "export": false,
+            "bc": false
+        },
+        {
+            "id": 1057,
+            "from": "USDTBEP20",
+            "to": "ACRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1058,
+            "from": "USDTBEP20",
+            "to": "RFBRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1059,
+            "from": "USDTBEP20",
+            "to": "TBRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1070,
+            "from": "USDTERC20",
+            "to": "RFBRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1071,
+            "from": "USDTERC20",
+            "to": "TBRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1075,
+            "from": "USDTSOL",
+            "to": "SBERRUB",
+            "class": "PASS",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1076,
+            "from": "USDTSOL",
+            "to": "SBPRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1077,
+            "from": "USDTSOL",
+            "to": "ACRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1079,
+            "from": "USDTSOL",
+            "to": "TCSBRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1080,
+            "from": "USDTSOL",
+            "to": "TBRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1112,
+            "from": "USDTTON",
+            "to": "SBERRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1113,
+            "from": "USDTTON",
+            "to": "SBPRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1114,
+            "from": "USDTTON",
+            "to": "ACRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1115,
+            "from": "USDTTON",
+            "to": "RFBRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1116,
+            "from": "USDTTON",
+            "to": "TCSBRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1117,
+            "from": "USDTTON",
+            "to": "TBRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1157,
+            "from": "USDCERC20",
+            "to": "SBERRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1158,
+            "from": "USDCERC20",
+            "to": "SBPRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1159,
+            "from": "USDCERC20",
+            "to": "ACRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1160,
+            "from": "USDCERC20",
+            "to": "RFBRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1161,
+            "from": "USDCERC20",
+            "to": "TCSBRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1162,
+            "from": "USDCERC20",
+            "to": "TBRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1305,
+            "from": "USDTTRC20",
+            "to": "CARDRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1306,
+            "from": "USDTERC20",
+            "to": "CARDRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1307,
+            "from": "USDTBEP20",
+            "to": "CARDRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1415,
+            "from": "USDTTRC20",
+            "to": "YAMRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1416,
+            "from": "USDTERC20",
+            "to": "YAMRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1417,
+            "from": "USDTBEP20",
+            "to": "YAMRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1418,
+            "from": "USDTTON",
+            "to": "YAMRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1419,
+            "from": "BTC",
+            "to": "YAMRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1420,
+            "from": "LTC",
+            "to": "YAMRUB",
+            "class": "REVIEW",
+            "quote": true,
+            "order": false,
+            "export": false,
+            "bc": false
+        },
+        {
+            "id": 1422,
+            "from": "BNBBEP20",
+            "to": "YAMRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1423,
+            "from": "ETH",
+            "to": "YAMRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1428,
+            "from": "USDCERC20",
+            "to": "YAMRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        },
+        {
+            "id": 1973,
+            "from": "BTC",
+            "to": "CARDRUB",
+            "class": "PASS_EXPLAINED_SPREAD",
+            "quote": true,
+            "order": true,
+            "export": true,
+            "bc": true
+        }
+    ]
+}

@@ -1,0 +1,112 @@
+{
+  "version": 3,
+  "schema": "rub_family_premium_policy_v3",
+  "approved": true,
+  "approved_at": "2026-07-20T14:25:23Z",
+  "approved_by": "exswaping-operator-chat-approval",
+  "approval_source": "Explicit operator message approving controlled RUB family premiums with stated limits",
+  "notes": "Family maximum is a CEILING only — never auto-increase configured premiums to target/max. Expected commercial rate uses target band top. Unexplained vs expected: warn >1%, block >2%. Hard max blocks regardless.",
+  "baseline": {
+    "crypto_path": "ASSETUSDT from approved live independent provider (not BestChange)",
+    "stablecoin_path": "USDRUB",
+    "usdrub_source": "russiancentralbank",
+    "max_crypto_age_seconds": 900,
+    "max_fiat_age_seconds": 21600,
+    "minimum_provider_count": 1,
+    "forbid_bestchange_circular_baseline": true
+  },
+  "default_thresholds": {
+    "unexplained_warning_percent": 1.0,
+    "unexplained_block_percent": 2.0
+  },
+  "families": {
+    "SBPRUB": {
+      "label": "SBP RUB",
+      "destination_codes": ["SBPRUB"],
+      "decision": "APPROVE",
+      "target_premium_min_percent": 3.0,
+      "target_premium_max_percent": 5.0,
+      "warning_premium_percent": 6.0,
+      "hard_maximum_premium_percent": 8.0,
+      "order_allowed_when_approved": true,
+      "export_allowed_when_approved": true
+    },
+    "SBERRUB": {
+      "label": "Sberbank RUB",
+      "destination_codes": ["SBERRUB"],
+      "decision": "APPROVE",
+      "target_premium_min_percent": 3.0,
+      "target_premium_max_percent": 5.0,
+      "warning_premium_percent": 6.0,
+      "hard_maximum_premium_percent": 8.0,
+      "order_allowed_when_approved": true,
+      "export_allowed_when_approved": true
+    },
+    "TCSBRUB": {
+      "label": "Tinkoff / T-Bank RUB",
+      "destination_codes": ["TCSBRUB", "TBRUB"],
+      "decision": "APPROVE",
+      "target_premium_min_percent": 3.0,
+      "target_premium_max_percent": 6.0,
+      "warning_premium_percent": 7.0,
+      "hard_maximum_premium_percent": 9.0,
+      "order_allowed_when_approved": true,
+      "export_allowed_when_approved": true
+    },
+    "CARDRUB": {
+      "label": "Card RUB",
+      "destination_codes": ["CARDRUB"],
+      "decision": "APPROVE",
+      "target_premium_min_percent": 3.0,
+      "target_premium_max_percent": 6.0,
+      "warning_premium_percent": 7.0,
+      "hard_maximum_premium_percent": 9.0,
+      "order_allowed_when_approved": true,
+      "export_allowed_when_approved": true
+    },
+    "ACRUB": {
+      "label": "Advanced Cash RUB",
+      "destination_codes": ["ACRUB"],
+      "decision": "APPROVE",
+      "target_premium_min_percent": 3.0,
+      "target_premium_max_percent": 5.0,
+      "warning_premium_percent": 6.0,
+      "hard_maximum_premium_percent": 8.0,
+      "order_allowed_when_approved": true,
+      "export_allowed_when_approved": true
+    },
+    "YAMRUB": {
+      "label": "Yandex Money RUB",
+      "destination_codes": ["YAMRUB"],
+      "decision": "APPROVE",
+      "target_premium_min_percent": 3.0,
+      "target_premium_max_percent": 5.0,
+      "warning_premium_percent": 6.0,
+      "hard_maximum_premium_percent": 8.0,
+      "order_allowed_when_approved": true,
+      "export_allowed_when_approved": true
+    },
+    "RFBRUB": {
+      "label": "Raiffeisen RUB",
+      "destination_codes": ["RFBRUB"],
+      "decision": "APPROVE",
+      "target_premium_min_percent": 3.0,
+      "target_premium_max_percent": 5.0,
+      "warning_premium_percent": 6.0,
+      "hard_maximum_premium_percent": 8.0,
+      "order_allowed_when_approved": true,
+      "export_allowed_when_approved": true
+    },
+    "OTHER_RUB": {
+      "label": "Other RUB rails (unverified)",
+      "destination_codes": ["*RUB"],
+      "decision": "KEEP_BLOCKED",
+      "target_premium_min_percent": 0.0,
+      "target_premium_max_percent": 0.0,
+      "warning_premium_percent": 0.0,
+      "hard_maximum_premium_percent": 0.0,
+      "order_allowed_when_approved": false,
+      "export_allowed_when_approved": false
+    }
+  }
+}

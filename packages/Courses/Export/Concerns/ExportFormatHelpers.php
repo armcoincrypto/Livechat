@@ -8,7 +8,9 @@ use App\Models\Currency;
 use App\Models\DirectionExchange;
 use App\Services\Rates\BestChangeMappingVerifier;
 use App\Services\Rates\IndependentMarketBaseline;
+use App\Services\Rates\RateConfiguredExpectation;
 use App\Services\Rates\RateExportQuarantine;
+use App\Services\Rates\RubFamilyPremiumPolicy;
 use Carbon\Carbon;
 use iEXPackages\Calculator\Traits\InteractsWithNumbers;
 use Illuminate\Support\Facades\Log;
@@ -99,8 +101,7 @@ trait ExportFormatHelpers
                 return false;
             }
 
-            // Crypto→RUB: require independent baseline and block critical unexplained deviation.
-            // Prevents BestChange-circular outliers (e.g. ZEC→SBPRUB) from public XML.
+            // Crypto→RUB: one canonical eligibility decision (same as API/order).
             if (!$this->passesIndependentCryptoRubExportGate($rate, $fromCode, $toCode)) {
                 return false;
             }
@@ -155,6 +156,7 @@ trait ExportFormatHelpers
     /**
      * When an independent crypto→RUB baseline exists, refuse export on critical outliers.
      * When the pair is crypto→RUB but no trusted baseline exists, fail closed.
+     * When RUB family premium policy is not operator-approved, fail closed for public export.
      */
     protected function passesIndependentCryptoRubExportGate(DirectionExchange $rate, string $fromCode, string $toCode): bool
     {
@@ -167,21 +169,9 @@ trait ExportFormatHelpers
         }
 
         try {
-            $baseline = new IndependentMarketBaseline();
-            $quote = $asset === 'USDT' || $asset === 'USDC'
-                ? $baseline->quote('USDRUB')
-                : $baseline->cryptoRub($asset);
-            $quarantine = new RateExportQuarantine();
-            if ($quote === null) {
-                // No trusted independent feed (e.g. disabled/stale ZECUSDT parsers).
-                return false;
-            }
-            $decision = $quarantine->evaluate((string) $rate->course_value, [
-                'baseline' => $quote['rate'],
-                'profit_percent' => (string) ($rate->profit ?? '0'),
-            ]);
+            $surface = \App\Services\Rates\RateDirectionEligibility::make()->evaluateDirection($rate);
 
-            return $decision['allowed'];
+            return !empty($surface['export_allowed']) && !empty($surface['BestChange_allowed']);
         } catch (Throwable $e) {
             Log::error('crypto_rub_export_gate_failed', [
                 'direction_exchange_id' => $rate->id ?? null,

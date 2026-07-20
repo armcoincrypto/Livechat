@@ -1,0 +1,29 @@
+LTCUSDT=[{"id":228,"code":"[binance_ltc-usdt]","code_in":"LTC","code_out":"USDT","summa":"53.63","status":0,"updated_at":"2024-11-12 23:30:16"}]
+TONUSDT=[]
+ZECUSDT=[{"id":344,"code":"[binance_zec-usdt]","code_in":"ZEC","code_out":"USDT","summa":"54.2","status":0,"updated_at":"2024-11-12 23:30:17"}]
+ALT_GROUPS=[
+    {
+        "id": 14,
+        "name": "HitBtc",
+        "alias": "hitbtc",
+        "status": 1,
+        "last_total": 0,
+        "last_updated": 0
+    },
+    {
+        "id": 15,
+        "name": "KuCoin",
+        "alias": "kucoin",
+        "status": 1,
+        "last_total": 0,
+        "last_updated": 0
+    },
+    {
+        "id": 27,
+        "name": "WhiteBit",
+        "alias": "whitebit",
+        "status": 1,
+        "last_total": 6,
+        "last_updated": 6
+    }
+]

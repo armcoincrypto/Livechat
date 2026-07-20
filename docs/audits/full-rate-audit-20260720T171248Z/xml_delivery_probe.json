@@ -1,0 +1,22 @@
+{
+    "generated_at": "2026-07-20T20:13:16+03:00",
+    "url": "https:\/\/exswaping.com\/currencies.xml",
+    "curl_exit": 0,
+    "stderr": "",
+    "metrics": {
+        "code": "200",
+        "dns": "0.010422",
+        "connect": "0.217389",
+        "tls": "0.468640",
+        "ttfb": "0.470958",
+        "total": "0.471797",
+        "size": "159340",
+        "ip": "81.17.103.188",
+        "proto": "1.1"
+    },
+    "items": 819,
+    "valid_xml": true,
+    "sample_btc_cardgel_present": true,
+    "ton_exact_present": false,
+    "ok": true
+}

@@ -1,0 +1,10 @@
+PHPUnit 11.5.55 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.20
+Configuration: /var/www/app_exswapin_usr/data/www/app.exswaping.com/phpunit.xml
+
+..........                                                        10 / 10 (100%)
+
+Time: 00:00.015, Memory: 44.50 MB
+
+OK (10 tests, 23 assertions)

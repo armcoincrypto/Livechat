@@ -1,0 +1,4 @@
+whitebit err HTTP Error 403: Forbidden
+coinbase usdt err HTTP Error 403: Forbidden
+coinbase usd err HTTP Error 403: Forbidden
+binance: bid=534.04000000 ask=534.05000000

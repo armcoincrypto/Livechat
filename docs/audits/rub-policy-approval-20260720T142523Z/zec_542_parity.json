@@ -1,0 +1,26 @@
+{
+  "540": {
+    "status": 0,
+    "allow_export": 2,
+    "course": 44517.92123386946,
+    "xml": null,
+    "expected": "KEEP_QUARANTINED",
+    "xml_absent": true
+  },
+  "541": {
+    "status": 1,
+    "allow_export": 0,
+    "course": 43198.45842534203,
+    "xml": 43198.46,
+    "db_xml_diff_pct": 3.6451716657408865e-06,
+    "parity_ok": true
+  },
+  "542": {
+    "status": 1,
+    "allow_export": 0,
+    "course": 43169.73519957693,
+    "xml": 43169.7352,
+    "db_xml_diff_pct": 9.800271079635205e-10,
+    "parity_ok": true
+  }
+}

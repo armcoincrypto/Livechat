@@ -1,0 +1,122 @@
+TON_PARSERS=[
+    {
+        "id": 6525,
+        "code": "[whitebit_ston-usdt]",
+        "code_in": "STON",
+        "code_out": "USDT",
+        "summa": "0.014334",
+        "status": 0,
+        "updated_at": "2024-12-15 00:38:50",
+        "id_group": 27
+    },
+    {
+        "id": 6783,
+        "code": "[whitebit_usdt-ston]",
+        "code_in": "USDT",
+        "code_out": "STON",
+        "summa": "69.764197014092",
+        "status": 0,
+        "updated_at": "2024-12-15 00:38:51",
+        "id_group": 27
+    },
+    {
+        "id": 11581,
+        "code": "[rapira_ton-usdt_ask]",
+        "code_in": "TON",
+        "code_out": "USDT",
+        "summa": "1.3042",
+        "status": 0,
+        "updated_at": "2026-07-20 00:26:27",
+        "id_group": 47
+    },
+    {
+        "id": 11582,
+        "code": "[rapira_ton-usdt_bid]",
+        "code_in": "TON",
+        "code_out": "USDT",
+        "summa": "3.6981",
+        "status": 0,
+        "updated_at": "2026-02-18 16:32:13",
+        "id_group": 47
+    },
+    {
+        "id": 11663,
+        "code": "[mexcexchange_kton-eth]",
+        "code_in": "KTON",
+        "code_out": "ETH",
+        "summa": "0.009034",
+        "status": 0,
+        "updated_at": "2026-03-18 22:05:37",
+        "id_group": 41
+    },
+    {
+        "id": 12643,
+        "code": "[mexcexchange_kton-usdt]",
+        "code_in": "KTON",
+        "code_out": "USDT",
+        "summa": "12.7482",
+        "status": 0,
+        "updated_at": "2026-03-18 22:05:41",
+        "id_group": 41
+    },
+    {
+        "id": 13028,
+        "code": "[mexcexchange_onston-usdt]",
+        "code_in": "ONSTON",
+        "code_out": "USDT",
+        "summa": "0.01004",
+        "status": 0,
+        "updated_at": "2026-03-18 22:05:42",
+        "id_group": 41
+    },
+    {
+        "id": 13208,
+        "code": "[mexcexchange_ton-usdt]",
+        "code_in": "TON",
+        "code_out": "USDT",
+        "summa": "0.8588",
+        "status": 0,
+        "updated_at": "2026-03-18 22:05:43",
+        "id_group": 41
+    },
+    {
+        "id": 13728,
+        "code": "[mexcexchange_eth-kton]",
+        "code_in": "ETH",
+        "code_out": "KTON",
+        "summa": "110.69293779057",
+        "status": 0,
+        "updated_at": "2026-03-18 22:05:45",
+        "id_group": 41
+    },
+    {
+        "id": 14708,
+        "code": "[mexcexchange_usdt-kton]",
+        "code_in": "USDT",
+        "code_out": "KTON",
+        "summa": "0.0784424467768",
+        "status": 0,
+        "updated_at": "2026-03-18 22:05:49",
+        "id_group": 41
+    },
+    {
+        "id": 15093,
+        "code": "[mexcexchange_usdt-onston]",
+        "code_in": "USDT",
+        "code_out": "ONSTON",
+        "summa": "99.601593625498",
+        "status": 0,
+        "updated_at": "2026-03-18 22:05:50",
+        "id_group": 41
+    },
+    {
+        "id": 15273,
+        "code": "[mexcexchange_usdt-ton]",
+        "code_in": "USDT",
+        "code_out": "TON",
+        "summa": "1.1644154634374",
+        "status": 0,
+        "updated_at": "2026-03-18 22:05:51",
+        "id_group": 41
+    }
+]

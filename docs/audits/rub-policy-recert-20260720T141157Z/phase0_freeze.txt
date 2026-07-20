@@ -1,0 +1,10 @@
+UTC=2026-07-20T14:11:57Z
+hostname=exswaping.com
+repo=/opt/exswaping-zec-sbp-20260720
+HEAD=0d4111a8aed1ab98de353afe91ac12aa0fe00113
+branch=release/exswaping-zec-rate-incident-20260720
+origin_main=6fdebcda006205430d8fd1884006abaab46fae1a
+## release/exswaping-zec-rate-incident-20260720
+?? docs/audits/rub-policy-recert-20260720T141157Z/
+f4489738294ab80097394c30d547db56b43f5f815dde7866995eb3884f6f239b  /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/currencies.xml
+xml_items 808 zec_sbp 0

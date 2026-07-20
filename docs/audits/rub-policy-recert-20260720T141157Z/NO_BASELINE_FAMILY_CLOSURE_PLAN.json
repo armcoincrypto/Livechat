@@ -1,0 +1,58 @@
+{
+  "generated_at": "2026-07-20T14:15:37.644851+00:00",
+  "no_baseline_total": 700,
+  "no_policy_total": 68,
+  "families": {
+    "source_asset:USDT_uncovered_dest": 252,
+    "source_asset:USDC_uncovered_dest": 52,
+    "unsupported_or_internal:DASH": 37,
+    "source_asset:BTC_uncovered_dest": 37,
+    "source_asset:LTC_uncovered_dest": 35,
+    "crypto_rub:OTHER": 32,
+    "source_asset:ETH_uncovered_dest": 32,
+    "unsupported_or_internal:TUSDTRC20": 30,
+    "source_asset:BNB_uncovered_dest": 26,
+    "unsupported_or_internal:CASHUSD": 18,
+    "unsupported_or_internal:XMR": 15,
+    "unsupported_or_internal:ETC": 15,
+    "unsupported_or_internal:XRP": 15,
+    "unsupported_or_internal:SOL": 14,
+    "unsupported_or_internal:BCH": 11,
+    "unsupported_or_internal:ADA": 10,
+    "unsupported_or_internal:ZELLEUSD": 10,
+    "unsupported_or_internal:TUSDERC20": 8,
+    "unsupported_or_internal:NEO": 8,
+    "unsupported_or_internal:XTZ": 7,
+    "unsupported_or_internal:XLM": 6,
+    "unsupported_or_internal:DOGE": 6,
+    "unsupported_or_internal:SHIBBEP20": 6,
+    "unsupported_or_internal:DOT": 6,
+    "crypto_gel:USDT": 5,
+    "source_asset:ZEC_uncovered_dest": 4,
+    "source_asset:TON_uncovered_dest": 2,
+    "crypto_gel:OTHER": 1
+  },
+  "priority_actions": [
+    {
+      "family": "source_asset:USDT_uncovered_dest",
+      "action": "USE_APPROVED_USDT_BRIDGE or KEEP_INTERNAL_ONLY",
+      "note": "Destination fiat/asset outside covered set"
+    },
+    {
+      "family": "unsupported_or_internal:DASH/XMR/SOL/...",
+      "action": "DEPRECATE or KEEP_INTERNAL_ONLY",
+      "note": "No approved independent market; low strategic value"
+    },
+    {
+      "family": "TON",
+      "action": "KEEP_TON_DISABLED",
+      "note": "Binance TONUSDT BREAK; no trusted TON\u2260GRAM feed"
+    },
+    {
+      "family": "coin_rub NO_POLICY",
+      "action": "Await operator approval of rub-family-premium-policy.json",
+      "note": "68 directions"
+    }
+  ],
+  "do_not": "Mass-quarantine 700 directions or add providers for dead catalog entries"
+}

@@ -1,0 +1,3 @@
+-- No DB policy table; restore JSON file from rub-family-premium-policy.before.json
+-- ZEC directions (only if this phase mutates them):
+-- UPDATE direction_exchange SET status=0, allow_export=2 WHERE id IN (540,541,542);

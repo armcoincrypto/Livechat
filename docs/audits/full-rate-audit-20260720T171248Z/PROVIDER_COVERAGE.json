@@ -1,0 +1,722 @@
+{
+    "generated_at": "2026-07-20T17:15:11+00:00",
+    "parser_rows_total": 9571,
+    "enabled": 80,
+    "disabled": 9491,
+    "enabled_stale_gt_900s": [
+        {
+            "id": 6264,
+            "name": "BGN - RUB",
+            "code": "[russiancentralbank_bgn-rub]",
+            "from": "BGN",
+            "to": "RUB",
+            "age": 14079531,
+            "summa": "30.1043"
+        },
+        {
+            "id": 9454,
+            "name": "USDT - USD",
+            "code": "[russiancentralbank_usdt-usd]",
+            "from": "USDT",
+            "to": "USD",
+            "age": 36008176,
+            "summa": "0"
+        },
+        {
+            "id": 9466,
+            "name": "USD - KZT",
+            "code": "[nationalbankofkazakhstan_usd-kzt]",
+            "from": "USD",
+            "to": "KZT",
+            "age": 34974904,
+            "summa": "508.4200000000"
+        },
+        {
+            "id": 11407,
+            "name": "USDT - USD",
+            "code": "[coinbase_usdt-usd]",
+            "from": "USDT",
+            "to": "USD",
+            "age": 10707896,
+            "summa": "1.000105"
+        }
+    ],
+    "duplicate_enabled_pairs": {
+        "BTC|USDT": [
+            {
+                "id": 153,
+                "name": "BTC - USDT",
+                "code": "[binance_btc-usdt]",
+                "summa": "65512",
+                "age": -3559
+            },
+            {
+                "id": 6377,
+                "name": "BTC - USDT",
+                "code": "[whitebit_btc-usdt]",
+                "summa": "65519.83",
+                "age": -3559
+            }
+        ],
+        "ETH|USDT": [
+            {
+                "id": 154,
+                "name": "ETH - USDT",
+                "code": "[binance_eth-usdt]",
+                "summa": "1899.02",
+                "age": -3559
+            },
+            {
+                "id": 6423,
+                "name": "ETH - USDT",
+                "code": "[whitebit_eth-usdt]",
+                "summa": "1899.01",
+                "age": -3559
+            }
+        ],
+        "BNB|USDT": [
+            {
+                "id": 202,
+                "name": "BNB - USDT",
+                "code": "[binance_bnb-usdt]",
+                "summa": "573.28",
+                "age": -3559
+            },
+            {
+                "id": 6367,
+                "name": "BNB - USDT",
+                "code": "[whitebit_bnb-usdt]",
+                "summa": "573.56",
+                "age": -3559
+            }
+        ],
+        "TRX|USDT": [
+            {
+                "id": 294,
+                "name": "TRX - USDT",
+                "code": "[binance_trx-usdt]",
+                "summa": "0.3264",
+                "age": -3559
+            },
+            {
+                "id": 6538,
+                "name": "TRX - USDT",
+                "code": "[whitebit_trx-usdt]",
+                "summa": "0.326281",
+                "age": -3559
+            }
+        ],
+        "AMD|USD": [
+            {
+                "id": 6855,
+                "name": "AMD - USD",
+                "code": "[russiancentralbank_amd-usd]",
+                "summa": "0.01272260",
+                "age": -3559
+            },
+            {
+                "id": 9796,
+                "name": "AMD - USD",
+                "code": "[floatrates_amd-usd]",
+                "summa": "0.0027292487",
+                "age": -3559
+            }
+        ],
+        "USDT|USD": [
+            {
+                "id": 9454,
+                "name": "USDT - USD",
+                "code": "[russiancentralbank_usdt-usd]",
+                "summa": "0",
+                "age": 36008176
+            },
+            {
+                "id": 11407,
+                "name": "USDT - USD",
+                "code": "[coinbase_usdt-usd]",
+                "summa": "1.000105",
+                "age": 10707896
+            }
+        ],
+        "USD|USDT": [
+            {
+                "id": 9455,
+                "name": "USD - USDT",
+                "code": "[russiancentralbank_usd-usdt]",
+                "summa": "0",
+                "age": -3559
+            },
+            {
+                "id": 11028,
+                "name": "USD - USDT",
+                "code": "[coinbase_usd-usdt]",
+                "summa": "1.000911",
+                "age": -3559
+            }
+        ],
+        "USD|KZT": [
+            {
+                "id": 9466,
+                "name": "USD - KZT",
+                "code": "[nationalbankofkazakhstan_usd-kzt]",
+                "summa": "508.4200000000",
+                "age": 34974904
+            },
+            {
+                "id": 10875,
+                "name": "USD - KZT",
+                "code": "[coinbase_usd-kzt]",
+                "summa": "470.375634",
+                "age": -3559
+            }
+        ],
+        "USD|EUR": [
+            {
+                "id": 9596,
+                "name": "USD - EUR",
+                "code": "[floatrates_usd-eur]",
+                "summa": "0.874486",
+                "age": -3559
+            },
+            {
+                "id": 10844,
+                "name": "USD - EUR",
+                "code": "[coinbase_usd-eur]",
+                "summa": "0.876167",
+                "age": -3559
+            }
+        ],
+        "USD|CNY": [
+            {
+                "id": 9628,
+                "name": "USD - CNY",
+                "code": "[floatrates_usd-cny]",
+                "summa": "6.769691",
+                "age": -3559
+            },
+            {
+                "id": 10832,
+                "name": "USD - CNY",
+                "code": "[coinbase_usd-cny]",
+                "summa": "6.77112",
+                "age": -3559
+            }
+        ],
+        "USD|AMD": [
+            {
+                "id": 9648,
+                "name": "USD - AMD",
+                "code": "[floatrates_usd-amd]",
+                "summa": "366.40119",
+                "age": -3559
+            },
+            {
+                "id": 10804,
+                "name": "USD - AMD",
+                "code": "[coinbase_usd-amd]",
+                "summa": "365.93",
+                "age": -3559
+            }
+        ],
+        "USD|GEL": [
+            {
+                "id": 9721,
+                "name": "USD - GEL",
+                "code": "[floatrates_usd-gel]",
+                "summa": "2.627296",
+                "age": -3559
+            },
+            {
+                "id": 10848,
+                "name": "USD - GEL",
+                "code": "[coinbase_usd-gel]",
+                "summa": "2.6243",
+                "age": -3559
+            }
+        ]
+    },
+    "usdrub": {
+        "rate": "78.315900000000000000",
+        "source": "parser_exchange:[russiancentralbank_usd-rub]",
+        "as_of": "2026-07-20 20:14:30",
+        "age_seconds": 41,
+        "sample_size": 1,
+        "divergence": null,
+        "selection_reason": "accepted"
+    },
+    "active_asset_coverage": {
+        "LTC": {
+            "usdt_quote": {
+                "rate": "47.480000000000000000",
+                "source": "parser_exchange:[binance_ltc-usdt]",
+                "age": 41
+            },
+            "crypto_rub": {
+                "rate": "3718.438932000000000000",
+                "source": "parser_exchange:[binance_ltc-usdt]*parser_exchange:[russiancentralbank_usd-rub]",
+                "age": 41
+            },
+            "path": "USDT_BRIDGE"
+        },
+        "BTC": {
+            "usdt_quote": {
+                "rate": "65515.915000000000000000",
+                "source": "parser_exchange:[binance_btc-usdt]+median",
+                "age": 41
+            },
+            "crypto_rub": {
+                "rate": "5130937.847548500000000000",
+                "source": "parser_exchange:[binance_btc-usdt]+median*parser_exchange:[russiancentralbank_usd-rub]",
+                "age": 41
+            },
+            "path": "USDT_BRIDGE"
+        },
+        "USDT": {
+            "usdt_quote": null,
+            "crypto_rub": null,
+            "path": "UNSUPPORTED_OR_STALE"
+        },
+        "TRX": {
+            "usdt_quote": {
+                "rate": "0.326340500000000000",
+                "source": "parser_exchange:[binance_trx-usdt]+median",
+                "age": 41
+            },
+            "crypto_rub": {
+                "rate": "25.557649963950000000",
+                "source": "parser_exchange:[binance_trx-usdt]+median*parser_exchange:[russiancentralbank_usd-rub]",
+                "age": 41
+            },
+            "path": "USDT_BRIDGE"
+        },
+        "ZEC": {
+            "usdt_quote": {
+                "rate": "554.250000000000000000",
+                "source": "parser_exchange:[binance_zec-usdt]",
+                "age": 41
+            },
+            "crypto_rub": {
+                "rate": "43406.587575000000000000",
+                "source": "parser_exchange:[binance_zec-usdt]*parser_exchange:[russiancentralbank_usd-rub]",
+                "age": 41
+            },
+            "path": "USDT_BRIDGE"
+        },
+        "ETH": {
+            "usdt_quote": {
+                "rate": "1899.015000000000000000",
+                "source": "parser_exchange:[binance_eth-usdt]+median",
+                "age": 41
+            },
+            "crypto_rub": {
+                "rate": "148723.068838500000000000",
+                "source": "parser_exchange:[binance_eth-usdt]+median*parser_exchange:[russiancentralbank_usd-rub]",
+                "age": 41
+            },
+            "path": "USDT_BRIDGE"
+        },
+        "BNB": {
+            "usdt_quote": {
+                "rate": "573.420000000000000000",
+                "source": "parser_exchange:[binance_bnb-usdt]+median",
+                "age": 41
+            },
+            "crypto_rub": {
+                "rate": "44907.903378000000000000",
+                "source": "parser_exchange:[binance_bnb-usdt]+median*parser_exchange:[russiancentralbank_usd-rub]",
+                "age": 41
+            },
+            "path": "USDT_BRIDGE"
+        },
+        "USDC": {
+            "usdt_quote": {
+                "rate": "1.000800000000000000",
+                "source": "parser_exchange:[whitebit_usdc-usdt]",
+                "age": 41
+            },
+            "crypto_rub": {
+                "rate": "78.378552720000000000",
+                "source": "parser_exchange:[whitebit_usdc-usdt]*parser_exchange:[russiancentralbank_usd-rub]",
+                "age": 41
+            },
+            "path": "USDT_BRIDGE"
+        },
+        "TON": {
+            "usdt_quote": null,
+            "crypto_rub": null,
+            "path": "UNSUPPORTED_OR_STALE"
+        }
+    },
+    "notable_ton_zec_bestchange": [
+        {
+            "id": 181,
+            "name": "ZEC - BTC",
+            "code": "[binance_zec-btc]",
+            "from": "ZEC",
+            "to": "BTC",
+            "status": 0,
+            "summa": "0.002564",
+            "age": 53120695
+        },
+        {
+            "id": 182,
+            "name": "ZEC - ETH",
+            "code": "[binance_zec-eth]",
+            "from": "ZEC",
+            "to": "ETH",
+            "status": 0,
+            "summa": "0.03799",
+            "age": 53120695
+        },
+        {
+            "id": 343,
+            "name": "ZEC - BNB",
+            "code": "[binance_zec-bnb]",
+            "from": "ZEC",
+            "to": "BNB",
+            "status": 0,
+            "summa": "0.2202",
+            "age": 53120694
+        },
+        {
+            "id": 344,
+            "name": "ZEC - USDT",
+            "code": "[binance_zec-usdt]",
+            "from": "ZEC",
+            "to": "USDT",
+            "status": 1,
+            "summa": "554.25",
+            "age": -3559
+        },
+        {
+            "id": 345,
+            "name": "ZEC - USDC",
+            "code": "[binance_zec-usdc]",
+            "from": "ZEC",
+            "to": "USDC",
+            "status": 0,
+            "summa": "53.4",
+            "age": 53120694
+        },
+        {
+            "id": 513,
+            "name": "ZEC - BUSD",
+            "code": "[binance_zec-busd]",
+            "from": "ZEC",
+            "to": "BUSD",
+            "status": 0,
+            "summa": "54.2",
+            "age": 53120693
+        },
+        {
+            "id": 1649,
+            "name": "BTC - ZEC",
+            "code": "[binance_btc-zec]",
+            "from": "BTC",
+            "to": "ZEC",
+            "status": 0,
+            "summa": "390.01560062402",
+            "age": 53120688
+        },
+        {
+            "id": 1650,
+            "name": "ETH - ZEC",
+            "code": "[binance_eth-zec]",
+            "from": "ETH",
+            "to": "ZEC",
+            "status": 0,
+            "summa": "26.322716504343",
+            "age": 53120688
+        },
+        {
+            "id": 1839,
+            "name": "BNB - ZEC",
+            "code": "[binance_bnb-zec]",
+            "from": "BNB",
+            "to": "ZEC",
+            "status": 0,
+            "summa": "4.5413260672116",
+            "age": 53120687
+        },
+        {
+            "id": 1840,
+            "name": "BNB - ZEC",
+            "code": "[binance_bnb-zec]",
+            "from": "BNB",
+            "to": "ZEC",
+            "status": 0,
+            "summa": "4.5413260672116",
+            "age": 53120687
+        },
+        {
+            "id": 1841,
+            "name": "USDT - ZEC",
+            "code": "[binance_usdt-zec]",
+            "from": "USDT",
+            "to": "ZEC",
+            "status": 0,
+            "summa": "0.018450184501845",
+            "age": 53120687
+        },
+        {
+            "id": 1842,
+            "name": "USDC - ZEC",
+            "code": "[binance_usdc-zec]",
+            "from": "USDC",
+            "to": "ZEC",
+            "status": 0,
+            "summa": "0.0187265917603",
+            "age": 53120687
+        },
+        {
+            "id": 2052,
+            "name": "BUSD - ZEC",
+            "code": "[binance_busd-zec]",
+            "from": "BUSD",
+            "to": "ZEC",
+            "status": 0,
+            "summa": "0.018450184501845",
+            "age": 53120686
+        },
+        {
+            "id": 6525,
+            "name": "STON - USDT",
+            "code": "[whitebit_ston-usdt]",
+            "from": "STON",
+            "to": "USDT",
+            "status": 0,
+            "summa": "0.014334",
+            "age": 50351781
+        },
+        {
+            "id": 6581,
+            "name": "ZEC - BTC",
+            "code": "[whitebit_zec-btc]",
+            "from": "ZEC",
+            "to": "BTC",
+            "status": 0,
+            "summa": "0.002563",
+            "age": 50351781
+        },
+        {
+            "id": 6582,
+            "name": "ZEC - USDT",
+            "code": "[whitebit_zec-usdt]",
+            "from": "ZEC",
+            "to": "USDT",
+            "status": 0,
+            "summa": "54.2",
+            "age": 50351781
+        },
+        {
+            "id": 6783,
+            "name": "USDT - STON",
+            "code": "[whitebit_usdt-ston]",
+            "from": "USDT",
+            "to": "STON",
+            "status": 0,
+            "summa": "69.764197014092",
+            "age": 50351780
+        },
+        {
+            "id": 6839,
+            "name": "BTC - ZEC",
+            "code": "[whitebit_btc-zec]",
+            "from": "BTC",
+            "to": "ZEC",
+            "status": 0,
+            "summa": "390.16777214202",
+            "age": 50351780
+        },
+        {
+            "id": 6840,
+            "name": "USDT - ZEC",
+            "code": "[whitebit_usdt-zec]",
+            "from": "USDT",
+            "to": "ZEC",
+            "status": 0,
+            "summa": "0.018450184501845",
+            "age": 50351780
+        },
+        {
+            "id": 10987,
+            "name": "USD - ZEC",
+            "code": "[coinbase_usd-zec]",
+            "from": "USD",
+            "to": "ZEC",
+            "status": 0,
+            "summa": "0.018496254508462",
+            "age": 13144304
+        },
+        {
+            "id": 11366,
+            "name": "ZEC - USD",
+            "code": "[coinbase_zec-usd]",
+            "from": "ZEC",
+            "to": "USD",
+            "status": 0,
+            "summa": "54.065",
+            "age": 13144302
+        },
+        {
+            "id": 11581,
+            "name": "TON - USDT",
+            "code": "[rapira_ton-usdt_ask]",
+            "from": "TON",
+            "to": "USDT",
+            "status": 0,
+            "summa": "1.3042",
+            "age": 67724
+        },
+        {
+            "id": 11582,
+            "name": "TON - USDT",
+            "code": "[rapira_ton-usdt_bid]",
+            "from": "TON",
+            "to": "USDT",
+            "status": 0,
+            "summa": "3.6981",
+            "age": 13142578
+        },
+        {
+            "id": 11663,
+            "name": "KTON - ETH",
+            "code": "[mexcexchange_kton-eth]",
+            "from": "KTON",
+            "to": "ETH",
+            "status": 0,
+            "summa": "0.009034",
+            "age": 10703374
+        },
+        {
+            "id": 11788,
+            "name": "ZEC3L - USDT",
+            "code": "[mexcexchange_zec3l-usdt]",
+            "from": "ZEC3L",
+            "to": "USDT",
+            "status": 0,
+            "summa": "0.968",
+            "age": 10703373
+        },
+        {
+            "id": 11844,
+            "name": "ZEC3S - USDT",
+            "code": "[mexcexchange_zec3s-usdt]",
+            "from": "ZEC3S",
+            "to": "USDT",
+            "status": 0,
+            "summa": "0.484",
+            "age": 10703373
+        },
+        {
+            "id": 12120,
+            "name": "ZEC - USDT",
+            "code": "[mexcexchange_zec-usdt]",
+            "from": "ZEC",
+            "to": "USDT",
+            "status": 0,
+            "summa": "53.86",
+            "age": 10703372
+        },
+        {
+            "id": 12643,
+            "name": "KTON - USDT",
+            "code": "[mexcexchange_kton-usdt]",
+            "from": "KTON",
+            "to": "USDT",
+            "status": 0,
+            "summa": "12.7482",
+            "age": 10703370
+        },
+        {
+            "id": 13028,
+            "name": "ONSTON - USDT",
+            "code": "[mexcexchange_onston-usdt]",
+            "from": "ONSTON",
+            "to": "USDT",
+            "status": 0,
+            "summa": "0.01004",
+            "age": 10703369
+        },
+        {
+            "id": 13208,
+            "name": "TON - USDT",
+            "code": "[mexcexchange_ton-usdt]",
+            "from": "TON",
+            "to": "USDT",
+            "status": 0,
+            "summa": "0.8588",
+            "age": 10703368
+        },
+        {
+            "id": 13728,
+            "name": "ETH - KTON",
+            "code": "[mexcexchange_eth-kton]",
+            "from": "ETH",
+            "to": "KTON",
+            "status": 0,
+            "summa": "110.69293779057",
+            "age": 10703366
+        },
+        {
+            "id": 13853,
+            "name": "USDT - ZEC3L",
+            "code": "[mexcexchange_usdt-zec3l]",
+            "from": "USDT",
+            "to": "ZEC3L",
+            "status": 0,
+            "summa": "1.0330578512397",
+            "age": 10703366
+        },
+        {
+            "id": 13909,
+            "name": "USDT - ZEC3S",
+            "code": "[mexcexchange_usdt-zec3s]",
+            "from": "USDT",
+            "to": "ZEC3S",
+            "status": 0,
+            "summa": "2.0661157024793",
+            "age": 10703365
+        },
+        {
+            "id": 14185,
+            "name": "USDT - ZEC",
+            "code": "[mexcexchange_usdt-zec]",
+            "from": "USDT",
+            "to": "ZEC",
+            "status": 0,
+            "summa": "0.018566654288897",
+            "age": 10703364
+        },
+        {
+            "id": 14708,
+            "name": "USDT - KTON",
+            "code": "[mexcexchange_usdt-kton]",
+            "from": "USDT",
+            "to": "KTON",
+            "status": 0,
+            "summa": "0.0784424467768",
+            "age": 10703362
+        },
+        {
+            "id": 15093,
+            "name": "USDT - ONSTON",
+            "code": "[mexcexchange_usdt-onston]",
+            "from": "USDT",
+            "to": "ONSTON",
+            "status": 0,
+            "summa": "99.601593625498",
+            "age": 10703361
+        },
+        {
+            "id": 15273,
+            "name": "USDT - TON",
+            "code": "[mexcexchange_usdt-ton]",
+            "from": "USDT",
+            "to": "TON",
+            "status": 0,
+            "summa": "1.1644154634374",
+            "age": 10703360
+        }
+    ]
+}

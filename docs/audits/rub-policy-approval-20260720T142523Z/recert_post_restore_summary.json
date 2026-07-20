@@ -1,0 +1,11 @@
+{
+    "written": "\/opt\/exswaping-zec-sbp-20260720\/docs\/audits\/rub-policy-approval-20260720T142523Z\/coin_rub_recert_post_restore.json",
+    "counts_active": {
+        "QUARANTINE_REQUIRED": 7,
+        "REVIEW": 17,
+        "PASS": 17,
+        "PASS_EXPLAINED_SPREAD": 29
+    },
+    "eligible": 46,
+    "policy_approved": true
+}

@@ -1,0 +1,21 @@
+{
+  "direction_id": 540,
+  "pair": "ZEC\u2192SBERRUB",
+  "classification": "PASS_EXPLAINED_SPREAD",
+  "baseline": "43261.703160000000000000",
+  "baseline_source": "parser_exchange:[binance_zec-usdt]*parser_exchange:[russiancentralbank_usd-rub]",
+  "course": "44517.921233869460447696",
+  "raw_market_deviation": 2.903764,
+  "unexplained_vs_expected_percent": -2.096236,
+  "reserve_status": "adequate",
+  "db_status": "quarantined status=0 allow_export=2",
+  "quote_allowed": false,
+  "order_allowed": false,
+  "export_allowed": false,
+  "allowed_operator_outcomes": [
+    "RESTORE",
+    "KEEP_QUARANTINED"
+  ],
+  "recommendation": "KEEP_QUARANTINED until explicit operator RESTORE",
+  "rollback_if_restored": "UPDATE direction_exchange SET status=0, allow_export=2 WHERE id=540;"
+}

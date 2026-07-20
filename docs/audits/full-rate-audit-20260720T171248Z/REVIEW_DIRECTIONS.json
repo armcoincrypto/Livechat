@@ -1,0 +1,139 @@
+{
+  "generated_at": "2026-07-20T17:20:54.499977+00:00",
+  "count": 11,
+  "policy_note": "REVIEW = warning band; export blocked; order allowed by family policy",
+  "directions": [
+    {
+      "direction_id": 14,
+      "pair": "BTC→SBERRUB",
+      "raw_vs_mid_pct": 6.891033,
+      "unexplained_vs_target_pct": 1.8910330000000002,
+      "expected_premium": 5,
+      "parser_source": "BestChange",
+      "root_cause": "BestChange-priced OTC premium in family warning band (not formula inversion)",
+      "required_outcome": "KEEP_EXPORT_BLOCKED_REVIEW",
+      "order_allowed_by_policy": true,
+      "export_allowed_by_policy": false
+    },
+    {
+      "direction_id": 25,
+      "pair": "USDTTRC20→ACRUB",
+      "raw_vs_mid_pct": 6.291085,
+      "unexplained_vs_target_pct": 1.2910849999999998,
+      "expected_premium": 5,
+      "parser_source": "BestChange",
+      "root_cause": "BestChange-priced OTC premium in family warning band (not formula inversion)",
+      "required_outcome": "KEEP_EXPORT_BLOCKED_REVIEW",
+      "order_allowed_by_policy": true,
+      "export_allowed_by_policy": false
+    },
+    {
+      "direction_id": 26,
+      "pair": "USDTTRC20→RFBRUB",
+      "raw_vs_mid_pct": 6.204339,
+      "unexplained_vs_target_pct": 1.204339,
+      "expected_premium": 5,
+      "parser_source": "BestChange",
+      "root_cause": "BestChange-priced OTC premium in family warning band (not formula inversion)",
+      "required_outcome": "KEEP_EXPORT_BLOCKED_REVIEW",
+      "order_allowed_by_policy": true,
+      "export_allowed_by_policy": false
+    },
+    {
+      "direction_id": 160,
+      "pair": "LTC→SBPRUB",
+      "raw_vs_mid_pct": 6.582282,
+      "unexplained_vs_target_pct": 1.5822820000000002,
+      "expected_premium": 5,
+      "parser_source": "BestChange",
+      "root_cause": "BestChange-priced OTC premium in family warning band (not formula inversion)",
+      "required_outcome": "KEEP_EXPORT_BLOCKED_REVIEW",
+      "order_allowed_by_policy": true,
+      "export_allowed_by_policy": false
+    },
+    {
+      "direction_id": 223,
+      "pair": "LTC→SBERRUB",
+      "raw_vs_mid_pct": 6.209564,
+      "unexplained_vs_target_pct": 1.2095640000000003,
+      "expected_premium": 5,
+      "parser_source": "BestChange",
+      "root_cause": "BestChange-priced OTC premium in family warning band (not formula inversion)",
+      "required_outcome": "KEEP_EXPORT_BLOCKED_REVIEW",
+      "order_allowed_by_policy": true,
+      "export_allowed_by_policy": false
+    },
+    {
+      "direction_id": 1029,
+      "pair": "USDTBEP20→SBPRUB",
+      "raw_vs_mid_pct": 6.368425,
+      "unexplained_vs_target_pct": 1.3684250000000002,
+      "expected_premium": 5,
+      "parser_source": "BestChange",
+      "root_cause": "BestChange-priced OTC premium in family warning band (not formula inversion)",
+      "required_outcome": "KEEP_EXPORT_BLOCKED_REVIEW",
+      "order_allowed_by_policy": true,
+      "export_allowed_by_policy": false
+    },
+    {
+      "direction_id": 1056,
+      "pair": "USDTBEP20→SBERRUB",
+      "raw_vs_mid_pct": 6.478096,
+      "unexplained_vs_target_pct": 1.4780959999999999,
+      "expected_premium": 5,
+      "parser_source": "BestChange",
+      "root_cause": "BestChange-priced OTC premium in family warning band (not formula inversion)",
+      "required_outcome": "KEEP_EXPORT_BLOCKED_REVIEW",
+      "order_allowed_by_policy": true,
+      "export_allowed_by_policy": false
+    },
+    {
+      "direction_id": 1058,
+      "pair": "USDTBEP20→RFBRUB",
+      "raw_vs_mid_pct": 6.204263,
+      "unexplained_vs_target_pct": 1.204263,
+      "expected_premium": 5,
+      "parser_source": "BestChange",
+      "root_cause": "BestChange-priced OTC premium in family warning band (not formula inversion)",
+      "required_outcome": "KEEP_EXPORT_BLOCKED_REVIEW",
+      "order_allowed_by_policy": true,
+      "export_allowed_by_policy": false
+    },
+    {
+      "direction_id": 1070,
+      "pair": "USDTERC20→RFBRUB",
+      "raw_vs_mid_pct": 6.204263,
+      "unexplained_vs_target_pct": 1.204263,
+      "expected_premium": 5,
+      "parser_source": "BestChange",
+      "root_cause": "BestChange-priced OTC premium in family warning band (not formula inversion)",
+      "required_outcome": "KEEP_EXPORT_BLOCKED_REVIEW",
+      "order_allowed_by_policy": true,
+      "export_allowed_by_policy": false
+    },
+    {
+      "direction_id": 1075,
+      "pair": "USDTSOL→SBERRUB",
+      "raw_vs_mid_pct": 6.204339,
+      "unexplained_vs_target_pct": 1.204339,
+      "expected_premium": 5,
+      "parser_source": "BestChange",
+      "root_cause": "BestChange-priced OTC premium in family warning band (not formula inversion)",
+      "required_outcome": "KEEP_EXPORT_BLOCKED_REVIEW",
+      "order_allowed_by_policy": true,
+      "export_allowed_by_policy": false
+    },
+    {
+      "direction_id": 1420,
+      "pair": "LTC→YAMRUB",
+      "raw_vs_mid_pct": 6.263728,
+      "unexplained_vs_target_pct": 1.2637280000000004,
+      "expected_premium": 5,
+      "parser_source": "BestChange",
+      "root_cause": "BestChange-priced OTC premium in family warning band (not formula inversion)",
+      "required_outcome": "KEEP_EXPORT_BLOCKED_REVIEW",
+      "order_allowed_by_policy": true,
+      "export_allowed_by_policy": false
+    }
+  ]
+}

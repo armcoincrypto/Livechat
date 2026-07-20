@@ -1,0 +1,60 @@
+{
+  "generated_at": "2026-07-20T14:15:37.645103+00:00",
+  "prior_tip": "0d4111a",
+  "policy_approved": false,
+  "totals": {
+    "eligible_for_submission": 0,
+    "economic": {
+      "reviewed": 830,
+      "PASS": 61,
+      "PASS_EXPLAINED_SPREAD": 1,
+      "REVIEW": 0,
+      "QUARANTINE_REQUIRED": 0,
+      "NO_BASELINE": 700,
+      "NO_POLICY": 68
+    }
+  },
+  "eligible_for_submission": [],
+  "zec": [
+    {
+      "direction_id": 540,
+      "pair": "ZEC→SBERRUB",
+      "baseline": "41470.560339000000000000",
+      "baseline_age_seconds": 38,
+      "course": "44517.921233869460447696",
+      "profit": 0,
+      "raw_dev_pct": 7.348251,
+      "classification": "NO_POLICY",
+      "outcome": "KEEP_QUARANTINED_NO_POLICY",
+      "reason": "RUB family premium policy approved=false; direction remains status=0 allow_export=2",
+      "restored": false
+    },
+    {
+      "direction_id": 541,
+      "pair": "ZEC→SBPRUB",
+      "baseline": "41470.560339000000000000",
+      "baseline_age_seconds": 38,
+      "course": "43286.997609395908945509",
+      "profit": 0,
+      "raw_dev_pct": 4.380064,
+      "classification": "NO_POLICY",
+      "outcome": "KEEP_QUARANTINED_NO_POLICY",
+      "reason": "RUB family premium policy approved=false; direction remains status=0 allow_export=2",
+      "restored": false
+    },
+    {
+      "direction_id": 542,
+      "pair": "ZEC→ACRUB",
+      "baseline": "41470.560339000000000000",
+      "baseline_age_seconds": 38,
+      "course": "43169.683651742293011458",
+      "profit": 0,
+      "raw_dev_pct": 4.097179,
+      "classification": "NO_POLICY",
+      "outcome": "KEEP_QUARANTINED_NO_POLICY",
+      "reason": "RUB family premium policy approved=false; direction remains status=0 allow_export=2",
+      "restored": false
+    }
+  ],
+  "reason": "RUB family premium policy not operator-approved; no invented approval"
+}
