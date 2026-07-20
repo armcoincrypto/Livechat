@@ -1,0 +1,28 @@
+Laravel Framework 12.62.0
+
+Usage:
+  command [options] [arguments]
+
+Options:
+  -h, --help            Display help for the given command. When no command is given display help for the list command
+      --silent          Do not output any message
+  -q, --quiet           Only errors are displayed. All other output is suppressed
+  -V, --version         Display this application version
+      --ansi|--no-ansi  Force (or disable --no-ansi) ANSI output
+  -n, --no-interaction  Do not ask any interactive question
+      --env[=ENV]       The environment the command should run under
+  -v|vv|vvv, --verbose  Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
+
+Available commands for the "rates" namespace:
+  rates:audit                     Dry-run audit of active exchange directions (configured vs unexplained deviation).
+  rates:deploy-verify             Fail if live rate-pipeline files drift from the certified git commit.
+  rates:direction-status          Explain direction eligibility for quote, order, and export (read-only).
+  rates:economic-audit            Economic validation of all active directions against independent baselines.
+  rates:health                    Read-only health checks for rate pipeline (no mutations).
+  rates:provider-probe            Probe a price provider without exposing secrets or mutating rates.
+  rates:quarantine-review         Evaluate quarantined directions for READY_TO_ENABLE (dry-run by default).
+  rates:quarantine-triage         Classify all quarantined directions into actionable reason groups (read-only).
+  rates:rub-family-policy-status  Report RUB family premium policy approval state and direction eligibility implications.
+  rates:sync-mapping-registry     Sync BestChange codes.json with verified overrides (fail-closed; dry-run default).
+  rates:xml-authority             Document/verify XML export authority; optionally sync legacy public/currencies.xml.
+  rates:xml-delivery-probe        Probe public currencies.xml TTFB/size/XML validity (read-only).

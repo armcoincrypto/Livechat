@@ -1,0 +1,10 @@
+{
+    "generated_at": "2026-07-20T17:16:23+00:00",
+    "gate_block_but_present_in_xml": [],
+    "gate_pass_missing_from_xml": [],
+    "counts": {
+        "blocked_but_in_xml": 0,
+        "pass_missing": 0,
+        "gate_block_total": 14
+    }
+}

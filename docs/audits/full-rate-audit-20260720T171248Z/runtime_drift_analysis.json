@@ -1,0 +1,108 @@
+{
+  "prod_git_tip": "59a18959110b751b533c55cee2fd29656d8d46b7",
+  "wt_git_tip": "e11a6e01eddec558c578fe052630ccb52f19585f",
+  "interpretation": "drift means live APP files differ from APP git tip; many match WT workdir (uncertified-in-git live patches from RUB policy approval)",
+  "rows": [
+    {
+      "path": "app/Services/Rates/RateExportQuarantine.php",
+      "live_eq_wt_workdir": true,
+      "live_eq_prod_git_tip": false,
+      "live_eq_wt_git_tip": true,
+      "live_sha12": "8622aa48ea24",
+      "wt_workdir_sha12": "8622aa48ea24",
+      "prod_tip_sha12": "118f90a78c53"
+    },
+    {
+      "path": "app/Services/Rates/IndependentMarketBaseline.php",
+      "live_eq_wt_workdir": true,
+      "live_eq_prod_git_tip": false,
+      "live_eq_wt_git_tip": true,
+      "live_sha12": "d2c7115cfbb4",
+      "wt_workdir_sha12": "d2c7115cfbb4",
+      "prod_tip_sha12": "25a73549307f"
+    },
+    {
+      "path": "app/Services/Rates/RubFamilyPremiumPolicy.php",
+      "live_eq_wt_workdir": true,
+      "live_eq_prod_git_tip": false,
+      "live_eq_wt_git_tip": false,
+      "live_sha12": "c12dcf92313c",
+      "wt_workdir_sha12": "c12dcf92313c",
+      "prod_tip_sha12": ""
+    },
+    {
+      "path": "resources/rates/rub-family-premium-policy.json",
+      "live_eq_wt_workdir": true,
+      "live_eq_prod_git_tip": false,
+      "live_eq_wt_git_tip": false,
+      "live_sha12": "0891aab40f1a",
+      "wt_workdir_sha12": "0891aab40f1a",
+      "prod_tip_sha12": ""
+    },
+    {
+      "path": "packages/Courses/Export/Concerns/ExportFormatHelpers.php",
+      "live_eq_wt_workdir": true,
+      "live_eq_prod_git_tip": false,
+      "live_eq_wt_git_tip": false,
+      "live_sha12": "6039f4d20737",
+      "wt_workdir_sha12": "6039f4d20737",
+      "prod_tip_sha12": "a9253f1d0cfb"
+    },
+    {
+      "path": "app/Console/Commands/RatesEconomicAuditCommand.php",
+      "live_eq_wt_workdir": true,
+      "live_eq_prod_git_tip": false,
+      "live_eq_wt_git_tip": false,
+      "live_sha12": "af12d3ae03cc",
+      "wt_workdir_sha12": "af12d3ae03cc",
+      "prod_tip_sha12": ""
+    },
+    {
+      "path": "app/Console/Commands/RatesRubFamilyPolicyStatusCommand.php",
+      "live_eq_wt_workdir": true,
+      "live_eq_prod_git_tip": false,
+      "live_eq_wt_git_tip": false,
+      "live_sha12": "67583d7fee15",
+      "wt_workdir_sha12": "67583d7fee15",
+      "prod_tip_sha12": ""
+    },
+    {
+      "path": "app/Console/Commands/RatesDirectionStatusCommand.php",
+      "live_eq_wt_workdir": true,
+      "live_eq_prod_git_tip": false,
+      "live_eq_wt_git_tip": true,
+      "live_sha12": "2314483f1e6e",
+      "wt_workdir_sha12": "2314483f1e6e",
+      "prod_tip_sha12": ""
+    },
+    {
+      "path": "app/Services/Rates/AtomicPublicXmlPublisher.php",
+      "live_eq_wt_workdir": true,
+      "live_eq_prod_git_tip": false,
+      "live_eq_wt_git_tip": true,
+      "live_sha12": "636a04e7d46a",
+      "wt_workdir_sha12": "636a04e7d46a",
+      "prod_tip_sha12": ""
+    },
+    {
+      "path": "app/Services/Rates/RateDirectionEligibility.php",
+      "live_eq_wt_workdir": true,
+      "live_eq_prod_git_tip": false,
+      "live_eq_wt_git_tip": true,
+      "live_sha12": "43801e45f23e",
+      "wt_workdir_sha12": "43801e45f23e",
+      "prod_tip_sha12": ""
+    },
+    {
+      "path": "app/Services/Rates/BestChangeMappingRegistry.php",
+      "live_eq_wt_workdir": true,
+      "live_eq_prod_git_tip": false,
+      "live_eq_wt_git_tip": true,
+      "live_sha12": "809d25cdb2a5",
+      "wt_workdir_sha12": "809d25cdb2a5",
+      "prod_tip_sha12": ""
+    }
+  ],
+  "live_matches_wt_workdir": 11,
+  "live_matches_prod_tip": 0
+}

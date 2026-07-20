@@ -71,17 +71,23 @@ final class RatesEconomicAuditCommand extends Command
                 $unexplained = null;
                 $raw = null;
                 $noBaselineFamilies[$family] = ($noBaselineFamilies[$family] ?? 0) + 1;
-            } elseif (str_contains($to, 'RUB') && !$policy->isApproved()) {
-                $class = 'NO_POLICY';
-                $unexplained = null;
-                $raw = null;
+            } elseif (str_contains($to, 'RUB')) {
                 $analysis = $expectation->analyze(
                     baseline: $ind['rate'],
                     actual: $course,
                     profitPercent: $profit,
                 );
-                $unexplained = $analysis['unexplained_deviation'];
                 $raw = $analysis['raw_market_deviation'];
+                $eval = $policy->evaluateCoinRub(
+                    $to,
+                    $raw === null ? null : (float) $raw,
+                    (float) $profit,
+                );
+                $class = $eval['classification'];
+                $unexplained = $eval['unexplained_vs_expected_percent'];
+                if ($class === 'NO_BASELINE') {
+                    $noBaselineFamilies[$family] = ($noBaselineFamilies[$family] ?? 0) + 1;
+                }
             } else {
                 $paymentPremium = '0';
                 if ($policy->isApproved() && str_contains($to, 'RUB')) {

@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-07-20T14:33:23.105505+00:00",
+  "directions": [
+    {
+      "direction_id": 540,
+      "pair": "ZEC\u2192SBERRUB",
+      "baseline": "41686.156764000000000000",
+      "baseline_age": 24,
+      "course": "44517.921233869460447696",
+      "profit": 0,
+      "raw_dev_pct": 6.793057,
+      "classification": "REVIEW",
+      "export_allowed": false,
+      "reserve_ok": true,
+      "outcome": "KEEP_QUARANTINED_UNEXPLAINED_OR_WARNING",
+      "restored": false,
+      "reasons": [
+        "premium_or_unexplained_warning_band"
+      ]
+    },
+    {
+      "direction_id": 541,
+      "pair": "ZEC\u2192SBPRUB",
+      "baseline": "41686.156764000000000000",
+      "baseline_age": 24,
+      "course": "43263.440469397322873705",
+      "profit": 0,
+      "raw_dev_pct": 3.783711,
+      "classification": "PASS_EXPLAINED_SPREAD",
+      "export_allowed": true,
+      "reserve_ok": true,
+      "outcome": "RESTORED_CERTIFIED",
+      "restored": true,
+      "reasons": []
+    },
+    {
+      "direction_id": 542,
+      "pair": "ZEC\u2192ACRUB",
+      "baseline": "41686.156764000000000000",
+      "baseline_age": 24,
+      "course": "43263.440469397322873705",
+      "profit": 0,
+      "raw_dev_pct": 3.783711,
+      "classification": "PASS_EXPLAINED_SPREAD",
+      "export_allowed": true,
+      "reserve_ok": true,
+      "outcome": "RESTORED_CERTIFIED",
+      "restored": true,
+      "reasons": []
+    }
+  ]
+}

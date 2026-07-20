@@ -1,0 +1,32 @@
++------------------------------------------------------------+-----+
+| path                                                       | ok  |
++------------------------------------------------------------+-----+
+| xml-changer/main.py                                        | yes |
+| app/Services/Rates/RateSanityGuard.php                     | yes |
+| app/Services/Rates/RateConfiguredExpectation.php           | yes |
+| app/Services/Rates/RateExportQuarantine.php                | NO  |
+| app/Services/Rates/PeerRateSelector.php                    | yes |
+| app/Services/Rates/BestChangeCurrencyCatalogGuard.php      | NO  |
+| app/Services/Rates/BestChangeMappingRegistry.php           | NO  |
+| app/Services/Rates/BestChangeMappingVerifier.php           | NO  |
+| app/Services/Rates/RateDirectionEligibility.php            | NO  |
+| resources/rates/bestchange-codes.overrides.json            | NO  |
+| app/Services/Rates/AtomicPublicXmlPublisher.php            | NO  |
+| app/Services/Rates/RateExportQuarantine.php                | NO  |
+| app/Services/Rates/IndependentMarketBaseline.php           | NO  |
+| app/Services/Rates/RubFamilyPremiumPolicy.php              | NO  |
+| resources/rates/rub-family-premium-policy.json             | NO  |
+| app/Console/Commands/RatesRubFamilyPolicyStatusCommand.php | NO  |
+| packages/Courses/Export/ExportCourses.php                  | NO  |
+| packages/Courses/Export/Concerns/ExportFormatHelpers.php   | NO  |
+| app/Console/Commands/RatesEconomicAuditCommand.php         | NO  |
+| app/Console/Commands/RatesDirectionStatusCommand.php       | NO  |
+| app/Console/Commands/RatesAuditCommand.php                 | NO  |
+| packages/BestChange/Services/RatesUpdateService.php        | yes |
+| tests/Unit/Rates/RateSanityGuardTest.php                   | yes |
+| tests/Unit/Rates/RatePostFixRemediationTest.php            | NO  |
+| tests/Unit/Rates/ZecSbpRateIncidentTest.php                | NO  |
+| tests/Unit/Rates/TrustedBaselineRecoveryTest.php           | NO  |
+| tests/Unit/Rates/RubFamilyPremiumPolicyTest.php            | NO  |
++------------------------------------------------------------+-----+
+commit=59a18959110b751b533c55cee2fd29656d8d46b7 drift=21 missing=0

@@ -1,0 +1,37 @@
+{
+  "generated_at": "2026-07-20T17:32:12+03:00",
+  "totals": {
+    "reviewed": 832,
+    "PASS": 73,
+    "PASS_EXPLAINED_SPREAD": 29,
+    "REVIEW": 23,
+    "QUARANTINE_REQUIRED": 7,
+    "NO_BASELINE": 700,
+    "NO_POLICY": 0
+  },
+  "rub_family_policy": {
+    "approved": true,
+    "approved_at": "2026-07-20T14:25:23Z",
+    "approved_by": "exswaping-operator-chat-approval",
+    "family_count": 8,
+    "version": 3,
+    "schema": "rub_family_premium_policy_v3"
+  },
+  "no_baseline_top": {
+    "source_asset:USDT_uncovered_dest": 252,
+    "source_asset:USDC_uncovered_dest": 52,
+    "unsupported_or_internal:DASH": 37,
+    "source_asset:BTC_uncovered_dest": 37,
+    "source_asset:LTC_uncovered_dest": 35,
+    "crypto_rub:OTHER": 32,
+    "source_asset:ETH_uncovered_dest": 32,
+    "unsupported_or_internal:TUSDTRC20": 30,
+    "source_asset:BNB_uncovered_dest": 26,
+    "unsupported_or_internal:CASHUSD": 18,
+    "unsupported_or_internal:XMR": 15,
+    "unsupported_or_internal:ETC": 15,
+    "unsupported_or_internal:XRP": 15,
+    "unsupported_or_internal:SOL": 14,
+    "unsupported_or_internal:BCH": 11
+  }
+}

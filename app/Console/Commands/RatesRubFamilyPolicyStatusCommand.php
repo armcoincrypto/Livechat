@@ -56,7 +56,6 @@ final class RatesRubFamilyPolicyStatusCommand extends Command
             $ind = $this->baselineFor($baseline, $from, $to);
             $course = $guard->normalize((string) ($direction->course_value ?? ''));
             $profit = (string) ($direction->profit ?? '0');
-            $explainedPremium = $policy->explainedPremiumPercent($to);
             $analysis = null;
             if ($ind !== null && $course !== null) {
                 $analysis = $expectation->analyze(
@@ -66,42 +65,31 @@ final class RatesRubFamilyPolicyStatusCommand extends Command
                 );
             }
             $raw = $analysis['raw_market_deviation'] ?? null;
-            $unexplained = $policy->isApproved()
-                ? $policy->unexplainedVersusApprovedBand($raw === null ? null : (float) $raw, $to)
-                : ($analysis['unexplained_deviation'] ?? null);
+            $eval = $policy->evaluateCoinRub(
+                $to,
+                $raw === null ? null : (float) $raw,
+                (float) $profit,
+            );
 
-            $reasons = [];
-            if (!$policy->isApproved()) {
-                $reasons[] = 'rub_policy_not_approved';
-            }
-            if ($family === null) {
-                $reasons[] = 'family_not_mapped';
-            }
-            if ($ind === null) {
-                $reasons[] = 'no_independent_baseline';
-            }
+            $reasons = $eval['reasons'];
             if ((int) $direction->status !== 1) {
                 $reasons[] = 'direction_not_active';
             }
             if ((int) $direction->allow_export === 2) {
                 $reasons[] = 'export_hard_disabled';
             }
-            $thresholds = $policy->thresholdsForDestination($to);
-            if ($unexplained !== null && (float) $unexplained > $thresholds['critical']) {
-                $reasons[] = 'critical_unexplained_deviation';
-            }
 
-            $exportOk = $policy->isFamilyExportAllowed($to)
+            $exportOk = (bool) $eval['export_allowed']
+                && in_array($eval['classification'], ['PASS', 'PASS_EXPLAINED_SPREAD'], true)
                 && $ind !== null
                 && $course !== null
                 && (int) $direction->status === 1
-                && (int) $direction->allow_export !== 2
-                && ($unexplained === null || (float) $unexplained <= $thresholds['critical']);
-            $orderOk = $policy->isFamilyOrderAllowed($to)
+                && (int) $direction->allow_export !== 2;
+            $orderOk = (bool) $eval['order_allowed']
                 && $ind !== null
                 && $course !== null
                 && (int) $direction->status === 1
-                && ($unexplained === null || (float) $unexplained <= $thresholds['critical']);
+                && !in_array($eval['classification'], ['QUARANTINE_REQUIRED', 'NO_POLICY'], true);
 
             $rows[] = [
                 'direction_id' => (int) $direction->id,
@@ -109,14 +97,16 @@ final class RatesRubFamilyPolicyStatusCommand extends Command
                 'to' => $to,
                 'family' => $familyKey,
                 'policy_approved' => $policy->isApproved(),
-                'family_decision' => $family['proposed_decision'] ?? null,
+                'family_decision' => $family['decision'] ?? ($family['proposed_decision'] ?? null),
                 'baseline' => $ind['rate'] ?? null,
                 'baseline_source' => $ind['source'] ?? null,
                 'actual_rate' => $course,
                 'configured_profit_percent' => $profit,
-                'explained_family_premium_percent' => $explainedPremium,
+                'expected_premium_percent' => $eval['expected_premium_percent'],
+                'explained_family_premium_percent' => $eval['expected_premium_percent'],
                 'raw_market_deviation' => $raw,
-                'unexplained_deviation' => $unexplained,
+                'unexplained_deviation' => $eval['unexplained_vs_expected_percent'],
+                'classification' => $eval['classification'],
                 'order_eligibility' => $orderOk,
                 'export_eligibility' => $exportOk,
                 'blocking_reasons' => $reasons,

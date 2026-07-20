@@ -1,0 +1,37 @@
+{
+  "generated_at": "2026-07-20T17:20:54.500919+00:00",
+  "defects": [
+    {
+      "id": "DEF-001",
+      "direction_id": 268,
+      "pair": "USDTTRC20→SBPRUB",
+      "old_rate": "83.910112185286697468",
+      "correct_baseline": "78.3159 USDRUB (CBR)",
+      "expected_at_target_5pct": 82.231695,
+      "deviation_raw_pct": 7.143137,
+      "unexplained_vs_target_pct": 2.143137,
+      "root_cause": "BestChange-sourced commercial rate exceeds approved SBP target by >2%; order path did not enforce RubFamilyPremiumPolicy",
+      "impact": "orders_not_affected_in_audit_window (last order 2026-07-01); treasury risk if left active",
+      "fix": "DB quarantine status=0 allow_export=2; direction-status overlay for family policy; regression test",
+      "final_status": "KEEP_QUARANTINED"
+    },
+    {
+      "id": "DEF-002",
+      "direction_id": null,
+      "pair": "diagnostic rates:direction-status",
+      "root_cause": "RateDirectionEligibility omitted RubFamilyPremiumPolicy; REVIEW directions reported eligible_for_export=true",
+      "impact": "operator/tooling false confidence; XML gate already correct",
+      "fix": "RatesDirectionStatusCommand overlays evaluateCoinRub",
+      "final_status": "FIXED"
+    },
+    {
+      "id": "DEF-003",
+      "direction_id": null,
+      "pair": "order/API hot path",
+      "root_cause": "OrderCalculator/API quote do not call RubFamilyPremiumPolicy; only status=0 hard-stops orders",
+      "impact": "QUARANTINE_REQUIRED coin→RUB could remain orderable while XML-blocked",
+      "fix": "Immediate fail-closed via DB quarantine for 268; systemic order-path gate remains remaining work",
+      "final_status": "PARTIALLY_MITIGATED"
+    }
+  ]
+}

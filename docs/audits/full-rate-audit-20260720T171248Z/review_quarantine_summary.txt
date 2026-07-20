@@ -1,0 +1,15 @@
+14 BTC→SBERRUB REVIEW raw=6.891033 unexpl=1.891033 root=premium_or_unexplained_warning_band
+25 USDTTRC20→ACRUB REVIEW raw=6.291085 unexpl=1.291085 root=premium_or_unexplained_warning_band
+26 USDTTRC20→RFBRUB REVIEW raw=6.204339 unexpl=1.204339 root=premium_or_unexplained_warning_band
+160 LTC→SBPRUB REVIEW raw=6.582282 unexpl=1.582282 root=premium_or_unexplained_warning_band
+223 LTC→SBERRUB REVIEW raw=6.209564 unexpl=1.209564 root=premium_or_unexplained_warning_band
+540 ZEC→SBERRUB PASS_EXPLAINED_SPREAD raw=2.795832 unexpl=-2.204168 root=within_target_band
+541 ZEC→SBPRUB PASS_EXPLAINED_SPREAD raw=3.429513 unexpl=-1.570487 root=within_target_band
+542 ZEC→ACRUB PASS_EXPLAINED_SPREAD raw=2.57732 unexpl=-2.42268 root=within_target_band
+1029 USDTBEP20→SBPRUB REVIEW raw=6.368425 unexpl=1.368425 root=premium_or_unexplained_warning_band
+1056 USDTBEP20→SBERRUB REVIEW raw=6.478096 unexpl=1.478096 root=premium_or_unexplained_warning_band
+1057 USDTBEP20→ACRUB PASS raw=5.995737 unexpl=0.995737 root=within_policy_pass
+1058 USDTBEP20→RFBRUB REVIEW raw=6.204263 unexpl=1.204263 root=premium_or_unexplained_warning_band
+1070 USDTERC20→RFBRUB REVIEW raw=6.204263 unexpl=1.204263 root=premium_or_unexplained_warning_band
+1075 USDTSOL→SBERRUB REVIEW raw=6.204339 unexpl=1.204339 root=premium_or_unexplained_warning_band
+1420 LTC→YAMRUB REVIEW raw=6.263728 unexpl=1.263728 root=premium_or_unexplained_warning_band

@@ -50,7 +50,11 @@ final class TrustedBaselineRecoveryTest extends TestCase
             'families' => [
                 'SBPRUB' => [
                     'destination_codes' => ['SBPRUB'],
-                    'proposed_configured_premium_max_pct' => 8.0,
+                    'decision' => 'APPROVE',
+                    'target_premium_max_percent' => 5.0,
+                    'hard_maximum_premium_percent' => 8.0,
+                    'export_allowed_when_approved' => true,
+                    'order_allowed_when_approved' => true,
                 ],
             ],
         ]);
@@ -62,12 +66,18 @@ final class TrustedBaselineRecoveryTest extends TestCase
             'families' => [
                 'SBPRUB' => [
                     'destination_codes' => ['SBPRUB'],
-                    'proposed_configured_premium_max_pct' => 8.0,
+                    'decision' => 'APPROVE',
+                    'target_premium_max_percent' => 5.0,
+                    'hard_maximum_premium_percent' => 8.0,
+                    'export_allowed_when_approved' => true,
+                    'order_allowed_when_approved' => true,
                 ],
             ],
         ]);
         $this->assertTrue($approved->isApproved());
-        $this->assertSame(8.0, $approved->explainedPremiumPercent('SBPRUB'));
+        // Explained band uses target top (ceiling for expected), not hard maximum.
+        $this->assertSame(5.0, $approved->explainedPremiumPercent('SBPRUB'));
+        $this->assertSame(8.0, $approved->hardMaximumPremiumPercent('SBPRUB'));
     }
 
     public function testAssetFromCodeMapsNetworks(): void

@@ -1,0 +1,21 @@
+{
+  "540": {
+    "action": "KEEP_QUARANTINED",
+    "classification": "REVIEW",
+    "restored": false
+  },
+  "541": {
+    "action": "RESTORED",
+    "classification": "PASS_EXPLAINED_SPREAD",
+    "parity_ok": true,
+    "xml_present": true,
+    "restored": true
+  },
+  "542": {
+    "action": "RESTORED",
+    "classification": "PASS_EXPLAINED_SPREAD",
+    "parity_ok": true,
+    "xml_present": true,
+    "restored": true
+  }
+}

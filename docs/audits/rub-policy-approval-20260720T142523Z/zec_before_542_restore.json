@@ -1,0 +1,20 @@
+[
+    {
+        "id": 540,
+        "status": 0,
+        "allow_export": 2,
+        "course_value": "44517.921233869460447696"
+    },
+    {
+        "id": 541,
+        "status": 1,
+        "allow_export": 0,
+        "course_value": "43198.409906619461730956"
+    },
+    {
+        "id": 542,
+        "status": 0,
+        "allow_export": 2,
+        "course_value": "43169.683651742293011458"
+    }
+]

@@ -1,0 +1,10 @@
+xml_path=/var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml
+xml_bytes=159340
+xml_sha256=4065b9faccc52e9d5b33e2c152ece49d26f653ecba8cdb7d8ea040134c3d5dab
+xml_items=1
+xml_mtime=2026-07-20 19:12:31.135832525 +0200
+xml_items_re=819
+xml_sha256_py=4065b9faccc52e9d5b33e2c152ece49d26f653ecba8cdb7d8ea040134c3d5dab
+xml_bytes_py=159340
+public/static/exports/changed-currencies.xml: bytes=213985 items=819 sha=004d458902927bc0
+public/currencies.xml: bytes=159340 items=819 sha=4065b9faccc52e9d

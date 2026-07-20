@@ -1,0 +1,180 @@
+{
+  "version": 2,
+  "schema": "rub_family_premium_policy_v2",
+  "approved": false,
+  "approved_at": null,
+  "approved_by": null,
+  "notes": "DRAFT pending operator sign-off. Evidence reconstructed 2026-07-20 from live independent baselines and pre-incident order aggregates. Do NOT set approved=true without explicit operator decision recorded in RUB_FAMILY_PREMIUM_OPERATOR_DECISION.*",
+  "baseline": {
+    "crypto_path": "ASSETUSDT × USDRUB",
+    "stablecoin_path": "USDRUB",
+    "usdrub_source": "russiancentralbank",
+    "max_crypto_age_seconds": 900,
+    "max_fiat_age_seconds": 21600,
+    "minimum_provider_count": 1
+  },
+  "default_thresholds": {
+    "warning_unexplained_percent": 5.0,
+    "critical_unexplained_percent": 7.0,
+    "extreme_unexplained_percent": 12.0
+  },
+  "families": {
+    "SBPRUB": {
+      "label": "SBP RUB",
+      "destination_codes": ["SBPRUB"],
+      "classification_recommendation": "SUPPORTED_WITH_PREMIUM",
+      "proposed_decision": "APPROVE",
+      "minimum_premium_percent": 0.0,
+      "target_premium_percent": 5.0,
+      "maximum_explained_premium_percent": 8.0,
+      "warning_unexplained_percent": 5.0,
+      "critical_unexplained_percent": 10.0,
+      "order_allowed_when_approved": true,
+      "export_allowed_when_approved": true,
+      "evidence": {
+        "live_active_directions_with_baseline": 10,
+        "live_median_raw_premium_pct_vs_cbr": 6.284,
+        "live_p75_raw_premium_pct": 7.211,
+        "live_p90_raw_premium_pct": 7.237,
+        "historical_usdttrc20_orders_pre_20260719": 104,
+        "historical_usdttrc20_settled_like": 71,
+        "historical_avg_usdt_course_rub": 81.8,
+        "implied_hist_premium_vs_cbr_78_4_pct": 4.3
+      },
+      "reason": "High-demand SBP rail; live OTC premium cluster ~6–7% vs CBR; historical USDT/SBP ~4%+. Proposed explained band 0–8%."
+    },
+    "SBERRUB": {
+      "label": "Sberbank RUB",
+      "destination_codes": ["SBERRUB"],
+      "classification_recommendation": "SUPPORTED_WITH_PREMIUM",
+      "proposed_decision": "APPROVE",
+      "minimum_premium_percent": 0.0,
+      "target_premium_percent": 5.0,
+      "maximum_explained_premium_percent": 8.0,
+      "warning_unexplained_percent": 5.0,
+      "critical_unexplained_percent": 10.0,
+      "order_allowed_when_approved": true,
+      "export_allowed_when_approved": true,
+      "evidence": {
+        "live_active_directions_with_baseline": 11,
+        "live_median_raw_premium_pct_vs_cbr": 6.349,
+        "live_p90_raw_premium_pct": 7.237,
+        "historical_usdttrc20_orders_pre_20260719": 1418,
+        "historical_usdttrc20_settled_like": 137
+      },
+      "reason": "Highest volume RUB rail; premium profile similar to SBP."
+    },
+    "TCSBRUB": {
+      "label": "Tinkoff / T-Bank RUB",
+      "destination_codes": ["TCSBRUB", "TBRUB"],
+      "classification_recommendation": "SUPPORTED_WITH_PREMIUM",
+      "proposed_decision": "APPROVE",
+      "minimum_premium_percent": 0.0,
+      "target_premium_percent": 5.5,
+      "maximum_explained_premium_percent": 9.0,
+      "warning_unexplained_percent": 5.0,
+      "critical_unexplained_percent": 10.0,
+      "order_allowed_when_approved": true,
+      "export_allowed_when_approved": true,
+      "evidence": {
+        "live_median_raw_premium_pct_vs_cbr": 7.178,
+        "live_p90_raw_premium_pct": 7.812,
+        "historical_usdttrc20_orders": 80
+      },
+      "reason": "Slightly higher live median than SBP/Sber; allow up to 9% explained."
+    },
+    "ACRUB": {
+      "label": "Advanced Cash RUB",
+      "destination_codes": ["ACRUB"],
+      "classification_recommendation": "SUPPORTED_WITH_PREMIUM",
+      "proposed_decision": "APPROVE",
+      "minimum_premium_percent": 0.0,
+      "target_premium_percent": 4.5,
+      "maximum_explained_premium_percent": 7.0,
+      "warning_unexplained_percent": 4.0,
+      "critical_unexplained_percent": 9.0,
+      "order_allowed_when_approved": true,
+      "export_allowed_when_approved": true,
+      "evidence": {
+        "live_median_raw_premium_pct_vs_cbr": 5.955,
+        "historical_usdttrc20_orders": 46
+      },
+      "reason": "E-wallet rail; tighter proposed band than bank/SBP."
+    },
+    "YAMRUB": {
+      "label": "Yandex Money RUB",
+      "destination_codes": ["YAMRUB"],
+      "classification_recommendation": "SUPPORTED_WITH_PREMIUM",
+      "proposed_decision": "APPROVE",
+      "minimum_premium_percent": 0.0,
+      "target_premium_percent": 4.0,
+      "maximum_explained_premium_percent": 7.0,
+      "warning_unexplained_percent": 4.0,
+      "critical_unexplained_percent": 9.0,
+      "order_allowed_when_approved": true,
+      "export_allowed_when_approved": true,
+      "evidence": {
+        "live_median_raw_premium_pct_vs_cbr": 4.896
+      },
+      "reason": "Lower live median than SBP; still OTC."
+    },
+    "RFBRUB": {
+      "label": "Raiffeisen RUB",
+      "destination_codes": ["RFBRUB"],
+      "classification_recommendation": "SUPPORTED_WITH_PREMIUM",
+      "proposed_decision": "APPROVE",
+      "minimum_premium_percent": 0.0,
+      "target_premium_percent": 4.5,
+      "maximum_explained_premium_percent": 7.0,
+      "warning_unexplained_percent": 4.0,
+      "critical_unexplained_percent": 9.0,
+      "order_allowed_when_approved": true,
+      "export_allowed_when_approved": true,
+      "evidence": {
+        "live_median_raw_premium_pct_vs_cbr": 5.444
+      },
+      "reason": "Bank rail; mid band."
+    },
+    "CARDRUB": {
+      "label": "Visa/MC RUB card",
+      "destination_codes": ["CARDRUB"],
+      "classification_recommendation": "SUPPORTED_WITH_PREMIUM",
+      "proposed_decision": "REVISE",
+      "minimum_premium_percent": 0.0,
+      "target_premium_percent": 5.0,
+      "maximum_explained_premium_percent": 9.0,
+      "warning_unexplained_percent": 5.0,
+      "critical_unexplained_percent": 11.0,
+      "order_allowed_when_approved": true,
+      "export_allowed_when_approved": true,
+      "evidence": {
+        "live_median_raw_premium_pct_vs_cbr": 1.018,
+        "median_configured_profit_pct": 5.0,
+        "note": "Live raw vs CBR low because profit already ~5% — unexplained after profit is small; confirm chargeback risk band with ops."
+      },
+      "reason": "Needs operator revise: configured profit already explains most of the gap."
+    },
+    "OTHER_RUB": {
+      "label": "Other RUB rails",
+      "destination_codes": ["*RUB"],
+      "classification_recommendation": "KEEP_BLOCKED",
+      "proposed_decision": "KEEP_BLOCKED",
+      "minimum_premium_percent": 0.0,
+      "target_premium_percent": 0.0,
+      "maximum_explained_premium_percent": 0.0,
+      "warning_unexplained_percent": 3.0,
+      "critical_unexplained_percent": 7.0,
+      "order_allowed_when_approved": false,
+      "export_allowed_when_approved": false,
+      "evidence": {},
+      "reason": "Catch-all remains blocked until mapped to a named family."
+    }
+  },
+  "operator_checklist": [
+    "Review family_premium_stats.json and coin_rub_order_aggregates.json",
+    "For each family set decision APPROVE|REVISE|KEEP_BLOCKED|INTERNAL_ONLY|DEPRECATE",
+    "If APPROVE: set approved=true, approved_by=<operator id>, approved_at=<UTC ISO>",
+    "Re-run rates:economic-audit and rebuild BESTCHANGE_COIN_RUB_FINAL_V5",
+    "Restore ZEC 540/541/542 only individually after PASS/PASS_EXPLAINED_SPREAD"
+  ]
+}
