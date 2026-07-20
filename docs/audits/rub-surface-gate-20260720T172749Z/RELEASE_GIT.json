@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-07-20T17:35:22Z",
+  "branch": "release/exswaping-rate-audit-final-20260720",
+  "commits": [
+    "351ede1 feat(rates): certify RUB family premium policy and full-rate audit artifacts",
+    "b6edf3c feat(rates): enforce RubFamilyPremiumPolicy on quote, order, and XML",
+    "7216bb4 test(rates): regress public-surface RUB policy gate and direction 268 pattern",
+    "a600d8d docs(rates): certify full-surface RUB policy enforcement release",
+    "9d73a68 Merge branch 'release/exswaping-rate-audit-final-20260720'"
+  ],
+  "main_before": "6fdebcda006205430d8fd1884006abaab46fae1a",
+  "branch_sha": "a600d8dbe232a1b6a765d972157d30c78599c7a2",
+  "remote_sha": "a600d8dbe232a1b6a765d972157d30c78599c7a2",
+  "merge_sha": "9d73a68d0d8b055147c31b225df66e9d604a12df",
+  "main_after": "9d73a68d0d8b055147c31b225df66e9d604a12df",
+  "production_sha": "9d73a68d0d8b055147c31b225df66e9d604a12df",
+  "deploy_drift": 0,
+  "deploy_missing": 0,
+  "push": "origin/main and origin/release/exswaping-rate-audit-final-20260720",
+  "force_push": false
+}
