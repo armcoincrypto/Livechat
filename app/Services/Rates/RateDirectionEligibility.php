@@ -63,6 +63,9 @@ final class RateDirectionEligibility
             'profit_percent' => (string) ($row['profit'] ?? '0'),
             'baseline' => isset($row['baseline']) ? (string) $row['baseline'] : null,
             'force_block_reason' => $row['force_block_reason'] ?? null,
+            // Quote tooling may inspect rows before an independent baseline is attached.
+            // Public XML export applies stricter require_independent_baseline separately.
+            'allow_no_baseline' => empty($row['require_independent_baseline']),
         ]);
         if (!$q['allowed']) {
             $reasons[] = 'rate_' . ($q['reason'] ?? 'blocked');

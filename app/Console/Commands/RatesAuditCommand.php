@@ -27,7 +27,9 @@ final class RatesAuditCommand extends Command
         {--format=table : table|json}
         {--max-deviation=0.12 : Unused legacy flag; classification uses unexplained thresholds}
         {--limit=0 : Limit number of directions (0 = no limit)}
-        {--gel-only : Only directions involving GEL / CARDGEL}';
+        {--gel-only : Only directions involving GEL / CARDGEL}
+        {--prefer-independent : Prefer independent market baseline over BestChange peer (default: true for economic safety)}
+        {--allow-bestchange-baseline : Allow circular BestChange peer baseline when independent is missing}';
 
     protected $description = 'Dry-run audit of active exchange directions (configured vs unexplained deviation).';
 
@@ -151,17 +153,19 @@ final class RatesAuditCommand extends Command
             }
 
             $peerBaseline = ($bcRate && $guard->normalize($bcRate)) ? $guard->normalize($bcRate) : null;
-            // Prefer live BC peer when BC status is active; otherwise fall back to independent.
-            $useBc = $peerBaseline !== null && (int) ($bc->status ?? 0) === 1;
-            $baselineRate = $useBc ? $peerBaseline : null;
-            $baselineType = $useBc ? 'bestchange_rate_value' : null;
+            $preferIndependent = !$this->option('allow-bestchange-baseline');
+            $baselineRate = null;
+            $baselineType = null;
 
-            if ($baselineRate === null) {
-                $ind = $this->independentBaselineForPair($baseline, $from, $to);
-                if ($ind !== null) {
-                    $baselineRate = $ind['rate'];
-                    $baselineType = $ind['source'];
-                }
+            // Prefer independent market baseline. BestChange peer is circular when the
+            // direction itself is priced from BestChange (ZEC→SBP incident class).
+            $ind = $this->independentBaselineForPair($baseline, $from, $to);
+            if ($ind !== null) {
+                $baselineRate = $ind['rate'];
+                $baselineType = $ind['source'];
+            } elseif (!$preferIndependent && $peerBaseline !== null && (int) ($bc->status ?? 0) === 1) {
+                $baselineRate = $peerBaseline;
+                $baselineType = 'bestchange_rate_value';
             }
 
             $analysis = $expectation->analyze(
@@ -294,7 +298,7 @@ final class RatesAuditCommand extends Command
         $toU = strtoupper($to);
 
         if (str_contains($toU, 'GEL')) {
-            foreach (['BTC', 'ETH', 'BNB', 'TRX', 'TON'] as $asset) {
+            foreach (['BTC', 'ETH', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC'] as $asset) {
                 if (str_starts_with($fromU, $asset)) {
                     $q = $baseline->cryptoGel($asset);
                     if ($q !== null) {
@@ -306,6 +310,23 @@ final class RatesAuditCommand extends Command
                 $q = $baseline->quote('USDGEL');
                 if ($q !== null) {
                     return ['rate' => $q['rate'], 'source' => $q['source']];
+                }
+            }
+        }
+
+        if (str_contains($toU, 'RUB')) {
+            if (str_starts_with($fromU, 'USDT') || str_starts_with($fromU, 'USDC')) {
+                $q = $baseline->quote('USDRUB');
+                if ($q !== null) {
+                    return ['rate' => $q['rate'], 'source' => 'stable_usdt_rub:' . $q['source']];
+                }
+            }
+            foreach (['BTC', 'ETH', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC'] as $asset) {
+                if ($fromU === $asset || str_starts_with($fromU, $asset)) {
+                    $q = $baseline->cryptoRub($asset);
+                    if ($q !== null) {
+                        return ['rate' => $q['rate'], 'source' => $q['source']];
+                    }
                 }
             }
         }

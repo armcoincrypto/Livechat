@@ -30,8 +30,11 @@ final class RatesDeployVerifyCommand extends Command
         'app/Services/Rates/RateDirectionEligibility.php',
         'resources/rates/bestchange-codes.overrides.json',
         'app/Services/Rates/AtomicPublicXmlPublisher.php',
+        'app/Services/Rates/RateExportQuarantine.php',
+        'app/Services/Rates/IndependentMarketBaseline.php',
         'packages/Courses/Export/ExportCourses.php',
         'packages/Courses/Export/Concerns/ExportFormatHelpers.php',
+        'app/Console/Commands/RatesEconomicAuditCommand.php',
 
         'app/Services/Rates/IndependentMarketBaseline.php',
         'app/Console/Commands/RatesAuditCommand.php',
