@@ -1,0 +1,29 @@
+=== local_file_stat ===
+-rw-rw-r-- 1 app_exswapin_usr app_exswapin_usr 152901 Jul 20 11:20 /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml
+=== public_https_-4_http11 ===
+code=200 dns=0.000839 connect=0.000954 tls=0.113322 ttfb=0.113961 total=0.114535 size=152901 ip=81.17.103.188 proto=1.1 redirect=0
+=== public_https_http2 ===
+code=200 dns=0.000825 connect=0.000936 tls=0.072748 ttfb=0.073703 total=0.074665 size=152901 ip=81.17.103.188 proto=1.1 redirect=0
+=== public_https_ipv6 ===
+code=000 dns=0.005506 connect=0.000000 tls=0.000000 ttfb=0.000000 total=5.000981 size=0 ip= proto=0 redirect=0
+=== public_https_HEAD ===
+HTTP/1.1 200 OK
+Server: nginx
+Date: Mon, 20 Jul 2026 09:21:06 GMT
+Content-Type: text/xml; charset=utf-8
+Content-Length: 152901
+Last-Modified: Mon, 20 Jul 2026 09:20:39 GMT
+Connection: keep-alive
+Vary: Accept-Encoding
+ETag: "6a5de867-25545"
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
+Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' data: https:; connect-src 'self' https: wss:; frame-ancestors 'self'; base-uri 'self'; form-action 'self' https:
+Vary: Accept-Language, Cookie
+Accept-Ranges: bytes
+
+=== loopback_443_Host ===
+code=000 dns=0.000021 connect=0.000000 tls=0.000000 ttfb=0.000000 total=0.000197 size=0 ip= proto=0 redirect=0

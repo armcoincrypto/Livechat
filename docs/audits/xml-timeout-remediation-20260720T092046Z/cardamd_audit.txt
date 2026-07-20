@@ -1,0 +1,19 @@
+CARDAMD currencies=8
+{"id":52,"id_payment":63,"designation_xml":"CARDAMD","status":0,"tech_name":"EVOCA BANK"}
+{"id":53,"id_payment":62,"designation_xml":"CARDAMD","status":0,"tech_name":"AGBA BANK"}
+{"id":54,"id_payment":61,"designation_xml":"CARDAMD","status":0,"tech_name":"ARARAT BANK"}
+{"id":55,"id_payment":60,"designation_xml":"CARDAMD","status":0,"tech_name":"FAST BANK"}
+{"id":56,"id_payment":59,"designation_xml":"CARDAMD","status":0,"tech_name":"AMERIA BANK"}
+{"id":57,"id_payment":58,"designation_xml":"CARDAMD","status":0,"tech_name":"CONVERS BANK"}
+{"id":58,"id_payment":57,"designation_xml":"CARDAMD","status":0,"tech_name":"INECO BANK"}
+{"id":71,"id_payment":76,"designation_xml":"CARDAMD","status":0,"tech_name":"VISA CARD AMD"}
+AMD 52 CARDAMD status=0
+AMD 53 CARDAMD status=0
+AMD 54 CARDAMD status=0
+AMD 55 CARDAMD status=0
+AMD 56 CARDAMD status=0
+AMD 57 CARDAMD status=0
+AMD 58 CARDAMD status=0
+AMD 59 IDAMD status=0
+AMD 70 CASHAMD status=0
+AMD 71 CARDAMD status=0

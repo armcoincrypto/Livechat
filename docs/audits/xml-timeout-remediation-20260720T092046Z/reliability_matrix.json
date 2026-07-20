@@ -1,0 +1,76 @@
+{
+  "sequential_20": {
+    "count": 20,
+    "success": 20,
+    "success_rate": 1.0,
+    "timeouts": 0,
+    "zero_byte": 0,
+    "invalid_xml": 0,
+    "p50_ttfb": 0.08489,
+    "p95_ttfb": 0.092705,
+    "p99_ttfb": 0.092705,
+    "max_ttfb": 0.093522,
+    "max_total": 0.094292,
+    "sizes": [
+      "161847"
+    ],
+    "items": [
+      832
+    ]
+  },
+  "variants": {
+    "http1.1": {
+      "exit": 0,
+      "stderr": "",
+      "code": "200",
+      "ttfb": "0.090978",
+      "total": "0.091626",
+      "size": "161847",
+      "proto": "1.1",
+      "ip": "81.17.103.188",
+      "items": 832,
+      "valid": true,
+      "zero_byte": false
+    },
+    "http2": {
+      "exit": 0,
+      "stderr": "",
+      "code": "200",
+      "ttfb": "0.076074",
+      "total": "0.076940",
+      "size": "161847",
+      "proto": "1.1",
+      "ip": "81.17.103.188",
+      "items": 832,
+      "valid": true,
+      "zero_byte": false
+    },
+    "gzip": {
+      "exit": 0,
+      "stderr": "",
+      "code": "200",
+      "ttfb": "0.073868",
+      "total": "0.074041",
+      "size": "11906",
+      "proto": "1.1",
+      "ip": "81.17.103.188",
+      "items": 0,
+      "valid": false,
+      "zero_byte": false
+    },
+    "head": {
+      "exit": 0,
+      "status_line": "HTTP/1.1 200 OK"
+    }
+  },
+  "during_generation": {
+    "count": 5,
+    "success": 5,
+    "zero_byte": 0,
+    "max_ttfb": 0.101549,
+    "items": [
+      832
+    ]
+  },
+  "ipv6_dns": "no public AAAA for exswaping.com; local -6 not applicable to public BestChange path"
+}

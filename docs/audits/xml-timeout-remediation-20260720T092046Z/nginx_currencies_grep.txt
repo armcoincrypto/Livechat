@@ -1,0 +1,120 @@
+38:    server_names_hash_bucket_size 128;
+184:# P13.3 — Conversion lift API fastcgi cache zone
+185:fastcgi_cache_path /var/cache/nginx/exswaping_conversion_lift
+192:# Bypass fastcgi cache for non-GET, query strings, auth/session cookies
+377:    listen 81.17.103.188:80 default_server;
+378:    listen 81.17.103.188:443 ssl default_server;
+381:    # listen [2a02:c207:2287:4704::1]:80 default_server;
+382:    # listen [2a02:c207:2287:4704::1]:443 ssl default_server;
+384:    server_name _;
+391:    location / {
+392:        root /var/www;
+400:location ^~ /.well-known/acme-challenge/ {
+402:    root /usr/local/fastpanel2/web/letsencrypt;
+409:    listen 81.17.103.188:443 quic reuseport;
+412:    # listen [2a02:c207:2287:4704::1]:443 quic reuseport;
+414:    server_name --;
+419:    location / {
+433:    server_name app.exswaping.com  ;
+435:    listen 81.17.103.188:443 ssl;
+436:    listen 81.17.103.188:443 quic;
+466:    root $root_path;
+469:    location ^~ /api/ {
+474:    location ~ ^/(login|admin/login)(/|$) {
+479:    location / {
+484:    location ~ \.php$ {
+485:        include /etc/nginx/fastcgi_params;
+487:        fastcgi_pass unix:/var/run/app.exswaping.com.sock;
+488:        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+489:        fastcgi_param DOCUMENT_ROOT $realpath_root;
+492:    location /app {
+503:        proxy_pass http://0.0.0.0:8080;
+506:    location ~* ^.+\.(jpg|jpeg|gif|png|svg|js|css|mp3|ogg|mpeg|avi|zip|gz|bz2|rar|swf|ico|7z|doc|docx|map|ogg|otf|pdf|tff|tif|txt|wav|webp|woff|woff2|xls|xlsx|xml)$ {
+510:    location @fallback {
+511:        fastcgi_pass unix:/var/run/app.exswaping.com.sock;
+512:        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+513:        include /etc/nginx/fastcgi_params;
+525:     server_name app.exswaping.com;
+527:    listen 81.17.103.188:80;
+535:location ~ /\.(?!well-known)(env|git|svn|hg|bzr|aws|ssh|ht|DS_Store) {
+540:location ~* (^|/)(\.env|\.env\..*|\.git|\.aws|\.ssh|composer\.(json|lock)|package(-lock)?\.json|yarn\.lock|pnpm-lock\.yaml|docker-compose.*\.ya?ml|Dockerfile|artisan|phpunit\.xml|webpack.*|vite.*|\.npmrc|\.yarnrc|id_rsa|id_dsa|config\.php\.bak)$ {
+545:location ~* \.(bak|backup|old|orig|save|swp|swo|sql|sqlite|db|dump|tar|tgz|tar\.gz|zip|7z|rar|log|ini|conf|yml|yaml)$ {
+575:# configuration file /etc/nginx/fastcgi_params:
+577:fastcgi_param  QUERY_STRING       $query_string;
+578:fastcgi_param  REQUEST_METHOD     $request_method;
+579:fastcgi_param  CONTENT_TYPE       $content_type;
+580:fastcgi_param  CONTENT_LENGTH     $content_length;
+582:fastcgi_param  SCRIPT_NAME        $fastcgi_script_name;
+583:fastcgi_param  REQUEST_URI        $request_uri;
+584:fastcgi_param  DOCUMENT_URI       $document_uri;
+585:fastcgi_param  DOCUMENT_ROOT      $document_root;
+586:fastcgi_param  SERVER_PROTOCOL    $server_protocol;
+587:fastcgi_param  REQUEST_SCHEME     $scheme;
+588:fastcgi_param  HTTPS              $https if_not_empty;
+590:fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
+591:fastcgi_param  SERVER_SOFTWARE    nginx/$nginx_version;
+593:fastcgi_param  REMOTE_ADDR        $remote_addr;
+594:fastcgi_param  REMOTE_PORT        $remote_port;
+595:fastcgi_param  SERVER_ADDR        $server_addr;
+596:fastcgi_param  SERVER_PORT        $server_port;
+597:fastcgi_param  SERVER_NAME        $server_name;
+600:fastcgi_param  REDIRECT_STATUS    200;
+604:fastcgi_hide_header X-Powered-By;
+681:    listen 81.17.103.188:80;
+682:    server_name exswaping.com www.exswaping.com;
+687:    location / {
+694:    listen 81.17.103.188:443 ssl;
+695:    server_name www.exswaping.com;
+704:    server_name exswaping.com;
+706:    listen 81.17.103.188:443 ssl;
+709:    # listen 80;
+710:    # listen 443 ssl;
+728:    root $root_path;
+763:    location = /index.html {
+764:        alias /var/www/exswaping_co_usr/data/www/exswaping.com/dist/exchanger/browser/en/index.csr.html;
+768:    location = /currencies/currencies.xml {
+769:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+775:    location = /currencies.xml {
+776:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+777:        #alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/changed-currencies.xml;
+783:    location = /currenciesbest.xml {
+784:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currenciesbest.xml;
+790:    location = /exports/currencies.xml {
+791:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+792:        #alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/changed-currencies.xml;
+799:    location = /robots.txt {
+800:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/robots.txt;
+805:    location = /llms.txt {
+806:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/llms.txt;
+812:    location = /sitemap.xml {
+816:    location = /static/seo/sitemap.xml/ {
+820:    location = /ru/static/seo/sitemap.xml {
+824:    location = /en/static/seo/sitemap.xml {
+828:    location = /zh/static/seo/sitemap.xml {
+832:    location = /uk/static/seo/sitemap.xml {
+836:    location = /ka/static/seo/sitemap.xml {
+840:    location = /static/seo/sitemap.xml {
+841:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/seo/sitemap.xml;
+851:    location = / {
+852:        # P12.3: root locale entry moved into the owned Next.js middleware.
+856:        proxy_pass http://exswaping_owned_frontend;
+859:    location ~ ^/(ru|en)$ {
+865:    location ~* ^/(.+\.(?:txt|html|csv|pdf))$ {
+872:    location ~ ^/(ru|en|zh|uk|ka)/support-chat/widget\.js$ {
+873:        root /var/www/exswaping_co_usr/data/www/exswaping.com/dist/exchanger/browser;
+879:    # SEO Phase E: homepage INDEX-tier exchange links (exact locale root only)
+881:    location = /ru {
+884:    location = /ru/ {
+886:        proxy_pass http://exswaping_owned_frontend;
+891:    location = /en {
+894:    location = /en/ {
+896:        proxy_pass http://exswaping_owned_frontend;
+900:    location = /uk/ {
+907:    location = /ka/ {
+915:    location = /zh {
+919:    location = /zh/ {
+923:    location ^~ /zh/ {
+942:# INSERT / REPLACE the previous auth-canary location block before vendor ^~ /ru/auth/.
+946:location ^~ /en/auth/login {
+949:    proxy_pass http://exswaping_owned_frontend;
+954:location ^~ /ru/auth/login {

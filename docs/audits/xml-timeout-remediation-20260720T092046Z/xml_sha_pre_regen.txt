@@ -1,0 +1,1 @@
+78d746474fe3e663e3fff78c8e00611e4d7d1653f68e62d02981d0a84a02b41e  /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml

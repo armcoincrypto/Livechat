@@ -1,0 +1,33 @@
+Exswaping — BestChange coin→RUB V2 (manual submission only)
+
+XML timeout remediation + catalog decision closure
+Evidence: /var/www/app_exswapin_usr/data/www/app.exswaping.com/docs/audits/xml-timeout-remediation-20260720T092046Z
+
+Public XML delivery:
+- https://exswaping.com/currencies.xml
+- Root cause fixed: non-atomic truncate/write of currencies.xml (nginx pread 0-byte races)
+- Atomic publish + static nginx alias + delivery probe
+- Reliability: 20/20 IPv4 success, p95 TTFB ~0.09s, 0 timeouts, 0 zero-byte
+- No public AAAA (IPv4-only); local IPv6 tests are not the BestChange path
+
+Catalog decisions:
+- TON: KEEP_DISABLED; 1765/1778 not exported; GRAM≠TON
+- Payeer PRUSD/PREUR/PRRUB: ABSENT mappings; absent from public XML
+- CoinMarketCap: KEEP_DISABLED (not required for active set)
+- CARDAMD: 8 internal bank variants; ONE_CANONICAL_EXPORT_WITH_INTERNAL_VARIANTS
+- Reserve: currency effective reserve is canonical for export/order
+
+Submission set V2:
+- Reviewed coin→RUB: 41
+- Eligible for BestChange review: 41 (was 35)
+- Newly eligible LTC→RUB: 6 (currency status export filter + reserve parity)
+- Excluded: 0
+
+Files:
+- BESTCHANGE_COIN_RUB_FINAL_V2.json
+- BESTCHANGE_COIN_RUB_FINAL_V2.csv
+- BESTCHANGE_COIN_RUB_MANUAL_MESSAGE_V2.txt
+- CERTIFICATION.md
+
+Do not auto-contact BestChange. Operator submits manually.
+Do not restore quarantined/deprecated directions from other lists.

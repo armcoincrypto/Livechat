@@ -1,0 +1,10 @@
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying [fe80::250:56ff:fe5d:cf1f]:443...
+  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:02 --:--:--     0* ipv6 connect timeout after 2499ms, move on!
+  0     0    0     0    0     0      0      0 --:--:--  0:00:02 --:--:--     0*   Trying [2a02:c207:2287:4704::1]:443...
+  0     0    0     0    0     0      0      0 --:--:--  0:00:03 --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:04 --:--:--     0* ipv6 connect timeout after 2498ms, move on!
+* Failed to connect to exswaping.com port 443 after 5000 ms: Timeout was reached
+  0     0    0     0    0     0      0      0 --:--:--  0:00:05 --:--:--     0
+* Closing connection 0
+curl: (28) Failed to connect to exswaping.com port 443 after 5000 ms: Timeout was reached

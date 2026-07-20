@@ -1,0 +1,21 @@
++----------------------------------------------------------+-----+
+| path                                                     | ok  |
++----------------------------------------------------------+-----+
+| xml-changer/main.py                                      | yes |
+| app/Services/Rates/RateSanityGuard.php                   | yes |
+| app/Services/Rates/RateConfiguredExpectation.php         | yes |
+| app/Services/Rates/RateExportQuarantine.php              | yes |
+| app/Services/Rates/PeerRateSelector.php                  | yes |
+| app/Services/Rates/BestChangeCurrencyCatalogGuard.php    | yes |
+| app/Services/Rates/BestChangeMappingRegistry.php         | yes |
+| app/Services/Rates/BestChangeMappingVerifier.php         | yes |
+| app/Services/Rates/RateDirectionEligibility.php          | yes |
+| resources/rates/bestchange-codes.overrides.json          | yes |
+| app/Services/Rates/IndependentMarketBaseline.php         | yes |
+| app/Console/Commands/RatesAuditCommand.php               | yes |
+| packages/BestChange/Services/RatesUpdateService.php      | yes |
+| packages/Courses/Export/Concerns/ExportFormatHelpers.php | yes |
+| tests/Unit/Rates/RateSanityGuardTest.php                 | yes |
+| tests/Unit/Rates/RatePostFixRemediationTest.php          | yes |
++----------------------------------------------------------+-----+
+commit=d1785f37753f11c7d02a3383d975bef9469a7ab9 drift=0 missing=0

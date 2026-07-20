@@ -1,0 +1,210 @@
+760:    # ACME: /.well-known/acme-challenge/ is defined in /etc/nginx/fastpanel2-includes/letsencrypt.conf (included below).
+761:
+762:    # SPA shell: build ships locale-specific index.csr.html; map canonical /index.html for try_files fallback.
+763:    location = /index.html {
+764:        alias /var/www/exswaping_co_usr/data/www/exswaping.com/dist/exchanger/browser/en/index.csr.html;
+765:        default_type text/html;
+766:    }
+767:
+768:    location = /currencies/currencies.xml {
+769:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+770:        autoindex off;
+771:        access_log off;
+772:        default_type application/xml;
+773:    }
+774:
+775:    location = /currencies.xml {
+776:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+777:        #alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/changed-currencies.xml;
+778:        autoindex off;
+779:        access_log off;
+---
+761:
+762:    # SPA shell: build ships locale-specific index.csr.html; map canonical /index.html for try_files fallback.
+763:    location = /index.html {
+764:        alias /var/www/exswaping_co_usr/data/www/exswaping.com/dist/exchanger/browser/en/index.csr.html;
+765:        default_type text/html;
+766:    }
+767:
+768:    location = /currencies/currencies.xml {
+769:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+770:        autoindex off;
+771:        access_log off;
+772:        default_type application/xml;
+773:    }
+774:
+775:    location = /currencies.xml {
+776:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+777:        #alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/changed-currencies.xml;
+778:        autoindex off;
+779:        access_log off;
+780:        default_type application/xml;
+---
+767:
+768:    location = /currencies/currencies.xml {
+769:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+770:        autoindex off;
+771:        access_log off;
+772:        default_type application/xml;
+773:    }
+774:
+775:    location = /currencies.xml {
+776:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+777:        #alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/changed-currencies.xml;
+778:        autoindex off;
+779:        access_log off;
+780:        default_type application/xml;
+781:    }
+782:
+783:    location = /currenciesbest.xml {
+784:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currenciesbest.xml;
+785:        autoindex off;
+786:        access_log off;
+---
+768:    location = /currencies/currencies.xml {
+769:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+770:        autoindex off;
+771:        access_log off;
+772:        default_type application/xml;
+773:    }
+774:
+775:    location = /currencies.xml {
+776:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+777:        #alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/changed-currencies.xml;
+778:        autoindex off;
+779:        access_log off;
+780:        default_type application/xml;
+781:    }
+782:
+783:    location = /currenciesbest.xml {
+784:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currenciesbest.xml;
+785:        autoindex off;
+786:        access_log off;
+787:        default_type application/xml;
+---
+769:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+770:        autoindex off;
+771:        access_log off;
+772:        default_type application/xml;
+773:    }
+774:
+775:    location = /currencies.xml {
+776:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+777:        #alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/changed-currencies.xml;
+778:        autoindex off;
+779:        access_log off;
+780:        default_type application/xml;
+781:    }
+782:
+783:    location = /currenciesbest.xml {
+784:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currenciesbest.xml;
+785:        autoindex off;
+786:        access_log off;
+787:        default_type application/xml;
+788:    }
+---
+782:
+783:    location = /currenciesbest.xml {
+784:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currenciesbest.xml;
+785:        autoindex off;
+786:        access_log off;
+787:        default_type application/xml;
+788:    }
+789:
+790:    location = /exports/currencies.xml {
+791:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+792:        #alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/changed-currencies.xml;
+793:        autoindex off;
+794:        access_log off;
+795:        default_type application/xml;
+796:    }
+797:
+798:
+799:    location = /robots.txt {
+800:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/robots.txt;
+801:        autoindex off;
+---
+783:    location = /currenciesbest.xml {
+784:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currenciesbest.xml;
+785:        autoindex off;
+786:        access_log off;
+787:        default_type application/xml;
+788:    }
+789:
+790:    location = /exports/currencies.xml {
+791:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+792:        #alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/changed-currencies.xml;
+793:        autoindex off;
+794:        access_log off;
+795:        default_type application/xml;
+796:    }
+797:
+798:
+799:    location = /robots.txt {
+800:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/robots.txt;
+801:        autoindex off;
+802:        access_log off;
+---
+784:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currenciesbest.xml;
+785:        autoindex off;
+786:        access_log off;
+787:        default_type application/xml;
+788:    }
+789:
+790:    location = /exports/currencies.xml {
+791:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml;
+792:        #alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/changed-currencies.xml;
+793:        autoindex off;
+794:        access_log off;
+795:        default_type application/xml;
+796:    }
+797:
+798:
+799:    location = /robots.txt {
+800:        alias /var/www/app_exswapin_usr/data/www/app.exswaping.com/robots.txt;
+801:        autoindex off;
+802:        access_log off;
+803:    }
+---
+3523:}
+3524:
+3525:# configuration file /etc/nginx/snippets/exswaping-seo-crawler-trap-deny.conf:
+3526:# Block public crawler traps — exact-match rules (override ^~ /exports/ and SPA fallthrough).
+3527:location = /exports/currencies-bak.xml {
+3528:    return 410;
+3529:}
+3530:
+3531:location = /exports/currencies.xml.bak.2026-04-09-110300 {
+3532:    return 410;
+3533:}
+3534:
+3535:location = /currencies.xml.bak.2026-04-09-105712 {
+3536:    return 410;
+3537:}
+3538:
+3539:location ~* "^/sitemap \(1\)\.xml$" {
+3540:    return 410;
+3541:}
+3542:
+---
+3527:location = /exports/currencies-bak.xml {
+3528:    return 410;
+3529:}
+3530:
+3531:location = /exports/currencies.xml.bak.2026-04-09-110300 {
+3532:    return 410;
+3533:}
+3534:
+3535:location = /currencies.xml.bak.2026-04-09-105712 {
+3536:    return 410;
+3537:}
+3538:
+3539:location ~* "^/sitemap \(1\)\.xml$" {
+3540:    return 410;
+3541:}
+3542:
+3543:location ~* "^/(ru|en|uk|ka|zh)/sitemap \(1\)\.xml$" {
+3544:    return 410;
+3545:}
+3546:
+---

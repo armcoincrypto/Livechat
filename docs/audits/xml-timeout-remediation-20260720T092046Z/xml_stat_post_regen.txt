@@ -1,0 +1,2 @@
+-rw-rw-r-- 1 app_exswapin_usr app_exswapin_usr 161847 Jul 20 11:26 /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml
+-rw-r--r-- 1 app_exswapin_usr app_exswapin_usr 152510 Jul 20 11:26 /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml.last-good

@@ -1,0 +1,28 @@
+=== dig AAAA ===
+=== dig A ===
+exswaping.com.		279	IN	A	81.17.103.188
+=== getent ===
+fe80::250:56ff:fe5d:cf1f%2 STREAM exswaping.com
+fe80::250:56ff:fe5d:cf1f%2 DGRAM  
+fe80::250:56ff:fe5d:cf1f%2 RAW    
+2a02:c207:2287:4704::1 STREAM 
+2a02:c207:2287:4704::1 DGRAM  
+2a02:c207:2287:4704::1 RAW    
+81.17.103.188   STREAM 
+81.17.103.188   DGRAM  
+81.17.103.188   RAW    
+172.17.0.1      STREAM 
+=== nginx listen ===
+72:    listen 81.17.103.188:80;
+85:    listen 81.17.103.188:443 ssl;
+97:    listen 81.17.103.188:443 ssl;
+100:    # listen 80;
+101:    # listen 443 ssl;
+=== ip -6 addr ===
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 2a02:c207:2287:4704::1/64 scope global 
+       valid_lft forever preferred_lft forever
+=== ss ipv6 443 ===
+LISTEN 0      511    81.17.103.188:80         0.0.0.0:*    users:(("nginx",pid=2085274,fd=14),("nginx",pid=2085273,fd=14),("nginx",pid=2085272,fd=14),("nginx",pid=1033,fd=14))                                                                                                                                                                                 
+LISTEN 0      511    81.17.103.188:443        0.0.0.0:*    users:(("nginx",pid=2085274,fd=15),("nginx",pid=2085273,fd=15),("nginx",pid=2085272,fd=15),("nginx",pid=1033,fd=15))                                                                                                                                                                                 
+LISTEN 0      511          0.0.0.0:8080       0.0.0.0:*    users:(("php8.4",pid=762,fd=7))                                                                                                                                                                                                                                                                      

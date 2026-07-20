@@ -1,0 +1,30 @@
+{
+    "direction_id": 1765,
+    "from": "TON",
+    "to": "CARDTJS",
+    "active": true,
+    "quarantined": false,
+    "deprecated": false,
+    "eligible_for_quote": true,
+    "eligible_for_order": true,
+    "eligible_for_export": false,
+    "reasons": [
+        "mapping_ton_absent",
+        "export_mapping_not_verified_TON"
+    ],
+    "mapping_status": {
+        "TON": "ABSENT",
+        "CARDTJS": "VERIFIED"
+    },
+    "provider_status": "BestChange",
+    "reserve_status": "adequate",
+    "rate_quarantine": {
+        "status": "EXPORT_ALLOWED",
+        "allowed": true,
+        "reason": "no_baseline_pass_through"
+    },
+    "course_value": "9.156480054231981661",
+    "status": 1,
+    "allow_export": 0,
+    "reserve_value": "100000"
+}

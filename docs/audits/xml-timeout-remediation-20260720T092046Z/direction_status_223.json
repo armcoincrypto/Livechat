@@ -1,0 +1,29 @@
+{
+    "direction_id": 223,
+    "from": "LTC",
+    "to": "SBERRUB",
+    "active": true,
+    "quarantined": false,
+    "deprecated": false,
+    "eligible_for_quote": true,
+    "eligible_for_order": false,
+    "eligible_for_export": true,
+    "reasons": [
+        "reserve_inadequate"
+    ],
+    "mapping_status": {
+        "LTC": "VERIFIED",
+        "SBERRUB": "VERIFIED"
+    },
+    "provider_status": "BestChange",
+    "reserve_status": "inadequate_or_missing",
+    "rate_quarantine": {
+        "status": "EXPORT_ALLOWED",
+        "allowed": true,
+        "reason": "no_baseline_pass_through"
+    },
+    "course_value": "3922.219600545270891087",
+    "status": 1,
+    "allow_export": 0,
+    "reserve_value": null
+}

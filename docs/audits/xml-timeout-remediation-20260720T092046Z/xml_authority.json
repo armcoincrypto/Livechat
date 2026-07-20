@@ -1,0 +1,31 @@
+{
+    "generated_at": "2026-07-20T12:20:49+03:00",
+    "surfaces": {
+        "public\/static\/exports\/currencies.xml": {
+            "role": "AUTHORITATIVE_PUBLIC_EXPORT",
+            "path": "\/var\/www\/app_exswapin_usr\/data\/www\/app.exswaping.com\/public\/static\/exports\/currencies.xml",
+            "sha256": "6c341f7ae6e327855f86d081b6ab6b2989a31c9e5d3c254ee35d9acd82b39787",
+            "items": 785,
+            "nginx_served": true
+        },
+        "public\/static\/exports\/changed-currencies.xml": {
+            "role": "GENERATED_CERTIFICATION_COPY",
+            "path": "\/var\/www\/app_exswapin_usr\/data\/www\/app.exswaping.com\/public\/static\/exports\/changed-currencies.xml",
+            "sha256": "72bf9a09483060f0acc81a6f1cdae5c069216b6a068f4cff7fd15dee7a8298a0",
+            "items": 785,
+            "nginx_served": false,
+            "note": "URL-enriched twin from xml-changer; rate mutation disabled by default"
+        },
+        "public\/currencies.xml": {
+            "role": "LEGACY_NON_AUTHORITATIVE",
+            "path": "\/var\/www\/app_exswapin_usr\/data\/www\/app.exswaping.com\/public\/currencies.xml",
+            "sha256": "e84159af0bcdd60783686c9faba3f0111f173a05c8da2b690435f9df42ae5dfa",
+            "items": 785,
+            "nginx_served": false
+        }
+    },
+    "canonical_vs_changed_item_parity": true,
+    "legacy_matches_canonical": false,
+    "synced_legacy": false,
+    "legacy_backup": null
+}

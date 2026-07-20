@@ -1,0 +1,1 @@
+1518:2026/07/20 01:25:12 [alert] 1797234#1797234: *719705 pread() read only 0 of 32768 from "/var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml" while sending response to client, client: 72.56.99.170, server: exswaping.com, request: "GET /exports/currencies.xml HTTP/1.1", host: "exswaping.com"

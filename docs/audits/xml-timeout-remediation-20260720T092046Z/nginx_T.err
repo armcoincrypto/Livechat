@@ -1,0 +1,19 @@
+nginx: [warn] could not build optimal map_hash, you should increase either map_hash_max_size: 2048 or map_hash_bucket_size: 64; ignoring map_hash_bucket_size
+nginx: [warn] duplicate MIME type "text/html" in /etc/nginx/fastpanel2-sites/exswaping_co_usr/exswaping.com.conf:115
+nginx: [warn] duplicate MIME type "text/html" in /etc/nginx/snippets/exswaping-ssr-proxy.conf:28
+nginx: [warn] duplicate MIME type "text/html" in /etc/nginx/snippets/exswaping-ssr-proxy.conf:28
+nginx: [warn] duplicate MIME type "text/html" in /etc/nginx/snippets/exswaping-ssr-proxy.conf:28
+nginx: [warn] duplicate MIME type "text/html" in /etc/nginx/snippets/exswaping-ssr-proxy.conf:28
+nginx: [warn] duplicate MIME type "text/html" in /etc/nginx/snippets/exswaping-ssr-proxy.conf:28
+nginx: [warn] duplicate MIME type "text/html" in /etc/nginx/snippets/exswaping-ssr-proxy.conf:28
+nginx: [warn] duplicate MIME type "text/html" in /etc/nginx/snippets/exswaping-ssr-proxy.conf:28
+nginx: [warn] duplicate MIME type "text/html" in /etc/nginx/snippets/exswaping-ssr-proxy.conf:28
+nginx: [warn] duplicate MIME type "text/html" in /etc/nginx/snippets/exswaping-ssr-proxy.conf:28
+nginx: [warn] duplicate MIME type "text/html" in /etc/nginx/snippets/exswaping-ssr-proxy.conf:28
+nginx: [warn] duplicate MIME type "text/html" in /etc/nginx/snippets/exswaping-ssr-proxy.conf:28
+nginx: [warn] duplicate MIME type "text/html" in /etc/nginx/snippets/exswaping-ssr-proxy.conf:28
+nginx: [warn] duplicate MIME type "text/html" in /etc/nginx/snippets/exswaping-ssr-proxy.conf:28
+nginx: [warn] "ssl_stapling" ignored, no OCSP responder URL in the certificate "/var/www/httpd-cert/app.exswaping.com_2025-10-25-14-36_57.crt"
+nginx: [warn] "ssl_stapling" ignored, no OCSP responder URL in the certificate "/etc/letsencrypt/live/exswaping.com/fullchain.pem"
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful

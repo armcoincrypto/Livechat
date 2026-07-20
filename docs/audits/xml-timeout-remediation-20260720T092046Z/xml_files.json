@@ -1,0 +1,35 @@
+{
+  "static/exports/currencies.xml": {
+    "path": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml",
+    "is_symlink": false,
+    "size": 152901,
+    "mtime": "2026-07-20T09:20:39Z",
+    "mode": "0o100664",
+    "uid": 1002,
+    "gid": 1006,
+    "sha256": "6c341f7ae6e327855f86d081b6ab6b2989a31c9e5d3c254ee35d9acd82b39787",
+    "items": 785
+  },
+  "static/exports/changed-currencies.xml": {
+    "path": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/changed-currencies.xml",
+    "is_symlink": false,
+    "size": 205428,
+    "mtime": "2026-07-20T09:20:42Z",
+    "mode": "0o100644",
+    "uid": 1002,
+    "gid": 1006,
+    "sha256": "72bf9a09483060f0acc81a6f1cdae5c069216b6a068f4cff7fd15dee7a8298a0",
+    "items": 785
+  },
+  "currencies.xml": {
+    "path": "/var/www/app_exswapin_usr/data/www/app.exswaping.com/public/currencies.xml",
+    "is_symlink": false,
+    "size": 152901,
+    "mtime": "2026-07-20T00:40:28Z",
+    "mode": "0o100644",
+    "uid": 1002,
+    "gid": 1006,
+    "sha256": "e84159af0bcdd60783686c9faba3f0111f173a05c8da2b690435f9df42ae5dfa",
+    "items": 785
+  }
+}

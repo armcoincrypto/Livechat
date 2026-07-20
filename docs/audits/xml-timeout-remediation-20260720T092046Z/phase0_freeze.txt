@@ -1,0 +1,30 @@
+utc=2026-07-20T09:20:46Z
+hostname=exswaping.com
+repo=/var/www/app_exswapin_usr/data/www/app.exswaping.com
+local_HEAD=59a18959110b751b533c55cee2fd29656d8d46b7
+origin_main=d1785f37753f11c7d02a3383d975bef9469a7ab9
+nginx_version=nginx version: nginx/1.28.0
+--- load ---
+ 11:20:46 up 3 days, 13:32,  0 user,  load average: 8.77, 7.75, 5.63
+               total        used        free      shared  buff/cache   available
+Mem:           7.8Gi       6.5Gi       976Mi        32Mi       702Mi       1.3Gi
+Swap:          4.0Gi       3.0Gi       981Mi
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1       148G   79G   63G  56% /
+/dev/sda1       148G   79G   63G  56% /
+Filesystem      Inodes  IUsed   IFree IUse% Mounted on
+/dev/sda1      9822208 918250 8903958   10% /
+--- limits ---
+1048576
+Total: 706
+TCP:   702 (estab 158, closed 498, orphaned 5, timewait 493)
+
+Transport Total     IP        IPv6
+RAW	  1         0         1        
+UDP	  11        8         3        
+TCP	  204       178       26       
+INET	  216       186       30       
+FRAG	  0         0         0        
+
+--- php-fpm ---
+active
