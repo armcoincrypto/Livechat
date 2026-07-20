@@ -6,10 +6,10 @@
 |-------|-------|
 | Path | `/var/www/app_exswapin_usr/data/www/app.exswaping.com` |
 | Canonical / live branch | `main` |
-| Local HEAD | `4565600b7fcc35b792dbd5a86c3261a7a50a07b9` |
-| Remote `origin/main` | `4565600b7fcc35b792dbd5a86c3261a7a50a07b9` |
+| Local HEAD | `ae95d1b1ccf09fcf39c5f28255bc446f4177b3f2` |
+| Remote `origin/main` | `ae95d1b1ccf09fcf39c5f28255bc446f4177b3f2` |
 | Functional fix | `c2c3e1464e881929475182d23b49eb787383b815` |
-| Incident docs tip (pre-canonicalize update) | `4565600` |
+| Incident docs tip | `4565600` (pack) → `ae95d1b` (canonicalize identity) |
 | PHP CLI for artisan | `/usr/bin/php8.4` |
 | PHP-FPM | `php8.4-fpm` pool `app.exswaping.com` → `unix:/var/run/app.exswaping.com.sock` |
 | Laravel | 12.62.0 |

@@ -15,11 +15,12 @@ Warning: malformed asset IDs may still return HTTP 200 with `{"code":-1,"message
 | Backend path | `/var/www/app_exswapin_usr/data/www/app.exswaping.com` |
 | Canonical branch | `main` |
 | Live checkout | `main` |
-| Local HEAD | `4565600b7fcc35b792dbd5a86c3261a7a50a07b9` |
-| Remote `origin/main` | `4565600b7fcc35b792dbd5a86c3261a7a50a07b9` |
+| Local HEAD | `ae95d1b1ccf09fcf39c5f28255bc446f4177b3f2` |
+| Remote `origin/main` | `ae95d1b1ccf09fcf39c5f28255bc446f4177b3f2` |
 | Functional commit | `c2c3e1464e881929475182d23b49eb787383b815` |
 | Documentation commit (incident pack) | `4565600b7fcc35b792dbd5a86c3261a7a50a07b9` |
-| Production runtime SHA | `4565600` (same tree) |
+| Documentation commit (canonicalize) | `ae95d1b1ccf09fcf39c5f28255bc446f4177b3f2` |
+| Production runtime SHA | `ae95d1b` (includes fix `c2c3e14`; code path unchanged) |
 | PHP-FPM | `php8.4-fpm` active; pool `app.exswaping.com` |
 | Frontend | unchanged `7414aef` / release `20260720T174951Z-7414aef5611a` |
 

@@ -42,7 +42,7 @@ GIT_SSH_COMMAND='ssh -i /root/.ssh/exswaping_livechat_deploy -o IdentitiesOnly=y
 # 6d5ddbe..4565600  main -> main
 ```
 
-Final: `origin/main` = `4565600` = local `main` = live HEAD.
+Final after docs canonicalize commit: `origin/main` = `ae95d1b` = local `main` = live HEAD (functional fix remains `c2c3e14`).
 
 ## Rollback command
 
