@@ -50,16 +50,7 @@ From `COIN_RUB_SURFACE_ELIGIBILITY_PARITY.json` (active coin→RUB with known as
 
 ## 5. Git / release
 
-See `RELEASE_GIT.json`.
-
-| Field | Value |
-|---|---|
-| branch | `release/exswaping-rate-audit-final-20260720` |
-| branch / remote SHA | `a600d8d` |
-| main before | `6fdebcd` |
-| merge / main after / production | `9d73a68` |
-| deploy drift | **0** |
-| deploy missing | **0** |
+See release notes after push/merge in this directory (`RELEASE_GIT.json` when available).
 
 ## 6. Tests
 
@@ -71,10 +62,8 @@ sudo -u app_exswapin_usr php8.4 vendor/bin/phpunit tests/Unit/Rates --do-not-cac
 ## 7. Production health
 
 - critical: false
-- runtime_drift: 0
 - baseline_gaps: TONUSDT only
-- economic-audit totals: PASS 85, PASS_EXPLAINED 37, REVIEW 9, QUARANTINE_REQUIRED 0, NO_BASELINE 700 (831 reviewed)
-- XML delivery probe: ok (valid_xml, ~821–822 items); 268/540 absent; 541/542 present
+- XML delivery probe: ok
 
 ## 8. ZEC
 
