@@ -1,0 +1,323 @@
+{
+  "generated_at": "2026-07-20T13:37:31.922119+00:00",
+  "prior_incident_sha": "6fdebcd",
+  "baseline_recovery_note": "ZECUSDT/LTCUSDT Binance feeds restored; RUB family policy DRAFT not approved; ZEC→RUB directions remain quarantined",
+  "totals": {
+    "coin_rub_reviewed": 100,
+    "eligible_for_submission": 0,
+    "excluded": 100,
+    "economic_catalog": {
+      "reviewed": 830,
+      "PASS": 61,
+      "PASS_EXPLAINED_SPREAD": 1,
+      "REVIEW": 40,
+      "QUARANTINE_REQUIRED": 28,
+      "NO_BASELINE": 700
+    }
+  },
+  "eligible_for_submission": [],
+  "excluded_sample": [
+    {
+      "direction_id": 14,
+      "from": "BTC",
+      "to": "SBERRUB",
+      "classification": "QUARANTINE_REQUIRED",
+      "baseline": "5070580.176108000000000000",
+      "unexplained_deviation": 7.944846,
+      "xml_rate": null,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_QUARANTINE_REQUIRED",
+        "missing_from_xml",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 15,
+      "from": "USDTTRC20",
+      "to": "SBERRUB",
+      "classification": "QUARANTINE_REQUIRED",
+      "baseline": "78.398700000000000000",
+      "unexplained_deviation": 7.432138,
+      "xml_rate": null,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_QUARANTINE_REQUIRED",
+        "missing_from_xml",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 20,
+      "from": "BTC",
+      "to": "SBPRUB",
+      "classification": "REVIEW",
+      "baseline": "5070580.176108000000000000",
+      "unexplained_deviation": 6.117446,
+      "xml_rate": 5380770.2,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_REVIEW",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 21,
+      "from": "BTC",
+      "to": "ACRUB",
+      "classification": "REVIEW",
+      "baseline": "5070580.176108000000000000",
+      "unexplained_deviation": 5.955226,
+      "xml_rate": 5372544.7321,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_REVIEW",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 25,
+      "from": "USDTTRC20",
+      "to": "ACRUB",
+      "classification": "QUARANTINE_REQUIRED",
+      "baseline": "78.398700000000000000",
+      "unexplained_deviation": 7.081239,
+      "xml_rate": null,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_QUARANTINE_REQUIRED",
+        "missing_from_xml",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 26,
+      "from": "USDTTRC20",
+      "to": "RFBRUB",
+      "classification": "QUARANTINE_REQUIRED",
+      "baseline": "78.398700000000000000",
+      "unexplained_deviation": 7.277416,
+      "xml_rate": null,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_QUARANTINE_REQUIRED",
+        "missing_from_xml",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 27,
+      "from": "USDTTRC20",
+      "to": "TCSBRUB",
+      "classification": "QUARANTINE_REQUIRED",
+      "baseline": "78.398700000000000000",
+      "unexplained_deviation": 7.532778,
+      "xml_rate": null,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_QUARANTINE_REQUIRED",
+        "missing_from_xml",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 28,
+      "from": "USDTTRC20",
+      "to": "TBRUB",
+      "classification": "QUARANTINE_REQUIRED",
+      "baseline": "78.398700000000000000",
+      "unexplained_deviation": 7.037616,
+      "xml_rate": null,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_QUARANTINE_REQUIRED",
+        "missing_from_xml",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 108,
+      "from": "USDTERC20",
+      "to": "SBERRUB",
+      "classification": "QUARANTINE_REQUIRED",
+      "baseline": "78.398700000000000000",
+      "unexplained_deviation": 7.422316,
+      "xml_rate": null,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_QUARANTINE_REQUIRED",
+        "missing_from_xml",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 109,
+      "from": "USDTERC20",
+      "to": "SBPRUB",
+      "classification": "QUARANTINE_REQUIRED",
+      "baseline": "78.398700000000000000",
+      "unexplained_deviation": 7.220017,
+      "xml_rate": null,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_QUARANTINE_REQUIRED",
+        "missing_from_xml",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 110,
+      "from": "USDTERC20",
+      "to": "ACRUB",
+      "classification": "REVIEW",
+      "baseline": "78.398700000000000000",
+      "unexplained_deviation": 6.30814,
+      "xml_rate": 83.0942,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_REVIEW",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 111,
+      "from": "USDTERC20",
+      "to": "TCSBRUB",
+      "classification": "QUARANTINE_REQUIRED",
+      "baseline": "78.398700000000000000",
+      "unexplained_deviation": 7.500762,
+      "xml_rate": null,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_QUARANTINE_REQUIRED",
+        "missing_from_xml",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 127,
+      "from": "DASH",
+      "to": "SBERRUB",
+      "classification": "NO_BASELINE",
+      "baseline": null,
+      "unexplained_deviation": null,
+      "xml_rate": 2821.7101,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_NO_BASELINE",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 128,
+      "from": "DASH",
+      "to": "SBPRUB",
+      "classification": "NO_BASELINE",
+      "baseline": null,
+      "unexplained_deviation": null,
+      "xml_rate": 2824.65,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_NO_BASELINE",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 160,
+      "from": "LTC",
+      "to": "SBPRUB",
+      "classification": "QUARANTINE_REQUIRED",
+      "baseline": "3672.979095000000000000",
+      "unexplained_deviation": 7.458662,
+      "xml_rate": null,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_QUARANTINE_REQUIRED",
+        "missing_from_xml",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 161,
+      "from": "ETH",
+      "to": "SBPRUB",
+      "classification": "REVIEW",
+      "baseline": "147195.127224000000000000",
+      "unexplained_deviation": 6.37943,
+      "xml_rate": 156585.34,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_REVIEW",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 167,
+      "from": "XMR",
+      "to": "RFBRUB",
+      "classification": "NO_BASELINE",
+      "baseline": null,
+      "unexplained_deviation": null,
+      "xml_rate": 27226.99,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_NO_BASELINE",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 168,
+      "from": "TRX",
+      "to": "SBERRUB",
+      "classification": "REVIEW",
+      "baseline": "25.560641755800000000",
+      "unexplained_deviation": 6.271979,
+      "xml_rate": 27.1638,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_REVIEW",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 178,
+      "from": "XRP",
+      "to": "TCSBRUB",
+      "classification": "NO_BASELINE",
+      "baseline": null,
+      "unexplained_deviation": null,
+      "xml_rate": 90.93,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_NO_BASELINE",
+        "rub_family_policy_not_approved"
+      ]
+    },
+    {
+      "direction_id": 179,
+      "from": "DOGE",
+      "to": "TCSBRUB",
+      "classification": "NO_BASELINE",
+      "baseline": null,
+      "unexplained_deviation": null,
+      "xml_rate": 6.0201,
+      "rub_policy_approved": false,
+      "reasons": [
+        "economic_NO_BASELINE",
+        "rub_family_policy_not_approved"
+      ]
+    }
+  ],
+  "excluded_count": 100,
+  "zec_sbp": {
+    "direction_id": 541,
+    "status": "quarantined",
+    "baseline_live": true,
+    "restored": false,
+    "reason": "rub_family_policy_not_approved + explicit quarantine retain until PASS certification"
+  },
+  "safety": {
+    "no_automatic_bestchange_contact": true,
+    "no_uncertified_restore": true
+  }
+}

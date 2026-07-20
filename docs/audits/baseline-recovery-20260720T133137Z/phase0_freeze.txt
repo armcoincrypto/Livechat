@@ -1,0 +1,16 @@
+UTC=2026-07-20T13:31:37Z
+hostname=exswaping.com
+---
+repo=/opt/exswaping-zec-sbp-20260720
+local_HEAD=0c19e7eb6b889604d60c7b820857033545ea91ed
+branch=fix/zec-sbp-rate-incident-20260720
+origin_main=6fdebcda006205430d8fd1884006abaab46fae1a
+## fix/zec-sbp-rate-incident-20260720...origin/fix/zec-sbp-rate-incident-20260720 [ahead 1]
+?? docs/audits/baseline-recovery-20260720T133137Z/
+---
+prod_path=/var/www/app_exswapin_usr/data/www/app.exswaping.com
+prod_HEAD=59a18959110b751b533c55cee2fd29656d8d46b7
+1acc12059a3ece8e87dc471cebc7609406bfdd77c244df7d8058560f4249b9b5  /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/currencies.xml
+1acc12059a3ece8e87dc471cebc7609406bfdd77c244df7d8058560f4249b9b5  /var/www/app_exswapin_usr/data/www/app.exswaping.com/public/static/exports/currencies.xml
+xml_items 799 bytes 155498
+zec_sbp 0

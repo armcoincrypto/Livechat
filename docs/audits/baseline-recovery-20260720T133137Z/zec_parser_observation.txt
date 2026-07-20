@@ -1,0 +1,2 @@
+cycle1 {'parser': {'id': 344, 'summa': '536.2', 'status': 1, 'updated_at': '2026-07-20 16:37:35'}, 'group': {'last_total': 6, 'last_updated_at': '2026-07-20 16:37:35'}, 'cryptoRub': {'rate': '42037.382940000000000000', 'age': 42, 'source': 'parser_exchange:[binance_zec-usdt]*parser_exchange:[russiancentralbank_usd-rub]'}}
+cycle2 {'parser': {'id': 344, 'summa': '535.78', 'status': 1, 'updated_at': '2026-07-20 16:39:12'}, 'group': {'last_total': 6, 'last_updated_at': '2026-07-20 16:39:12'}, 'cryptoRub': None}

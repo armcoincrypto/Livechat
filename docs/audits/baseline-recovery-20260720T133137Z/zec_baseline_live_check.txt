@@ -1,0 +1,5 @@
+ZECUSDT={"rate":"535.950000000000000000","source":"parser_exchange:[binance_zec-usdt]","as_of":"2026-07-20 16:34:33","age_seconds":15,"sample_size":1,"divergence":null,"selection_reason":"accepted"}
+LTCUSDT={"rate":"46.890000000000000000","source":"parser_exchange:[binance_ltc-usdt]","as_of":"2026-07-20 16:34:33","age_seconds":15,"sample_size":1,"divergence":null,"selection_reason":"accepted"}
+ZECRUB={"rate":"42017.783265000000000000","source":"parser_exchange:[binance_zec-usdt]*parser_exchange:[russiancentralbank_usd-rub]","as_of":"2026-07-20 16:34:33","age_seconds":15,"components":{"crypto_usdt":{"rate":"535.950000000000000000","source":"parser_exchange:[binance_zec-usdt]","as_of":"2026-07-20 16:34:33","age_seconds":15,"sample_size":1,"divergence":null,"selection_reason":"accepted"},"usd_rub":{"rate":"78.398700000000000000","source":"parser_exchange:[russiancentralbank_usd-rub]","as_of":"2026-07-20 16:34:33","age_seconds":15,"sample_size":1,"divergence":null,"selection_reason":"accepted"}}}
+coverage_gaps=["TONUSDT missing_or_stale"]
+dirs=[{"id":540,"status":0,"allow_export":2},{"id":541,"status":0,"allow_export":2},{"id":542,"status":0,"allow_export":2}]

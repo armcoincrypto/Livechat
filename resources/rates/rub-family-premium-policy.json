@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "approved": false,
+  "approved_at": null,
+  "approved_by": null,
+  "notes": "DRAFT operator decision package. Until approved=true, family premiums MUST NOT be treated as explained spread for BestChange certification or public re-enable.",
+  "baseline": {
+    "crypto_path": "ASSETUSDT × USDRUB (CBR/russiancentralbank)",
+    "stablecoin_path": "USDRUB (CBR)",
+    "max_crypto_age_seconds": 900,
+    "max_fiat_age_seconds": 21600,
+    "min_independent_providers": 1
+  },
+  "default_thresholds": {
+    "pass_unexplained_pct": 3.0,
+    "review_unexplained_pct": 7.0,
+    "critical_unexplained_pct": 7.0,
+    "extreme_unexplained_pct": 12.0
+  },
+  "families": {
+    "SBPRUB": {
+      "label": "SBP RUB",
+      "destination_codes": ["SBPRUB"],
+      "proposed_configured_premium_min_pct": 0.0,
+      "proposed_configured_premium_max_pct": 8.0,
+      "proposed_warning_unexplained_pct": 5.0,
+      "proposed_critical_unexplained_pct": 10.0,
+      "rationale": "SBP payout friction + OTC RUB premium vs CBR mid; historical active USDT/SBP quotes often 4–8% above CBR."
+    },
+    "SBERRUB": {
+      "label": "Sberbank RUB",
+      "destination_codes": ["SBERRUB"],
+      "proposed_configured_premium_min_pct": 0.0,
+      "proposed_configured_premium_max_pct": 8.0,
+      "proposed_warning_unexplained_pct": 5.0,
+      "proposed_critical_unexplained_pct": 10.0,
+      "rationale": "Bank rail premium similar to SBP; confirm with treasury."
+    },
+    "TCSBRUB": {
+      "label": "Tinkoff / T-Bank RUB",
+      "destination_codes": ["TCSBRUB", "TBRUB"],
+      "proposed_configured_premium_min_pct": 0.0,
+      "proposed_configured_premium_max_pct": 8.0,
+      "proposed_warning_unexplained_pct": 5.0,
+      "proposed_critical_unexplained_pct": 10.0,
+      "rationale": "Same OTC RUB family as SBP/Sber pending operator confirmation."
+    },
+    "ACRUB": {
+      "label": "Advanced Cash RUB",
+      "destination_codes": ["ACRUB"],
+      "proposed_configured_premium_min_pct": 0.0,
+      "proposed_configured_premium_max_pct": 6.0,
+      "proposed_warning_unexplained_pct": 4.0,
+      "proposed_critical_unexplained_pct": 9.0,
+      "rationale": "E-wallet rail; typically tighter than cash/bank OTC."
+    },
+    "CARDRUB": {
+      "label": "Visa/MC RUB card",
+      "destination_codes": ["CARDRUB", "VisaRUB", "MasterCardRUB"],
+      "proposed_configured_premium_min_pct": 0.0,
+      "proposed_configured_premium_max_pct": 9.0,
+      "proposed_warning_unexplained_pct": 6.0,
+      "proposed_critical_unexplained_pct": 11.0,
+      "rationale": "Card acquiring / chargeback risk premium; confirm with ops."
+    },
+    "CASHRUB": {
+      "label": "Cash RUB",
+      "destination_codes": ["CASHRUB", "CashRUB"],
+      "proposed_configured_premium_min_pct": 0.0,
+      "proposed_configured_premium_max_pct": 10.0,
+      "proposed_warning_unexplained_pct": 7.0,
+      "proposed_critical_unexplained_pct": 12.0,
+      "rationale": "Cash handling premium; highest legitimate band candidate."
+    },
+    "OTHER_RUB": {
+      "label": "Other RUB rails",
+      "destination_codes": ["*RUB"],
+      "proposed_configured_premium_min_pct": 0.0,
+      "proposed_configured_premium_max_pct": 6.0,
+      "proposed_warning_unexplained_pct": 4.0,
+      "proposed_critical_unexplained_pct": 9.0,
+      "rationale": "Catch-all until mapped to a named family."
+    }
+  },
+  "operator_checklist": [
+    "Confirm proposed premium ranges against last 30 days of filled orders and treasury P&L",
+    "Decide whether direction.profit must equal family premium or may be additive",
+    "Set approved=true and approved_by/approved_at only after explicit sign-off",
+    "Re-run rates:economic-audit and rebuild BESTCHANGE_COIN_RUB_FINAL_V4 after approval",
+    "Do not re-enable ZEC→RUB until ZEC baseline stays fresh across ≥2 parser cycles and family policy is approved"
+  ]
+}

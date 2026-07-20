@@ -1,0 +1,236 @@
+[
+  {
+    "direction_id": 14,
+    "pair": "BTC->SBERRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 7.980440474812217,
+    "after_class": "QUARANTINE_REQUIRED",
+    "after_unexplained": 7.944846,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 20,
+    "pair": "BTC->SBPRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 6.177925521595566,
+    "after_class": "REVIEW",
+    "after_unexplained": 6.117446,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 21,
+    "pair": "BTC->ACRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 6.005097633155917,
+    "after_class": "REVIEW",
+    "after_unexplained": 5.955226,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 25,
+    "pair": "USDTTRC20->ACRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 6.760886363604669,
+    "after_class": "QUARANTINE_REQUIRED",
+    "after_unexplained": 7.081239,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 26,
+    "pair": "USDTTRC20->RFBRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 6.955329990681694,
+    "after_class": "QUARANTINE_REQUIRED",
+    "after_unexplained": 7.277416,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 28,
+    "pair": "USDTTRC20->TBRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 6.707347570644854,
+    "after_class": "QUARANTINE_REQUIRED",
+    "after_unexplained": 7.037616,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 161,
+    "pair": "ETH->SBPRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 6.574127985336582,
+    "after_class": "REVIEW",
+    "after_unexplained": 6.37943,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 168,
+    "pair": "TRX->SBERRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 6.348307561874081,
+    "after_class": "REVIEW",
+    "after_unexplained": 6.271979,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 187,
+    "pair": "BTC->RFBRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 6.037775952216075,
+    "after_class": "REVIEW",
+    "after_unexplained": 5.977396,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 212,
+    "pair": "BTC->TCSBRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 7.980440474812217,
+    "after_class": "QUARANTINE_REQUIRED",
+    "after_unexplained": 7.944846,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 214,
+    "pair": "BTC->TBRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 6.005097633155917,
+    "after_class": "REVIEW",
+    "after_unexplained": 5.955226,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 268,
+    "pair": "USDTTRC20->SBPRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 7.26282827209971,
+    "after_class": "QUARANTINE_REQUIRED",
+    "after_unexplained": 7.532778,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 325,
+    "pair": "BNBBEP20->SBERRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 5.809791017330145,
+    "after_class": "REVIEW",
+    "after_unexplained": 5.813474,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 326,
+    "pair": "BNBBEP20->SBPRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 5.430740258830657,
+    "after_class": "REVIEW",
+    "after_unexplained": 5.437318,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 373,
+    "pair": "ETH->SBERRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 6.57412805208836,
+    "after_class": "REVIEW",
+    "after_unexplained": 6.379431,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 374,
+    "pair": "ETH->ACRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 6.5741279185848045,
+    "after_class": "REVIEW",
+    "after_unexplained": 6.379429,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 375,
+    "pair": "ETH->TCSBRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 7.021116662851809,
+    "after_class": "REVIEW",
+    "after_unexplained": 6.825602,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 376,
+    "pair": "ETH->RFBRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 6.580452708291344,
+    "after_class": "REVIEW",
+    "after_unexplained": 6.386422,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 1011,
+    "pair": "BNBBEP20->TBRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 5.4825703026742305,
+    "after_class": "REVIEW",
+    "after_unexplained": 5.486468,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 1029,
+    "pair": "USDTBEP20->SBPRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 7.047657011755248,
+    "after_class": "QUARANTINE_REQUIRED",
+    "after_unexplained": 7.532778,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 1030,
+    "pair": "USDTBEP20->TCSBRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 7.359223451952995,
+    "after_class": "QUARANTINE_REQUIRED",
+    "after_unexplained": 7.532778,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 1056,
+    "pair": "USDTBEP20->SBERRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 7.1615865195351,
+    "after_class": "QUARANTINE_REQUIRED",
+    "after_unexplained": 7.532905,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 1057,
+    "pair": "USDTBEP20->ACRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 6.7468976275908545,
+    "after_class": "QUARANTINE_REQUIRED",
+    "after_unexplained": 7.080857,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 1058,
+    "pair": "USDTBEP20->RFBRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 6.951896391951196,
+    "after_class": "QUARANTINE_REQUIRED",
+    "after_unexplained": 7.273462,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 1059,
+    "pair": "USDTBEP20->TBRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 6.133427251389434,
+    "after_class": "REVIEW",
+    "after_unexplained": 6.480592,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  },
+  {
+    "direction_id": 1423,
+    "pair": "ETH->YAMRUB",
+    "before_class": "QUARANTINE_REQUIRED",
+    "before_dev_pct": 5.20775607922124,
+    "after_class": "REVIEW",
+    "after_unexplained": 5.017798,
+    "final_outcome": "KEEP_BLOCKED_PENDING_RUB_POLICY"
+  }
+]

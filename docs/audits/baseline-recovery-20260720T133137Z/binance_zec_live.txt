@@ -1,0 +1,2 @@
+bookTicker {'symbol': 'ZECUSDT', 'bidPrice': '534.62000000', 'bidQty': '4.21100000', 'askPrice': '534.63000000', 'askQty': '1.30300000'}
+exchangeInfo status TRADING symbol ZECUSDT base ZEC quote USDT

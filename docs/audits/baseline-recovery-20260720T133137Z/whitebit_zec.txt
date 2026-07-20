@@ -1,0 +1,88 @@
+WB_ZEC=[
+    {
+        "id": 6581,
+        "code": "[whitebit_zec-btc]",
+        "code_in": "ZEC",
+        "code_out": "BTC",
+        "summa": "0.002563",
+        "status": 0,
+        "updated_at": "2024-12-15 00:38:50"
+    },
+    {
+        "id": 6582,
+        "code": "[whitebit_zec-usdt]",
+        "code_in": "ZEC",
+        "code_out": "USDT",
+        "summa": "54.2",
+        "status": 0,
+        "updated_at": "2024-12-15 00:38:50"
+    },
+    {
+        "id": 6839,
+        "code": "[whitebit_btc-zec]",
+        "code_in": "BTC",
+        "code_out": "ZEC",
+        "summa": "390.16777214202",
+        "status": 0,
+        "updated_at": "2024-12-15 00:38:51"
+    },
+    {
+        "id": 6840,
+        "code": "[whitebit_usdt-zec]",
+        "code_in": "USDT",
+        "code_out": "ZEC",
+        "summa": "0.018450184501845",
+        "status": 0,
+        "updated_at": "2024-12-15 00:38:51"
+    }
+]
+WB_LIVE=[
+    {
+        "id": 6367,
+        "code": "[whitebit_bnb-usdt]",
+        "code_in": "BNB",
+        "code_out": "USDT",
+        "summa": "568.65",
+        "updated_at": "2026-07-20 16:32:19"
+    },
+    {
+        "id": 6377,
+        "code": "[whitebit_btc-usdt]",
+        "code_in": "BTC",
+        "code_out": "USDT",
+        "summa": "64523.73",
+        "updated_at": "2026-07-20 16:32:19"
+    },
+    {
+        "id": 6423,
+        "code": "[whitebit_eth-usdt]",
+        "code_in": "ETH",
+        "code_out": "USDT",
+        "summa": "1871.13",
+        "updated_at": "2026-07-20 16:32:19"
+    },
+    {
+        "id": 6538,
+        "code": "[whitebit_trx-usdt]",
+        "code_in": "TRX",
+        "code_out": "USDT",
+        "summa": "0.325917",
+        "updated_at": "2026-07-20 16:32:19"
+    },
+    {
+        "id": 6546,
+        "code": "[whitebit_usdc-usdt]",
+        "code_in": "USDC",
+        "code_out": "USDT",
+        "summa": "1.0009",
+        "updated_at": "2026-07-20 16:32:19"
+    },
+    {
+        "id": 6574,
+        "code": "[whitebit_xrp-usdt]",
+        "code_in": "XRP",
+        "code_out": "USDT",
+        "summa": "1.09776",
+        "updated_at": "2026-07-20 16:32:19"
+    }
+]

@@ -1,0 +1,69 @@
+{
+  "generated_at": "2026-07-20T13:37:31.856519+00:00",
+  "assets": [
+    {
+      "canonical_code": "BTC",
+      "coverage_status": "DIRECT_BASELINE",
+      "baseline_path": "BTCUSDT \u00d7 USDRUB (crypto\u2192RUB) or USDT bridge (crypto\u2192crypto)",
+      "active_direction_mentions": 51
+    },
+    {
+      "canonical_code": "ETH",
+      "coverage_status": "DIRECT_BASELINE",
+      "baseline_path": "ETHUSDT \u00d7 USDRUB (crypto\u2192RUB) or USDT bridge (crypto\u2192crypto)",
+      "active_direction_mentions": 45
+    },
+    {
+      "canonical_code": "BNB",
+      "coverage_status": "DIRECT_BASELINE",
+      "baseline_path": "BNBUSDT \u00d7 USDRUB (crypto\u2192RUB) or USDT bridge (crypto\u2192crypto)",
+      "active_direction_mentions": 36
+    },
+    {
+      "canonical_code": "TRX",
+      "coverage_status": "DIRECT_BASELINE",
+      "baseline_path": "TRXUSDT \u00d7 USDRUB (crypto\u2192RUB) or USDT bridge (crypto\u2192crypto)",
+      "active_direction_mentions": 4
+    },
+    {
+      "canonical_code": "TON",
+      "coverage_status": "NO_APPROVED_PROVIDER",
+      "baseline_path": null,
+      "active_direction_mentions": 2
+    },
+    {
+      "canonical_code": "ZEC",
+      "coverage_status": "DIRECT_BASELINE",
+      "baseline_path": "ZECUSDT \u00d7 USDRUB (crypto\u2192RUB) or USDT bridge (crypto\u2192crypto)",
+      "active_direction_mentions": 10
+    },
+    {
+      "canonical_code": "LTC",
+      "coverage_status": "DIRECT_BASELINE",
+      "baseline_path": "LTCUSDT \u00d7 USDRUB (crypto\u2192RUB) or USDT bridge (crypto\u2192crypto)",
+      "active_direction_mentions": 49
+    },
+    {
+      "canonical_code": "USDT",
+      "coverage_status": "FIAT_CONVERSION_BASELINE",
+      "baseline_path": "USDRUB for stable\u2192RUB; via USDT bridge for crypto pairs",
+      "active_direction_mentions": 315
+    },
+    {
+      "canonical_code": "USDC",
+      "coverage_status": "FIAT_CONVERSION_BASELINE",
+      "baseline_path": "USDRUB for stable\u2192RUB; via USDT bridge for crypto pairs",
+      "active_direction_mentions": 63
+    }
+  ],
+  "feeds": {
+    "BTCUSDT": "DIRECT_BASELINE",
+    "ETHUSDT": "DIRECT_BASELINE",
+    "BNBUSDT": "DIRECT_BASELINE",
+    "TRXUSDT": "DIRECT_BASELINE",
+    "ZECUSDT": "DIRECT_BASELINE",
+    "LTCUSDT": "DIRECT_BASELINE",
+    "USDRUB": "FIAT_CONVERSION_BASELINE",
+    "TONUSDT": "NO_APPROVED_PROVIDER"
+  }
+}

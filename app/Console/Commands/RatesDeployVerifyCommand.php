@@ -32,16 +32,18 @@ final class RatesDeployVerifyCommand extends Command
         'app/Services/Rates/AtomicPublicXmlPublisher.php',
         'app/Services/Rates/RateExportQuarantine.php',
         'app/Services/Rates/IndependentMarketBaseline.php',
+        'app/Services/Rates/RubFamilyPremiumPolicy.php',
+        'resources/rates/rub-family-premium-policy.json',
         'packages/Courses/Export/ExportCourses.php',
         'packages/Courses/Export/Concerns/ExportFormatHelpers.php',
         'app/Console/Commands/RatesEconomicAuditCommand.php',
-
-        'app/Services/Rates/IndependentMarketBaseline.php',
+        'app/Console/Commands/RatesDirectionStatusCommand.php',
         'app/Console/Commands/RatesAuditCommand.php',
         'packages/BestChange/Services/RatesUpdateService.php',
-        'packages/Courses/Export/Concerns/ExportFormatHelpers.php',
         'tests/Unit/Rates/RateSanityGuardTest.php',
         'tests/Unit/Rates/RatePostFixRemediationTest.php',
+        'tests/Unit/Rates/ZecSbpRateIncidentTest.php',
+        'tests/Unit/Rates/TrustedBaselineRecoveryTest.php',
     ];
 
     public function handle(): int
