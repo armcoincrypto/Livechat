@@ -48,6 +48,7 @@ final class RatesEconomicAuditCommand extends Command
             'REVIEW' => 0,
             'QUARANTINE_REQUIRED' => 0,
             'NO_BASELINE' => 0,
+            'NO_POLICY' => 0,
         ];
         $noBaselineFamilies = [];
         $rows = [];
@@ -70,6 +71,17 @@ final class RatesEconomicAuditCommand extends Command
                 $unexplained = null;
                 $raw = null;
                 $noBaselineFamilies[$family] = ($noBaselineFamilies[$family] ?? 0) + 1;
+            } elseif (str_contains($to, 'RUB') && !$policy->isApproved()) {
+                $class = 'NO_POLICY';
+                $unexplained = null;
+                $raw = null;
+                $analysis = $expectation->analyze(
+                    baseline: $ind['rate'],
+                    actual: $course,
+                    profitPercent: $profit,
+                );
+                $unexplained = $analysis['unexplained_deviation'];
+                $raw = $analysis['raw_market_deviation'];
             } else {
                 $paymentPremium = '0';
                 if ($policy->isApproved() && str_contains($to, 'RUB')) {

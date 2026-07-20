@@ -155,6 +155,7 @@ trait ExportFormatHelpers
     /**
      * When an independent crypto→RUB baseline exists, refuse export on critical outliers.
      * When the pair is crypto→RUB but no trusted baseline exists, fail closed.
+     * When RUB family premium policy is not operator-approved, fail closed for public export.
      */
     protected function passesIndependentCryptoRubExportGate(DirectionExchange $rate, string $fromCode, string $toCode): bool
     {
@@ -167,21 +168,39 @@ trait ExportFormatHelpers
         }
 
         try {
+            $policy = \App\Services\Rates\RubFamilyPremiumPolicy::fromStorageApp();
+            if (!$policy->isFamilyExportAllowed($toCode)) {
+                // Unapproved / KEEP_BLOCKED families must not enter public XML.
+                return false;
+            }
+
             $baseline = new IndependentMarketBaseline();
             $quote = $asset === 'USDT' || $asset === 'USDC'
                 ? $baseline->quote('USDRUB')
                 : $baseline->cryptoRub($asset);
-            $quarantine = new RateExportQuarantine();
             if ($quote === null) {
-                // No trusted independent feed (e.g. disabled/stale ZECUSDT parsers).
                 return false;
             }
-            $decision = $quarantine->evaluate((string) $rate->course_value, [
-                'baseline' => $quote['rate'],
-                'profit_percent' => (string) ($rate->profit ?? '0'),
-            ]);
+            $analysis = (new RateConfiguredExpectation())->analyze(
+                baseline: $quote['rate'],
+                actual: (string) $rate->course_value,
+                profitPercent: (string) ($rate->profit ?? '0'),
+            );
+            $raw = $analysis['raw_market_deviation'];
+            $overBand = $policy->unexplainedVersusApprovedBand(
+                $raw === null ? null : (float) $raw,
+                $toCode,
+            );
+            if ($overBand === null) {
+                return false;
+            }
+            $thresholds = $policy->thresholdsForDestination($toCode);
+            // Treasury risk: customer-favorable rate above approved OTC band.
+            if ($overBand > $thresholds['critical']) {
+                return false;
+            }
 
-            return $decision['allowed'];
+            return true;
         } catch (Throwable $e) {
             Log::error('crypto_rub_export_gate_failed', [
                 'direction_exchange_id' => $rate->id ?? null,

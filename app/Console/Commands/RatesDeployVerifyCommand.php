@@ -34,6 +34,7 @@ final class RatesDeployVerifyCommand extends Command
         'app/Services/Rates/IndependentMarketBaseline.php',
         'app/Services/Rates/RubFamilyPremiumPolicy.php',
         'resources/rates/rub-family-premium-policy.json',
+        'app/Console/Commands/RatesRubFamilyPolicyStatusCommand.php',
         'packages/Courses/Export/ExportCourses.php',
         'packages/Courses/Export/Concerns/ExportFormatHelpers.php',
         'app/Console/Commands/RatesEconomicAuditCommand.php',
@@ -44,6 +45,7 @@ final class RatesDeployVerifyCommand extends Command
         'tests/Unit/Rates/RatePostFixRemediationTest.php',
         'tests/Unit/Rates/ZecSbpRateIncidentTest.php',
         'tests/Unit/Rates/TrustedBaselineRecoveryTest.php',
+        'tests/Unit/Rates/RubFamilyPremiumPolicyTest.php',
     ];
 
     public function handle(): int

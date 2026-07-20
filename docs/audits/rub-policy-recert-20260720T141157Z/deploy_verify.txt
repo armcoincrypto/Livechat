@@ -1,0 +1,30 @@
++----------------------------------------------------------+-----+
+| path                                                     | ok  |
++----------------------------------------------------------+-----+
+| xml-changer/main.py                                      | yes |
+| app/Services/Rates/RateSanityGuard.php                   | yes |
+| app/Services/Rates/RateConfiguredExpectation.php         | yes |
+| app/Services/Rates/RateExportQuarantine.php              | yes |
+| app/Services/Rates/PeerRateSelector.php                  | yes |
+| app/Services/Rates/BestChangeCurrencyCatalogGuard.php    | yes |
+| app/Services/Rates/BestChangeMappingRegistry.php         | yes |
+| app/Services/Rates/BestChangeMappingVerifier.php         | yes |
+| app/Services/Rates/RateDirectionEligibility.php          | yes |
+| resources/rates/bestchange-codes.overrides.json          | yes |
+| app/Services/Rates/AtomicPublicXmlPublisher.php          | yes |
+| app/Services/Rates/RateExportQuarantine.php              | yes |
+| app/Services/Rates/IndependentMarketBaseline.php         | yes |
+| app/Services/Rates/RubFamilyPremiumPolicy.php            | yes |
+| resources/rates/rub-family-premium-policy.json           | yes |
+| packages/Courses/Export/ExportCourses.php                | yes |
+| packages/Courses/Export/Concerns/ExportFormatHelpers.php | yes |
+| app/Console/Commands/RatesEconomicAuditCommand.php       | yes |
+| app/Console/Commands/RatesDirectionStatusCommand.php     | yes |
+| app/Console/Commands/RatesAuditCommand.php               | yes |
+| packages/BestChange/Services/RatesUpdateService.php      | yes |
+| tests/Unit/Rates/RateSanityGuardTest.php                 | yes |
+| tests/Unit/Rates/RatePostFixRemediationTest.php          | yes |
+| tests/Unit/Rates/ZecSbpRateIncidentTest.php              | yes |
+| tests/Unit/Rates/TrustedBaselineRecoveryTest.php         | yes |
++----------------------------------------------------------+-----+
+commit=0d4111a8aed1ab98de353afe91ac12aa0fe00113 drift=0 missing=0
