@@ -37,6 +37,7 @@ final class RatesDeployVerifyCommand extends Command
         'app/Console/Commands/RatesRubFamilyPolicyStatusCommand.php',
         'packages/Courses/Export/ExportCourses.php',
         'packages/Courses/Export/Concerns/ExportFormatHelpers.php',
+        'resources/rates/bestchange-public-directions.json',
         'app/Console/Commands/RatesEconomicAuditCommand.php',
         'app/Console/Commands/RatesDirectionStatusCommand.php',
         'app/Console/Commands/RatesAuditCommand.php',
