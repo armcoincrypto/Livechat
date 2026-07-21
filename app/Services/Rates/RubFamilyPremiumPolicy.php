@@ -263,10 +263,11 @@ final class RubFamilyPremiumPolicy
             return $base;
         }
 
-        $base['expected_premium_percent'] = $targetMax;
-        // Policy expected commercial rate sits at target-band top (ceiling for "explained"),
-        // not at hard maximum and not an automatic markup applied to storage.
-        $unexplained = $rawPremiumVsMidPercent - $targetMax;
+        $expectedPremium = $this->canonicalSourcePremiumPercent($toCode) ?? $targetMax;
+        $base['expected_premium_percent'] = $expectedPremium;
+        // Exact operator approval is the expected commercial premium when
+        // present; target-band top remains the legacy audit-only fallback.
+        $unexplained = $rawPremiumVsMidPercent - $expectedPremium;
         $base['unexplained_vs_expected_percent'] = $unexplained;
 
         if ($rawPremiumVsMidPercent - $hardMax > 1e-9) {

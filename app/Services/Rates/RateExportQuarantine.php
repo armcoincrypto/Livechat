@@ -76,6 +76,9 @@ final class RateExportQuarantine
             profitPercent: $profit,
             paymentSystemFeePercent: (string) ($context['payment_system_fee_percent'] ?? '0'),
             percentageCommission: (string) ($context['percentage_commission'] ?? '0'),
+            otherCoefficient: isset($context['other_coefficient'])
+                ? (string) $context['other_coefficient']
+                : null,
         );
 
         $unexplained = $analysis['unexplained_deviation'];

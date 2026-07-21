@@ -91,6 +91,15 @@ final class RateDirectionEligibility
         $providerStatus = (string) ($direction->parser_source_name ?? '');
         $circularSourceDetected = $isRubDirection
             && str_contains(strtolower($providerStatus), 'bestchange');
+        $isIndependentRubCanonical = $isRubDirection
+            && str_starts_with(strtolower($providerStatus), 'independent rub');
+        $rubPolicy = $isRubDirection
+            ? ($this->rubPolicy ?? RubFamilyPremiumPolicy::fromStorageApp())
+            : null;
+        $canonicalPremium = $rubPolicy?->canonicalSourcePremiumPercent($to);
+        $canonicalCoefficient = $canonicalPremium === null
+            ? null
+            : (string) (1 + ($canonicalPremium / 100));
 
         $baselineInfo = $isRubDirection ? $this->resolveBaseline($from, $to) : [
             'rate' => null,
@@ -109,11 +118,12 @@ final class RateDirectionEligibility
             'status' => (int) $direction->status,
             'allow_export' => (int) $direction->allow_export,
             'course_value' => (string) ($direction->course_value ?? ''),
-            'profit' => (string) ($direction->profit ?? '0'),
             'deleted_at' => $direction->deleted_at,
             'from' => $from,
             'to' => $to,
             'provider_status' => $providerStatus,
+            'profit' => $isIndependentRubCanonical ? '0' : (string) ($direction->profit ?? '0'),
+            'other_coefficient' => $isIndependentRubCanonical ? $canonicalCoefficient : null,
             'reserve_ok' => $reserve['ok'],
             'require_verified_export_mapping' => true,
             'baseline' => $baselineInfo['rate'],
@@ -128,7 +138,7 @@ final class RateDirectionEligibility
         $reasons = $payload['reasons'];
 
         if ($isRubDirection) {
-            $policy = $this->rubPolicy ?? RubFamilyPremiumPolicy::fromStorageApp();
+            $policy = $rubPolicy;
             $expectation = $this->expectation ?? new RateConfiguredExpectation();
             if ($baselineInfo['rate'] !== null) {
                 $analysis = $expectation->analyze(
@@ -277,6 +287,7 @@ final class RateDirectionEligibility
 
         $q = $this->quarantine->evaluate($course, [
             'profit_percent' => (string) ($row['profit'] ?? '0'),
+            'other_coefficient' => $row['other_coefficient'] ?? null,
             'baseline' => isset($row['baseline']) ? (string) $row['baseline'] : null,
             'force_block_reason' => $row['force_block_reason'] ?? null,
             'allow_no_baseline' => empty($row['require_independent_baseline']),

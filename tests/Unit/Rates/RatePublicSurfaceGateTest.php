@@ -79,6 +79,25 @@ final class RatePublicSurfaceGateTest extends TestCase
         $this->assertTrue($eval['export_allowed']);
     }
 
+    public function testQuarantineAcceptsOnlyExplicitCanonicalRubTransformation(): void
+    {
+        $quarantine = new RateExportQuarantine();
+        $legacy = $quarantine->evaluate('104', [
+            'baseline' => '100',
+            'profit_percent' => '5',
+        ]);
+        $canonical = $quarantine->evaluate('104', [
+            'baseline' => '100',
+            'profit_percent' => '0',
+            'other_coefficient' => '1.04',
+        ]);
+
+        $this->assertFalse($legacy['allowed']);
+        $this->assertSame('unexplained_critical_deviation', $legacy['reason']);
+        $this->assertTrue($canonical['allowed']);
+        $this->assertSame('configured_spread_explains_deviation', $canonical['reason']);
+    }
+
     public function testErrorCodeConstantStable(): void
     {
         $this->assertSame(
