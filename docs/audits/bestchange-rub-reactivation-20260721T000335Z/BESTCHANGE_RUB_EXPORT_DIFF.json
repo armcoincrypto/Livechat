@@ -1084,95 +1084,134 @@
     "internal_variants_preserved": 8,
     "canonical_public_directions": [
       {
+        "pair": "USDTTRC20->CARDAMD",
         "direction_id": 81,
-        "pair": "USDTTRC20→CARDAMD",
         "currency_id": 52,
         "variant": "EVOCA BANK",
-        "reserve": "103000000"
+        "reserve": "103000000",
+        "reserve_source": "currency2_effective_reserve",
+        "historical_orders": 12,
+        "orders_last_90d": 4
       },
       {
+        "pair": "USDTSOL->CARDAMD",
         "direction_id": 180,
-        "pair": "USDTSOL→CARDAMD",
         "currency_id": 56,
         "variant": "AMERIA BANK",
-        "reserve": "10000000"
+        "reserve": "10000000",
+        "reserve_source": "currency2_effective_reserve",
+        "historical_orders": 0,
+        "orders_last_90d": 0
       },
       {
+        "pair": "ETC->CARDAMD",
         "direction_id": 181,
-        "pair": "ETC→CARDAMD",
         "currency_id": 52,
         "variant": "EVOCA BANK",
-        "reserve": "103000000"
+        "reserve": "103000000",
+        "reserve_source": "currency2_effective_reserve",
+        "historical_orders": 1,
+        "orders_last_90d": 0
       },
       {
-        "direction_id": 303,
-        "pair": "DASH→CARDAMD",
-        "currency_id": 52,
-        "variant": "EVOCA BANK",
-        "reserve": "103000000"
-      },
-      {
-        "direction_id": 357,
-        "pair": "USDTERC20→CARDAMD",
-        "currency_id": 52,
-        "variant": "EVOCA BANK",
-        "reserve": "103000000"
-      },
-      {
-        "direction_id": 401,
-        "pair": "ETH→CARDAMD",
-        "currency_id": 52,
-        "variant": "EVOCA BANK",
-        "reserve": "103000000"
-      },
-      {
-        "direction_id": 832,
-        "pair": "ZEC→CARDAMD",
-        "currency_id": 58,
-        "variant": "INECO BANK",
-        "reserve": "614287.78"
-      },
-      {
-        "direction_id": 967,
-        "pair": "BTC→CARDAMD",
+        "pair": "DASH->CARDAMD",
+        "direction_id": 307,
         "currency_id": 56,
         "variant": "AMERIA BANK",
-        "reserve": "10000000"
+        "reserve": "10000000",
+        "reserve_source": "currency2_effective_reserve",
+        "historical_orders": 1,
+        "orders_last_90d": 0
       },
       {
-        "direction_id": 968,
-        "pair": "LTC→CARDAMD",
+        "pair": "USDTERC20->CARDAMD",
+        "direction_id": 361,
+        "currency_id": 56,
+        "variant": "AMERIA BANK",
+        "reserve": "10000000",
+        "reserve_source": "currency2_effective_reserve",
+        "historical_orders": 1,
+        "orders_last_90d": 0
+      },
+      {
+        "pair": "ETH->CARDAMD",
+        "direction_id": 402,
+        "currency_id": 53,
+        "variant": "AGBA BANK",
+        "reserve": "100200000",
+        "reserve_source": "currency2_effective_reserve",
+        "historical_orders": 3,
+        "orders_last_90d": 0
+      },
+      {
+        "pair": "ZEC->CARDAMD",
+        "direction_id": 832,
         "currency_id": 58,
         "variant": "INECO BANK",
-        "reserve": "614287.78"
+        "reserve": "614287.78",
+        "reserve_source": "currency2_effective_reserve",
+        "historical_orders": 0,
+        "orders_last_90d": 0
       },
       {
-        "direction_id": 1013,
-        "pair": "BNBBEP20→CARDAMD",
-        "currency_id": 57,
-        "variant": "CONVERS BANK",
-        "reserve": "10300000"
+        "pair": "BTC->CARDAMD",
+        "direction_id": 967,
+        "currency_id": 56,
+        "variant": "AMERIA BANK",
+        "reserve": "10000000",
+        "reserve_source": "currency2_effective_reserve",
+        "historical_orders": 1,
+        "orders_last_90d": 0
       },
       {
+        "pair": "LTC->CARDAMD",
+        "direction_id": 968,
+        "currency_id": 58,
+        "variant": "INECO BANK",
+        "reserve": "614287.78",
+        "reserve_source": "currency2_effective_reserve",
+        "historical_orders": 0,
+        "orders_last_90d": 0
+      },
+      {
+        "pair": "BNBBEP20->CARDAMD",
+        "direction_id": 1018,
+        "currency_id": 52,
+        "variant": "EVOCA BANK",
+        "reserve": "103000000",
+        "reserve_source": "currency2_effective_reserve",
+        "historical_orders": 1,
+        "orders_last_90d": 0
+      },
+      {
+        "pair": "USDTBEP20->CARDAMD",
         "direction_id": 1049,
-        "pair": "USDTBEP20→CARDAMD",
         "currency_id": 52,
         "variant": "EVOCA BANK",
-        "reserve": "103000000"
+        "reserve": "103000000",
+        "reserve_source": "currency2_effective_reserve",
+        "historical_orders": 2,
+        "orders_last_90d": 0
       },
       {
+        "pair": "USDTTON->CARDAMD",
         "direction_id": 1128,
-        "pair": "USDTTON→CARDAMD",
         "currency_id": 52,
         "variant": "EVOCA BANK",
-        "reserve": "103000000"
+        "reserve": "103000000",
+        "reserve_source": "currency2_effective_reserve",
+        "historical_orders": 0,
+        "orders_last_90d": 0
       },
       {
-        "direction_id": 1163,
-        "pair": "USDCERC20→CARDAMD",
-        "currency_id": 52,
-        "variant": "EVOCA BANK",
-        "reserve": "103000000"
+        "pair": "USDCERC20->CARDAMD",
+        "direction_id": 1168,
+        "currency_id": 58,
+        "variant": "INECO BANK",
+        "reserve": "614287.78",
+        "reserve_source": "currency2_effective_reserve",
+        "historical_orders": 1,
+        "orders_last_90d": 0
       }
     ],
     "suppressed_public_duplicate_direction_ids": [
@@ -1182,18 +1221,18 @@
       86,
       87,
       88,
+      303,
       304,
       305,
       306,
-      307,
       308,
+      357,
       358,
       359,
       360,
-      361,
       362,
       363,
-      402,
+      401,
       403,
       404,
       405,
@@ -1207,11 +1246,11 @@
       974,
       977,
       978,
+      1013,
       1014,
       1015,
       1016,
       1017,
-      1018,
       1050,
       1051,
       1052,
@@ -1228,13 +1267,15 @@
       1131,
       1132,
       1133,
+      1163,
       1164,
       1165,
       1166,
       1167,
-      1168,
       1278
     ],
-    "database_rows_changed": 0
+    "database_rows_changed": 0,
+    "selection_basis": "highest_historical_order_count_then_earliest_order_then_lowest_direction_id",
+    "selection_config": "resources/rates/bestchange-public-directions.json"
   }
 }

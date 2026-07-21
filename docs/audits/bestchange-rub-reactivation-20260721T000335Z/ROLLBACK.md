@@ -14,6 +14,7 @@ git restore --source=b12cbbd68f2d33bfd4e667dbb7478c812ed53766 --worktree -- \
   app/Console/Commands/RatesDeployVerifyCommand.php \
   tests/Unit/Rates/RatePublicSurfaceGateTest.php
 rm -f tests/Unit/Rates/BestChangePublicIdentityCanonicalizationTest.php
+rm -f resources/rates/bestchange-public-directions.json
 sudo -u app_exswapin_usr php8.4 artisan optimize:clear
 sudo -u app_exswapin_usr php8.4 artisan scheme:files
 ```

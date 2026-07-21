@@ -1,5 +1,5 @@
 {
-  "sha256": "06ca8bf7fcfd0eff06b142ff5e894cdbd6742e874df38dfd01f3206dbdfb4455",
+  "sha256": "6dac435a3d3b2ff26c6d743ffb8bb01495c7ddd9f54216abc02d724245a9e4c4",
   "items": 740,
   "coin_rub": 69,
   "coin_rub_unique": 69,
@@ -21,6 +21,21 @@
   "cardamd_rows": 13,
   "cardamd_unique_pairs": 13,
   "cardamd_duplicate_pair_groups": 0,
+  "cardamd_selected_direction_ids": {
+    "BNBBEP20->CARDAMD": 1018,
+    "BTC->CARDAMD": 967,
+    "DASH->CARDAMD": 307,
+    "ETC->CARDAMD": 181,
+    "ETH->CARDAMD": 402,
+    "LTC->CARDAMD": 968,
+    "USDCERC20->CARDAMD": 1168,
+    "USDTBEP20->CARDAMD": 1049,
+    "USDTERC20->CARDAMD": 361,
+    "USDTSOL->CARDAMD": 180,
+    "USDTTON->CARDAMD": 1128,
+    "USDTTRC20->CARDAMD": 81,
+    "ZEC->CARDAMD": 832
+  },
   "zero_reserve_rub": 0,
   "native_TON_rows": 0,
   "unverified_payeer_rows": 0
