@@ -1,0 +1,1240 @@
+{
+  "generated_at": "2026-07-21T00:21:04+00:00",
+  "before_after": {
+    "coin_rub_exported_before": 101,
+    "coin_rub_exported_after": 69,
+    "NO_BASELINE_removed": 32,
+    "CARDAMD_public_rows_before": 71,
+    "CARDAMD_public_rows_after": 13,
+    "CARDAMD_duplicate_rows_removed": 58,
+    "CARDAMD_duplicate_pair_groups_before": 11,
+    "CARDAMD_duplicate_pair_groups_after": 0,
+    "eligible_certified_directions": 69
+  },
+  "removed_unsupported_rub_directions": [
+    {
+      "direction_id": 127,
+      "pair": "DASH→SBERRUB",
+      "source_asset": "DASH",
+      "source_network": "",
+      "source_tech_name": "DASH",
+      "destination_rub_family": "SBERRUB",
+      "destination_tech_name": "Sber RUB",
+      "current_xml_rate": "2778.7412",
+      "xml_in": "1",
+      "xml_reserve": "100000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 1,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "DASH",
+          "id": 140
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "SBERRUB",
+          "id": 42
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 128,
+      "pair": "DASH→SBPRUB",
+      "source_asset": "DASH",
+      "source_network": "",
+      "source_tech_name": "DASH",
+      "destination_rub_family": "SBPRUB",
+      "destination_tech_name": "СБП RUB",
+      "current_xml_rate": "2778.73",
+      "xml_in": "1",
+      "xml_reserve": "10000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 6,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "DASH",
+          "id": 140
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "SBPRUB",
+          "id": 21
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 167,
+      "pair": "XMR→RFBRUB",
+      "source_asset": "XMR",
+      "source_network": "",
+      "source_tech_name": "Monero XMR",
+      "destination_rub_family": "RFBRUB",
+      "destination_tech_name": "Raiffisen RUB",
+      "current_xml_rate": "26770.5050",
+      "xml_in": "1",
+      "xml_reserve": "10000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 0,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "XMR",
+          "id": 149
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "RFBRUB",
+          "id": 157
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 178,
+      "pair": "XRP→TCSBRUB",
+      "source_asset": "XRP",
+      "source_network": "",
+      "source_tech_name": "Ripple XRP",
+      "destination_rub_family": "TCSBRUB",
+      "destination_tech_name": "Tinkoff RUB",
+      "current_xml_rate": "90.2529",
+      "xml_in": "1",
+      "xml_reserve": "96679070",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 2,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "XRP",
+          "id": 161
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "TCSBRUB",
+          "id": 105
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 179,
+      "pair": "DOGE→TCSBRUB",
+      "source_asset": "DOGE",
+      "source_network": "",
+      "source_tech_name": "Dogecoin DOGE",
+      "destination_rub_family": "TCSBRUB",
+      "destination_tech_name": "Tinkoff RUB",
+      "current_xml_rate": "5.8500",
+      "xml_in": "1",
+      "xml_reserve": "96679070",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 1,
+      "historical_order_count": 5,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "DOGE",
+          "id": 115
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "TCSBRUB",
+          "id": 105
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 270,
+      "pair": "DASH→ACRUB",
+      "source_asset": "DASH",
+      "source_network": "",
+      "source_tech_name": "DASH",
+      "destination_rub_family": "ACRUB",
+      "destination_tech_name": "Alfa RUB",
+      "current_xml_rate": "2761.1600",
+      "xml_in": "1",
+      "xml_reserve": "10000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 1,
+      "historical_order_count": 1,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "DASH",
+          "id": 140
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "ACRUB",
+          "id": 52
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 271,
+      "pair": "DASH→RFBRUB",
+      "source_asset": "DASH",
+      "source_network": "",
+      "source_tech_name": "DASH",
+      "destination_rub_family": "RFBRUB",
+      "destination_tech_name": "Raiffisen RUB",
+      "current_xml_rate": "2763.5310",
+      "xml_in": "1",
+      "xml_reserve": "10000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 0,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "DASH",
+          "id": 140
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "RFBRUB",
+          "id": 157
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 272,
+      "pair": "DASH→TCSBRUB",
+      "source_asset": "DASH",
+      "source_network": "",
+      "source_tech_name": "DASH",
+      "destination_rub_family": "TCSBRUB",
+      "destination_tech_name": "Tinkoff RUB",
+      "current_xml_rate": "2778.7330",
+      "xml_in": "1",
+      "xml_reserve": "96679070",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 2,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "DASH",
+          "id": 140
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "TCSBRUB",
+          "id": 105
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 273,
+      "pair": "DASH→TBRUB",
+      "source_asset": "DASH",
+      "source_network": "",
+      "source_tech_name": "DASH",
+      "destination_rub_family": "TBRUB",
+      "destination_tech_name": "VTB RUB",
+      "current_xml_rate": "2763.5310",
+      "xml_in": "1",
+      "xml_reserve": "10000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 1,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "DASH",
+          "id": 140
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "TBRUB",
+          "id": 51
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 440,
+      "pair": "BCH→SBPRUB",
+      "source_asset": "BCH",
+      "source_network": "",
+      "source_tech_name": "Bitcoin Cash BCH",
+      "destination_rub_family": "SBPRUB",
+      "destination_tech_name": "СБП RUB",
+      "current_xml_rate": "17967.68",
+      "xml_in": "1",
+      "xml_reserve": "10000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 0,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "BCH",
+          "id": 172
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "SBPRUB",
+          "id": 21
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 441,
+      "pair": "BCH→SBERRUB",
+      "source_asset": "BCH",
+      "source_network": "",
+      "source_tech_name": "Bitcoin Cash BCH",
+      "destination_rub_family": "SBERRUB",
+      "destination_tech_name": "Sber RUB",
+      "current_xml_rate": "17895.5601",
+      "xml_in": "1",
+      "xml_reserve": "100000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 2,
+      "historical_order_count": 4,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "BCH",
+          "id": 172
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "SBERRUB",
+          "id": 42
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 442,
+      "pair": "BCH→ACRUB",
+      "source_asset": "BCH",
+      "source_network": "",
+      "source_tech_name": "Bitcoin Cash BCH",
+      "destination_rub_family": "ACRUB",
+      "destination_tech_name": "Alfa RUB",
+      "current_xml_rate": "17953.0500",
+      "xml_in": "1",
+      "xml_reserve": "10000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 0,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "BCH",
+          "id": 172
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "ACRUB",
+          "id": 52
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 455,
+      "pair": "ETC→SBERRUB",
+      "source_asset": "ETC",
+      "source_network": "",
+      "source_tech_name": "Ethereum Classic ETC",
+      "destination_rub_family": "SBERRUB",
+      "destination_tech_name": "Sber RUB",
+      "current_xml_rate": "560.9538",
+      "xml_in": "1",
+      "xml_reserve": "100000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 1,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "ETC",
+          "id": 160
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "SBERRUB",
+          "id": 42
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 456,
+      "pair": "ETC→SBPRUB",
+      "source_asset": "ETC",
+      "source_network": "",
+      "source_tech_name": "Ethereum Classic ETC",
+      "destination_rub_family": "SBPRUB",
+      "destination_tech_name": "СБП RUB",
+      "current_xml_rate": "560.95",
+      "xml_in": "1",
+      "xml_reserve": "10000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 2,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "ETC",
+          "id": 160
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "SBPRUB",
+          "id": 21
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 457,
+      "pair": "ETC→ACRUB",
+      "source_asset": "ETC",
+      "source_network": "",
+      "source_tech_name": "Ethereum Classic ETC",
+      "destination_rub_family": "ACRUB",
+      "destination_tech_name": "Alfa RUB",
+      "current_xml_rate": "560.8847",
+      "xml_in": "1",
+      "xml_reserve": "10000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 0,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "ETC",
+          "id": 160
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "ACRUB",
+          "id": 52
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 458,
+      "pair": "ETC→RFBRUB",
+      "source_asset": "ETC",
+      "source_network": "",
+      "source_tech_name": "Ethereum Classic ETC",
+      "destination_rub_family": "RFBRUB",
+      "destination_tech_name": "Raiffisen RUB",
+      "current_xml_rate": "560.9530",
+      "xml_in": "1",
+      "xml_reserve": "10000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 0,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "ETC",
+          "id": 160
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "RFBRUB",
+          "id": 157
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 459,
+      "pair": "ETC→TCSBRUB",
+      "source_asset": "ETC",
+      "source_network": "",
+      "source_tech_name": "Ethereum Classic ETC",
+      "destination_rub_family": "TCSBRUB",
+      "destination_tech_name": "Tinkoff RUB",
+      "current_xml_rate": "560.9530",
+      "xml_in": "1",
+      "xml_reserve": "96679070",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 1,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "ETC",
+          "id": 160
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "TCSBRUB",
+          "id": 105
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 460,
+      "pair": "ETC→TBRUB",
+      "source_asset": "ETC",
+      "source_network": "",
+      "source_tech_name": "Ethereum Classic ETC",
+      "destination_rub_family": "TBRUB",
+      "destination_tech_name": "VTB RUB",
+      "current_xml_rate": "560.9530",
+      "xml_in": "1",
+      "xml_reserve": "10000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 0,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "ETC",
+          "id": 160
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "TBRUB",
+          "id": 51
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 503,
+      "pair": "XMR→SBERRUB",
+      "source_asset": "XMR",
+      "source_network": "",
+      "source_tech_name": "Monero XMR",
+      "destination_rub_family": "SBERRUB",
+      "destination_tech_name": "Sber RUB",
+      "current_xml_rate": "26782.3122",
+      "xml_in": "1",
+      "xml_reserve": "100000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 1,
+      "historical_order_count": 4,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "XMR",
+          "id": 149
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "SBERRUB",
+          "id": 42
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 504,
+      "pair": "XMR→SBPRUB",
+      "source_asset": "XMR",
+      "source_network": "",
+      "source_tech_name": "Monero XMR",
+      "destination_rub_family": "SBPRUB",
+      "destination_tech_name": "СБП RUB",
+      "current_xml_rate": "26843.00",
+      "xml_in": "1",
+      "xml_reserve": "10000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 1,
+      "historical_order_count": 3,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "XMR",
+          "id": 149
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "SBPRUB",
+          "id": 21
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 1421,
+      "pair": "DASH→YAMRUB",
+      "source_asset": "DASH",
+      "source_network": "",
+      "source_tech_name": "DASH",
+      "destination_rub_family": "YAMRUB",
+      "destination_tech_name": "ЮMoney RUB",
+      "current_xml_rate": "2761.5873",
+      "xml_in": "1",
+      "xml_reserve": "9442843.445",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 0,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "DASH",
+          "id": 140
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "YAMRUB",
+          "id": 6
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 1425,
+      "pair": "XMR→YAMRUB",
+      "source_asset": "XMR",
+      "source_network": "",
+      "source_tech_name": "Monero XMR",
+      "destination_rub_family": "YAMRUB",
+      "destination_tech_name": "ЮMoney RUB",
+      "current_xml_rate": "26216.6448",
+      "xml_in": "1",
+      "xml_reserve": "9442843.445",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 0,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "XMR",
+          "id": 149
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "YAMRUB",
+          "id": 6
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 1426,
+      "pair": "XRP→YAMRUB",
+      "source_asset": "XRP",
+      "source_network": "",
+      "source_tech_name": "Ripple XRP",
+      "destination_rub_family": "YAMRUB",
+      "destination_tech_name": "ЮMoney RUB",
+      "current_xml_rate": "88.9600",
+      "xml_in": "1",
+      "xml_reserve": "9442843.445",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 2,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "XRP",
+          "id": 161
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "YAMRUB",
+          "id": 6
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 1427,
+      "pair": "SOL→YAMRUB",
+      "source_asset": "SOL",
+      "source_network": "",
+      "source_tech_name": "Solana SOL",
+      "destination_rub_family": "YAMRUB",
+      "destination_tech_name": "ЮMoney RUB",
+      "current_xml_rate": "6223.6347",
+      "xml_in": "1",
+      "xml_reserve": "9442843.445",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 2,
+      "historical_order_count": 5,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "SOL",
+          "id": 82
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "YAMRUB",
+          "id": 6
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 1511,
+      "pair": "CASHUSD→SBERRUB",
+      "source_asset": "CASHUSD",
+      "source_network": "",
+      "source_tech_name": "Cash USD LA",
+      "destination_rub_family": "SBERRUB",
+      "destination_tech_name": "Sber RUB",
+      "current_xml_rate": "78.6386",
+      "xml_in": "1",
+      "xml_reserve": "100000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 0,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "CASHUSD",
+          "id": 89
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "SBERRUB",
+          "id": 42
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 1512,
+      "pair": "CASHUSD→SBPRUB",
+      "source_asset": "CASHUSD",
+      "source_network": "",
+      "source_tech_name": "Cash USD LA",
+      "destination_rub_family": "SBPRUB",
+      "destination_tech_name": "СБП RUB",
+      "current_xml_rate": "77.60",
+      "xml_in": "1",
+      "xml_reserve": "10000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 0,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "CASHUSD",
+          "id": 89
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "SBPRUB",
+          "id": 21
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 1540,
+      "pair": "ZELLEUSD→SBERRUB",
+      "source_asset": "ZELLEUSD",
+      "source_network": "",
+      "source_tech_name": "Zelle USD",
+      "destination_rub_family": "SBERRUB",
+      "destination_tech_name": "Sber RUB",
+      "current_xml_rate": "77.8114",
+      "xml_in": "1",
+      "xml_reserve": "100000000",
+      "rate_source": "Best",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 3,
+      "historical_order_count": 10,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "ZELLEUSD",
+          "id": 308
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "SBERRUB",
+          "id": 42
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 1541,
+      "pair": "ZELLEUSD→SBPRUB",
+      "source_asset": "ZELLEUSD",
+      "source_network": "",
+      "source_tech_name": "Zelle USD",
+      "destination_rub_family": "SBPRUB",
+      "destination_tech_name": "СБП RUB",
+      "current_xml_rate": "77.78",
+      "xml_in": "1",
+      "xml_reserve": "10000000",
+      "rate_source": "Best",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 6,
+      "historical_order_count": 7,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "ZELLEUSD",
+          "id": 308
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "SBPRUB",
+          "id": 21
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 1542,
+      "pair": "ZELLEUSD→TCSBRUB",
+      "source_asset": "ZELLEUSD",
+      "source_network": "",
+      "source_tech_name": "Zelle USD",
+      "destination_rub_family": "TCSBRUB",
+      "destination_tech_name": "Tinkoff RUB",
+      "current_xml_rate": "77.7842",
+      "xml_in": "1",
+      "xml_reserve": "96679070",
+      "rate_source": "Best",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 11,
+      "historical_order_count": 15,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "ZELLEUSD",
+          "id": 308
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "TCSBRUB",
+          "id": 105
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 1546,
+      "pair": "ZELLEUSD→CARDRUB",
+      "source_asset": "ZELLEUSD",
+      "source_network": "",
+      "source_tech_name": "Zelle USD",
+      "destination_rub_family": "CARDRUB",
+      "destination_tech_name": "Card RUB",
+      "current_xml_rate": "77.7842",
+      "xml_in": "1",
+      "xml_reserve": "241092.4551",
+      "rate_source": "Best",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 2,
+      "historical_order_count": 3,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "ZELLEUSD",
+          "id": 308
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "CARDRUB",
+          "id": 59
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 1581,
+      "pair": "XRP→SBERRUB",
+      "source_asset": "XRP",
+      "source_network": "",
+      "source_tech_name": "Ripple XRP",
+      "destination_rub_family": "SBERRUB",
+      "destination_tech_name": "Sber RUB",
+      "current_xml_rate": "90.2529",
+      "xml_in": "1",
+      "xml_reserve": "100000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 1,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "XRP",
+          "id": 161
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "SBERRUB",
+          "id": 42
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    },
+    {
+      "direction_id": 1585,
+      "pair": "XRP→MTSBRUB",
+      "source_asset": "XRP",
+      "source_network": "",
+      "source_tech_name": "Ripple XRP",
+      "destination_rub_family": "MTSBRUB",
+      "destination_tech_name": "МТС Банк RUB",
+      "current_xml_rate": "89.8208",
+      "xml_in": "1",
+      "xml_reserve": "1000000",
+      "rate_source": "BestChange",
+      "baseline_status": "NO_BASELINE",
+      "baseline": null,
+      "order_eligibility_before_fix": true,
+      "recent_order_count_90d": 0,
+      "historical_order_count": 0,
+      "bestchange_mapping": {
+        "from": {
+          "status": "VERIFIED",
+          "code": "XRP",
+          "id": 161
+        },
+        "to": {
+          "status": "VERIFIED",
+          "code": "MTSBRUB",
+          "id": 191
+        }
+      },
+      "public_slug": "",
+      "release_outcome": "KEEP_INTERNAL_ONLY",
+      "release_reason": "No approved trusted baseline; canonical RUB eligibility blocks quote/order/export until separately certified."
+    }
+  ],
+  "cardamd": {
+    "public_code": "CARDAMD",
+    "internal_currency_ids": [
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      71
+    ],
+    "internal_variants_preserved": 8,
+    "canonical_public_directions": [
+      {
+        "direction_id": 81,
+        "pair": "USDTTRC20→CARDAMD",
+        "currency_id": 52,
+        "variant": "EVOCA BANK",
+        "reserve": "103000000"
+      },
+      {
+        "direction_id": 180,
+        "pair": "USDTSOL→CARDAMD",
+        "currency_id": 56,
+        "variant": "AMERIA BANK",
+        "reserve": "10000000"
+      },
+      {
+        "direction_id": 181,
+        "pair": "ETC→CARDAMD",
+        "currency_id": 52,
+        "variant": "EVOCA BANK",
+        "reserve": "103000000"
+      },
+      {
+        "direction_id": 303,
+        "pair": "DASH→CARDAMD",
+        "currency_id": 52,
+        "variant": "EVOCA BANK",
+        "reserve": "103000000"
+      },
+      {
+        "direction_id": 357,
+        "pair": "USDTERC20→CARDAMD",
+        "currency_id": 52,
+        "variant": "EVOCA BANK",
+        "reserve": "103000000"
+      },
+      {
+        "direction_id": 401,
+        "pair": "ETH→CARDAMD",
+        "currency_id": 52,
+        "variant": "EVOCA BANK",
+        "reserve": "103000000"
+      },
+      {
+        "direction_id": 832,
+        "pair": "ZEC→CARDAMD",
+        "currency_id": 58,
+        "variant": "INECO BANK",
+        "reserve": "614287.78"
+      },
+      {
+        "direction_id": 967,
+        "pair": "BTC→CARDAMD",
+        "currency_id": 56,
+        "variant": "AMERIA BANK",
+        "reserve": "10000000"
+      },
+      {
+        "direction_id": 968,
+        "pair": "LTC→CARDAMD",
+        "currency_id": 58,
+        "variant": "INECO BANK",
+        "reserve": "614287.78"
+      },
+      {
+        "direction_id": 1013,
+        "pair": "BNBBEP20→CARDAMD",
+        "currency_id": 57,
+        "variant": "CONVERS BANK",
+        "reserve": "10300000"
+      },
+      {
+        "direction_id": 1049,
+        "pair": "USDTBEP20→CARDAMD",
+        "currency_id": 52,
+        "variant": "EVOCA BANK",
+        "reserve": "103000000"
+      },
+      {
+        "direction_id": 1128,
+        "pair": "USDTTON→CARDAMD",
+        "currency_id": 52,
+        "variant": "EVOCA BANK",
+        "reserve": "103000000"
+      },
+      {
+        "direction_id": 1163,
+        "pair": "USDCERC20→CARDAMD",
+        "currency_id": 52,
+        "variant": "EVOCA BANK",
+        "reserve": "103000000"
+      }
+    ],
+    "suppressed_public_duplicate_direction_ids": [
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      304,
+      305,
+      306,
+      307,
+      308,
+      358,
+      359,
+      360,
+      361,
+      362,
+      363,
+      402,
+      403,
+      404,
+      405,
+      406,
+      407,
+      969,
+      970,
+      971,
+      972,
+      973,
+      974,
+      977,
+      978,
+      1014,
+      1015,
+      1016,
+      1017,
+      1018,
+      1050,
+      1051,
+      1052,
+      1053,
+      1064,
+      1065,
+      1091,
+      1092,
+      1093,
+      1094,
+      1095,
+      1129,
+      1130,
+      1131,
+      1132,
+      1133,
+      1164,
+      1165,
+      1166,
+      1167,
+      1168,
+      1278
+    ],
+    "database_rows_changed": 0
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "generated_at": "2026-07-21T00:03:35Z",
+  "repository": "/var/www/app_exswapin_usr/data/www/app.exswaping.com",
+  "release_worktree": "/opt/exswaping-bestchange-rub-reactivation-20260721",
+  "release_branch": "release/exswaping-bestchange-rub-reactivation-20260721",
+  "release_base": "afcf6b327a9b84c04d56aa1832c990114aa20171",
+  "production_sha": "b12cbbd68f2d33bfd4e667dbb7478c812ed53766",
+  "origin_main": "afcf6b327a9b84c04d56aa1832c990114aa20171",
+  "production_tracked_status": "clean",
+  "production_ahead_of_origin_main": 1,
+  "production_preexisting_ahead_commit": "b12cbbd seo(sitemap): include P1.1 payment and USDT topic hubs",
+  "runtime": {
+    "deploy_drift": 0,
+    "deploy_missing": 0,
+    "critical": false,
+    "baseline_gaps": [
+      "TONUSDT missing_or_stale"
+    ]
+  },
+  "xml": {
+    "sha256": "df578ece8e9edb16593fdba5e1876eb4a53ac51aed19f3a012a598875079ec0f",
+    "item_count": 830,
+    "coin_rub_export_count": 101,
+    "coin_rub_unique_pairs": 101,
+    "cardamd_export_count": 71,
+    "cardamd_unique_pairs": 13,
+    "cardamd_duplicate_pair_groups": 11,
+    "no_baseline_rub_export_count": 32,
+    "zero_reserve_rub_export_count": 0,
+    "delivery_ok": true,
+    "valid_xml": true
+  },
+  "economic_audit": {
+    "reviewed": 831,
+    "PASS": 75,
+    "PASS_EXPLAINED_SPREAD": 52,
+    "REVIEW": 2,
+    "QUARANTINE_REQUIRED": 2,
+    "NO_BASELINE": 700,
+    "NO_POLICY": 0
+  },
+  "command_note": "Current command accepts --limit=0 rather than unsupported --all."
+}

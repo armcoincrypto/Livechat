@@ -1,0 +1,171 @@
+{
+  "generated_at": "2026-07-21T03:03:38+03:00",
+  "commit": "b12cbbd68f2d33bfd4e667dbb7478c812ed53766",
+  "head": "b12cbbd68f2d33bfd4e667dbb7478c812ed53766",
+  "drift": 0,
+  "missing": 0,
+  "files": [
+    {
+      "path": "xml-changer/main.py",
+      "certified_blob": "458005818e44fd22d18a1af7fdd8ed3a87e0415e",
+      "live_blob": "458005818e44fd22d18a1af7fdd8ed3a87e0415e",
+      "ok": true
+    },
+    {
+      "path": "app/Services/Rates/RateSanityGuard.php",
+      "certified_blob": "bd56608c579f9deaf39960fcae33cce713161da4",
+      "live_blob": "bd56608c579f9deaf39960fcae33cce713161da4",
+      "ok": true
+    },
+    {
+      "path": "app/Services/Rates/RateConfiguredExpectation.php",
+      "certified_blob": "25db94fa2488f832f4e6a21be3c842ae014fb03a",
+      "live_blob": "25db94fa2488f832f4e6a21be3c842ae014fb03a",
+      "ok": true
+    },
+    {
+      "path": "app/Services/Rates/RateExportQuarantine.php",
+      "certified_blob": "5ad2fb279655ef9092fc5ec1d42ba27eb95fb0f0",
+      "live_blob": "5ad2fb279655ef9092fc5ec1d42ba27eb95fb0f0",
+      "ok": true
+    },
+    {
+      "path": "app/Services/Rates/PeerRateSelector.php",
+      "certified_blob": "2ad9c290178000d8f2963244c7ec7c7348fdaff7",
+      "live_blob": "2ad9c290178000d8f2963244c7ec7c7348fdaff7",
+      "ok": true
+    },
+    {
+      "path": "app/Services/Rates/BestChangeCurrencyCatalogGuard.php",
+      "certified_blob": "4521b6671daa5ad9c663aa543416c8f86d27bcd6",
+      "live_blob": "4521b6671daa5ad9c663aa543416c8f86d27bcd6",
+      "ok": true
+    },
+    {
+      "path": "app/Services/Rates/BestChangeMappingRegistry.php",
+      "certified_blob": "b86474b959be9cdead068c519270f8fc20747430",
+      "live_blob": "b86474b959be9cdead068c519270f8fc20747430",
+      "ok": true
+    },
+    {
+      "path": "app/Services/Rates/BestChangeMappingVerifier.php",
+      "certified_blob": "eff14a64dd6c4bec64108bd6f5be796fae8ea9bd",
+      "live_blob": "eff14a64dd6c4bec64108bd6f5be796fae8ea9bd",
+      "ok": true
+    },
+    {
+      "path": "app/Services/Rates/RateDirectionEligibility.php",
+      "certified_blob": "007628e9e7508a0ce3d2e7a5cd519f91990daeef",
+      "live_blob": "007628e9e7508a0ce3d2e7a5cd519f91990daeef",
+      "ok": true
+    },
+    {
+      "path": "resources/rates/bestchange-codes.overrides.json",
+      "certified_blob": "6817e0e465c029d4b81443df8e214644a896c81d",
+      "live_blob": "6817e0e465c029d4b81443df8e214644a896c81d",
+      "ok": true
+    },
+    {
+      "path": "app/Services/Rates/AtomicPublicXmlPublisher.php",
+      "certified_blob": "d7b54ea67352c72052f136daf1cd704566149bfe",
+      "live_blob": "d7b54ea67352c72052f136daf1cd704566149bfe",
+      "ok": true
+    },
+    {
+      "path": "app/Services/Rates/RateExportQuarantine.php",
+      "certified_blob": "5ad2fb279655ef9092fc5ec1d42ba27eb95fb0f0",
+      "live_blob": "5ad2fb279655ef9092fc5ec1d42ba27eb95fb0f0",
+      "ok": true
+    },
+    {
+      "path": "app/Services/Rates/IndependentMarketBaseline.php",
+      "certified_blob": "f1202ab231bd6c0cf7f2a959ef1addebf70a775b",
+      "live_blob": "f1202ab231bd6c0cf7f2a959ef1addebf70a775b",
+      "ok": true
+    },
+    {
+      "path": "app/Services/Rates/RubFamilyPremiumPolicy.php",
+      "certified_blob": "886a987489c0fde82dbf6cffa3cd76bba1fe24e0",
+      "live_blob": "886a987489c0fde82dbf6cffa3cd76bba1fe24e0",
+      "ok": true
+    },
+    {
+      "path": "resources/rates/rub-family-premium-policy.json",
+      "certified_blob": "f13a0f081f6ed6623446e75b7e17b3f2d90fc51b",
+      "live_blob": "f13a0f081f6ed6623446e75b7e17b3f2d90fc51b",
+      "ok": true
+    },
+    {
+      "path": "app/Console/Commands/RatesRubFamilyPolicyStatusCommand.php",
+      "certified_blob": "0453a20ed3ad9adfac0d72752427ad259bfb5b0c",
+      "live_blob": "0453a20ed3ad9adfac0d72752427ad259bfb5b0c",
+      "ok": true
+    },
+    {
+      "path": "packages/Courses/Export/ExportCourses.php",
+      "certified_blob": "f78c730552908d22cf28cb727202658501a9deaa",
+      "live_blob": "f78c730552908d22cf28cb727202658501a9deaa",
+      "ok": true
+    },
+    {
+      "path": "packages/Courses/Export/Concerns/ExportFormatHelpers.php",
+      "certified_blob": "85bf3c73e2f5774a608606d3100741a3a14c311f",
+      "live_blob": "85bf3c73e2f5774a608606d3100741a3a14c311f",
+      "ok": true
+    },
+    {
+      "path": "app/Console/Commands/RatesEconomicAuditCommand.php",
+      "certified_blob": "85c5320f9f532d656ca56ee837b497b51b5adc79",
+      "live_blob": "85c5320f9f532d656ca56ee837b497b51b5adc79",
+      "ok": true
+    },
+    {
+      "path": "app/Console/Commands/RatesDirectionStatusCommand.php",
+      "certified_blob": "a1b59b2bb30a0617038b9d7f8298ad62504cc70a",
+      "live_blob": "a1b59b2bb30a0617038b9d7f8298ad62504cc70a",
+      "ok": true
+    },
+    {
+      "path": "app/Console/Commands/RatesAuditCommand.php",
+      "certified_blob": "76da289a0def5699697e495e1f062b908c5d49f1",
+      "live_blob": "76da289a0def5699697e495e1f062b908c5d49f1",
+      "ok": true
+    },
+    {
+      "path": "packages/BestChange/Services/RatesUpdateService.php",
+      "certified_blob": "c0d963c83d665dbfbdbe46f443fb2265e9c6f75d",
+      "live_blob": "c0d963c83d665dbfbdbe46f443fb2265e9c6f75d",
+      "ok": true
+    },
+    {
+      "path": "tests/Unit/Rates/RateSanityGuardTest.php",
+      "certified_blob": "3422a4c2f4eaedad134a0f92fa4f183c2d60a57e",
+      "live_blob": "3422a4c2f4eaedad134a0f92fa4f183c2d60a57e",
+      "ok": true
+    },
+    {
+      "path": "tests/Unit/Rates/RatePostFixRemediationTest.php",
+      "certified_blob": "dda9504f4dac0d0c30e22fa998fcf604b7c47d51",
+      "live_blob": "dda9504f4dac0d0c30e22fa998fcf604b7c47d51",
+      "ok": true
+    },
+    {
+      "path": "tests/Unit/Rates/ZecSbpRateIncidentTest.php",
+      "certified_blob": "72b985dde8b0ca494c549890bfba9f57a21c3a8b",
+      "live_blob": "72b985dde8b0ca494c549890bfba9f57a21c3a8b",
+      "ok": true
+    },
+    {
+      "path": "tests/Unit/Rates/TrustedBaselineRecoveryTest.php",
+      "certified_blob": "50825bc5c65e8fe27a00b1d147c33767a36f968b",
+      "live_blob": "50825bc5c65e8fe27a00b1d147c33767a36f968b",
+      "ok": true
+    },
+    {
+      "path": "tests/Unit/Rates/RubFamilyPremiumPolicyTest.php",
+      "certified_blob": "515afa7b6e25b14837db6a7c907573100174b16d",
+      "live_blob": "515afa7b6e25b14837db6a7c907573100174b16d",
+      "ok": true
+    }
+  ]
+}

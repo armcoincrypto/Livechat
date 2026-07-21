@@ -1,0 +1,27 @@
+{
+  "sha256": "06ca8bf7fcfd0eff06b142ff5e894cdbd6742e874df38dfd01f3206dbdfb4455",
+  "items": 740,
+  "coin_rub": 69,
+  "coin_rub_unique": 69,
+  "rub_source_counts": {
+    "BTC": 8,
+    "USDTTRC20": 7,
+    "USDTERC20": 8,
+    "LTC": 6,
+    "ETH": 6,
+    "TRX": 1,
+    "BNBBEP20": 4,
+    "ZEC": 2,
+    "USDTBEP20": 8,
+    "USDTSOL": 5,
+    "USDTTON": 7,
+    "USDCERC20": 7
+  },
+  "NO_BASELINE_source_rows": 0,
+  "cardamd_rows": 13,
+  "cardamd_unique_pairs": 13,
+  "cardamd_duplicate_pair_groups": 0,
+  "zero_reserve_rub": 0,
+  "native_TON_rows": 0,
+  "unverified_payeer_rows": 0
+}
