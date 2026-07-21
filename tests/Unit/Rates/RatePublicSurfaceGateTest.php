@@ -132,6 +132,27 @@ final class RatePublicSurfaceGateTest extends TestCase
         $this->assertTrue($result['BestChange_allowed']);
     }
 
+    public function testBestChangeDerivedCanonicalRubRateFailsClosed(): void
+    {
+        $direction = $this->direction('USDTTRC20', 'SBPRUB', '104');
+        $direction->setAttribute('parser_source_name', 'BestChange');
+        $result = $this->eligibility(
+            baseline: new IndependentMarketBaseline([
+                'USDRUB' => [
+                    'rate' => '100',
+                    'source' => 'test-usd-rub',
+                    'as_of' => gmdate('c'),
+                ],
+            ], false),
+        )->evaluateDirection($direction);
+
+        $this->assertTrue($result['circular_source_detected']);
+        $this->assertFalse($result['quote_allowed']);
+        $this->assertFalse($result['order_allowed']);
+        $this->assertFalse($result['export_allowed']);
+        $this->assertContains('rate_circular_source', $result['blocking_reasons']);
+    }
+
     private function eligibility(IndependentMarketBaseline $baseline): RateDirectionEligibility
     {
         $dir = sys_get_temp_dir() . '/rate_surface_mapping_' . getmypid();

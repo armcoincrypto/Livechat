@@ -207,6 +207,12 @@ class ExchangeSchedule
             ->withoutOverlapping(5)
             ->appendOutputTo(storage_path('logs/rates_health.log'));
 
+        $schedule->command('rates:rub-catalog-monitor --format=json')
+            ->everyFiveMinutes()
+            ->onOneServer()
+            ->withoutOverlapping(5)
+            ->appendOutputTo(storage_path('logs/rates_rub_catalog_monitor.log'));
+
         // Генерация минимальной и максимальной цены
         $schedule->command('compiler:generate_prices')->everyFiveMinutes();
 
