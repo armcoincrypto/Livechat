@@ -82,10 +82,12 @@ final class RateDirectionEligibility
         $direction->loadMissing(['currency1', 'currency2']);
         $from = strtoupper((string) ($direction->currency1?->designation_xml ?? ''));
         $to = strtoupper((string) ($direction->currency2?->designation_xml ?? ''));
-        $isCryptoRub = str_contains($to, 'RUB')
-            && IndependentMarketBaseline::assetFromCode($from) !== null;
+        // Every RUB destination is policy-bound. An unknown source identity is
+        // not an exemption: resolveBaseline() will return null and the policy
+        // will classify it NO_BASELINE (fail closed on every public surface).
+        $isRubDirection = str_contains($to, 'RUB');
 
-        $baselineInfo = $isCryptoRub ? $this->resolveBaseline($from, $to) : [
+        $baselineInfo = $isRubDirection ? $this->resolveBaseline($from, $to) : [
             'rate' => null,
             'source' => null,
             'path' => null,
@@ -106,7 +108,7 @@ final class RateDirectionEligibility
             'reserve_ok' => $reserve['ok'],
             'require_verified_export_mapping' => true,
             'baseline' => $baselineInfo['rate'],
-            'require_independent_baseline' => $isCryptoRub,
+            'require_independent_baseline' => $isRubDirection,
         ]);
 
         $classification = null;
@@ -115,7 +117,7 @@ final class RateDirectionEligibility
         $unexplained = null;
         $reasons = $payload['reasons'];
 
-        if ($isCryptoRub) {
+        if ($isRubDirection) {
             $policy = $this->rubPolicy ?? RubFamilyPremiumPolicy::fromStorageApp();
             $expectation = $this->expectation ?? new RateConfiguredExpectation();
             if ($baselineInfo['rate'] !== null) {
@@ -195,7 +197,7 @@ final class RateDirectionEligibility
             'eligible_for_export' => $exportAllowed,
             'classification' => $classification,
             'baseline_status' => $baselineInfo['rate'] === null
-                ? ($isCryptoRub ? 'NO_BASELINE' : 'not_required')
+                ? ($isRubDirection ? 'NO_BASELINE' : 'not_required')
                 : 'OK',
             'policy_status' => $policyStatus,
             'reserve_status' => $reserve['ok'] ? 'adequate' : 'inadequate_or_missing',
