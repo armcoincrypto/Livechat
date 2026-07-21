@@ -8,6 +8,7 @@ use App\Services\Rates\IndependentMarketBaseline;
 use App\Settings\BestChangeConfig;
 use iEXPackages\BestChange\Facades\BestChangeFacade;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -55,7 +56,16 @@ final class BestchangeUpdateRatesConsole extends Command
             $ratesConnection->updateRates();
 
             // 2) пересчитываем direction_exchange
-            $ratesConnection->withUpdateDirections();
+            $directionWriteLock = Cache::lock('iex:direction-rates:write', 180);
+            if ($directionWriteLock->get()) {
+                try {
+                    $ratesConnection->withUpdateDirections();
+                } finally {
+                    $directionWriteLock->release();
+                }
+            } else {
+                $this->warn('Другой компилятор обновляет направления — пересчёт пропущен');
+            }
 
             $elapsed = round(microtime(true) - $start, 4);
 

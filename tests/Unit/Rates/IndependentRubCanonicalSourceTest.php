@@ -66,6 +66,48 @@ final class IndependentRubCanonicalSourceTest extends TestCase
         self::assertSame('0', $strategy->getRate());
     }
 
+    public function testPremiumRangeWithoutExactApprovalFailsClosed(): void
+    {
+        $policy = $this->policy();
+        $raw = $policy->raw();
+        unset($raw['families']['SBERRUB']['canonical_premium_percent']);
+        $strategy = new IndependentRubStrategy(
+            $this->direction('USDTTRC20', 'SBERRUB'),
+            new IndependentMarketBaseline([
+                'USDRUB' => [
+                    'rate' => '100',
+                    'source' => 'russiancentralbank',
+                    'as_of' => gmdate('c'),
+                ],
+            ], allowDatabase: false),
+            new RubFamilyPremiumPolicy($raw),
+        );
+
+        self::assertSame('0', $strategy->getRate());
+    }
+
+    public function testUsdcUsesFreshPegNormalizationBeforeRubConversion(): void
+    {
+        $strategy = new IndependentRubStrategy(
+            $this->direction('USDCERC20', 'SBERRUB'),
+            new IndependentMarketBaseline([
+                'USDCUSDT' => [
+                    'rate' => '1.01',
+                    'source' => 'whitebit',
+                    'as_of' => gmdate('c'),
+                ],
+                'USDRUB' => [
+                    'rate' => '100',
+                    'source' => 'russiancentralbank',
+                    'as_of' => gmdate('c'),
+                ],
+            ], allowDatabase: false),
+            $this->policy(),
+        );
+
+        self::assertSame('106.050000000000000000', $strategy->getRate());
+    }
+
     private function direction(string $from, string $to): DirectionExchange
     {
         $direction = new DirectionExchange();
@@ -87,6 +129,7 @@ final class IndependentRubCanonicalSourceTest extends TestCase
                 'SBERRUB' => [
                     'destination_codes' => ['SBERRUB'],
                     'decision' => 'APPROVE',
+                    'canonical_premium_percent' => 5,
                     'target_premium_max_percent' => 5,
                     'warning_premium_percent' => 6,
                     'hard_maximum_premium_percent' => 8,

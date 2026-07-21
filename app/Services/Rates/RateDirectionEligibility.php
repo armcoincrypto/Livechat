@@ -397,14 +397,14 @@ final class RateDirectionEligibility
                 return $empty;
             }
             if ($asset === 'USDT' || $asset === 'USDC') {
-                $q = $baseline->quote('USDRUB');
+                $q = $baseline->stableRub($asset);
 
                 return $q ? [
                     'rate' => $q['rate'],
                     'source' => $q['source'],
                     'source_type' => $q['source_type'] ?? null,
                     'provider' => $q['provider'] ?? null,
-                    'symbol' => $q['symbol'] ?? 'USDRUB',
+                    'symbol' => $q['symbol'] ?? ($asset . 'USD*USDRUB'),
                     'path' => 'stable_to_rub',
                     'age_seconds' => $q['age_seconds'] ?? null,
                     'circular_source_detected' => !empty($q['circular_source_detected']),

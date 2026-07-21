@@ -10,6 +10,7 @@ use App\Services\Rates\IndependentMarketBaseline;
 use iEXPackages\Courses\CoursesFacade;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class StatusRatesFilesCommand extends Command
@@ -31,19 +32,30 @@ class StatusRatesFilesCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle(): void
+    public function handle(): int
     {
+        $lock = Cache::lock('iex:rates:scheme-files:lock', 180);
+        if (!$lock->get()) {
+            $this->warn('scheme:files уже выполняется — пропуск');
+            return self::SUCCESS;
+        }
         $snapshot = IndependentMarketBaseline::beginSnapshot(purpose: 'export');
         Cache::put('rates:last_export_snapshot', $snapshot, now()->addDay());
 
         try {
-            if (!$this->updateCoursesFile()) {
-                throw new \RuntimeException('Canonical XML export failed; package generation aborted');
-            }
-            $this->updateExchangeDirections();
-            app(BestChangeRubRecoveryPackage::class)->generate();
+            DB::statement('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+            DB::transaction(function (): void {
+                if (!$this->updateCoursesFile()) {
+                    throw new \RuntimeException('Canonical XML export failed; package generation aborted');
+                }
+                $this->updateExchangeDirections();
+                app(BestChangeRubRecoveryPackage::class)->generate();
+            });
+
+            return self::SUCCESS;
         } finally {
             IndependentMarketBaseline::endSnapshot();
+            $lock->release();
         }
     }
 

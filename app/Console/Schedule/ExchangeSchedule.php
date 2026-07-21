@@ -198,7 +198,10 @@ class ExchangeSchedule
             ->appendOutputTo(storage_path('logs/compiler_bestchange.log'));
 
         // Проверка и обновление файлов курсов
-        $schedule->command('scheme:files')->{$compilerCoursesTime}();
+        $schedule->command('scheme:files')
+            ->{$compilerCoursesTime}()
+            ->onOneServer()
+            ->withoutOverlapping(5);
 
         // Read-only rate pipeline health (non-zero exit on critical conditions).
         $schedule->command('rates:health --format=json')

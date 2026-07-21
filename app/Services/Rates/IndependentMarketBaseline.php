@@ -224,6 +224,60 @@ final class IndependentMarketBaseline
     }
 
     /**
+     * Stablecoin→RUB baseline. USDT uses the operator-approved USD parity
+     * bridge; USDC must additionally use a fresh independent USDC/USDT quote.
+     *
+     * @return array<string,mixed>|null
+     */
+    public function stableRub(string $asset): ?array
+    {
+        $asset = strtoupper($asset);
+        $rub = $this->quote('USDRUB');
+        if ($rub === null || $rub['age_seconds'] > self::FIAT_MAX_AGE_SECONDS) {
+            return null;
+        }
+        if ($asset === 'USDT') {
+            return $rub + [
+                'path' => 'usdt_usd_approved_parity_to_rub',
+                'components' => [
+                    'usdt_usd_normalization' => [
+                        'rate' => '1',
+                        'source' => 'approved_policy_parity',
+                    ],
+                    'usd_rub' => $rub,
+                ],
+            ];
+        }
+        if ($asset !== 'USDC') {
+            return null;
+        }
+
+        $peg = $this->quote('USDCUSDT');
+        if ($peg === null || $peg['age_seconds'] > self::CRYPTO_MAX_AGE_SECONDS) {
+            return null;
+        }
+
+        return [
+            'rate' => bcmul($peg['rate'], $rub['rate'], self::SCALE),
+            'source' => $peg['source'] . '*' . $rub['source'],
+            'source_type' => 'INDEPENDENT_PRIMARY',
+            'provider' => implode(',', array_values(array_unique([
+                (string) $peg['provider'],
+                (string) $rub['provider'],
+            ]))),
+            'symbol' => 'USDCUSDT*USDRUB',
+            'as_of' => max($peg['as_of'], $rub['as_of']),
+            'age_seconds' => max($peg['age_seconds'], $rub['age_seconds']),
+            'circular_source_detected' => false,
+            'path' => 'usdc_usdt_to_rub',
+            'components' => [
+                'usdc_usdt' => $peg,
+                'usd_rub' => $rub,
+            ],
+        ];
+    }
+
+    /**
      * Bridged crypto→crypto baseline via USDT (never BestChange).
      * Orientation: destination units received per 1 source unit.
      *
@@ -373,8 +427,9 @@ final class IndependentMarketBaseline
                 $rows = DB::table('parser_exchange as parser')
                     ->join('group_parser_exchange as provider', 'provider.id', '=', 'parser.id_group')
                     ->where('parser.status', 1)
+                    ->where('parser.is_not_update', 0)
                     ->where('provider.status', 1)
-                    ->whereIn('provider.alias', self::APPROVED_PROVIDER_ALIASES)
+                    ->whereIn('provider.alias', $this->approvedProvidersForSymbol($symbol))
                     ->where('parser.code_in', $codeIn)
                     ->where('parser.code_out', $codeOut)
                     ->orderByDesc('parser.updated_at')
@@ -389,7 +444,11 @@ final class IndependentMarketBaseline
 
                 foreach ($rows as $row) {
                     $asOf = (string) ($row->updated_at ?? '');
-                    $age = $asOf !== '' ? max(0, time() - strtotime($asOf)) : PHP_INT_MAX;
+                    $timestamp = $asOf !== '' ? strtotime($asOf) : false;
+                    if ($timestamp === false || $timestamp > time() + 30) {
+                        continue;
+                    }
+                    $age = max(0, time() - $timestamp);
                     if ($age > $maxAge) {
                         continue;
                     }
@@ -423,7 +482,7 @@ final class IndependentMarketBaseline
             // With minSample=1, selector always accepts when at least one valid rate.
             // Prefer median when sample>=3 and reject if preferred outliers — here we use median.
             $sorted = $rates;
-            sort($sorted, SORT_STRING);
+            usort($sorted, static fn (string $a, string $b): int => bccomp($a, $b, self::SCALE));
             $count = count($sorted);
             $mid = intdiv($count, 2);
             $median = $count % 2 === 1
@@ -437,7 +496,7 @@ final class IndependentMarketBaseline
                 $hi = $sorted[$count - 1];
                 $divergence = bcdiv(bcsub($hi, $lo, self::SCALE), $median, self::SCALE);
                 if (bccomp($this->absBc($divergence), self::PROVIDER_DIVERGENCE_FRACTION, self::SCALE) === 1) {
-                    // Keep median but annotate; still usable for audit (do not auto-publish).
+                    return null;
                 }
             }
 
@@ -489,6 +548,21 @@ final class IndependentMarketBaseline
             'USDAMD' => [['USD', 'AMD']],
             default => [],
         };
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function approvedProvidersForSymbol(string $symbol): array
+    {
+        if (in_array($symbol, ['USDRUB', 'USDGEL', 'USDEUR', 'USDAMD'], true)) {
+            return ['russiancentralbank', 'floatrates'];
+        }
+
+        return array_values(array_intersect(
+            self::APPROVED_PROVIDER_ALIASES,
+            ['binance', 'whitebit', 'coinbase'],
+        ));
     }
 
     private function absBc(string $value): string

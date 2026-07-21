@@ -62,6 +62,12 @@ final class UpdateCoursesConsole extends Command
             $this->warn('Обновление курсов уже выполняется — пропуск');
             return self::SUCCESS;
         }
+        $directionWriteLock = Cache::lock('iex:direction-rates:write', 180);
+        if (!$directionWriteLock->get()) {
+            $lock->release();
+            $this->warn('Другой компилятор обновляет направления — пропуск');
+            return self::SUCCESS;
+        }
 
         $startedAt = microtime(true);
         $ownsSnapshot = IndependentMarketBaseline::currentSnapshot() === null;
@@ -136,6 +142,11 @@ final class UpdateCoursesConsole extends Command
         } finally {
             if ($ownsSnapshot) {
                 IndependentMarketBaseline::endSnapshot();
+            }
+            try {
+                $directionWriteLock->release();
+            } catch (Throwable) {
+                // Lock expires automatically.
             }
             try {
                 $lock->release();

@@ -47,7 +47,7 @@ final class IndependentRubStrategy implements StrategyInterface
 
             $baseline = $this->baseline ?? new IndependentMarketBaseline();
             $quote = in_array($asset, ['USDT', 'USDC'], true)
-                ? $baseline->quote('USDRUB')
+                ? $baseline->stableRub($asset)
                 : $baseline->cryptoRub($asset);
             if (
                 $quote === null

@@ -136,15 +136,36 @@ final class RubFamilyPremiumPolicy
     }
 
     /**
-     * Approved source-rate premium used before the existing calculator applies
-     * direction-specific profit and other configured adjustments.
+     * Exact operator-approved source-rate premium for canonical writes.
      *
-     * This does not mutate direction.profit and never exceeds the approved
-     * target-band ceiling.
+     * Target bands and ceilings are eligibility policy, not permission to
+     * choose a writable premium. Missing or out-of-band exact approval fails
+     * closed.
      */
     public function canonicalSourcePremiumPercent(string $toCode): ?float
     {
-        return $this->targetPremiumMaxPercent($toCode);
+        if (!$this->isApproved()) {
+            return null;
+        }
+        $family = $this->familyForDestination($toCode);
+        $raw = $family['canonical_premium_percent'] ?? null;
+        if (!is_numeric($raw)) {
+            return null;
+        }
+
+        $premium = (float) $raw;
+        $targetMin = $family['target_premium_min_percent'] ?? null;
+        $targetMax = $family['target_premium_max_percent'] ?? null;
+        $hardMax = $this->hardMaximumPremiumPercent($toCode);
+        if (
+            (is_numeric($targetMin) && $premium < (float) $targetMin)
+            || (is_numeric($targetMax) && $premium > (float) $targetMax)
+            || ($hardMax !== null && $premium > $hardMax)
+        ) {
+            return null;
+        }
+
+        return $premium;
     }
 
     public function hardMaximumPremiumPercent(string $toCode): ?float
