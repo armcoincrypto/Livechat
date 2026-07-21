@@ -1,0 +1,256 @@
+{
+  "probes": [
+    {
+      "probe": "unknown_blocked",
+      "direction_id": 128,
+      "rate_unavailable": true,
+      "error_code": "DIRECTION_TEMPORARILY_UNAVAILABLE",
+      "course_present": false,
+      "course_rate": null
+    },
+    {
+      "probe": "certified_allowed",
+      "direction_id": 15,
+      "rate_unavailable": false,
+      "error_code": null,
+      "course_present": true,
+      "course_rate": "81.951670930830091124"
+    },
+    {
+      "probe": "direction_status",
+      "result": {
+        "direction_id": 128,
+        "from": "DASH",
+        "to": "SBPRUB",
+        "quote_allowed": false,
+        "order_allowed": false,
+        "export_allowed": false,
+        "BestChange_allowed": false,
+        "eligible_for_quote": false,
+        "eligible_for_order": false,
+        "eligible_for_export": false,
+        "classification": "NO_BASELINE",
+        "baseline_status": "NO_BASELINE",
+        "policy_status": "approved",
+        "reserve_status": "adequate",
+        "mapping_status": {
+          "DASH": "VERIFIED",
+          "SBPRUB": "VERIFIED"
+        },
+        "parity_status": "not_evaluated",
+        "blocking_reasons": [
+          "rate_no_independent_baseline",
+          "no_independent_baseline",
+          "rub_family_no_baseline"
+        ],
+        "reasons": [
+          "rate_no_independent_baseline",
+          "no_independent_baseline",
+          "rub_family_no_baseline"
+        ],
+        "error_code": "DIRECTION_TEMPORARILY_UNAVAILABLE",
+        "course_value": "2778.7599999687667376",
+        "baseline_rate": null,
+        "baseline_source": null,
+        "baseline_age_seconds": null,
+        "raw_market_deviation": null,
+        "unexplained_vs_expected_percent": null,
+        "active": true,
+        "quarantined": false,
+        "deprecated": false,
+        "status": 1,
+        "allow_export": 0,
+        "rate_quarantine": {
+          "status": "EXPORT_BLOCKED_NO_BASELINE",
+          "allowed": false,
+          "reason": "no_independent_baseline"
+        },
+        "provider_status": "BestChange",
+        "rub_family_policy": {
+          "approved": true,
+          "approved_at": "2026-07-20T14:25:23Z",
+          "approved_by": "exswaping-operator-chat-approval",
+          "family_count": 8,
+          "version": 3,
+          "schema": "rub_family_premium_policy_v3"
+        },
+        "rub_family": "SBPRUB",
+        "rub_family_classification": "NO_BASELINE",
+        "economic_note": "crypto_rub_requires_independent_baseline"
+      }
+    },
+    {
+      "probe": "direction_status",
+      "result": {
+        "direction_id": 15,
+        "from": "USDTTRC20",
+        "to": "SBERRUB",
+        "quote_allowed": true,
+        "order_allowed": true,
+        "export_allowed": true,
+        "BestChange_allowed": true,
+        "eligible_for_quote": true,
+        "eligible_for_order": true,
+        "eligible_for_export": true,
+        "classification": "PASS_EXPLAINED_SPREAD",
+        "baseline_status": "OK",
+        "policy_status": "approved",
+        "reserve_status": "adequate",
+        "mapping_status": {
+          "USDTTRC20": "VERIFIED",
+          "SBERRUB": "VERIFIED"
+        },
+        "parity_status": "not_evaluated",
+        "blocking_reasons": [],
+        "reasons": [],
+        "error_code": null,
+        "course_value": "81.951670930830091124",
+        "baseline_rate": "78.315900000000000000",
+        "baseline_source": "parser_exchange:[russiancentralbank_usd-rub]",
+        "baseline_age_seconds": 22,
+        "raw_market_deviation": 4.642442,
+        "unexplained_vs_expected_percent": -0.35755800000000004,
+        "active": true,
+        "quarantined": false,
+        "deprecated": false,
+        "status": 1,
+        "allow_export": 0,
+        "rate_quarantine": {
+          "status": "EXPORT_ALLOWED",
+          "allowed": true,
+          "reason": null
+        },
+        "provider_status": "BestChange",
+        "rub_family_policy": {
+          "approved": true,
+          "approved_at": "2026-07-20T14:25:23Z",
+          "approved_by": "exswaping-operator-chat-approval",
+          "family_count": 8,
+          "version": 3,
+          "schema": "rub_family_premium_policy_v3"
+        },
+        "rub_family": "SBERRUB",
+        "rub_family_classification": "PASS_EXPLAINED_SPREAD",
+        "economic_note": null
+      }
+    },
+    {
+      "probe": "direction_status",
+      "result": {
+        "direction_id": 541,
+        "from": "ZEC",
+        "to": "SBPRUB",
+        "quote_allowed": true,
+        "order_allowed": true,
+        "export_allowed": true,
+        "BestChange_allowed": true,
+        "eligible_for_quote": true,
+        "eligible_for_order": true,
+        "eligible_for_export": true,
+        "classification": "PASS_EXPLAINED_SPREAD",
+        "baseline_status": "OK",
+        "policy_status": "approved",
+        "reserve_status": "adequate",
+        "mapping_status": {
+          "ZEC": "VERIFIED",
+          "SBPRUB": "VERIFIED"
+        },
+        "parity_status": "not_evaluated",
+        "blocking_reasons": [],
+        "reasons": [],
+        "error_code": null,
+        "course_value": "43655.963856043573841749",
+        "baseline_rate": "42478.544160000000000000",
+        "baseline_source": "parser_exchange:[binance_zec-usdt]*parser_exchange:[russiancentralbank_usd-rub]",
+        "baseline_age_seconds": 23,
+        "raw_market_deviation": 2.771798,
+        "unexplained_vs_expected_percent": -2.228202,
+        "active": true,
+        "quarantined": false,
+        "deprecated": false,
+        "status": 1,
+        "allow_export": 0,
+        "rate_quarantine": {
+          "status": "EXPORT_ALLOWED",
+          "allowed": true,
+          "reason": null
+        },
+        "provider_status": "BestChange",
+        "rub_family_policy": {
+          "approved": true,
+          "approved_at": "2026-07-20T14:25:23Z",
+          "approved_by": "exswaping-operator-chat-approval",
+          "family_count": 8,
+          "version": 3,
+          "schema": "rub_family_premium_policy_v3"
+        },
+        "rub_family": "SBPRUB",
+        "rub_family_classification": "PASS_EXPLAINED_SPREAD",
+        "economic_note": null
+      }
+    },
+    {
+      "probe": "direction_status",
+      "result": {
+        "direction_id": 540,
+        "from": "ZEC",
+        "to": "SBERRUB",
+        "quote_allowed": false,
+        "order_allowed": false,
+        "export_allowed": false,
+        "BestChange_allowed": false,
+        "eligible_for_quote": false,
+        "eligible_for_order": false,
+        "eligible_for_export": false,
+        "classification": "PASS_EXPLAINED_SPREAD",
+        "baseline_status": "OK",
+        "policy_status": "approved",
+        "reserve_status": "adequate",
+        "mapping_status": {
+          "ZEC": "VERIFIED",
+          "SBERRUB": "VERIFIED"
+        },
+        "parity_status": "not_evaluated",
+        "blocking_reasons": [
+          "quarantined_status0_allow_export2",
+          "direction_not_active",
+          "export_hard_disabled"
+        ],
+        "reasons": [
+          "quarantined_status0_allow_export2",
+          "direction_not_active",
+          "export_hard_disabled"
+        ],
+        "error_code": "DIRECTION_TEMPORARILY_UNAVAILABLE",
+        "course_value": "44517.921233869460447696",
+        "baseline_rate": "42478.544160000000000000",
+        "baseline_source": "parser_exchange:[binance_zec-usdt]*parser_exchange:[russiancentralbank_usd-rub]",
+        "baseline_age_seconds": 24,
+        "raw_market_deviation": 4.800958,
+        "unexplained_vs_expected_percent": -0.19904200000000039,
+        "active": false,
+        "quarantined": true,
+        "deprecated": false,
+        "status": 0,
+        "allow_export": 2,
+        "rate_quarantine": {
+          "status": "EXPORT_ALLOWED",
+          "allowed": true,
+          "reason": null
+        },
+        "provider_status": "BestChange",
+        "rub_family_policy": {
+          "approved": true,
+          "approved_at": "2026-07-20T14:25:23Z",
+          "approved_by": "exswaping-operator-chat-approval",
+          "family_count": 8,
+          "version": 3,
+          "schema": "rub_family_premium_policy_v3"
+        },
+        "rub_family": "SBERRUB",
+        "rub_family_classification": "PASS_EXPLAINED_SPREAD",
+        "economic_note": null
+      }
+    }
+  ]
+}

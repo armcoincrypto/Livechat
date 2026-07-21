@@ -46,6 +46,8 @@ final class RatesDeployVerifyCommand extends Command
         'tests/Unit/Rates/ZecSbpRateIncidentTest.php',
         'tests/Unit/Rates/TrustedBaselineRecoveryTest.php',
         'tests/Unit/Rates/RubFamilyPremiumPolicyTest.php',
+        'tests/Unit/Rates/RatePublicSurfaceGateTest.php',
+        'tests/Unit/Rates/BestChangePublicIdentityCanonicalizationTest.php',
     ];
 
     public function handle(): int

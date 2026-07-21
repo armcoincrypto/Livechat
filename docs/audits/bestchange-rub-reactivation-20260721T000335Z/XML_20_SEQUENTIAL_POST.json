@@ -1,0 +1,175 @@
+{
+  "requests": 20,
+  "ok": 20,
+  "timeouts": 0,
+  "zero_byte": 0,
+  "item_counts": [
+    740
+  ],
+  "hashes": [
+    "a2f3401ac3c6291c8814c575f0c6153a82a7d47e68b2344cf91047d31152e22e",
+    "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+  ],
+  "details": [
+    {
+      "attempt": 1,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 2,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 3,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 4,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 5,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 6,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 7,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 8,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 9,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 10,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 11,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 12,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 13,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 14,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 15,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 16,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 17,
+      "curl_exit": 0,
+      "bytes": 144188,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "cc1cf3b1d10cfd0e7f3cca62256535ae0b3b6b77807daeed40779a599e39e057"
+    },
+    {
+      "attempt": 18,
+      "curl_exit": 0,
+      "bytes": 144189,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "a2f3401ac3c6291c8814c575f0c6153a82a7d47e68b2344cf91047d31152e22e"
+    },
+    {
+      "attempt": 19,
+      "curl_exit": 0,
+      "bytes": 144189,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "a2f3401ac3c6291c8814c575f0c6153a82a7d47e68b2344cf91047d31152e22e"
+    },
+    {
+      "attempt": 20,
+      "curl_exit": 0,
+      "bytes": 144189,
+      "items": 740,
+      "valid_xml": true,
+      "sha256": "a2f3401ac3c6291c8814c575f0c6153a82a7d47e68b2344cf91047d31152e22e"
+    }
+  ]
+}

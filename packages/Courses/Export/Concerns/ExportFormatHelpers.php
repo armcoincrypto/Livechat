@@ -7,10 +7,7 @@ namespace iEXPackages\Courses\Export\Concerns;
 use App\Models\Currency;
 use App\Models\DirectionExchange;
 use App\Services\Rates\BestChangeMappingVerifier;
-use App\Services\Rates\IndependentMarketBaseline;
-use App\Services\Rates\RateConfiguredExpectation;
 use App\Services\Rates\RateExportQuarantine;
-use App\Services\Rates\RubFamilyPremiumPolicy;
 use Carbon\Carbon;
 use iEXPackages\Calculator\Traits\InteractsWithNumbers;
 use Illuminate\Support\Facades\Log;
@@ -43,6 +40,17 @@ trait ExportFormatHelpers
      */
     private ?int $exportMaxDecimals = null;
     private ?int $exportOperatorOnline = null;
+
+    /**
+     * Public BestChange identities already selected during this export pass.
+     *
+     * CARDAMD has multiple operational bank variants sharing one verified
+     * public code. The first otherwise-eligible direction (chunked by ID) is
+     * the deterministic canonical representative for that economic pair.
+     *
+     * @var array<string,int>
+     */
+    private array $canonicalPublicPairs = [];
 
     /**
      * Опционально: установить текущее время экспорта (для тестов/детерминизма).
@@ -142,6 +150,10 @@ trait ExportFormatHelpers
                 }
             }
 
+            if (!$this->claimCanonicalPublicPair($rate, $fromCode, $toCode)) {
+                return false;
+            }
+
             return true;
         } catch (Throwable $e) {
             Log::error('Ошибка проверки экспорта направления', [
@@ -154,17 +166,13 @@ trait ExportFormatHelpers
     }
 
     /**
-     * When an independent crypto→RUB baseline exists, refuse export on critical outliers.
-     * When the pair is crypto→RUB but no trusted baseline exists, fail closed.
-     * When RUB family premium policy is not operator-approved, fail closed for public export.
+     * Every RUB destination uses the canonical public-surface decision.
+     * Unknown source assets and missing/stale baselines therefore fail closed
+     * instead of bypassing policy evaluation.
      */
     protected function passesIndependentCryptoRubExportGate(DirectionExchange $rate, string $fromCode, string $toCode): bool
     {
         if (!$this->isRubDestination($toCode)) {
-            return true;
-        }
-        $asset = $this->cryptoAssetForExportBaseline($fromCode);
-        if ($asset === null) {
             return true;
         }
 
@@ -189,16 +197,39 @@ trait ExportFormatHelpers
         return str_contains($to, 'RUB') || str_ends_with($to, 'RUB');
     }
 
-    protected function cryptoAssetForExportBaseline(string $fromCode): ?string
+    protected function resetCanonicalPublicPairSelection(): void
     {
-        $from = strtoupper($fromCode);
-        foreach (['USDT', 'USDC', 'BTC', 'ETH', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC'] as $asset) {
-            if ($from === $asset || str_starts_with($from, $asset)) {
-                return $asset;
-            }
+        $this->canonicalPublicPairs = [];
+    }
+
+    /**
+     * Keep internal CARDAMD bank variants, but expose only one deterministic
+     * public BestChange identity for each normalized economic pair.
+     */
+    protected function claimCanonicalPublicPair(
+        DirectionExchange $rate,
+        string $fromCode,
+        string $toCode,
+    ): bool {
+        $from = strtoupper(trim($fromCode));
+        $to = strtoupper(trim($toCode));
+        if ($from !== 'CARDAMD' && $to !== 'CARDAMD') {
+            return true;
         }
 
-        return null;
+        $directionId = (int) ($rate->id ?? 0);
+        if ($directionId <= 0 || $from === '' || $to === '') {
+            return false;
+        }
+
+        $key = $from . "\0" . $to;
+        if (!array_key_exists($key, $this->canonicalPublicPairs)) {
+            $this->canonicalPublicPairs[$key] = $directionId;
+
+            return true;
+        }
+
+        return $this->canonicalPublicPairs[$key] === $directionId;
     }
 
     /**
