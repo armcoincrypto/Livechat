@@ -79,19 +79,28 @@ final class RateDirectionEligibility
         // Load full currency rows. Constraining columns to id,designation_xml
         // strips id_payment and poisons $currency->payment as a null relation,
         // which then 500s CurrencyResource during /rates/operations serialization.
-        $direction->loadMissing(['currency1', 'currency2']);
+        if (!$direction->relationLoaded('currency1') || !$direction->relationLoaded('currency2')) {
+            $direction->loadMissing(['currency1', 'currency2']);
+        }
         $from = strtoupper((string) ($direction->currency1?->designation_xml ?? ''));
         $to = strtoupper((string) ($direction->currency2?->designation_xml ?? ''));
         // Every RUB destination is policy-bound. An unknown source identity is
         // not an exemption: resolveBaseline() will return null and the policy
         // will classify it NO_BASELINE (fail closed on every public surface).
         $isRubDirection = str_contains($to, 'RUB');
+        $providerStatus = (string) ($direction->parser_source_name ?? '');
+        $circularSourceDetected = $isRubDirection
+            && str_contains(strtolower($providerStatus), 'bestchange');
 
         $baselineInfo = $isRubDirection ? $this->resolveBaseline($from, $to) : [
             'rate' => null,
             'source' => null,
+            'source_type' => null,
+            'provider' => null,
+            'symbol' => null,
             'path' => null,
             'age_seconds' => null,
+            'circular_source_detected' => false,
         ];
         $reserve = $this->resolveReserve($direction);
 
@@ -104,11 +113,12 @@ final class RateDirectionEligibility
             'deleted_at' => $direction->deleted_at,
             'from' => $from,
             'to' => $to,
-            'provider_status' => (string) ($direction->parser_source_name ?? ''),
+            'provider_status' => $providerStatus,
             'reserve_ok' => $reserve['ok'],
             'require_verified_export_mapping' => true,
             'baseline' => $baselineInfo['rate'],
             'require_independent_baseline' => $isRubDirection,
+            'force_block_reason' => $circularSourceDetected ? 'circular_source' : null,
         ]);
 
         $classification = null;
@@ -201,6 +211,8 @@ final class RateDirectionEligibility
                 : 'OK',
             'policy_status' => $policyStatus,
             'reserve_status' => $reserve['ok'] ? 'adequate' : 'inadequate_or_missing',
+            'reserve_value' => $reserve['value'],
+            'reserve_source' => $reserve['source'],
             'mapping_status' => $payload['mapping_status'],
             'parity_status' => 'not_evaluated',
             'blocking_reasons' => $reasons,
@@ -209,7 +221,14 @@ final class RateDirectionEligibility
             'course_value' => $payload['course_value'],
             'baseline_rate' => $baselineInfo['rate'],
             'baseline_source' => $baselineInfo['source'],
+            'baseline_source_type' => $baselineInfo['source_type'],
+            'baseline_provider' => $baselineInfo['provider'],
+            'baseline_symbol' => $baselineInfo['symbol'],
             'baseline_age_seconds' => $baselineInfo['age_seconds'],
+            'circular_source_detected' => $circularSourceDetected
+                || !empty($baselineInfo['circular_source_detected']),
+            'snapshot_id' => IndependentMarketBaseline::currentSnapshot()['id'] ?? null,
+            'snapshot_timestamp' => IndependentMarketBaseline::currentSnapshot()['captured_at'] ?? null,
             'raw_market_deviation' => $raw === null ? null : (float) $raw,
             'unexplained_vs_expected_percent' => $unexplained,
             'active' => $payload['active'],
@@ -357,11 +376,20 @@ final class RateDirectionEligibility
     }
 
     /**
-     * @return array{rate:?string,source:?string,path:?string,age_seconds:?int}
+     * @return array{rate:?string,source:?string,source_type:?string,provider:?string,symbol:?string,path:?string,age_seconds:?int,circular_source_detected:bool}
      */
     private function resolveBaseline(string $from, string $to): array
     {
-        $empty = ['rate' => null, 'source' => null, 'path' => null, 'age_seconds' => null];
+        $empty = [
+            'rate' => null,
+            'source' => null,
+            'source_type' => null,
+            'provider' => null,
+            'symbol' => null,
+            'path' => null,
+            'age_seconds' => null,
+            'circular_source_detected' => false,
+        ];
         try {
             $baseline = $this->baseline ?? new IndependentMarketBaseline();
             $asset = IndependentMarketBaseline::assetFromCode($from);
@@ -374,8 +402,12 @@ final class RateDirectionEligibility
                 return $q ? [
                     'rate' => $q['rate'],
                     'source' => $q['source'],
+                    'source_type' => $q['source_type'] ?? null,
+                    'provider' => $q['provider'] ?? null,
+                    'symbol' => $q['symbol'] ?? 'USDRUB',
                     'path' => 'stable_to_rub',
                     'age_seconds' => $q['age_seconds'] ?? null,
+                    'circular_source_detected' => !empty($q['circular_source_detected']),
                 ] : $empty;
             }
             $q = $baseline->cryptoRub($asset);
@@ -383,8 +415,12 @@ final class RateDirectionEligibility
             return $q ? [
                 'rate' => $q['rate'],
                 'source' => $q['source'],
+                'source_type' => $q['source_type'] ?? null,
+                'provider' => $q['provider'] ?? null,
+                'symbol' => $q['symbol'] ?? ($asset . 'USDT*USDRUB'),
                 'path' => 'crypto_to_rub',
                 'age_seconds' => $q['age_seconds'] ?? null,
+                'circular_source_detected' => !empty($q['circular_source_detected']),
             ] : $empty;
         } catch (Throwable) {
             return $empty;
