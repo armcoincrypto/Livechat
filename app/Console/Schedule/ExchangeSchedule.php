@@ -198,7 +198,10 @@ class ExchangeSchedule
             ->appendOutputTo(storage_path('logs/compiler_bestchange.log'));
 
         // Проверка и обновление файлов курсов
-        $schedule->command('scheme:files')->{$compilerCoursesTime}();
+        $schedule->command('scheme:files')
+            ->{$compilerCoursesTime}()
+            ->onOneServer()
+            ->withoutOverlapping(5);
 
         // Read-only rate pipeline health (non-zero exit on critical conditions).
         $schedule->command('rates:health --format=json')
@@ -206,6 +209,12 @@ class ExchangeSchedule
             ->onOneServer()
             ->withoutOverlapping(5)
             ->appendOutputTo(storage_path('logs/rates_health.log'));
+
+        $schedule->command('rates:rub-catalog-monitor --format=json')
+            ->everyFiveMinutes()
+            ->onOneServer()
+            ->withoutOverlapping(5)
+            ->appendOutputTo(storage_path('logs/rates_rub_catalog_monitor.log'));
 
         // Генерация минимальной и максимальной цены
         $schedule->command('compiler:generate_prices')->everyFiveMinutes();

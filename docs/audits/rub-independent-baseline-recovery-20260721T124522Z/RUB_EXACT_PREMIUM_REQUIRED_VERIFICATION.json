@@ -1,0 +1,1196 @@
+{
+    "schema": "rub_worktree_routing_verification_v1",
+    "generated_at_utc": "2026-07-21T13:23:55+00:00",
+    "snapshot": {
+        "id": "predeploy-routing-verification",
+        "captured_at": "2026-07-21T13:23:55+00:00",
+        "purpose": "rate_update"
+    },
+    "mutation": false,
+    "summary": {
+        "count": 69,
+        "export_allowed": 0,
+        "source_counts": {
+            "NO_CANONICAL_SOURCE": 69
+        },
+        "classification_counts": {
+            "NO_BASELINE": 69
+        },
+        "circular_count": 0
+    },
+    "directions": [
+        {
+            "direction_id": 14,
+            "pair": "BTC->SBERRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "BTCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 15,
+            "pair": "USDTTRC20->SBERRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 20,
+            "pair": "BTC->SBPRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "BTCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 21,
+            "pair": "BTC->ACRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "BTCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 25,
+            "pair": "USDTTRC20->ACRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 26,
+            "pair": "USDTTRC20->RFBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 27,
+            "pair": "USDTTRC20->TCSBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 28,
+            "pair": "USDTTRC20->TBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 108,
+            "pair": "USDTERC20->SBERRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 109,
+            "pair": "USDTERC20->SBPRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 110,
+            "pair": "USDTERC20->ACRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 111,
+            "pair": "USDTERC20->TCSBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 160,
+            "pair": "LTC->SBPRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,russiancentralbank",
+            "baseline_symbol": "LTCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 161,
+            "pair": "ETH->SBPRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "ETHUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 168,
+            "pair": "TRX->SBERRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "TRXUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 187,
+            "pair": "BTC->RFBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "BTCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 212,
+            "pair": "BTC->TCSBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "BTCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 214,
+            "pair": "BTC->TBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "BTCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 223,
+            "pair": "LTC->SBERRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,russiancentralbank",
+            "baseline_symbol": "LTCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 224,
+            "pair": "LTC->ACRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,russiancentralbank",
+            "baseline_symbol": "LTCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 225,
+            "pair": "LTC->TCSBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,russiancentralbank",
+            "baseline_symbol": "LTCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 226,
+            "pair": "LTC->RFBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,russiancentralbank",
+            "baseline_symbol": "LTCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 325,
+            "pair": "BNBBEP20->SBERRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "BNBUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 326,
+            "pair": "BNBBEP20->SBPRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "BNBUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 373,
+            "pair": "ETH->SBERRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "ETHUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 374,
+            "pair": "ETH->ACRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "ETHUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 375,
+            "pair": "ETH->TCSBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "ETHUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 376,
+            "pair": "ETH->RFBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "ETHUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 541,
+            "pair": "ZEC->SBPRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,russiancentralbank",
+            "baseline_symbol": "ZECUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 542,
+            "pair": "ZEC->ACRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,russiancentralbank",
+            "baseline_symbol": "ZECUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1011,
+            "pair": "BNBBEP20->TBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "BNBUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1029,
+            "pair": "USDTBEP20->SBPRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1030,
+            "pair": "USDTBEP20->TCSBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1056,
+            "pair": "USDTBEP20->SBERRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1057,
+            "pair": "USDTBEP20->ACRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1058,
+            "pair": "USDTBEP20->RFBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1059,
+            "pair": "USDTBEP20->TBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1070,
+            "pair": "USDTERC20->RFBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1071,
+            "pair": "USDTERC20->TBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1075,
+            "pair": "USDTSOL->SBERRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1076,
+            "pair": "USDTSOL->SBPRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1077,
+            "pair": "USDTSOL->ACRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1079,
+            "pair": "USDTSOL->TCSBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1080,
+            "pair": "USDTSOL->TBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1112,
+            "pair": "USDTTON->SBERRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1113,
+            "pair": "USDTTON->SBPRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1114,
+            "pair": "USDTTON->ACRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1115,
+            "pair": "USDTTON->RFBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1116,
+            "pair": "USDTTON->TCSBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1117,
+            "pair": "USDTTON->TBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1157,
+            "pair": "USDCERC20->SBERRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "whitebit,russiancentralbank",
+            "baseline_symbol": "USDCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1158,
+            "pair": "USDCERC20->SBPRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "whitebit,russiancentralbank",
+            "baseline_symbol": "USDCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1159,
+            "pair": "USDCERC20->ACRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "whitebit,russiancentralbank",
+            "baseline_symbol": "USDCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1160,
+            "pair": "USDCERC20->RFBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "whitebit,russiancentralbank",
+            "baseline_symbol": "USDCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1161,
+            "pair": "USDCERC20->TCSBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "whitebit,russiancentralbank",
+            "baseline_symbol": "USDCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1162,
+            "pair": "USDCERC20->TBRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "whitebit,russiancentralbank",
+            "baseline_symbol": "USDCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1305,
+            "pair": "USDTTRC20->CARDRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1306,
+            "pair": "USDTERC20->CARDRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1307,
+            "pair": "USDTBEP20->CARDRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1415,
+            "pair": "USDTTRC20->YAMRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1416,
+            "pair": "USDTERC20->YAMRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1417,
+            "pair": "USDTBEP20->YAMRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1418,
+            "pair": "USDTTON->YAMRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "russiancentralbank",
+            "baseline_symbol": "USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1419,
+            "pair": "BTC->YAMRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "BTCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1420,
+            "pair": "LTC->YAMRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,russiancentralbank",
+            "baseline_symbol": "LTCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1422,
+            "pair": "BNBBEP20->YAMRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "BNBUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1423,
+            "pair": "ETH->YAMRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "ETHUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1428,
+            "pair": "USDCERC20->YAMRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "whitebit,russiancentralbank",
+            "baseline_symbol": "USDCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        },
+        {
+            "direction_id": 1973,
+            "pair": "BTC->CARDRUB",
+            "source": null,
+            "projected_rate": "0",
+            "classification": "NO_BASELINE",
+            "export_allowed": false,
+            "baseline_provider": "binance,whitebit,russiancentralbank",
+            "baseline_symbol": "BTCUSDT*USDRUB",
+            "baseline_age_seconds": 20,
+            "circular_source_detected": false,
+            "reasons": [
+                "rate_non_positive_or_invalid_course",
+                "no_independent_baseline",
+                "rub_family_no_baseline"
+            ]
+        }
+    ]
+}

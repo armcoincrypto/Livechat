@@ -79,6 +79,25 @@ final class RatePublicSurfaceGateTest extends TestCase
         $this->assertTrue($eval['export_allowed']);
     }
 
+    public function testQuarantineAcceptsOnlyExplicitCanonicalRubTransformation(): void
+    {
+        $quarantine = new RateExportQuarantine();
+        $legacy = $quarantine->evaluate('104', [
+            'baseline' => '100',
+            'profit_percent' => '5',
+        ]);
+        $canonical = $quarantine->evaluate('104', [
+            'baseline' => '100',
+            'profit_percent' => '0',
+            'other_coefficient' => '1.04',
+        ]);
+
+        $this->assertFalse($legacy['allowed']);
+        $this->assertSame('unexplained_critical_deviation', $legacy['reason']);
+        $this->assertTrue($canonical['allowed']);
+        $this->assertSame('configured_spread_explains_deviation', $canonical['reason']);
+    }
+
     public function testErrorCodeConstantStable(): void
     {
         $this->assertSame(
@@ -130,6 +149,27 @@ final class RatePublicSurfaceGateTest extends TestCase
         $this->assertTrue($result['order_allowed']);
         $this->assertTrue($result['export_allowed']);
         $this->assertTrue($result['BestChange_allowed']);
+    }
+
+    public function testBestChangeDerivedCanonicalRubRateFailsClosed(): void
+    {
+        $direction = $this->direction('USDTTRC20', 'SBPRUB', '104');
+        $direction->setAttribute('parser_source_name', 'BestChange');
+        $result = $this->eligibility(
+            baseline: new IndependentMarketBaseline([
+                'USDRUB' => [
+                    'rate' => '100',
+                    'source' => 'test-usd-rub',
+                    'as_of' => gmdate('c'),
+                ],
+            ], false),
+        )->evaluateDirection($direction);
+
+        $this->assertTrue($result['circular_source_detected']);
+        $this->assertFalse($result['quote_allowed']);
+        $this->assertFalse($result['order_allowed']);
+        $this->assertFalse($result['export_allowed']);
+        $this->assertContains('rate_circular_source', $result['blocking_reasons']);
     }
 
     private function eligibility(IndependentMarketBaseline $baseline): RateDirectionEligibility

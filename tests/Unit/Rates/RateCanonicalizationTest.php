@@ -22,6 +22,16 @@ final class RateCanonicalizationTest extends TestCase
         $this->assertNotNull($q);
         $this->assertEqualsWithDelta(64000.0, (float)$q['rate'], 0.01);
     }
+    public function testExportSnapshotIdentityIsStableForOneCycle(): void
+    {
+        $started = IndependentMarketBaseline::beginSnapshot('snapshot-test', 'export');
+        $current = IndependentMarketBaseline::currentSnapshot();
+        $this->assertSame($started, $current);
+        $this->assertSame('snapshot-test', $current['id']);
+        $this->assertSame('export', $current['purpose']);
+        IndependentMarketBaseline::endSnapshot();
+        $this->assertNull(IndependentMarketBaseline::currentSnapshot());
+    }
     public function testCatalogDriftFixtureStillDetected(): void
     {
         $dir = sys_get_temp_dir().'/bc_drift_'.getmypid();

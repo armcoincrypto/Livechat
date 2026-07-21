@@ -19,6 +19,14 @@ use Throwable;
  */
 final class IndependentMarketBaseline
 {
+    private const APPROVED_PROVIDER_ALIASES = [
+        'binance',
+        'whitebit',
+        'coinbase',
+        'floatrates',
+        'russiancentralbank',
+    ];
+
     public const CRYPTO_MAX_AGE_SECONDS = 900; // 15m
 
     public const FIAT_MAX_AGE_SECONDS = 21600; // 6h
@@ -26,6 +34,12 @@ final class IndependentMarketBaseline
     public const PROVIDER_DIVERGENCE_FRACTION = '0.02'; // 2%
 
     public const SCALE = 18;
+
+    /** @var array<string,array<string,mixed>|null> */
+    private array $localQuoteCache = [];
+
+    /** @var array{id:string,captured_at:string,purpose:string,quotes:array<string,array<string,mixed>|null>}|null */
+    private static ?array $activeSnapshot = null;
 
     /**
      * @param array<string, array{rate:string, source:string, as_of:string}> $injected
@@ -35,6 +49,53 @@ final class IndependentMarketBaseline
         private readonly bool $allowDatabase = true,
         private readonly ?PeerRateSelector $selector = null,
     ) {
+    }
+
+    /**
+     * Start one process-local quote snapshot shared by calculator and eligibility instances.
+     *
+     * @return array{id:string,captured_at:string,purpose:string}
+     */
+    public static function beginSnapshot(?string $id = null, string $purpose = 'audit'): array
+    {
+        $capturedAt = gmdate('c');
+        self::$activeSnapshot = [
+            'id' => $id ?: sprintf(
+                'rub-%s-%s',
+                gmdate('Ymd\THis\Z'),
+                bin2hex(random_bytes(6)),
+            ),
+            'captured_at' => $capturedAt,
+            'purpose' => $purpose,
+            'quotes' => [],
+        ];
+
+        return [
+            'id' => self::$activeSnapshot['id'],
+            'captured_at' => $capturedAt,
+            'purpose' => $purpose,
+        ];
+    }
+
+    public static function endSnapshot(): void
+    {
+        self::$activeSnapshot = null;
+    }
+
+    /**
+     * @return array{id:string,captured_at:string,purpose:string}|null
+     */
+    public static function currentSnapshot(): ?array
+    {
+        if (self::$activeSnapshot === null) {
+            return null;
+        }
+
+        return [
+            'id' => self::$activeSnapshot['id'],
+            'captured_at' => self::$activeSnapshot['captured_at'],
+            'purpose' => self::$activeSnapshot['purpose'],
+        ];
     }
 
     /**
@@ -55,6 +116,10 @@ final class IndependentMarketBaseline
                 'age_seconds' => $age,
                 'sample_size' => 1,
                 'divergence' => null,
+                'source_type' => 'INDEPENDENT_PRIMARY',
+                'provider' => $q['source'],
+                'symbol' => $symbol,
+                'circular_source_detected' => false,
             ];
         }
 
@@ -62,7 +127,20 @@ final class IndependentMarketBaseline
             return null;
         }
 
-        return $this->fromParserExchange($symbol);
+        if (self::$activeSnapshot !== null && array_key_exists($symbol, self::$activeSnapshot['quotes'])) {
+            return self::$activeSnapshot['quotes'][$symbol];
+        }
+        if (array_key_exists($symbol, $this->localQuoteCache)) {
+            return $this->localQuoteCache[$symbol];
+        }
+
+        $quote = $this->fromParserExchange($symbol);
+        $this->localQuoteCache[$symbol] = $quote;
+        if (self::$activeSnapshot !== null) {
+            self::$activeSnapshot['quotes'][$symbol] = $quote;
+        }
+
+        return $quote;
     }
 
     /**
@@ -129,10 +207,71 @@ final class IndependentMarketBaseline
         return [
             'rate' => $rate,
             'source' => $crypto['source'] . '*' . $rub['source'],
+            'source_type' => 'INDEPENDENT_PRIMARY',
+            'provider' => implode(',', array_values(array_unique(array_filter([
+                $crypto['provider'] ?? null,
+                $rub['provider'] ?? null,
+            ])))),
+            'symbol' => $asset . 'USDT*USDRUB',
             'as_of' => max($crypto['as_of'], $rub['as_of']),
             'age_seconds' => max($crypto['age_seconds'], $rub['age_seconds']),
+            'circular_source_detected' => false,
             'components' => [
                 'crypto_usdt' => $crypto,
+                'usd_rub' => $rub,
+            ],
+        ];
+    }
+
+    /**
+     * Stablecoin→RUB baseline. USDT uses the operator-approved USD parity
+     * bridge; USDC must additionally use a fresh independent USDC/USDT quote.
+     *
+     * @return array<string,mixed>|null
+     */
+    public function stableRub(string $asset): ?array
+    {
+        $asset = strtoupper($asset);
+        $rub = $this->quote('USDRUB');
+        if ($rub === null || $rub['age_seconds'] > self::FIAT_MAX_AGE_SECONDS) {
+            return null;
+        }
+        if ($asset === 'USDT') {
+            return $rub + [
+                'path' => 'usdt_usd_approved_parity_to_rub',
+                'components' => [
+                    'usdt_usd_normalization' => [
+                        'rate' => '1',
+                        'source' => 'approved_policy_parity',
+                    ],
+                    'usd_rub' => $rub,
+                ],
+            ];
+        }
+        if ($asset !== 'USDC') {
+            return null;
+        }
+
+        $peg = $this->quote('USDCUSDT');
+        if ($peg === null || $peg['age_seconds'] > self::CRYPTO_MAX_AGE_SECONDS) {
+            return null;
+        }
+
+        return [
+            'rate' => bcmul($peg['rate'], $rub['rate'], self::SCALE),
+            'source' => $peg['source'] . '*' . $rub['source'],
+            'source_type' => 'INDEPENDENT_PRIMARY',
+            'provider' => implode(',', array_values(array_unique([
+                (string) $peg['provider'],
+                (string) $rub['provider'],
+            ]))),
+            'symbol' => 'USDCUSDT*USDRUB',
+            'as_of' => max($peg['as_of'], $rub['as_of']),
+            'age_seconds' => max($peg['age_seconds'], $rub['age_seconds']),
+            'circular_source_detected' => false,
+            'path' => 'usdc_usdt_to_rub',
+            'components' => [
+                'usdc_usdt' => $peg,
                 'usd_rub' => $rub,
             ],
         ];
@@ -285,17 +424,31 @@ final class IndependentMarketBaseline
 
             $quotes = [];
             foreach ($candidates as [$codeIn, $codeOut]) {
-                $rows = DB::table('parser_exchange')
-                    ->where('status', 1)
-                    ->where('code_in', $codeIn)
-                    ->where('code_out', $codeOut)
-                    ->orderByDesc('updated_at')
+                $rows = DB::table('parser_exchange as parser')
+                    ->join('group_parser_exchange as provider', 'provider.id', '=', 'parser.id_group')
+                    ->where('parser.status', 1)
+                    ->where('parser.is_not_update', 0)
+                    ->where('provider.status', 1)
+                    ->whereIn('provider.alias', $this->approvedProvidersForSymbol($symbol))
+                    ->where('parser.code_in', $codeIn)
+                    ->where('parser.code_out', $codeOut)
+                    ->orderByDesc('parser.updated_at')
                     ->limit(8)
-                    ->get(['id', 'code', 'summa', 'updated_at']);
+                    ->get([
+                        'parser.id',
+                        'parser.code',
+                        'parser.summa',
+                        'parser.updated_at',
+                        'provider.alias as provider_alias',
+                    ]);
 
                 foreach ($rows as $row) {
                     $asOf = (string) ($row->updated_at ?? '');
-                    $age = $asOf !== '' ? max(0, time() - strtotime($asOf)) : PHP_INT_MAX;
+                    $timestamp = $asOf !== '' ? strtotime($asOf) : false;
+                    if ($timestamp === false || $timestamp > time() + 30) {
+                        continue;
+                    }
+                    $age = max(0, time() - $timestamp);
                     if ($age > $maxAge) {
                         continue;
                     }
@@ -306,6 +459,7 @@ final class IndependentMarketBaseline
                     $quotes[] = [
                         'rate' => $rate,
                         'source' => 'parser_exchange:' . (string) ($row->code ?? $row->id),
+                        'provider' => strtolower((string) $row->provider_alias),
                         'as_of' => $asOf,
                         'age_seconds' => $age,
                     ];
@@ -328,7 +482,7 @@ final class IndependentMarketBaseline
             // With minSample=1, selector always accepts when at least one valid rate.
             // Prefer median when sample>=3 and reject if preferred outliers — here we use median.
             $sorted = $rates;
-            sort($sorted, SORT_STRING);
+            usort($sorted, static fn (string $a, string $b): int => bccomp($a, $b, self::SCALE));
             $count = count($sorted);
             $mid = intdiv($count, 2);
             $median = $count % 2 === 1
@@ -342,7 +496,7 @@ final class IndependentMarketBaseline
                 $hi = $sorted[$count - 1];
                 $divergence = bcdiv(bcsub($hi, $lo, self::SCALE), $median, self::SCALE);
                 if (bccomp($this->absBc($divergence), self::PROVIDER_DIVERGENCE_FRACTION, self::SCALE) === 1) {
-                    // Keep median but annotate; still usable for audit (do not auto-publish).
+                    return null;
                 }
             }
 
@@ -357,11 +511,15 @@ final class IndependentMarketBaseline
             return [
                 'rate' => $median,
                 'source' => $best['source'] . ($count > 1 ? '+median' : ''),
+                'source_type' => 'INDEPENDENT_PRIMARY',
+                'provider' => implode(',', array_values(array_unique(array_column($quotes, 'provider')))),
+                'symbol' => $symbol,
                 'as_of' => $best['as_of'],
                 'age_seconds' => min(array_column($quotes, 'age_seconds')),
                 'sample_size' => $count,
                 'divergence' => $divergence,
                 'selection_reason' => $selection['reason'] ?? 'median',
+                'circular_source_detected' => false,
             ];
         } catch (Throwable) {
             return null;
@@ -390,6 +548,21 @@ final class IndependentMarketBaseline
             'USDAMD' => [['USD', 'AMD']],
             default => [],
         };
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function approvedProvidersForSymbol(string $symbol): array
+    {
+        if (in_array($symbol, ['USDRUB', 'USDGEL', 'USDEUR', 'USDAMD'], true)) {
+            return ['russiancentralbank', 'floatrates'];
+        }
+
+        return array_values(array_intersect(
+            self::APPROVED_PROVIDER_ALIASES,
+            ['binance', 'whitebit', 'coinbase'],
+        ));
     }
 
     private function absBc(string $value): string

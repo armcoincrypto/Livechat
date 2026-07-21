@@ -135,6 +135,39 @@ final class RubFamilyPremiumPolicy
         return is_numeric($v) ? (float) $v : null;
     }
 
+    /**
+     * Exact operator-approved source-rate premium for canonical writes.
+     *
+     * Target bands and ceilings are eligibility policy, not permission to
+     * choose a writable premium. Missing or out-of-band exact approval fails
+     * closed.
+     */
+    public function canonicalSourcePremiumPercent(string $toCode): ?float
+    {
+        if (!$this->isApproved()) {
+            return null;
+        }
+        $family = $this->familyForDestination($toCode);
+        $raw = $family['canonical_premium_percent'] ?? null;
+        if (!is_numeric($raw)) {
+            return null;
+        }
+
+        $premium = (float) $raw;
+        $targetMin = $family['target_premium_min_percent'] ?? null;
+        $targetMax = $family['target_premium_max_percent'] ?? null;
+        $hardMax = $this->hardMaximumPremiumPercent($toCode);
+        if (
+            (is_numeric($targetMin) && $premium < (float) $targetMin)
+            || (is_numeric($targetMax) && $premium > (float) $targetMax)
+            || ($hardMax !== null && $premium > $hardMax)
+        ) {
+            return null;
+        }
+
+        return $premium;
+    }
+
     public function hardMaximumPremiumPercent(string $toCode): ?float
     {
         $family = $this->familyForDestination($toCode);
@@ -230,10 +263,11 @@ final class RubFamilyPremiumPolicy
             return $base;
         }
 
-        $base['expected_premium_percent'] = $targetMax;
-        // Policy expected commercial rate sits at target-band top (ceiling for "explained"),
-        // not at hard maximum and not an automatic markup applied to storage.
-        $unexplained = $rawPremiumVsMidPercent - $targetMax;
+        $expectedPremium = $this->canonicalSourcePremiumPercent($toCode) ?? $targetMax;
+        $base['expected_premium_percent'] = $expectedPremium;
+        // Exact operator approval is the expected commercial premium when
+        // present; target-band top remains the legacy audit-only fallback.
+        $unexplained = $rawPremiumVsMidPercent - $expectedPremium;
         $base['unexplained_vs_expected_percent'] = $unexplained;
 
         if ($rawPremiumVsMidPercent - $hardMax > 1e-9) {

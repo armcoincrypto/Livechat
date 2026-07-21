@@ -102,6 +102,13 @@ final class RateConfiguredExpectation
             }
         }
 
+        if ($otherCoefficient !== null && is_numeric($otherCoefficient)) {
+            $coefficient = $this->num($otherCoefficient);
+            if (bccomp($coefficient, '0', self::SCALE) === 1) {
+                $expected = bcmul($expected, $coefficient, self::SCALE);
+            }
+        }
+
         // Fixed commission cannot be applied without a notional amount; record only.
         $breakdown['expected_final_rate'] = $this->guard->normalize($expected);
         $expected = $breakdown['expected_final_rate'];

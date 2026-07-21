@@ -1,0 +1,627 @@
+{
+    "generated_at_utc": "2026-07-21T13:18:15+00:00",
+    "count": 69,
+    "rows": [
+        {
+            "id": 14,
+            "course_value": "5576685.766636963453734112",
+            "exchange_rate": "1 BTC = 5 576 685.7666 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 15,
+            "course_value": "83.783303979697629779",
+            "exchange_rate": "1 USDT = 83.7833 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 20,
+            "course_value": "5543176.794898315064108156",
+            "exchange_rate": "1 BTC = 5 543 176.79 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 21,
+            "course_value": "5495641.386207943281903335",
+            "exchange_rate": "1 BTC = 5 495 641.3862 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 25,
+            "course_value": "84.308314026250236656",
+            "exchange_rate": "1 USDT = 84.3083 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 26,
+            "course_value": "83.467145175912533866",
+            "exchange_rate": "1 USDT = 83.4671 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 27,
+            "course_value": "83.88451823764195759",
+            "exchange_rate": "1 USDT = 83.8845 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 28,
+            "course_value": "84.338260718814116349",
+            "exchange_rate": "1 USDT = 84.3383 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 108,
+            "course_value": "83.620052980651992141",
+            "exchange_rate": "1 USDT = 83.6201 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 109,
+            "course_value": "83.642427022599180072",
+            "exchange_rate": "1 USDT = 83.64 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 110,
+            "course_value": "83.531551316795438428",
+            "exchange_rate": "1 USDT = 83.5316 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 111,
+            "course_value": "84.33882219552380135",
+            "exchange_rate": "1 USDT = 84.3388 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 160,
+            "course_value": "3988.801099471858642071",
+            "exchange_rate": "1 LTC = 3 988.8 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 161,
+            "course_value": "161799.945408407179301682",
+            "exchange_rate": "1 ETH = 161 799.95 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 168,
+            "course_value": "27.086100002953278741",
+            "exchange_rate": "1 TRX = 27.0861 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 187,
+            "course_value": "5508489.621683581529744992",
+            "exchange_rate": "1 BTC = 5 508 489.6217 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 212,
+            "course_value": "5576655.765183898457789176",
+            "exchange_rate": "1 BTC = 5 576 655.7652 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 214,
+            "course_value": "5493753.170287009168987239",
+            "exchange_rate": "1 BTC = 5 493 753.1703 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 223,
+            "course_value": "3987.788499943663913693",
+            "exchange_rate": "1 LTC = 3 987.7885 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 224,
+            "course_value": "3933.519299243064817532",
+            "exchange_rate": "1 LTC = 3 933.5193 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 225,
+            "course_value": "3992.715099650363129253",
+            "exchange_rate": "1 LTC = 3 992.7151 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 226,
+            "course_value": "3934.339999610964592158",
+            "exchange_rate": "1 LTC = 3 934.34 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 325,
+            "course_value": "47732.50530661712489575",
+            "exchange_rate": "1 BNB = 47 732.5053 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 326,
+            "course_value": "47581.143822805433733698",
+            "exchange_rate": "1 BNB = 47 581.14 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 373,
+            "course_value": "161798.945603905108936194",
+            "exchange_rate": "1 ETH = 161 798.9456 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 374,
+            "course_value": "160311.926199380060283122",
+            "exchange_rate": "1 ETH = 160 311.9262 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 375,
+            "course_value": "162069.619787266713685083",
+            "exchange_rate": "1 ETH = 162 069.6198 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 376,
+            "course_value": "160650.578989915856002866",
+            "exchange_rate": "1 ETH = 160 650.579 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 541,
+            "course_value": "44612.940004037801206121",
+            "exchange_rate": "1 ZEC = 44 612.94 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 542,
+            "course_value": "44481.488964536471483282",
+            "exchange_rate": "1 ZEC = 44 481.489 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1011,
+            "course_value": "47584.388215655262485756",
+            "exchange_rate": "1 BNB = 47 584.3882 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1029,
+            "course_value": "84.120194477908782313",
+            "exchange_rate": "1 USDT = 84.12 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1030,
+            "course_value": "84.353478097382511575",
+            "exchange_rate": "1 USDT = 84.3535 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1056,
+            "course_value": "84.264811377183643562",
+            "exchange_rate": "1 USDT = 84.2648 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1057,
+            "course_value": "84.070728840778140553",
+            "exchange_rate": "1 USDT = 84.0707 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1058,
+            "course_value": "83.467045531037251856",
+            "exchange_rate": "1 USDT = 83.467 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1059,
+            "course_value": "83.60443202473353517",
+            "exchange_rate": "1 USDT = 83.6044 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1070,
+            "course_value": "83.462660204263668315",
+            "exchange_rate": "1 USDT = 83.4627 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1071,
+            "course_value": "83.593764101731394042",
+            "exchange_rate": "1 USDT = 83.5938 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1075,
+            "course_value": "83.124874989609390626",
+            "exchange_rate": "1 USDT = 83.1249 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1076,
+            "course_value": "82.137180004428836746",
+            "exchange_rate": "1 USDT = 82.14 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1077,
+            "course_value": "82.956382001961088871",
+            "exchange_rate": "1 USDT = 82.9564 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1079,
+            "course_value": "82.136195024855233976",
+            "exchange_rate": "1 USDT = 82.1362 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1080,
+            "course_value": "82.049623382316081075",
+            "exchange_rate": "1 USDT = 82.0496 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1112,
+            "course_value": "82.050303026596441626",
+            "exchange_rate": "1 USDT = 82.0503 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1113,
+            "course_value": "82.050303026596441626",
+            "exchange_rate": "1 USDT = 82.05 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1114,
+            "course_value": "81.957023490844908734",
+            "exchange_rate": "1 USDT = 81.957 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1115,
+            "course_value": "82.050204469276136836",
+            "exchange_rate": "1 USDT = 82.0502 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1116,
+            "course_value": "82.050303026596441626",
+            "exchange_rate": "1 USDT = 82.0503 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1117,
+            "course_value": "82.049623382316081075",
+            "exchange_rate": "1 USDT = 82.0496 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1157,
+            "course_value": "83.399947333393338912",
+            "exchange_rate": "1 USDC = 83.3999 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1158,
+            "course_value": "83.463057415772514739",
+            "exchange_rate": "1 USDC = 83.46 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1159,
+            "course_value": "82.311223328984086448",
+            "exchange_rate": "1 USDC = 82.3112 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1160,
+            "course_value": "82.8143892564675191",
+            "exchange_rate": "1 USDC = 82.8144 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1161,
+            "course_value": "83.640822486130260611",
+            "exchange_rate": "1 USDC = 83.6408 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1162,
+            "course_value": "82.845714977482534669",
+            "exchange_rate": "1 USDC = 82.8457 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:57"
+        },
+        {
+            "id": 1305,
+            "course_value": "80.315565029012230924",
+            "exchange_rate": "1 USDT = 80.3156 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:58"
+        },
+        {
+            "id": 1306,
+            "course_value": "80.315763571872706731",
+            "exchange_rate": "1 USDT = 80.3158 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:58"
+        },
+        {
+            "id": 1307,
+            "course_value": "80.315763571872706731",
+            "exchange_rate": "1 USDT = 80.3158 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:58"
+        },
+        {
+            "id": 1415,
+            "course_value": "82.336445515836180248",
+            "exchange_rate": "1 USDT = 82.3364 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:58"
+        },
+        {
+            "id": 1416,
+            "course_value": "81.43792852017901568",
+            "exchange_rate": "1 USDT = 81.4379 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:58"
+        },
+        {
+            "id": 1417,
+            "course_value": "81.375183968637353097",
+            "exchange_rate": "1 USDT = 81.3752 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:58"
+        },
+        {
+            "id": 1418,
+            "course_value": "82.336445515836180248",
+            "exchange_rate": "1 USDT = 82.3364 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:58"
+        },
+        {
+            "id": 1419,
+            "course_value": "5489799.951689760425130108",
+            "exchange_rate": "1 BTC = 5 489 799.9517 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:58"
+        },
+        {
+            "id": 1420,
+            "course_value": "3927.932299836892689807",
+            "exchange_rate": "1 LTC = 3 927.9323 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:58"
+        },
+        {
+            "id": 1422,
+            "course_value": "47222.295003584396496673",
+            "exchange_rate": "1 BNB = 47 222.295 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:58"
+        },
+        {
+            "id": 1423,
+            "course_value": "160057.928190980148045737",
+            "exchange_rate": "1 ETH = 160 057.9282 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:58"
+        },
+        {
+            "id": 1428,
+            "course_value": "82.054595518113962234",
+            "exchange_rate": "1 USDC = 82.0546 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:58"
+        },
+        {
+            "id": 1973,
+            "course_value": "5329877.1093788141933064",
+            "exchange_rate": "1 BTC = 5 329 877.1094 RUB",
+            "is_error_rate": 0,
+            "error_rate_text": null,
+            "parser_source_name": "BestChange",
+            "updated_at": "2026-07-21 16:17:58"
+        }
+    ]
+}

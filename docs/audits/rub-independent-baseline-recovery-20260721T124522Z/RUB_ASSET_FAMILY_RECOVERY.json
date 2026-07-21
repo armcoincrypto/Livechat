@@ -1,0 +1,147 @@
+{
+    "schema": "rub_asset_family_recovery_v1",
+    "generated_at_utc": "2026-07-21T13:15:30+00:00",
+    "families": {
+        "BNB": {
+            "directions": [
+                325,
+                326,
+                1011,
+                1422
+            ],
+            "affected_count": 4,
+            "old_source": "BESTCHANGE_DERIVED",
+            "new_provider": "binance,whitebit,russiancentralbank",
+            "new_symbol": "BNBUSDT*USDRUB",
+            "classification": "PASS_EXPLAINED_SPREAD"
+        },
+        "BTC": {
+            "directions": [
+                14,
+                20,
+                21,
+                187,
+                212,
+                214,
+                1419,
+                1973
+            ],
+            "affected_count": 8,
+            "old_source": "BESTCHANGE_DERIVED",
+            "new_provider": "binance,whitebit,russiancentralbank",
+            "new_symbol": "BTCUSDT*USDRUB",
+            "classification": "PASS_EXPLAINED_SPREAD"
+        },
+        "ETH": {
+            "directions": [
+                161,
+                373,
+                374,
+                375,
+                376,
+                1423
+            ],
+            "affected_count": 6,
+            "old_source": "BESTCHANGE_DERIVED",
+            "new_provider": "binance,whitebit,russiancentralbank",
+            "new_symbol": "ETHUSDT*USDRUB",
+            "classification": "PASS_EXPLAINED_SPREAD"
+        },
+        "LTC": {
+            "directions": [
+                160,
+                223,
+                224,
+                225,
+                226,
+                1420
+            ],
+            "affected_count": 6,
+            "old_source": "BESTCHANGE_DERIVED",
+            "new_provider": "binance,russiancentralbank",
+            "new_symbol": "LTCUSDT*USDRUB",
+            "classification": "PASS_EXPLAINED_SPREAD"
+        },
+        "TRX": {
+            "directions": [
+                168
+            ],
+            "affected_count": 1,
+            "old_source": "BESTCHANGE_DERIVED",
+            "new_provider": "binance,whitebit,russiancentralbank",
+            "new_symbol": "TRXUSDT*USDRUB",
+            "classification": "PASS_EXPLAINED_SPREAD"
+        },
+        "USDC": {
+            "directions": [
+                1157,
+                1158,
+                1159,
+                1160,
+                1161,
+                1162,
+                1428
+            ],
+            "affected_count": 7,
+            "old_source": "BESTCHANGE_DERIVED",
+            "new_provider": "russiancentralbank",
+            "new_symbol": "USDRUB",
+            "classification": "PASS_EXPLAINED_SPREAD"
+        },
+        "USDT": {
+            "directions": [
+                15,
+                25,
+                26,
+                27,
+                28,
+                108,
+                109,
+                110,
+                111,
+                1029,
+                1030,
+                1056,
+                1057,
+                1058,
+                1059,
+                1070,
+                1071,
+                1075,
+                1076,
+                1077,
+                1079,
+                1080,
+                1112,
+                1113,
+                1114,
+                1115,
+                1116,
+                1117,
+                1305,
+                1306,
+                1307,
+                1415,
+                1416,
+                1417,
+                1418
+            ],
+            "affected_count": 35,
+            "old_source": "BESTCHANGE_DERIVED",
+            "new_provider": "russiancentralbank",
+            "new_symbol": "USDRUB",
+            "classification": "PASS_EXPLAINED_SPREAD"
+        },
+        "ZEC": {
+            "directions": [
+                541,
+                542
+            ],
+            "affected_count": 2,
+            "old_source": "BESTCHANGE_DERIVED",
+            "new_provider": "binance,russiancentralbank",
+            "new_symbol": "ZECUSDT*USDRUB",
+            "classification": "PASS_EXPLAINED_SPREAD"
+        }
+    }
+}
