@@ -34,11 +34,14 @@ final class DirectionExchangeRecalculateService
             ->whereHas('bestchange_directions', static fn ($q) => $q->where('status', 1))
             ->with([
 
-                'currency1:id,number_format,id_payment,id_code_currency',
+                // Load complete currency rows. Calculator source selection
+                // requires designation_xml; a constrained relation is marked
+                // loaded and therefore cannot recover the omitted attribute.
+                'currency1',
                 'currency1.payment:id,name',
                 'currency1.code_currency:id,name,sign',
 
-                'currency2:id,number_format,id_payment,id_code_currency',
+                'currency2',
                 'currency2.payment:id,name',
                 'currency2.code_currency:id,name,sign',
 
