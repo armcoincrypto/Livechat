@@ -41,16 +41,8 @@ trait ExportFormatHelpers
     private ?int $exportMaxDecimals = null;
     private ?int $exportOperatorOnline = null;
 
-    /**
-     * Public BestChange identities already selected during this export pass.
-     *
-     * CARDAMD has multiple operational bank variants sharing one verified
-     * public code. The first otherwise-eligible direction (chunked by ID) is
-     * the deterministic canonical representative for that economic pair.
-     *
-     * @var array<string,int>
-     */
-    private array $canonicalPublicPairs = [];
+    /** @var array<string,int>|null */
+    private ?array $canonicalPublicDirections = null;
 
     /**
      * Опционально: установить текущее время экспорта (для тестов/детерминизма).
@@ -102,15 +94,16 @@ trait ExportFormatHelpers
             // Prevents TON (ABSENT; ID 209 is GRAM) and Payeer PR* from public feeds.
             $fromCode = strtoupper((string) ($rate->currency1->designation_xml ?? ''));
             $toCode = strtoupper((string) ($rate->currency2->designation_xml ?? ''));
-            if ($fromCode !== '' && !$this->isExportMappingAllowed($fromCode)) {
-                return false;
-            }
             if ($toCode !== '' && !$this->isExportMappingAllowed($toCode)) {
                 return false;
             }
 
-            // Crypto→RUB: one canonical eligibility decision (same as API/order).
+            // Every verified RUB destination reaches canonical eligibility
+            // before an unknown source mapping can reject the export.
             if (!$this->passesIndependentCryptoRubExportGate($rate, $fromCode, $toCode)) {
+                return false;
+            }
+            if ($fromCode !== '' && !$this->isExportMappingAllowed($fromCode)) {
                 return false;
             }
 
@@ -199,12 +192,12 @@ trait ExportFormatHelpers
 
     protected function resetCanonicalPublicPairSelection(): void
     {
-        $this->canonicalPublicPairs = [];
+        $this->canonicalPublicDirections = null;
     }
 
     /**
-     * Keep internal CARDAMD bank variants, but expose only one deterministic
-     * public BestChange identity for each normalized economic pair.
+     * Keep internal CARDAMD bank variants, but expose only the explicitly
+     * approved direction for each normalized public pair.
      */
     protected function claimCanonicalPublicPair(
         DirectionExchange $rate,
@@ -222,14 +215,57 @@ trait ExportFormatHelpers
             return false;
         }
 
-        $key = $from . "\0" . $to;
-        if (!array_key_exists($key, $this->canonicalPublicPairs)) {
-            $this->canonicalPublicPairs[$key] = $directionId;
+        $key = $from . '->' . $to;
+        $selected = $this->canonicalPublicDirectionMap()[$key] ?? null;
+        if ($selected === null) {
+            static $loggedMissing = [];
+            if (!isset($loggedMissing[$key])) {
+                $loggedMissing[$key] = true;
+                Log::warning('canonical_public_direction_missing', [
+                    'pair' => $key,
+                    'direction_exchange_id' => $directionId,
+                ]);
+            }
 
-            return true;
+            return false;
         }
 
-        return $this->canonicalPublicPairs[$key] === $directionId;
+        return $selected === $directionId;
+    }
+
+    /**
+     * @return array<string,int>
+     */
+    private function canonicalPublicDirectionMap(): array
+    {
+        if ($this->canonicalPublicDirections !== null) {
+            return $this->canonicalPublicDirections;
+        }
+
+        $path = $this->canonicalPublicDirectionsPath();
+        if (!is_file($path)) {
+            return $this->canonicalPublicDirections = [];
+        }
+
+        $config = json_decode((string) file_get_contents($path), true);
+        $configured = $config['identities']['CARDAMD']['direction_ids_by_pair'] ?? [];
+        if (!is_array($configured)) {
+            return $this->canonicalPublicDirections = [];
+        }
+
+        $out = [];
+        foreach ($configured as $pair => $id) {
+            if (is_string($pair) && is_numeric($id) && (int) $id > 0) {
+                $out[strtoupper(trim($pair))] = (int) $id;
+            }
+        }
+
+        return $this->canonicalPublicDirections = $out;
+    }
+
+    protected function canonicalPublicDirectionsPath(): string
+    {
+        return base_path('resources/rates/bestchange-public-directions.json');
     }
 
     /**

@@ -30,7 +30,7 @@ The exact 32-row set is in `RUB_UNSUPPORTED_INVENTORY_BEFORE.json`: DASH 7, XMR 
 
 ## CARDAMD
 
-Eight bank-specific currency records (IDs `52–58, 71`) remain intact. Public code `CARDAMD` is verified. During each ordered export pass, the first otherwise-eligible internal direction claims the normalized public pair; later bank variants are suppressed from XML. No currency, direction, mapping, reserve, or historical-order row was changed.
+Eight bank-specific currency records (IDs `52–58, 71`) remain intact. Public code `CARDAMD` is verified. The 13 public pairs use the explicit, versioned direction selection in `resources/rates/bestchange-public-directions.json`, chosen by historical usage with deterministic immutable-ID ties. Unconfigured CARDAMD pairs fail closed. No currency, direction, mapping, reserve, or historical-order row was changed.
 
 ## Delivery and safety
 

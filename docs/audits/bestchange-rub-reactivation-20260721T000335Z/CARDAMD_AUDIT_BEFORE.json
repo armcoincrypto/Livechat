@@ -108,19 +108,19 @@
     }
   ],
   "canonical_public_direction_ids": {
-    "USDTTRC20→CARDAMD": 81,
-    "USDTSOL→CARDAMD": 180,
-    "ETC→CARDAMD": 181,
-    "DASH→CARDAMD": 303,
-    "USDTERC20→CARDAMD": 357,
-    "ETH→CARDAMD": 401,
-    "ZEC→CARDAMD": 832,
-    "BTC→CARDAMD": 967,
-    "LTC→CARDAMD": 968,
-    "BNBBEP20→CARDAMD": 1013,
-    "USDTBEP20→CARDAMD": 1049,
-    "USDTTON→CARDAMD": 1128,
-    "USDCERC20→CARDAMD": 1163
+    "BNBBEP20->CARDAMD": 1018,
+    "BTC->CARDAMD": 967,
+    "DASH->CARDAMD": 307,
+    "ETC->CARDAMD": 181,
+    "ETH->CARDAMD": 402,
+    "LTC->CARDAMD": 968,
+    "USDCERC20->CARDAMD": 1168,
+    "USDTBEP20->CARDAMD": 1049,
+    "USDTERC20->CARDAMD": 361,
+    "USDTSOL->CARDAMD": 180,
+    "USDTTON->CARDAMD": 1128,
+    "USDTTRC20->CARDAMD": 81,
+    "ZEC->CARDAMD": 832
   },
   "directions": [
     {
@@ -396,8 +396,8 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 303,
-      "canonical_public_selected": true
+      "canonical_public_direction_id": 307,
+      "canonical_public_selected": false
     },
     {
       "direction_id": 304,
@@ -419,7 +419,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 303,
+      "canonical_public_direction_id": 307,
       "canonical_public_selected": false
     },
     {
@@ -442,7 +442,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 303,
+      "canonical_public_direction_id": 307,
       "canonical_public_selected": false
     },
     {
@@ -465,7 +465,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 303,
+      "canonical_public_direction_id": 307,
       "canonical_public_selected": false
     },
     {
@@ -488,8 +488,8 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 303,
-      "canonical_public_selected": false
+      "canonical_public_direction_id": 307,
+      "canonical_public_selected": true
     },
     {
       "direction_id": 308,
@@ -511,7 +511,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 303,
+      "canonical_public_direction_id": 307,
       "canonical_public_selected": false
     },
     {
@@ -534,8 +534,8 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 357,
-      "canonical_public_selected": true
+      "canonical_public_direction_id": 361,
+      "canonical_public_selected": false
     },
     {
       "direction_id": 358,
@@ -557,7 +557,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 357,
+      "canonical_public_direction_id": 361,
       "canonical_public_selected": false
     },
     {
@@ -580,7 +580,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 357,
+      "canonical_public_direction_id": 361,
       "canonical_public_selected": false
     },
     {
@@ -603,7 +603,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 357,
+      "canonical_public_direction_id": 361,
       "canonical_public_selected": false
     },
     {
@@ -626,8 +626,8 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 357,
-      "canonical_public_selected": false
+      "canonical_public_direction_id": 361,
+      "canonical_public_selected": true
     },
     {
       "direction_id": 362,
@@ -649,7 +649,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 357,
+      "canonical_public_direction_id": 361,
       "canonical_public_selected": false
     },
     {
@@ -672,7 +672,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 357,
+      "canonical_public_direction_id": 361,
       "canonical_public_selected": false
     },
     {
@@ -695,8 +695,8 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 401,
-      "canonical_public_selected": true
+      "canonical_public_direction_id": 402,
+      "canonical_public_selected": false
     },
     {
       "direction_id": 402,
@@ -718,8 +718,8 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 401,
-      "canonical_public_selected": false
+      "canonical_public_direction_id": 402,
+      "canonical_public_selected": true
     },
     {
       "direction_id": 403,
@@ -741,7 +741,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 401,
+      "canonical_public_direction_id": 402,
       "canonical_public_selected": false
     },
     {
@@ -764,7 +764,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 401,
+      "canonical_public_direction_id": 402,
       "canonical_public_selected": false
     },
     {
@@ -787,7 +787,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 401,
+      "canonical_public_direction_id": 402,
       "canonical_public_selected": false
     },
     {
@@ -810,7 +810,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 401,
+      "canonical_public_direction_id": 402,
       "canonical_public_selected": false
     },
     {
@@ -833,7 +833,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 401,
+      "canonical_public_direction_id": 402,
       "canonical_public_selected": false
     },
     {
@@ -1178,8 +1178,8 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 1013,
-      "canonical_public_selected": true
+      "canonical_public_direction_id": 1018,
+      "canonical_public_selected": false
     },
     {
       "direction_id": 1014,
@@ -1201,7 +1201,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 1013,
+      "canonical_public_direction_id": 1018,
       "canonical_public_selected": false
     },
     {
@@ -1224,7 +1224,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 1013,
+      "canonical_public_direction_id": 1018,
       "canonical_public_selected": false
     },
     {
@@ -1247,7 +1247,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 1013,
+      "canonical_public_direction_id": 1018,
       "canonical_public_selected": false
     },
     {
@@ -1270,7 +1270,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 1013,
+      "canonical_public_direction_id": 1018,
       "canonical_public_selected": false
     },
     {
@@ -1293,8 +1293,8 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 1013,
-      "canonical_public_selected": false
+      "canonical_public_direction_id": 1018,
+      "canonical_public_selected": true
     },
     {
       "direction_id": 1049,
@@ -1730,8 +1730,8 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 1163,
-      "canonical_public_selected": true
+      "canonical_public_direction_id": 1168,
+      "canonical_public_selected": false
     },
     {
       "direction_id": 1164,
@@ -1753,7 +1753,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 1163,
+      "canonical_public_direction_id": 1168,
       "canonical_public_selected": false
     },
     {
@@ -1776,7 +1776,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 1163,
+      "canonical_public_direction_id": 1168,
       "canonical_public_selected": false
     },
     {
@@ -1799,7 +1799,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 1163,
+      "canonical_public_direction_id": 1168,
       "canonical_public_selected": false
     },
     {
@@ -1822,7 +1822,7 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 1163,
+      "canonical_public_direction_id": 1168,
       "canonical_public_selected": false
     },
     {
@@ -1845,8 +1845,8 @@
         "from": "VERIFIED",
         "to": "VERIFIED"
       },
-      "canonical_public_direction_id": 1163,
-      "canonical_public_selected": false
+      "canonical_public_direction_id": 1168,
+      "canonical_public_selected": true
     },
     {
       "direction_id": 1278,
@@ -2009,5 +2009,7 @@
       "canonical_public_direction_id": null,
       "canonical_public_selected": false
     }
-  ]
+  ],
+  "selection_basis": "highest_historical_order_count_then_earliest_order_then_lowest_direction_id",
+  "selection_config": "resources/rates/bestchange-public-directions.json"
 }

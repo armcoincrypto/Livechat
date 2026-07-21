@@ -20,9 +20,9 @@ sudo -u app_exswapin_usr php8.4 vendor/bin/phpunit \
   --do-not-cache-result
 ```
 
-Result: `84 tests, 261 assertions, 0 failures, 0 errors`; one pre-existing PHPUnit deprecation was reported.
+Result: `86 tests, 267 assertions, 0 failures, 0 errors`; one pre-existing PHPUnit deprecation was reported.
 
-Focused worktree result: `10 tests, 36 assertions, 0 failures, 0 errors`.
+Focused worktree result: `12 tests, 42 assertions, 0 failures, 0 errors`.
 
 ## Nginx
 

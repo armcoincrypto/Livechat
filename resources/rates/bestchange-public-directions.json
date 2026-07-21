@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "approved_at": "2026-07-21T00:25:00Z",
+  "selection_basis": "highest_historical_order_count_then_earliest_order_then_lowest_direction_id",
+  "identities": {
+    "CARDAMD": {
+      "bestchange_currency_id": 5,
+      "display_name": "Visa/MasterCard AMD",
+      "internal_currency_ids": [
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        71
+      ],
+      "direction_ids_by_pair": {
+        "BNBBEP20->CARDAMD": 1018,
+        "BTC->CARDAMD": 967,
+        "DASH->CARDAMD": 307,
+        "ETC->CARDAMD": 181,
+        "ETH->CARDAMD": 402,
+        "LTC->CARDAMD": 968,
+        "USDCERC20->CARDAMD": 1168,
+        "USDTBEP20->CARDAMD": 1049,
+        "USDTERC20->CARDAMD": 361,
+        "USDTSOL->CARDAMD": 180,
+        "USDTTON->CARDAMD": 1128,
+        "USDTTRC20->CARDAMD": 81,
+        "ZEC->CARDAMD": 832
+      }
+    }
+  }
+}
