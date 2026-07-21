@@ -135,6 +135,18 @@ final class RubFamilyPremiumPolicy
         return is_numeric($v) ? (float) $v : null;
     }
 
+    /**
+     * Approved source-rate premium used before the existing calculator applies
+     * direction-specific profit and other configured adjustments.
+     *
+     * This does not mutate direction.profit and never exceeds the approved
+     * target-band ceiling.
+     */
+    public function canonicalSourcePremiumPercent(string $toCode): ?float
+    {
+        return $this->targetPremiumMaxPercent($toCode);
+    }
+
     public function hardMaximumPremiumPercent(string $toCode): ?float
     {
         $family = $this->familyForDestination($toCode);
