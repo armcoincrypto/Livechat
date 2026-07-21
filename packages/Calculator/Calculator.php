@@ -286,6 +286,25 @@ class Calculator implements Arrayable
         }
 
         $response = $resolution['rate'];
+
+        // Independent RUB strategy returns the approved final canonical
+        // customer rate. Applying direction profit/group adjustments again
+        // would double-count commercial coefficients and make one family
+        // approval produce different premiums per direction.
+        if (str_starts_with(strtolower((string) $this->currentSourceName), 'independent rub')) {
+            $this->rateValue = $response;
+            if ($this->buildOptions) {
+                $this->options = [
+                    'cities' => $this->getCityCommissions(),
+                    'exchange_amount' => $this->getExchangeAmounts(),
+                    'type_rate' => $this->getTypeRates(),
+                    'selector_fees' => $this->getSelectorFees(),
+                ];
+            }
+
+            return $this;
+        }
+
         $mathValue = new CalculatorMathService($response);
 
         // Максимальное количество десятичных знаков, заданное в настройках

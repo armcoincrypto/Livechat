@@ -24,6 +24,8 @@ Additional hardening applied after source-path review:
 - provider divergence above 2% is rejected rather than annotated;
 - medians are sorted numerically;
 - USDC uses its fresh USDC/USDT quote before USD/RUB conversion;
+- the independent strategy returns the approved final family rate and the
+  calculator does not reapply heterogeneous direction profits to it;
 - both compilers share one direction-write lock;
 - `scheme:files` has command and scheduler overlap protection;
 - XML and package reads run in one repeatable-read transaction and shared quote

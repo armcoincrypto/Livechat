@@ -8,6 +8,7 @@ use App\Models\Currency;
 use App\Models\DirectionExchange;
 use App\Services\Rates\IndependentMarketBaseline;
 use App\Services\Rates\RubFamilyPremiumPolicy;
+use iEXPackages\Calculator\Calculator;
 use iEXPackages\Calculator\Strategies\IndependentRubStrategy;
 use PHPUnit\Framework\TestCase;
 
@@ -106,6 +107,33 @@ final class IndependentRubCanonicalSourceTest extends TestCase
         );
 
         self::assertSame('106.050000000000000000', $strategy->getRate());
+    }
+
+    public function testFinalIndependentRubRateDoesNotReceiveDirectionProfitTwice(): void
+    {
+        IndependentMarketBaseline::beginSnapshot('calculator-final-rate', 'rate_update');
+        try {
+            $direction = $this->direction('USDTTRC20', 'SBERRUB');
+            $direction->profit = '5';
+            $calculator = new class extends Calculator {
+                protected function resolveFirstCourseSourceWithPositiveRate(DirectionExchange $directionExchange): array
+                {
+                    $this->currentSourceName = 'Independent RUB';
+
+                    return ['ok' => true, 'rate' => '105'];
+                }
+            };
+
+            $rate = $calculator
+                ->setDirectionExchange($direction)
+                ->withoutOptions()
+                ->calculate()
+                ->getRateValue();
+
+            self::assertSame('105', $rate);
+        } finally {
+            IndependentMarketBaseline::endSnapshot();
+        }
     }
 
     private function direction(string $from, string $to): DirectionExchange
