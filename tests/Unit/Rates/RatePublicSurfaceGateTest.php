@@ -132,6 +132,74 @@ final class RatePublicSurfaceGateTest extends TestCase
         $this->assertTrue($result['BestChange_allowed']);
     }
 
+    /**
+     * Incident: USDT→RUB OTC premium above CBR mid + direction.profit>0 made
+     * RateExportQuarantine ratio-to-(baseline*(1-profit)) exceed 7% and clear
+     * quotes even when RubFamily classified PASS / REVIEW.
+     */
+    public function testRubFamilyPassSurvivesGenericUnexplainedCriticalInflation(): void
+    {
+        // raw≈5.95%, warn=6 → PASS; expected=99 → ratio unexplained≈7.02% > 7.
+        $result = $this->eligibility(
+            baseline: new IndependentMarketBaseline([
+                'USDRUB' => [
+                    'rate' => '100',
+                    'source' => 'test-usd-rub',
+                    'as_of' => gmdate('c'),
+                ],
+            ], false),
+        )->evaluateDirection($this->direction('USDTTRC20', 'SBPRUB', '105.95', '1'));
+
+        $this->assertSame('PASS', $result['classification']);
+        $this->assertTrue($result['quote_allowed']);
+        $this->assertTrue($result['order_allowed']);
+        $this->assertTrue($result['export_allowed']);
+        $this->assertContains('rub_family_owns_unexplained_band', $result['reasons']);
+        $this->assertSame(
+            'unexplained_critical_deviation',
+            $result['rate_quarantine']['reason'] ?? null,
+        );
+    }
+
+    public function testRubFamilyReviewAllowsQuoteDespiteGenericUnexplainedCritical(): void
+    {
+        // raw=6.2% → REVIEW (quote may show; order/export blocked).
+        $result = $this->eligibility(
+            baseline: new IndependentMarketBaseline([
+                'USDRUB' => [
+                    'rate' => '100',
+                    'source' => 'test-usd-rub',
+                    'as_of' => gmdate('c'),
+                ],
+            ], false),
+        )->evaluateDirection($this->direction('USDTTRC20', 'SBERRUB', '106.2', '1'));
+
+        $this->assertSame('REVIEW', $result['classification']);
+        $this->assertTrue($result['quote_allowed']);
+        $this->assertFalse($result['order_allowed']);
+        $this->assertFalse($result['export_allowed']);
+        $this->assertContains('rub_family_review_public_blocked', $result['reasons']);
+    }
+
+    public function testUsdtTrc20SberRubIncidentPatternAllowsQuote(): void
+    {
+        // Live incident shape: ~6.48% vs CBR with profit 1 → REVIEW, quote required.
+        $result = $this->eligibility(
+            baseline: new IndependentMarketBaseline([
+                'USDRUB' => [
+                    'rate' => '78.554',
+                    'source' => 'test-cbr',
+                    'as_of' => gmdate('c'),
+                ],
+            ], false),
+        )->evaluateDirection($this->direction('USDTTRC20', 'SBERRUB', '83.645694025496043996', '1'));
+
+        $this->assertSame('REVIEW', $result['classification']);
+        $this->assertTrue($result['quote_allowed']);
+        $this->assertFalse($result['order_allowed']);
+        $this->assertFalse($result['export_allowed']);
+    }
+
     private function eligibility(IndependentMarketBaseline $baseline): RateDirectionEligibility
     {
         $dir = sys_get_temp_dir() . '/rate_surface_mapping_' . getmypid();
@@ -161,7 +229,7 @@ final class RatePublicSurfaceGateTest extends TestCase
         );
     }
 
-    private function direction(string $from, string $to, string $course): DirectionExchange
+    private function direction(string $from, string $to, string $course, string $profit = '0'): DirectionExchange
     {
         $direction = new DirectionExchange();
         $direction->forceFill([
@@ -171,7 +239,7 @@ final class RatePublicSurfaceGateTest extends TestCase
             'status' => 1,
             'allow_export' => 0,
             'course_value' => $course,
-            'profit' => '0',
+            'profit' => $profit,
             'parser_source_name' => 'independent-test',
             'type_reserve' => 1,
             'direction_reserve' => '1000000',
