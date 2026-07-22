@@ -147,6 +147,31 @@ final class RateDirectionEligibility
                 'QUARANTINE_REQUIRED', 'NO_BASELINE', 'NO_POLICY',
             ], true);
 
+            // Rub-family policy owns coin→RUB public surfaces. Generic
+            // RateExportQuarantine unexplained bands compare actual to
+            // baseline*(1-profit), which inflates "unexplained" for legitimate
+            // OTC premiums ABOVE CBR mid and was clearing quotes even for PASS.
+            // Defer only unexplained-band quarantine (not invalid/stale/no_baseline)
+            // when RubFamily already classified PASS/REVIEW within family ceilings.
+            $qReason = (string) ($payload['rate_quarantine']['reason'] ?? '');
+            $unexplainedBandOnly = in_array($qReason, [
+                'unexplained_critical_deviation',
+                'unexplained_extreme_deviation',
+            ], true);
+            if ($unexplainedBandOnly && ($passClass || $reviewClass) && !$blockQuote) {
+                $active = (bool) ($payload['active'] ?? false);
+                $quarantined = (bool) ($payload['quarantined'] ?? false);
+                $deprecated = (bool) ($payload['deprecated'] ?? false);
+                $payload['eligible_for_quote'] = $active && !$quarantined && !$deprecated;
+                $payload['eligible_for_order'] = $payload['eligible_for_quote'];
+                $payload['eligible_for_export'] = $payload['eligible_for_quote'];
+                $reasons = array_values(array_filter(
+                    $reasons,
+                    static fn (string $r): bool => !str_starts_with($r, 'rate_unexplained_'),
+                ));
+                $reasons[] = 'rub_family_owns_unexplained_band';
+            }
+
             $payload['eligible_for_quote'] = $payload['eligible_for_quote'] && !$blockQuote;
             $payload['eligible_for_order'] = $payload['eligible_for_order']
                 && $passClass
