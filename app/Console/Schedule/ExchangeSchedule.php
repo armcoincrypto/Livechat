@@ -160,6 +160,48 @@ class ExchangeSchedule
     }
 
     /**
+     * Resolve operator "minutes" settings to a Laravel schedule cadence.
+     *
+     * Historical bug: values 1–10 were mapped to sub-minute methods (value 1 →
+     * everyTenSeconds), which starved the shared heavy lock. The setting names
+     * (`cron_interval_minutes_update_rates`, `grates_cron_timer`) mean minutes.
+     * Value `1` is once per minute. Sub-minute behavior requires a separately
+     * named seconds setting and is intentionally not overloaded here.
+     *
+     * @return array{0: 'method'|'cron', 1: string}
+     */
+    public static function resolveMinuteCadence(int $minutes): array
+    {
+        $minutes = $minutes <= 0 ? 1 : $minutes;
+
+        return match (true) {
+            $minutes === 1 => ['method', 'everyMinute'],
+            $minutes === 2 => ['method', 'everyTwoMinutes'],
+            $minutes === 3 => ['method', 'everyThreeMinutes'],
+            $minutes === 4 => ['method', 'everyFourMinutes'],
+            $minutes === 5 => ['method', 'everyFiveMinutes'],
+            $minutes === 10 => ['method', 'everyTenMinutes'],
+            $minutes === 15 => ['method', 'everyFifteenMinutes'],
+            $minutes === 30 => ['method', 'everyThirtyMinutes'],
+            $minutes >= 60 => ['method', 'hourly'],
+            default => ['cron', sprintf('*/%d * * * *', min(59, $minutes))],
+        };
+    }
+
+    /**
+     * @param  \Illuminate\Console\Scheduling\Event|\Illuminate\Console\Scheduling\CallbackEvent  $event
+     */
+    public static function applyMinuteCadence(object $event, int $minutes): void
+    {
+        [$kind, $value] = self::resolveMinuteCadence($minutes);
+        if ($kind === 'method') {
+            $event->{$value}();
+            return;
+        }
+        $event->cron($value);
+    }
+
+    /**
      * Обновление курсов, схем и цен (основной компилятор курсов).
      *
      * @param Schedule $schedule
@@ -167,39 +209,27 @@ class ExchangeSchedule
      */
     private static function registerCompilerAndRates(Schedule $schedule): void
     {
-        $scheduleMap = [
-            1  => 'everyTenSeconds',
-            2  => 'everyFifteenSeconds',
-            3  => 'everyTwentySeconds',
-            4  => 'everyThirtySeconds',
-            5  => 'everyTwoMinutes',
-            6  => 'everyThreeMinutes',
-            7  => 'everyFiveMinutes',
-            8  => 'everyFiveSeconds',
-            9  => 'everyTwoSeconds',
-            10 => 'everySecond',
-        ];
+        $ratesMinutes = (int) iEXSetting('cron_interval_minutes_update_rates', 1);
+        $exportMinutes = (int) iEXSetting('grates_cron_timer', 1);
+        $compilerWrapper = '/opt/exswaping-owned-frontend/scripts/ops/run_backend_compiler.sh';
 
-        $compilerTime = $scheduleMap[(int) iEXSetting('cron_interval_minutes_update_rates', 0)] ?? 'everyMinute';
-        $compilerCoursesTime = $scheduleMap[(int) iEXSetting('grates_cron_timer', 0)] ?? 'everyMinute';
-
-
-
-        $schedule->command('compiler:courses --isUpdate=0')
-            ->{$compilerTime}()
+        $courses = $schedule->exec("{$compilerWrapper} compiler:courses --isUpdate=0")
             ->onOneServer()
             ->withoutOverlapping(120)
             ->appendOutputTo(storage_path('logs/compiler_courses.log'));
+        self::applyMinuteCadence($courses, $ratesMinutes);
 
-        $schedule->command('compiler:bestchange')
-            ->{$compilerTime}()
+        $bestchange = $schedule->exec("{$compilerWrapper} compiler:bestchange")
             ->onOneServer()
             ->withoutOverlapping(180)
             ->appendOutputTo(storage_path('logs/compiler_bestchange.log'));
+        self::applyMinuteCadence($bestchange, $ratesMinutes);
 
-        // Проверка и обновление файлов курсов
-        $schedule->command('scheme:files')->{$compilerCoursesTime}();
-
+        // Проверка и обновление файлов курсов / public XML exports
+        $scheme = $schedule->exec("{$compilerWrapper} scheme:files")
+            ->onOneServer()
+            ->withoutOverlapping(10);
+        self::applyMinuteCadence($scheme, $exportMinutes);
         // Read-only rate pipeline health (non-zero exit on critical conditions).
         $schedule->command('rates:health --format=json')
             ->everyFiveMinutes()
@@ -208,10 +238,16 @@ class ExchangeSchedule
             ->appendOutputTo(storage_path('logs/rates_health.log'));
 
         // Генерация минимальной и максимальной цены
-        $schedule->command('compiler:generate_prices')->everyFiveMinutes();
+        $schedule->exec("{$compilerWrapper} compiler:generate_prices")
+            ->everyFiveMinutes()
+            ->onOneServer()
+            ->withoutOverlapping(10);
 
         // Обновление файлов BestChange (полный набор), раз в день
-        $schedule->command('bestchange:files')->daily();
+        $schedule->exec("{$compilerWrapper} bestchange:files")
+            ->daily()
+            ->onOneServer()
+            ->withoutOverlapping(180);
     }
 
     /**
