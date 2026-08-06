@@ -35,11 +35,26 @@ final class AttributionIngestService
                 return ['ok' => false, 'public_session_id' => null];
             }
 
+            if (AttributionFeatures::canaryOnly() && ! AttributionFeatures::isCanarySessionId($sessionId)) {
+                Log::info('attribution_ingest_rejected_non_canary', ['reason' => 'prefix']);
+
+                return ['ok' => false, 'public_session_id' => null, 'canary_rejected' => true];
+            }
+
             $now = Carbon::now();
             /** @var SessionAttribution|null $row */
             $row = SessionAttribution::query()->where('public_session_id', $sessionId)->first();
 
             if ($row === null) {
+                if (AttributionFeatures::canaryOnly()) {
+                    $count = SessionAttribution::query()->count();
+                    if ($count >= AttributionFeatures::canaryMaxRows()) {
+                        Log::warning('attribution_canary_row_cap_reached', ['count' => $count]);
+
+                        return ['ok' => false, 'public_session_id' => null, 'cap' => true];
+                    }
+                }
+
                 SessionAttribution::query()->create([
                     'public_session_id' => $sessionId,
                     'first_utm_source' => $clean['utm_source'],

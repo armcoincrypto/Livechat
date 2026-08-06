@@ -29,4 +29,29 @@ final class AttributionFeatures
     {
         return self::ingestEnabled() || self::orderLinkEnabled() || self::eventsEnabled();
     }
+
+    /**
+     * When true, only synthetic canary session ids (stagec_*) are accepted.
+     * Used for Stage C privacy-safe ingestion without ordinary-visitor capture.
+     */
+    public static function canaryOnly(): bool
+    {
+        return filter_var(env('EXS_ATTRIBUTION_CANARY_ONLY', false), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    public static function canaryMaxRows(): int
+    {
+        $n = (int) env('EXS_ATTRIBUTION_CANARY_MAX_ROWS', 20);
+
+        return max(1, min($n, 20));
+    }
+
+    public static function isCanarySessionId(?string $sessionId): bool
+    {
+        if (! is_string($sessionId) || $sessionId === '') {
+            return false;
+        }
+
+        return (bool) preg_match('/^stagec_[A-Za-z0-9_-]{8,57}$/', $sessionId);
+    }
 }
