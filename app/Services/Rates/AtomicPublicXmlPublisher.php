@@ -78,16 +78,28 @@ final class AtomicPublicXmlPublisher
             ];
         }
 
+        // Make the temp world-readable BEFORE rename. chmod-after-rename races
+        // with nginx/BestChange scrapes and returns intermittent 403
+        // (Permission denied) while the live inode is still mode 0600.
+        if (!chmod($tmp, 0644)) {
+            @unlink($tmp);
+            throw new RuntimeException('cannot_chmod_temp_xml');
+        }
+
         if (!rename($tmp, $destinationPath)) {
             @unlink($tmp);
             throw new RuntimeException('atomic_rename_failed');
         }
-        @chmod($destinationPath, 0664);
+
+        // Belt-and-suspenders: keep the live path world-readable even if umask
+        // or a later writer tightens modes.
+        @chmod($destinationPath, 0644);
 
         if ($syncLegacy) {
             $legacy = public_path('currencies.xml');
             $legacyTmp = dirname($legacy) . '/.currencies.xml.tmp.' . getmypid();
             if (@copy($destinationPath, $legacyTmp)) {
+                @chmod($legacyTmp, 0644);
                 @rename($legacyTmp, $legacy);
                 @chmod($legacy, 0644);
             }

@@ -56,10 +56,8 @@ trait ValidatesOrderRules
         $this->directionId->loadMissing([
             'currency1.code_currency',
             'currency1.payment',
-            'currency1.designation_xml',
             'currency2.code_currency',
             'currency2.payment',
-            'currency2.designation_xml',
 
             'direction_field',
             'direction_exchange_cities',

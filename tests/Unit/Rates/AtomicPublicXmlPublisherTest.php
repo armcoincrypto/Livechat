@@ -9,6 +9,18 @@ use PHPUnit\Framework\TestCase;
 
 final class AtomicPublicXmlPublisherTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        foreach (['xmlpub_', 'xmlpub2_'] as $prefix) {
+            $dir = sys_get_temp_dir() . '/' . $prefix . getmypid();
+            if (is_dir($dir)) {
+                array_map('unlink', glob("$dir/*") ?: []);
+                @rmdir($dir);
+            }
+        }
+        parent::tearDown();
+    }
+
     public function testAtomicPublishNeverLeavesEmptyLiveFile(): void
     {
         $dir = sys_get_temp_dir() . '/xmlpub_' . getmypid();
@@ -45,4 +57,26 @@ final class AtomicPublicXmlPublisherTest extends TestCase
         $this->assertTrue($pub->collapsesAgainstLastGood($live, 10));
         $this->assertFalse($pub->collapsesAgainstLastGood($live, 80));
     }
+
+    public function testPublishedFileIsWorldReadable(): void
+    {
+        $dir = sys_get_temp_dir() . '/xmlpub_' . getmypid();
+        @mkdir($dir, 0777, true);
+        $live = $dir . '/currencies.xml';
+        // Simulate restrictive umask so fopen temp would be 0600 without explicit chmod.
+        $prev = umask(0077);
+        try {
+            $pub = new AtomicPublicXmlPublisher();
+            $xml = '<?xml version="1.0"?><rates>'
+                . str_repeat('<item><from>BTC</from><to>SBERRUB</to><in>1</in><out>1</out></item>', 5)
+                . '</rates>';
+            $r = $pub->publish($live, $xml, ['min_items' => 1, 'backup' => false]);
+            $this->assertTrue($r['published']);
+            $mode = fileperms($live) & 0777;
+            $this->assertSame(0644, $mode, sprintf('expected 0644, got %o', $mode));
+        } finally {
+            umask($prev);
+        }
+    }
+
 }

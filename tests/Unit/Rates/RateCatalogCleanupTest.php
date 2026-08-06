@@ -213,9 +213,41 @@ final class RateCatalogCleanupTest extends TestCase
         $this->assertNotSame('USDT', 'USDTTRC20');
     }
 
+    /** @var list<string> */
+    private array $tempDirsToClean = [];
+
+    protected function tearDown(): void
+    {
+        foreach ($this->tempDirsToClean as $dir) {
+            $this->recursiveRemoveDir($dir);
+        }
+        parent::tearDown();
+    }
+
+    private function recursiveRemoveDir(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+        $items = scandir($dir) ?: [];
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+            $path = $dir . '/' . $item;
+            if (is_dir($path)) {
+                $this->recursiveRemoveDir($path);
+            } else {
+                @unlink($path);
+            }
+        }
+        @rmdir($dir);
+    }
+
     private function tempDir(): string
     {
         $dir = sys_get_temp_dir() . '/rate_cleanup_' . getmypid() . '_' . bin2hex(random_bytes(3));
+        $this->tempDirsToClean[] = $dir;
         @mkdir($dir . '/bestchange', 0777, true);
 
         return $dir;

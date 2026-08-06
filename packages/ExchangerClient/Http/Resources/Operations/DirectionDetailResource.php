@@ -44,7 +44,11 @@ class DirectionDetailResource extends JsonResource
         try {
             $surface = RateDirectionEligibility::make()->evaluateDirection($this->resource);
             if (!empty($surface['quote_allowed'])) {
-                $coursePayload = CalculatorFacade::setDirectionExchange($this->resource)->calculate()->toArray();
+                $baseCourse = CalculatorFacade::setDirectionExchange($this->resource)->calculate()->toArray();
+                // Release A: server provides fixed/floating/display; default display = floating (percent fee).
+                $canonical = \App\Services\Rates\CanonicalDirectionRateCalculator::make()
+                    ->websiteCoursePayload($this->resource, (string) ($baseCourse['rate'] ?? '0'));
+                $coursePayload = array_merge($baseCourse, $canonical);
             } else {
                 $rateUnavailable = true;
                 $rateUnavailableCode = RateDirectionEligibility::ERROR_DIRECTION_TEMPORARILY_UNAVAILABLE;

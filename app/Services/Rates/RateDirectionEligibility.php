@@ -80,6 +80,45 @@ final class RateDirectionEligibility
         // strips id_payment and poisons $currency->payment as a null relation,
         // which then 500s CurrencyResource during /rates/operations serialization.
         $direction->loadMissing(['currency1', 'currency2']);
+
+        // Release B1: proven public duplicates are not quoteable/orderable/exported.
+        if (PublicDuplicateExclusion::isExcluded((int) ($direction->id ?? 0))) {
+            $from = strtoupper((string) ($direction->currency1?->designation_xml ?? ''));
+            $to = strtoupper((string) ($direction->currency2?->designation_xml ?? ''));
+            return [
+                'direction_id' => (int) $direction->id,
+                'from' => $from,
+                'to' => $to,
+                'quote_allowed' => false,
+                'order_allowed' => false,
+                'export_allowed' => false,
+                'BestChange_allowed' => false,
+                'eligible_for_quote' => false,
+                'eligible_for_order' => false,
+                'eligible_for_export' => false,
+                'classification' => 'PUBLIC_DUPLICATE_EXCLUDED',
+                'baseline_status' => 'not_applicable',
+                'policy_status' => 'not_applicable',
+                'reserve_status' => 'not_applicable',
+                'mapping_status' => [],
+                'parity_status' => 'not_applicable',
+                'blocking_reasons' => ['public_duplicate_excluded_b1'],
+                'reasons' => ['public_duplicate_excluded_b1'],
+                'error_code' => self::ERROR_DIRECTION_TEMPORARILY_UNAVAILABLE,
+                'course_value' => (string) ($direction->course_value ?? ''),
+                'baseline_rate' => null,
+                'raw_market_deviation' => null,
+                'unexplained_vs_expected_percent' => null,
+                'active' => false,
+                'quarantined' => false,
+                'deprecated' => false,
+                'status' => (int) ($direction->status ?? 0),
+                'allow_export' => (int) ($direction->allow_export ?? 0),
+                'rate_quarantine' => ['ok' => false, 'reason' => 'public_duplicate_excluded_b1'],
+                'provider_status' => (string) ($direction->parser_source_name ?? ''),
+            ];
+        }
+
         $from = strtoupper((string) ($direction->currency1?->designation_xml ?? ''));
         $to = strtoupper((string) ($direction->currency2?->designation_xml ?? ''));
         // Every RUB destination is policy-bound. An unknown source identity is
@@ -102,6 +141,11 @@ final class RateDirectionEligibility
             'course_value' => (string) ($direction->course_value ?? ''),
             'profit' => (string) ($direction->profit ?? '0'),
             'deleted_at' => $direction->deleted_at,
+            // Fail-closed: a missing currency relation (-1) is treated as not visible.
+            // See F2 remediation — a hidden/removed currency must never be quote/order eligible
+            // even when the direction row itself is status=1.
+            'currency1_status' => $direction->currency1 !== null ? (int) $direction->currency1->status : -1,
+            'currency2_status' => $direction->currency2 !== null ? (int) $direction->currency2->status : -1,
             'from' => $from,
             'to' => $to,
             'provider_status' => (string) ($direction->parser_source_name ?? ''),
@@ -259,9 +303,12 @@ final class RateDirectionEligibility
         $from = strtoupper((string) ($row['from'] ?? ''));
         $to = strtoupper((string) ($row['to'] ?? ''));
         $deleted = !empty($row['deleted_at']);
+        $currency1Status = (int) ($row['currency1_status'] ?? -1);
+        $currency2Status = (int) ($row['currency2_status'] ?? -1);
+        $currencyHidden = $currency1Status !== 0 || $currency2Status !== 0;
 
         $reasons = [];
-        $active = !$deleted && $status === 1;
+        $active = !$deleted && $status === 1 && !$currencyHidden;
         $quarantined = !$deleted && $status === 0 && $allowExport === 2;
         $deprecated = !$deleted && $status === 2;
 
@@ -276,6 +323,9 @@ final class RateDirectionEligibility
         }
         if ($status !== 1) {
             $reasons[] = 'direction_not_active';
+        }
+        if ($currencyHidden) {
+            $reasons[] = 'currency_hidden_or_removed';
         }
         if ($allowExport === 2) {
             $reasons[] = 'export_hard_disabled';

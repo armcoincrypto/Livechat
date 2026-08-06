@@ -224,7 +224,25 @@ final class IndependentMarketBaseline
         if ($code === '') {
             return null;
         }
-        foreach (['USDT', 'USDC', 'BTC', 'ETH', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC'] as $asset) {
+        // GRAM is the local BestChange-facing TON ticker.
+        if ($code === 'GRAM' || str_starts_with($code, 'GRAM')) {
+            return 'TON';
+        }
+
+        // USD payment rails (Zelle/Revolut/Cash/etc.) are USD-pegged for RUB baselines.
+        // Must run before USDT/USDC prefix matching would miss them entirely.
+        if (
+            str_ends_with($code, 'USD')
+            && !str_contains($code, 'USDT')
+            && !str_contains($code, 'USDC')
+        ) {
+            return 'USDT';
+        }
+
+        foreach ([
+            'USDT', 'USDC', 'BTC', 'ETH', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC',
+            'SOL', 'XMR', 'XRP', 'DOGE', 'ADA', 'BCH', 'ETC', 'DASH',
+        ] as $asset) {
             if ($code === $asset || str_starts_with($code, $asset)) {
                 return $asset;
             }
@@ -235,8 +253,8 @@ final class IndependentMarketBaseline
 
     public function coverage(): array
     {
-        $assets = ['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC'];
-        $fiats = ['USD', 'EUR', 'GEL', 'AMD', 'RUB'];
+        $assets = ['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC', 'SOL', 'XMR', 'XRP', 'DOGE', 'ADA', 'BCH', 'ETC', 'DASH'];
+        $fiats = ['USD', 'EUR', 'GEL', 'AMD', 'RUB', 'UAH', 'KZT', 'BYN', 'AED', 'CNY', 'IDR', 'INR', 'CAD'];
         $gaps = [];
         foreach ($assets as $a) {
             if ($a === 'USDT' || $a === 'USDC') {
@@ -246,7 +264,7 @@ final class IndependentMarketBaseline
                 $gaps[] = $a . 'USDT missing_or_stale';
             }
         }
-        foreach (['USDGEL', 'USDEUR', 'USDAMD', 'USDRUB'] as $fx) {
+        foreach (['USDGEL', 'USDEUR', 'USDAMD', 'USDRUB', 'USDUAH', 'USDKZT', 'USDBYN', 'USDAED', 'USDCNY', 'USDIDR', 'USDINR', 'USDCAD'] as $fx) {
             if ($this->quote($fx) === null) {
                 $gaps[] = $fx . ' missing_or_stale';
             }
@@ -295,7 +313,30 @@ final class IndependentMarketBaseline
 
                 foreach ($rows as $row) {
                     $asOf = (string) ($row->updated_at ?? '');
-                    $age = $asOf !== '' ? max(0, time() - strtotime($asOf)) : PHP_INT_MAX;
+                    if ($asOf === '') {
+                        continue;
+                    }
+                    // Prefer PHP/app-TZ age. If writers used MySQL NOW() under a
+                    // different session TZ (~1h host skew), fall back to MySQL age
+                    // only when PHP would falsely reject a DB-fresh row.
+                    $phpAge = max(0, time() - strtotime($asOf));
+                    $age = $phpAge;
+                    if ($phpAge > $maxAge) {
+                        try {
+                            $mysqlAgeRow = DB::selectOne(
+                                'SELECT TIMESTAMPDIFF(SECOND, ?, NOW()) AS age_seconds',
+                                [$asOf]
+                            );
+                            if ($mysqlAgeRow !== null) {
+                                $mysqlAge = max(0, (int) $mysqlAgeRow->age_seconds);
+                                if ($mysqlAge <= $maxAge) {
+                                    $age = $mysqlAge;
+                                }
+                            }
+                        } catch (Throwable) {
+                            // keep php age
+                        }
+                    }
                     if ($age > $maxAge) {
                         continue;
                     }
@@ -382,12 +423,28 @@ final class IndependentMarketBaseline
             'ZECUSDT' => [['ZEC', 'USDT'], ['ZEC', 'USD']],
             'ZECUSD' => [['ZEC', 'USD']],
             'LTCUSDT' => [['LTC', 'USDT'], ['LTC', 'USD']],
+            'SOLUSDT' => [['SOL', 'USDT'], ['SOL', 'USD']],
+            'XMRUSDT' => [['XMR', 'USDT'], ['XMR', 'USD']],
+            'XRPUSDT' => [['XRP', 'USDT'], ['XRP', 'USD']],
+            'DOGEUSDT' => [['DOGE', 'USDT'], ['DOGE', 'USD']],
+            'ADAUSDT' => [['ADA', 'USDT'], ['ADA', 'USD']],
+            'BCHUSDT' => [['BCH', 'USDT'], ['BCH', 'USD']],
+            'ETCUSDT' => [['ETC', 'USDT'], ['ETC', 'USD']],
+            'DASHUSDT' => [['DASH', 'USDT'], ['DASH', 'USD']],
             'USDCUSDT' => [['USDC', 'USDT'], ['USDC', 'USD']],
             'USDTRUB' => [['USDT', 'RUB'], ['USD', 'RUB']],
             'USDGEL' => [['USD', 'GEL']],
             'USDEUR' => [['USD', 'EUR']],
             'USDRUB' => [['USD', 'RUB']],
             'USDAMD' => [['USD', 'AMD']],
+            'USDUAH' => [['USD', 'UAH']],
+            'USDKZT' => [['USD', 'KZT']],
+            'USDBYN' => [['USD', 'BYN']],
+            'USDAED' => [['USD', 'AED']],
+            'USDCNY' => [['USD', 'CNY']],
+            'USDIDR' => [['USD', 'IDR']],
+            'USDINR' => [['USD', 'INR']],
+            'USDCAD' => [['USD', 'CAD']],
             default => [],
         };
     }

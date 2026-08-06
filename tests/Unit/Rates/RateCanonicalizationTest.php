@@ -6,6 +6,18 @@ use App\Services\Rates\PeerRateSelector;
 use PHPUnit\Framework\TestCase;
 final class RateCanonicalizationTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        $dir = sys_get_temp_dir().'/bc_drift_'.getmypid();
+        if (is_dir($dir)) {
+            @unlink($dir.'/bestchange/currencies.json');
+            @unlink($dir.'/bestchange-codes.json');
+            @rmdir($dir.'/bestchange');
+            @rmdir($dir);
+        }
+        parent::tearDown();
+    }
+
     public function testProviderMedianSelection(): void
     {
         $sel = new PeerRateSelector();

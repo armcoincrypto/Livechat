@@ -77,6 +77,10 @@ trait ExportFormatHelpers
     protected function shouldExportRate(DirectionExchange $rate, int $offlineOperatorCheck): bool
     {
         try {
+            if (\App\Services\Rates\PublicDuplicateExclusion::isExcluded((int) ($rate->id ?? 0))) {
+                return false;
+            }
+
             if (empty($rate->course_value)) {
                 return false;
             }
@@ -91,7 +95,7 @@ trait ExportFormatHelpers
             }
 
             // Fail closed: drifted / absent / ambiguous BestChange identities must not export.
-            // Prevents TON (ABSENT; ID 209 is GRAM) and Payeer PR* from public feeds.
+            // TON is export-aliased to GRAM (BestChange id 209); local site codes stay TON.
             $fromCode = strtoupper((string) ($rate->currency1->designation_xml ?? ''));
             $toCode = strtoupper((string) ($rate->currency2->designation_xml ?? ''));
             if ($toCode !== '' && !$this->isExportMappingAllowed($toCode)) {
@@ -269,8 +273,26 @@ trait ExportFormatHelpers
     }
 
     /**
+     * BestChange-facing currency code for public XML (export-only aliases).
+     * Site URLs and local designation_xml stay unchanged.
+     */
+    protected function exportPublicCode(string $localCode): string
+    {
+        $code = strtoupper(trim($localCode));
+        if ($code === '') {
+            return '';
+        }
+
+        return match ($code) {
+            'TON' => 'GRAM',
+            default => $code,
+        };
+    }
+
+    /**
      * Only VERIFIED BestChange identities may appear in public XML export.
      * ABSENT / DRIFTED / AMBIGUOUS / DEPRECATED → blocked.
+     * Uses export aliases (TON→GRAM) before verification.
      */
     protected function isExportMappingAllowed(string $localCode): bool
     {
@@ -284,7 +306,8 @@ trait ExportFormatHelpers
         }
 
         try {
-            $status = strtoupper((string) (BestChangeMappingVerifier::fromStorageApp()->verifyCode($code)['status'] ?? ''));
+            $verifyCode = $this->exportPublicCode($code);
+            $status = strtoupper((string) (BestChangeMappingVerifier::fromStorageApp()->verifyCode($verifyCode)['status'] ?? ''));
             $cache[$code] = $status === 'VERIFIED';
         } catch (Throwable $e) {
             // Fail closed on verifier errors.
