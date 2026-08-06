@@ -154,8 +154,9 @@ final class RubFamilyPremiumPolicyTest extends TestCase
 
     public function testTonIsNotGram(): void
     {
+        // Production maps GRAM (BestChange-facing TON ticker) to baseline asset TON.
         $this->assertSame('TON', IndependentMarketBaseline::assetFromCode('TON'));
-        $this->assertNull(IndependentMarketBaseline::assetFromCode('GRAM'));
+        $this->assertSame('TON', IndependentMarketBaseline::assetFromCode('GRAM'));
     }
 
     public function testKeepBlockedFamilyNeverExports(): void
