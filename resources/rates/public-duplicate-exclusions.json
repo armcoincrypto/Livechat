@@ -1,0 +1,45 @@
+{
+  "version": 3,
+  "approved_at": "20260806T165522Z",
+  "policy": "exclude_listed_direction_ids_from_public_website_catalog_selector_quote_order_and_xml; preserve DB rows; never invent rates",
+  "exclude_direction_ids": [
+    1971,
+    1480,
+    1481,
+    1484,
+    1485,
+    1486,
+    1487,
+    1488,
+    1491,
+    1492,
+    1493,
+    1519,
+    1850
+  ],
+  "canonical_replacements": {
+    "1971": 1904,
+    "1480": 1253,
+    "1481": 1254,
+    "1484": 1260,
+    "1485": 1261,
+    "1486": 1262,
+    "1487": 1263,
+    "1488": 1265,
+    "1492": 1266,
+    "1493": 1267
+  },
+  "notes": {
+    "1971": "ZELLEUSD→CARDIDR exact duplicate of 1904; keep 1904",
+    "1480-1493": "CASHUSD LA location variants; public canonical Cash USD AM (currency id 69)",
+    "1519": "ZELLEUSD→BTC ZERO_RATE / rate_non_positive; temporarily exclude until rate source restored — do not invent rate",
+    "1850": "TUSDTRC20→UPIINR ZERO_RATE; currency TUSDTRC20 already status=1 (hidden); belt-and-suspenders public exclusion; B2 archive candidate"
+  },
+  "classification": {
+    "CASHUSD": "LEGITIMATE_LOCATION_VARIANT",
+    "public_xml_canonical_currency_id": 69,
+    "location_variant_currency_id": 86,
+    "action": "public_exclude_LA_keep_AM_no_physical_delete",
+    "city_ERVN_LOSAN": "LEGITIMATE_LOCATION_VARIANT_KEEP"
+  }
+}
