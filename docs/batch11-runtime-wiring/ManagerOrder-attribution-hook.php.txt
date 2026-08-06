@@ -1,0 +1,11 @@
+// Batch 11: fail-open attribution link (never throws / never rolls back order).
+        try {
+            if (class_exists(\App\Services\Analytics\AttributionOrderLinker::class)) {
+                $linker = app(\App\Services\Analytics\AttributionOrderLinker::class);
+                $linker->attachFailOpen($newOrder, $linker->sessionIdFromOptions($this->options ?? []));
+            }
+        } catch (\Throwable $e) {
+            // intentional fail-open
+        }
+
+        
