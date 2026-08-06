@@ -8,6 +8,7 @@ use App\Models\Currency;
 use App\Models\DirectionExchange;
 use App\Models\DirectionExchangeMode;
 use App\Services\Rates\CanonicalDirectionEligibility;
+use App\Services\Rates\CurrencyPublicRetirement;
 use Illuminate\Support\Carbon;
 use Jenssegers\Agent\Facades\Agent;
 
@@ -120,6 +121,12 @@ trait ConfiguresAttributes
 
                     $c1 = (int) $direction->id_currency1;
                     $c2 = (int) $direction->id_currency2;
+
+                    // C3-B: owner-retired currencies (TUSDTRC20, DAI) never enter public adjacency.
+                    if (CurrencyPublicRetirement::isCurrencyIdRetired($c1)
+                        || CurrencyPublicRetirement::isCurrencyIdRetired($c2)) {
+                        continue;
+                    }
 
                     // Валюты должны быть активны
                     if (!isset($activeCurrencyMap[$c1], $activeCurrencyMap[$c2])) {

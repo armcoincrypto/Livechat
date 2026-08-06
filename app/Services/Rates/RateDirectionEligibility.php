@@ -119,6 +119,49 @@ final class RateDirectionEligibility
             ];
         }
 
+        // C3-B: owner-retired currencies (TUSDTRC20, DAI) — no new public operation.
+        if (CurrencyPublicRetirement::directionTouchesRetired(
+            (int) ($direction->id_currency1 ?? 0),
+            (int) ($direction->id_currency2 ?? 0),
+            (string) ($direction->currency1?->designation_xml ?? ''),
+            (string) ($direction->currency2?->designation_xml ?? ''),
+        )) {
+            $from = strtoupper((string) ($direction->currency1?->designation_xml ?? ''));
+            $to = strtoupper((string) ($direction->currency2?->designation_xml ?? ''));
+            return [
+                'direction_id' => (int) $direction->id,
+                'from' => $from,
+                'to' => $to,
+                'quote_allowed' => false,
+                'order_allowed' => false,
+                'export_allowed' => false,
+                'BestChange_allowed' => false,
+                'eligible_for_quote' => false,
+                'eligible_for_order' => false,
+                'eligible_for_export' => false,
+                'classification' => 'CURRENCY_PUBLICLY_RETIRED',
+                'baseline_status' => 'not_applicable',
+                'policy_status' => 'not_applicable',
+                'reserve_status' => 'not_applicable',
+                'mapping_status' => [],
+                'parity_status' => 'not_applicable',
+                'blocking_reasons' => ['currency_publicly_retired_c3b'],
+                'reasons' => ['currency_publicly_retired_c3b'],
+                'error_code' => self::ERROR_DIRECTION_TEMPORARILY_UNAVAILABLE,
+                'course_value' => (string) ($direction->course_value ?? ''),
+                'baseline_rate' => null,
+                'raw_market_deviation' => null,
+                'unexplained_vs_expected_percent' => null,
+                'active' => false,
+                'quarantined' => false,
+                'deprecated' => true,
+                'status' => (int) ($direction->status ?? 0),
+                'allow_export' => (int) ($direction->allow_export ?? 0),
+                'rate_quarantine' => ['ok' => false, 'reason' => 'currency_publicly_retired_c3b'],
+                'provider_status' => (string) ($direction->parser_source_name ?? ''),
+            ];
+        }
+
         $from = strtoupper((string) ($direction->currency1?->designation_xml ?? ''));
         $to = strtoupper((string) ($direction->currency2?->designation_xml ?? ''));
         // Every RUB destination is policy-bound. An unknown source identity is

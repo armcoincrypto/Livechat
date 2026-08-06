@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "approved_at": "20260806T222058Z",
+  "policy": "retire_listed_currencies_from_new_public_operation_without_deleting_rows",
+  "retire_currency_ids": [
+    41,
+    43
+  ],
+  "retire_designation_xml": [
+    "DAI",
+    "TUSDTRC20"
+  ],
+  "never_retire_designation_xml": [
+    "USDTTRC20",
+    "ZELLEUSD"
+  ],
+  "notes": {
+    "43": "TUSDTRC20 owner-approved retirement",
+    "41": "DAI owner-approved retirement",
+    "zelle": "all ZELLEUSD directions deferred to dedicated audit"
+  }
+}

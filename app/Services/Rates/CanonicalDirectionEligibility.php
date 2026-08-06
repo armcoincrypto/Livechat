@@ -51,6 +51,12 @@ final class CanonicalDirectionEligibility
         return $course !== '' && is_numeric($course) && (float) $course > 0.0;
     }
 
+    public static function passesCurrencyRetirementGate(?int $currency1Id, ?int $currency2Id): bool
+    {
+        return ! CurrencyPublicRetirement::isCurrencyIdRetired($currency1Id)
+            && ! CurrencyPublicRetirement::isCurrencyIdRetired($currency2Id);
+    }
+
     /**
      * @return array{
      *   eligible:bool,
