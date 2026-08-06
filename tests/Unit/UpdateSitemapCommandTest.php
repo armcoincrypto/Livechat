@@ -212,6 +212,8 @@ final class UpdateSitemapCommandTest extends TestCase
         $static = $this->invokePrivate('topLevelTrustStaticRoutes');
         self::assertContains('faq', $static);
         self::assertContains('contacts', $static);
+        self::assertContains('tools/network-checker', $static);
+        self::assertContains('pages/security', $static);
         self::assertContains('partners', $static);
         self::assertContains('contests', $static);
 

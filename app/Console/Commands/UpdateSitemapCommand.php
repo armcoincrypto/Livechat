@@ -335,6 +335,33 @@ final class UpdateSitemapCommand extends Command
         $added = 0;
 
         foreach ($this->topLevelTrustStaticRoutes() as $route) {
+            // Batch 9: RU-only Security page (other locales are empty noindex shells).
+            if ($route === 'pages/security') {
+                $added += $this->addOwnedLocaleUrlsForLocales(
+                    $sitemap,
+                    $frontendUrl,
+                    $route,
+                    0.5,
+                    $this->safeLastMod($lastMod),
+                    ['ru']
+                );
+                continue;
+            }
+
+            // Batch 9: network-checker is genuine in all five interface locales.
+            // Locale list is explicit so this does not depend on P16 global expansion.
+            if ($route === 'tools/network-checker') {
+                $added += $this->addOwnedLocaleUrlsForLocales(
+                    $sitemap,
+                    $frontendUrl,
+                    $route,
+                    0.5,
+                    $this->safeLastMod($lastMod),
+                    ['ru', 'en', 'uk', 'ka', 'zh']
+                );
+                continue;
+            }
+
             $added += $this->addOwnedLocaleUrls(
                 $sitemap,
                 $frontendUrl,
@@ -545,8 +572,31 @@ final class UpdateSitemapCommand extends Command
         float $priority,
         ?Carbon $lastMod
     ): int {
+        return $this->addOwnedLocaleUrlsForLocales(
+            $sitemap,
+            $frontendUrl,
+            $pathWithoutLocale,
+            $priority,
+            $lastMod,
+            self::OWNED_SITEMAP_LOCALES
+        );
+    }
+
+    /**
+     * Batch 9: add a path for an explicit locale subset.
+     *
+     * @param list<string> $locales
+     */
+    private function addOwnedLocaleUrlsForLocales(
+        Sitemap $sitemap,
+        string $frontendUrl,
+        string $pathWithoutLocale,
+        float $priority,
+        ?Carbon $lastMod,
+        array $locales
+    ): int {
         $count = 0;
-        foreach (self::OWNED_SITEMAP_LOCALES as $locale) {
+        foreach ($locales as $locale) {
             $tag = Url::create($this->joinLocalizedUrl($frontendUrl, $locale, $pathWithoutLocale))
                 ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
                 ->setPriority($priority);
@@ -641,7 +691,9 @@ final class UpdateSitemapCommand extends Command
      */
     private function topLevelTrustStaticRoutes(): array
     {
-        return ['contacts', 'faq', 'partners', 'contests'];
+        // Batch 9: tools/network-checker (all five interface locales) and
+        // pages/security (RU-only). Compliance remains unpublished.
+        return ['contacts', 'faq', 'partners', 'contests', 'tools/network-checker', 'pages/security'];
     }
 
     private function cmsPathDuplicatesTopLevelTrustRoute(string $path): bool
