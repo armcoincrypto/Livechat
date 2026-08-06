@@ -16,11 +16,11 @@ final class ActivePairClosureCatalogGateTest extends TestCase
         PublicDuplicateExclusion::clearCache();
     }
 
-    public function test_exclusions_v3_lists_permanent_and_temporary_targets(): void
+    public function test_exclusions_v4_lists_permanent_temporary_and_retirement_targets(): void
     {
         $path = base_path('resources/rates/public-duplicate-exclusions.json');
         $json = json_decode((string) file_get_contents($path), true);
-        $this->assertSame(3, (int) ($json['version'] ?? 0));
+        $this->assertSame(4, (int) ($json['version'] ?? 0));
         $ids = array_map('intval', $json['exclude_direction_ids'] ?? []);
 
         foreach ([1487, 1488, 1491, 1492, 1493, 1971] as $id) {
@@ -28,6 +28,9 @@ final class ActivePairClosureCatalogGateTest extends TestCase
         }
         $this->assertContains(1519, $ids, 'ZERO_RATE 1519 must be temporarily excluded');
         $this->assertContains(1850, $ids, '1850 belt-and-suspenders exclusion required');
+        $this->assertSame(43, (int) ($json['currency_retirement']['TUSDTRC20'] ?? 0));
+        $this->assertSame(41, (int) ($json['currency_retirement']['DAI'] ?? 0));
+        $this->assertSame(3, (int) ($json['currency_retirement']['USDTTRC20_unaffected'] ?? 0));
     }
 
     public function test_cashusd_la_inbound_excluded_am_canonical_replacement(): void
