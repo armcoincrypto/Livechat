@@ -1,0 +1,48 @@
+# Exswaping backend overlay repository ignore rules.
+# This checkout tracks a rates/analytics/deploy overlay inside a full Laravel tree.
+# Runtime and bulk application paths must not re-enter git status as "source dirt".
+
+# Secrets / local env (never commit)
+.env
+.env.*
+!.env.example
+
+# Editor / OS cruft
+.DS_Store
+**/.DS_Store
+*.swp
+*~
+
+# PHPUnit / tooling caches
+.phpunit.result.cache
+.phpunit.cache/
+.phpstan.cache/
+.psalm/
+
+# Composer / JS build artifacts
+/vendor/
+/node_modules/
+
+# Laravel runtime
+/storage/logs/
+/storage/framework/
+/storage/pail/
+/bootstrap/cache/*.php
+/public/hot
+/public/storage
+/public/static/exports/
+
+# Backup / hotfix leftovers
+*.bak
+*.bak-*
+*.bak.*
+*.old
+*.orig
+
+# Audit artifacts generated under the app tree
+/docs/audits/
+
+# Large unrelated untracked app areas (tracked overlay files remain tracked)
+/app/Ai/
+/xml-changer/__pycache__/
+*.pyc

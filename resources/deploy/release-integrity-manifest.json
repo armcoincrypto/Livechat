@@ -162,7 +162,7 @@
     {
       "path": "tests/Unit/Rates/ZelleUsdUsdtBenchmarkTest.php",
       "required": true,
-      "candidate_sha256": "e8b3bbce3ba717fb843d024a4dbed947cdcf525ae82e36ae0d5dea05ab05fce7",
+      "candidate_sha256": "9663cf5440d88d95e3d4714907bd328cf47884d42a73a8f34daf0226099e419c",
       "class": null,
       "sha256": "e8b3bbce3ba717fb843d024a4dbed947cdcf525ae82e36ae0d5dea05ab05fce7"
     },
@@ -181,7 +181,7 @@
     {
       "path": "resources/deploy/release-integrity-manifest.json",
       "required": true,
-      "candidate_sha256": "05efc720b4d29da737d85c5630e236be33d10b15ff8fb97666d3b6fa0dbdffd5"
+      "candidate_sha256": "4da0624003afc2f9f42cb9a8815081b86a219db141110438ca296ffc22f00ea4"
     },
     {
       "path": "packages/Calculator/Calculator.php",
@@ -228,7 +228,7 @@
     {
       "path": "tests/Unit/Rates/ZelleBtc1519RestoreTest.php",
       "required": true,
-      "candidate_sha256": "0e0b67c3614c5194427e0535b8bf75921b698904c3b47457ede3c8286308b3cd",
+      "candidate_sha256": "7fc308a46aa0aae8f99f6f8c20c00d8195292870d50915af7c03166b9089e191",
       "sha256": "0e0b67c3614c5194427e0535b8bf75921b698904c3b47457ede3c8286308b3cd",
       "class": null
     }
