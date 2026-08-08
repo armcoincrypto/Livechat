@@ -46,3 +46,4 @@
 /app/Ai/
 /xml-changer/__pycache__/
 *.pyc
+resources/deploy/*.sha256
