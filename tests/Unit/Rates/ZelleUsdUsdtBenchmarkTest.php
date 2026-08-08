@@ -146,7 +146,7 @@ final class ZelleUsdUsdtBenchmarkTest extends TestCase
         $path = dirname(__DIR__, 3).'/resources/rates/public-duplicate-exclusions.json';
         $json = json_decode((string) file_get_contents($path), true);
         $ids = array_map('intval', $json['exclude_direction_ids'] ?? []);
-        $this->assertSame(9, (int) ($json['version'] ?? 0));
+        $this->assertSame(10, (int) ($json['version'] ?? 0));
         $this->assertNotContains(1519, $ids);
         $this->assertFalse(\App\Services\Rates\PublicDuplicateExclusion::isExcluded(1519));
         $this->assertContains(1971, $ids);

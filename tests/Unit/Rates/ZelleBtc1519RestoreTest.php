@@ -14,7 +14,7 @@ final class ZelleBtc1519RestoreTest extends TestCase
         PublicDuplicateExclusion::clearCache();
         $path = dirname(__DIR__, 3).'/resources/rates/public-duplicate-exclusions.json';
         $json = json_decode((string) file_get_contents($path), true);
-        $this->assertSame(9, (int) ($json['version'] ?? 0));
+        $this->assertSame(10, (int) ($json['version'] ?? 0));
         $ids = array_map('intval', $json['exclude_direction_ids'] ?? []);
         $this->assertNotContains(1519, $ids);
         $this->assertContains(1971, $ids);
