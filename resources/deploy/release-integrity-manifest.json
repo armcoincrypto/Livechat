@@ -1,0 +1,236 @@
+{
+  "version": 3,
+  "policy": "fail-closed-zelle-zero-manual-unconfigured-tiered-benchmark",
+  "files": [
+    {
+      "path": "app/Services/Rates/PublicDuplicateExclusion.php",
+      "required": true,
+      "candidate_sha256": "fc814b66df3a47b9920439dc813f68ab3e7ba24d21b3b2f2a9100bd59ccf182b",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/CurrencyPublicRetirement.php",
+      "required": true,
+      "candidate_sha256": "76eb3e740c7fe3b6c5abcad224e4195b8bdd376e9613893482a7ee877f3446f2",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/CanonicalDirectionEligibility.php",
+      "required": true,
+      "candidate_sha256": "0463963de7f88a2b38a6c74c27d83938b17df7e2322d4a33e28746dea5a18d4b",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/CanonicalDirectionResolver.php",
+      "required": true,
+      "candidate_sha256": "fa62930ec3d5c1966da27fed67e34071027d2fa7ae818b44cf5a74b32b30c5ab",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/CanonicalDirectionRateCalculator.php",
+      "required": true,
+      "candidate_sha256": "0bc81e317da507ec59372556809b4a1bdf5b7598daa0813a14ad8756dd0d149b",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/RateFeePercentNormalizer.php",
+      "required": true,
+      "candidate_sha256": "4fcb68dede4982fa522249dcb3af3b833515f48c143478a342c924bcab11d413",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/RateMode.php",
+      "required": true,
+      "candidate_sha256": "ecd8c0b571c77adbb4f742cda2c1ef3334b7d96afe880c8688cfc80352287b81",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/CalculatedDirectionRate.php",
+      "required": true,
+      "candidate_sha256": "9ede3e905da1a4dc5e5fd5e5b57a62d25c7678c5613d631d8c81db6436d39f34",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/RateDirectionEligibility.php",
+      "required": true,
+      "candidate_sha256": "ee14aa6338a4576c5e316468b5a009aed3ed46c4d510a35464af226b5d3c68a6",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/ZelleUsdBenchmarkResult.php",
+      "required": true,
+      "candidate_sha256": "56dfbe102503cf5975c0caba022733edb9aa5f4b1a6d9e9a9bae239e636f70ef",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/ZelleUsdBenchmarkResolver.php",
+      "required": true,
+      "candidate_sha256": "40bdd180f0660e2e791b4f90a1a5e0127cf015f633b9b77ff1b8a2dbafe188ab",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/ZelleUsdUsdtBenchmarkAuthority.php",
+      "required": true,
+      "candidate_sha256": "ad9c1da08bf239de5b16267274d503d7d7e1df5d0b1c8e8ce4997d7eb8a365c0",
+      "class": null
+    },
+    {
+      "path": "app/Console/Commands/RatesActivePairClosureCommand.php",
+      "required": true,
+      "candidate_sha256": "bf1f69e2f6f7eca3f73350f1d3daf7b288d69f9a6e8db05d9e5e46e2793233dd",
+      "class": null
+    },
+    {
+      "path": "app/Console/Commands/RatesZelleUsdUsdtPreviewCommand.php",
+      "required": true,
+      "candidate_sha256": "3046caf5f85df55f0cc855f9e18928c523e80f9701c347ddceb1446c5970b58d",
+      "class": null
+    },
+    {
+      "path": "app/Console/Schedule/ExchangeSchedule.php",
+      "required": true,
+      "candidate_sha256": "43b4211ab672a675cabca71c28ce0aa059750a1fad955f721b77d154826ac0a3",
+      "class": null
+    },
+    {
+      "path": "packages/Courses/Concerns/ConfiguresAttributes.php",
+      "required": true,
+      "candidate_sha256": "900d7b8879cee46732cb6ff0329bb891d82fe50029e953ead9340839549c47a6",
+      "class": null
+    },
+    {
+      "path": "packages/Courses/Export/Concerns/ExportFormatHelpers.php",
+      "required": true,
+      "candidate_sha256": "142db4dacb54605f6cd1999ce78451c0e33b088837708b7926dfadf363d29bac",
+      "class": null
+    },
+    {
+      "path": "packages/ExchangerClient/Http/Resources/Operations/DirectionDetailResource.php",
+      "required": true,
+      "candidate_sha256": "f5b0caab9262f9a24c682606466d104a63b934e6bf2fcd75ead4eeaad1d02a79",
+      "class": null
+    },
+    {
+      "path": "packages/Order/Concerns/ValidatesOrderRules.php",
+      "required": true,
+      "candidate_sha256": "1d127d36424383e8540593fb08bfd3d6ffe995e7d7315af2c04780d0bb6c7ec0",
+      "class": null
+    },
+    {
+      "path": "resources/rates/public-duplicate-exclusions.json",
+      "required": true,
+      "candidate_sha256": "5b876abff34f82c1498c875a0f7e735ea8376adc3c3b71582f0c4259deb4a753",
+      "class": null,
+      "sha256": "3f5a68add09190f4b47c56a7aa3a91739c11c0dd9b420e19057e3c13008f28e5"
+    },
+    {
+      "path": "resources/rates/currency-public-retirement.json",
+      "required": true,
+      "candidate_sha256": "47d6377b25fa63733881e572433af5a68d1d9b1c27e5fa460c4bc61853bb3287",
+      "class": null
+    },
+    {
+      "path": "resources/rates/bestchange-public-directions.json",
+      "required": true,
+      "candidate_sha256": "5351b5248961e7b60e127c54aa73b98e9ae6382410b55caf5b364a6c31947e87",
+      "class": null
+    },
+    {
+      "path": "scripts/deploy/exswaping_deploy_lock.sh",
+      "required": true,
+      "candidate_sha256": "bf244159f9030ca2d0e77ad0fb17df7a5bdde74ae2f18bdffd15dd76ff0d4048",
+      "class": null
+    },
+    {
+      "path": "scripts/deploy/verify_backend_candidate_integrity.sh",
+      "required": true,
+      "candidate_sha256": "31d76d540bc2bf481cd873ad462e050311b072c1ee96ea1b74b31e0b1503d5b4",
+      "class": null
+    },
+    {
+      "path": "scripts/deploy/apply_backend_protected_patch.sh",
+      "required": true,
+      "candidate_sha256": "b395b2935abb8e4249b05df317c7377ab1b929314d148064d973ed035afff730",
+      "class": null
+    },
+    {
+      "path": "scripts/deploy/test_release_integrity_gates.sh",
+      "required": true,
+      "candidate_sha256": "bf5a9abc9265e2caf7836962aab4cc82bc33f31830e1d74ec05e83a060be6373",
+      "class": null
+    },
+    {
+      "path": "tests/Unit/Rates/ZelleUsdUsdtBenchmarkTest.php",
+      "required": true,
+      "candidate_sha256": "e8b3bbce3ba717fb843d024a4dbed947cdcf525ae82e36ae0d5dea05ab05fce7",
+      "class": null,
+      "sha256": "e8b3bbce3ba717fb843d024a4dbed947cdcf525ae82e36ae0d5dea05ab05fce7"
+    },
+    {
+      "path": "tests/Unit/Rates/ActivePairClosureCatalogGateTest.php",
+      "required": true,
+      "candidate_sha256": "57cd8298ddae91663d88303b001e64c352525fbce04b94be1e3cd1898bae4976",
+      "class": null,
+      "sha256": "bdc06aad2133b147d930bf832f9b63f5d561463e71e1fbdb7b2c6b55ce69daf3"
+    },
+    {
+      "path": "packages/BestChange/Services/DirectionExchangeRecalculateService.php",
+      "required": true,
+      "candidate_sha256": "3127dc82e3e2960465ce33bcf3c943d06b17dc0827620c55927088461717ab6f"
+    },
+    {
+      "path": "resources/deploy/release-integrity-manifest.json",
+      "required": true,
+      "candidate_sha256": "05efc720b4d29da737d85c5630e236be33d10b15ff8fb97666d3b6fa0dbdffd5"
+    },
+    {
+      "path": "packages/Calculator/Calculator.php",
+      "required": true,
+      "candidate_sha256": "77310793f041fccf1f01e363c8e3a060b6a77e36d004dd8608a826e5a732b306",
+      "class": null
+    },
+    {
+      "path": "packages/Calculator/CalculatorFacade.php",
+      "required": true,
+      "candidate_sha256": "d7df5122c4a6102c2383416303c5e6ef718176fc6af78e30ac8b5eeef32c4901",
+      "class": null
+    },
+    {
+      "path": "tests/Unit/Rates/BestChangePublicIdentityCanonicalizationTest.php",
+      "required": true,
+      "candidate_sha256": "278ca825b203c7c70c5ae39c4288ccc6671e6aad3d8ae5a792eacda9703ad667",
+      "class": null
+    },
+    {
+      "path": "xml-changer/main.py",
+      "required": true,
+      "candidate_sha256": "7108a800e885c5a9f19cc9cc6d07c9aea50e658cb1f1eba899e91e0d629eb3b1",
+      "class": null
+    },
+    {
+      "path": "tests/Unit/Rates/ZelleFinalRateModeSemanticsTest.php",
+      "required": true,
+      "candidate_sha256": "90a4e2850ed63610d69f0d8488e6a0eb71b22a967bec0382d4819f8bde18c124",
+      "class": null
+    },
+    {
+      "path": "tests/Unit/Rates/CanonicalDirectionRateCalculatorTest.php",
+      "required": true,
+      "candidate_sha256": "dfab6fd0b80c6855b93d8aeac56349c09c018f5505bb1eef691181f7b5ae94e0",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/IndependentMarketBaseline.php",
+      "required": true,
+      "candidate_sha256": "c2f81ba52fae3b5ae3267789928068bdbf23d058e563e123284f724ed288fd31",
+      "class": null
+    },
+    {
+      "path": "tests/Unit/Rates/ZelleBtc1519RestoreTest.php",
+      "required": true,
+      "candidate_sha256": "0e0b67c3614c5194427e0535b8bf75921b698904c3b47457ede3c8286308b3cd",
+      "sha256": "0e0b67c3614c5194427e0535b8bf75921b698904c3b47457ede3c8286308b3cd",
+      "class": null
+    }
+  ]
+}
