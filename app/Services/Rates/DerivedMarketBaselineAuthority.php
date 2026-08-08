@@ -242,10 +242,13 @@ final class DerivedMarketBaselineAuthority
             // Retain last positive course for site/admin; only hard-error when
             // there is nothing usable. Temporary fiat/crypto gaps must not flip
             // directions into "Курс не настроен" / catalog exclusion.
+            // Always re-assert ownership label so legacy «Ручной курс» cannot stick
+            // on derived-owned rows when a refresh retains the last valid BASE.
             $lastCourse = (string) ($row->course_value ?? '0');
             $lastManual = (string) ($row->manual_rate_value ?? '0');
             $hasRetained = (float) $lastCourse > 0 || (float) $lastManual > 0;
             $action['write'] = [
+                'parser_source_name' => (string) ($cfg['ownership']['parser_source_name'] ?? 'DERIVED_MARKET_BASELINE'),
                 'is_error_rate' => $hasRetained ? 0 : 1,
                 'error_rate_text' => $hasRetained
                     ? ('derived_baseline_retained:' . ($eval['reason'] ?? 'unavailable'))
