@@ -54,7 +54,7 @@ PROD_RE = re.compile(
 ALLOWED_RE = re.compile(
     r"^(\.env($|\.)|\.DS_Store$|\.phpunit\.result\.cache$|"
     r"storage/|bootstrap/cache/|vendor/|node_modules/|"
-    r"public/static/exports/|docs/audits/|"
+    r"public/static/exports/|docs/audits/|resources/deploy/.*\.sha256$|"
     r".*\.log$|.*\.bak($|-|\.)|.*\.pyc$|xml-changer/__pycache__/)"
 )
 
