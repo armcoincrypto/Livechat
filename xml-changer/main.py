@@ -36,19 +36,55 @@ def localname(tag: str) -> str:
     return tag.split("}", 1)[1] if "}" in tag else tag
 
 
+def load_cardamd_url_currency_ids() -> dict[str, tuple[str, str]]:
+    """Ambiguous CARDAMD letter codes must use currency-id exchange paths."""
+    cfg_path = Path(
+        "/var/www/app_exswapin_usr/data/www/app.exswaping.com/resources/rates/bestchange-public-directions.json"
+    )
+    out: dict[str, tuple[str, str]] = {}
+    try:
+        import json
+
+        cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+        raw = (
+            cfg.get("identities", {})
+            .get("CARDAMD", {})
+            .get("url_currency_ids_by_pair", {})
+        )
+        for pair, ids in raw.items():
+            if isinstance(ids, list) and len(ids) == 2:
+                out[str(pair).upper()] = (str(ids[0]), str(ids[1]))
+    except Exception:
+        return out
+    return out
+
+
 def add_url_tags(
     root: ET.Element,
     base_url: str = "https://exswaping.com/ru/exchange/",
     city: str = "LA",
 ) -> None:
     """Add <url> element to each <item> using its <from> and <to>."""
+    cardamd_urls = load_cardamd_url_currency_ids()
     for item in root.findall(".//item"):
         f = item.find("from")
         t = item.find("to")
         if f is None or t is None:
             continue
 
-        full_url = f"{base_url}{f.text}/{t.text}?city={city}"
+        from_code = (f.text or "").strip().upper()
+        to_code = (t.text or "").strip().upper()
+        pair = f"{from_code}->{to_code}"
+        if pair in cardamd_urls:
+            left, right = cardamd_urls[pair]
+            path = f"{left}/{right}"
+        elif from_code == "CARDAMD" or to_code == "CARDAMD":
+            # Fail closed: never emit ambiguous CARDAMD code URLs.
+            continue
+        else:
+            path = f"{from_code}/{to_code}"
+
+        full_url = f"{base_url}{path}?city={city}"
         existing = item.find("url")
         if existing is not None:
             existing.text = full_url

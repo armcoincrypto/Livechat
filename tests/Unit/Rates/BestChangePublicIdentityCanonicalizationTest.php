@@ -35,6 +35,16 @@ final class BestChangePublicIdentityCanonicalizationTest extends TestCase
         $this->assertTrue($selector->claim($this->direction(2002, 202), 'BTC', 'SBPRUB'));
     }
 
+    public function testZelleUsdCardAmdClaimsApprovedDirectionOnly(): void
+    {
+        $selector = $this->selector();
+        $canonical = $this->direction(1558, 56);
+        $variant = $this->direction(1559, 58);
+
+        $this->assertTrue($selector->claim($canonical, 'ZELLEUSD', 'CARDAMD'));
+        $this->assertFalse($selector->claim($variant, 'ZELLEUSD', 'CARDAMD'));
+    }
+
     public function testUnconfiguredCardAmdPairFailsClosed(): void
     {
         $selector = $this->selector();
@@ -52,7 +62,7 @@ final class BestChangePublicIdentityCanonicalizationTest extends TestCase
         $this->assertTrue($selector->claim($direction, 'USDTTRC20', 'CARDAMD'));
     }
 
-    public function testVersionedConfigurationContainsThirteenApprovedPairs(): void
+    public function testVersionedConfigurationContainsFourteenApprovedPairs(): void
     {
         $config = json_decode(
             (string) file_get_contents($this->configPath()),
@@ -61,8 +71,9 @@ final class BestChangePublicIdentityCanonicalizationTest extends TestCase
         );
         $pairs = $config['identities']['CARDAMD']['direction_ids_by_pair'];
 
-        $this->assertCount(13, $pairs);
+        $this->assertCount(14, $pairs);
         $this->assertSame(81, $pairs['USDTTRC20->CARDAMD']);
+        $this->assertSame(1558, $pairs['ZELLEUSD->CARDAMD']);
         $this->assertSame(1018, $pairs['BNBBEP20->CARDAMD']);
         $this->assertSame(5, $config['identities']['CARDAMD']['bestchange_currency_id']);
         $this->assertSame([52, 53, 54, 55, 56, 57, 58, 71], $config['identities']['CARDAMD']['internal_currency_ids']);
