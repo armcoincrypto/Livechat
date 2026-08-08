@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Http\Controllers\Analytics\AttributionIngestController;
+use App\Services\Analytics\AttributionEventRecorder;
 use App\Services\Analytics\AttributionFeatures;
 use App\Services\Analytics\AttributionOrderLinker;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +19,7 @@ final class AttributionServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(AttributionOrderLinker::class);
+        $this->app->singleton(AttributionEventRecorder::class);
     }
 
     public function boot(): void
