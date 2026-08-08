@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "approved_at": "2026-07-21T00:25:00Z",
+  "approved_at": "2026-08-07T11:55:00Z",
   "selection_basis": "highest_historical_order_count_then_earliest_order_then_lowest_direction_id",
   "identities": {
     "CARDAMD": {
@@ -29,7 +29,66 @@
         "USDTSOL->CARDAMD": 180,
         "USDTTON->CARDAMD": 1128,
         "USDTTRC20->CARDAMD": 81,
+        "ZELLEUSD->CARDAMD": 1558,
         "ZEC->CARDAMD": 832
+      },
+      "url_currency_ids_by_pair": {
+        "BNBBEP20->CARDAMD": [
+          5,
+          52
+        ],
+        "BTC->CARDAMD": [
+          1,
+          56
+        ],
+        "DASH->CARDAMD": [
+          4,
+          56
+        ],
+        "ETC->CARDAMD": [
+          27,
+          52
+        ],
+        "ETH->CARDAMD": [
+          7,
+          53
+        ],
+        "LTC->CARDAMD": [
+          2,
+          58
+        ],
+        "USDCERC20->CARDAMD": [
+          40,
+          58
+        ],
+        "USDTBEP20->CARDAMD": [
+          49,
+          52
+        ],
+        "USDTERC20->CARDAMD": [
+          6,
+          56
+        ],
+        "USDTSOL->CARDAMD": [
+          47,
+          56
+        ],
+        "USDTTON->CARDAMD": [
+          48,
+          52
+        ],
+        "USDTTRC20->CARDAMD": [
+          3,
+          52
+        ],
+        "ZELLEUSD->CARDAMD": [
+          87,
+          56
+        ],
+        "ZEC->CARDAMD": [
+          31,
+          58
+        ]
       }
     }
   }

@@ -1,7 +1,7 @@
 {
-  "version": 4,
-  "approved_at": "20260806T222058Z",
-  "policy": "exclude_listed_direction_ids_from_public_website_catalog_selector_quote_order_and_xml; preserve DB rows; never invent rates; TUSDTRC20+DAI retired; ZELLEUSD untouched except existing 1519 temp exclude",
+  "version": 10,
+  "approved_at": "20260808T113200Z",
+  "policy": "exclude_listed_direction_ids_from_public_website_catalog_selector_quote_order_and_xml; preserve DB rows; never invent rates; TUSDTRC20+DAI+FTN+A7A5 retired; ZELLEUSD outgoing uses tiered canonical benchmark; ZELLE RUB banks 1540-1542 RESTORED to public after owner approval 20260807; keep 1971 CARDIDR duplicate exclusion",
   "exclude_direction_ids": [
     60,
     62,
@@ -107,7 +107,6 @@
     1491,
     1492,
     1493,
-    1519,
     1676,
     1692,
     1710,
@@ -139,12 +138,20 @@
     "1493": 1267
   },
   "notes": {
-    "1971": "ZELLEUSD\u2192CARDIDR exact duplicate of 1904; keep 1904",
+    "1971": "ZELLEUSD→CARDIDR exact duplicate of 1904; keep 1904",
     "1480-1493": "CASHUSD LA location variants; public canonical Cash USD AM (currency id 69)",
-    "1519": "ZELLEUSD\u2192BTC ZERO_RATE; keep temporarily excluded; ZELLEUSD audit deferred \u2014 do not modify other ZELLE rows",
-    "1850": "TUSDTRC20\u2192UPIINR ZERO_RATE; currency TUSDTRC20 already status=1 (hidden); belt-and-suspenders public exclusion; B2 archive candidate",
+    "1519": "RESTORED 20260807: ZELLEUSD→BTC uses USDTTRC20→BTC #35 benchmark; floating=-6 fix=-3; removed from public exclusion after owner all-coins certification",
+    "1850": "TUSDTRC20→UPIINR ZERO_RATE; currency TUSDTRC20 already status=1 (hidden); belt-and-suspenders public exclusion; B2 archive candidate",
     "TUSDTRC20": "currency id 43; all related directions retired from public operation (C3-B)",
-    "DAI": "currency id 41; all related directions retired from public operation (C3-B)"
+    "DAI": "currency id 41; all related directions retired from public operation (C3-B)",
+    "FTN": "currency id 60 (FTN Bahamut); owner-approved retirement 20260808 final catalog; historical rows preserved",
+    "A7A5": "currency id 73; owner-approved retirement 20260808 final catalog; historical rows preserved",
+    "zelle_stablecoin_network_restored": "20260807: 1537/1552/1556/1564/1586/1619 removed from exclusion after Tier2 stablecoin-network / USD-peg benchmark automation",
+    "zelle_cardthb": "1969 ZELLEUSD→CARDTHB uses Tier3 IndependentMarketBaseline USDTHB when floatrates USD-THB feed is live; peer USDT#1834 remains zero/non-operational",
+    "1540": "RESTORED 20260807: ZELLEUSD→SBERRUB removed from public exclusion; USDT peer #15; floating=-6 fix=-3; owner-approved RUB bank restore",
+    "1541": "RESTORED 20260807: ZELLEUSD→SBPRUB removed from public exclusion; USDT peer #268; floating=-6 fix=-3; owner-approved RUB bank restore",
+    "1542": "RESTORED 20260807: ZELLEUSD→TCSBRUB removed from public exclusion; USDT peer #27; floating=-6 fix=-3; owner-approved RUB bank restore",
+    "zelle_rub_banks_restored": "20260807: 1540/1541/1542 un-excluded after inspection proved policy-only blocker"
   },
   "classification": {
     "CASHUSD": "LEGITIMATE_LOCATION_VARIANT",
@@ -156,6 +163,8 @@
   "currency_retirement": {
     "TUSDTRC20": 43,
     "DAI": 41,
+    "FTN_Bahamut": 60,
+    "A7A5": 73,
     "USDTTRC20_unaffected": 3
   }
 }

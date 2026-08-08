@@ -1,0 +1,841 @@
+{
+  "version": 3,
+  "approved_at": "2026-08-02T11:41:10Z",
+  "authority": "DERIVED_MARKET_BASELINE",
+  "count": 31,
+  "directions": {
+    "1220": {
+      "from": "TUSDTRC20",
+      "to": "BLRBBYN",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDBYN",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDBYN * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1221": {
+      "from": "TUSDTRC20",
+      "to": "CARDBYN",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDBYN",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDBYN * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1231": {
+      "from": "DAI",
+      "to": "CARDKZT",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDKZT",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDKZT * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1232": {
+      "from": "DAI",
+      "to": "BLRBBYN",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDBYN",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDBYN * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1234": {
+      "from": "DAI",
+      "to": "CARDAED",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDAED",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDAED * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1599": {
+      "from": "REVBUSD",
+      "to": "SBERRUB",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDRUB",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDRUB * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1600": {
+      "from": "REVBUSD",
+      "to": "SBPRUB",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDRUB",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDRUB * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1601": {
+      "from": "REVBUSD",
+      "to": "ACRUB",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDRUB",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDRUB * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1602": {
+      "from": "REVBUSD",
+      "to": "RFBRUB",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDRUB",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDRUB * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1603": {
+      "from": "REVBUSD",
+      "to": "TCSBRUB",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDRUB",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDRUB * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1606": {
+      "from": "REVBUSD",
+      "to": "OSDBUAH",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDUAH",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDUAH * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1607": {
+      "from": "REVBUSD",
+      "to": "MONOBUAH",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDUAH",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDUAH * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1608": {
+      "from": "REVBUSD",
+      "to": "ABUAH",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDUAH",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDUAH * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1609": {
+      "from": "REVBUSD",
+      "to": "P24UAH",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDUAH",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDUAH * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1610": {
+      "from": "REVBUSD",
+      "to": "USBUAH",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDUAH",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDUAH * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1622": {
+      "from": "REVBUSD",
+      "to": "CARDGEL",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDGEL",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDGEL * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1624": {
+      "from": "REVBUSD",
+      "to": "CARDRUB",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDRUB",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDRUB * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1626": {
+      "from": "REVBUSD",
+      "to": "CARDAMD",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDAMD",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDAMD * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1628": {
+      "from": "REVBUSD",
+      "to": "CARDUAH",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDUAH",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDUAH * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1634": {
+      "from": "REVBUSD",
+      "to": "RFBUAH",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDUAH",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDUAH * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1638": {
+      "from": "REVBUSD",
+      "to": "HLKBKZT",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDKZT",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDKZT * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1642": {
+      "from": "REVBUSD",
+      "to": "CARDBYN",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDBYN",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDBYN * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1644": {
+      "from": "REVBUSD",
+      "to": "CARDAED",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDAED",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDAED * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1646": {
+      "from": "REVBUSD",
+      "to": "BLRBBYN",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDBYN",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDBYN * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1650": {
+      "from": "REVBUSD",
+      "to": "IDAMD",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDAMD",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDAMD * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1652": {
+      "from": "REVBUSD",
+      "to": "CARDAMD",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDAMD",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDAMD * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1738": {
+      "from": "LTC",
+      "to": "BRBKZT",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "LTCUSDT",
+        "orientation": "asset_per_usdt"
+      },
+      "fiat_leg": {
+        "symbol": "USDKZT",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = LTCUSDT * USDKZT * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1739": {
+      "from": "USDTTRC20",
+      "to": "BRBKZT",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDKZT",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDKZT * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1756": {
+      "from": "TUSDTRC20",
+      "to": "BRBKZT",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDKZT",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDKZT * haircut",
+      "haircut": "0.999",
+      "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1222": {
+      "from": "TUSDTRC20",
+      "to": "CARDAED",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDAED",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDAED * haircut",
+      "haircut": "0.999",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    },
+    "1888": {
+      "from": "TUSDTRC20",
+      "to": "CARDCAD",
+      "public_aliases": [],
+      "asset_leg": {
+        "symbol": "USDT_PEG",
+        "orientation": "unity"
+      },
+      "fiat_leg": {
+        "symbol": "USDCAD",
+        "orientation": "fiat_per_usd"
+      },
+      "formula": "course = 1 * USDCAD * haircut",
+      "haircut": "0.999",
+      "freshness": {
+        "crypto_max_age_seconds": 900,
+        "fiat_max_age_seconds": 21600
+      },
+      "ownership": {
+        "parser_source_name": "Ручной курс",
+        "block_bestchange_overwrite": false,
+        "keep_bestchange_link_status": 0
+      },
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+    }
+  },
+  "note": "Admin-safe: never force-disable BestChange; prefer BC when link active. Removed dirs with live BC rates. | 20260808: removed ZELLEUSD outgoing ownership; ZelleUsdUsdtBenchmarkAuthority is sole ZELLE writer.",
+  "zelle_ownership_removed": {
+    "at": "20260808T110622Z",
+    "ids": [
+      1961,
+      1962,
+      1963,
+      1964,
+      1965,
+      1967,
+      1968,
+      1970,
+      1971,
+      1904
+    ],
+    "pairs": [
+      "ZELLEUSD/CARDUAH",
+      "ZELLEUSD/KSPBKZT",
+      "ZELLEUSD/HLKBKZT",
+      "ZELLEUSD/CARDBYN",
+      "ZELLEUSD/BLRBBYN",
+      "ZELLEUSD/CARDAED",
+      "ZELLEUSD/CARDCNY",
+      "ZELLEUSD/CARDINR",
+      "ZELLEUSD/CARDIDR",
+      "ZELLEUSD/CARDIDR"
+    ],
+    "reason": "ZELLE_SINGLE_RATE_AUTHORITY — derived must not write ZELLE course/parser_source_name"
+  }
+}

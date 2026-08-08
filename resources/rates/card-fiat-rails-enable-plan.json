@@ -1,0 +1,300 @@
+{
+  "generated_at": "2026-07-31T19:45:16Z",
+  "restore_course": [
+    {
+      "id": 1179,
+      "s": "WMZ",
+      "d": "MONOBUAH",
+      "course": "44.362801403041795822",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1217,
+      "s": "TUSDTRC20",
+      "d": "HLKBKZT",
+      "course": "456.640901896041132274",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1218,
+      "s": "TUSDTRC20",
+      "d": "KSPBKZT",
+      "course": "455.486068924158332792",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1219,
+      "s": "TUSDTRC20",
+      "d": "CARDKZT",
+      "course": "459.540045972386199078",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1228,
+      "s": "WMZ",
+      "d": "CARDAED",
+      "course": "3.5625119995869",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1276,
+      "s": "USDTSOL",
+      "d": "CASHAMD",
+      "course": "350.7828083501347403",
+      "export": 2,
+      "src": "BestChange"
+    },
+    {
+      "id": 1305,
+      "s": "USDTTRC20",
+      "d": "CARDRUB",
+      "course": "79.278334575",
+      "export": 2,
+      "src": "\u0420\u0443\u0447\u043d\u043e\u0439 \u043a\u0443\u0440\u0441"
+    },
+    {
+      "id": 1306,
+      "s": "USDTERC20",
+      "d": "CARDRUB",
+      "course": "79.278334575",
+      "export": 0,
+      "src": "\u0420\u0443\u0447\u043d\u043e\u0439 \u043a\u0443\u0440\u0441"
+    },
+    {
+      "id": 1307,
+      "s": "USDTBEP20",
+      "d": "CARDRUB",
+      "course": "79.278334575",
+      "export": 2,
+      "src": "\u0420\u0443\u0447\u043d\u043e\u0439 \u043a\u0443\u0440\u0441"
+    },
+    {
+      "id": 1316,
+      "s": "SBERRUB",
+      "d": "CARDRUB",
+      "course": "0.761904761904761905",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1319,
+      "s": "SBERRUB",
+      "d": "CARDAMD",
+      "course": "4.448256000557989233",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1321,
+      "s": "SBERRUB",
+      "d": "CASHAMD",
+      "course": "4.448256000557989233",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1546,
+      "s": "ZELLEUSD",
+      "d": "CARDRUB",
+      "course": "79.657104",
+      "export": 0,
+      "src": "Best"
+    },
+    {
+      "id": 1584,
+      "s": "XRP",
+      "d": "CARDRUB",
+      "course": "86.68570159347168",
+      "export": 2,
+      "src": "\u0420\u0443\u0447\u043d\u043e\u0439 \u043a\u0443\u0440\u0441"
+    },
+    {
+      "id": 1632,
+      "s": "REVBUSD",
+      "d": "KSPBKZT",
+      "course": "444.362590433357678001",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1692,
+      "s": "TUSDTRC20",
+      "d": "FFBKZT",
+      "course": "447.11268184426902648",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1710,
+      "s": "TUSDTRC20",
+      "d": "FRTBKZT",
+      "course": "448.232801596465789082",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1734,
+      "s": "TUSDTRC20",
+      "d": "JSNBKZT",
+      "course": "459.336014213572237731",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1767,
+      "s": "TUSDTRC20",
+      "d": "CARDTJS",
+      "course": "9.084440545936165225",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1789,
+      "s": "TUSDTRC20",
+      "d": "HUMOUZS",
+      "course": "11867.882580702521848039",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1801,
+      "s": "TUSDTRC20",
+      "d": "ELKGS",
+      "course": "85.731317628358296577",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1814,
+      "s": "TUSDTRC20",
+      "d": "CARDKGS",
+      "course": "85.827705036372923117",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1830,
+      "s": "TUSDTRC20",
+      "d": "CARDUZS",
+      "course": "11884.321702913255042153",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1850,
+      "s": "TUSDTRC20",
+      "d": "UPIINR",
+      "course": "93.491535743811434032",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1864,
+      "s": "TUSDTRC20",
+      "d": "PAYTMINR",
+      "course": "98.367749357162286689",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1875,
+      "s": "TUSDTRC20",
+      "d": "CARDIDR",
+      "course": "17635.632683038927998383",
+      "export": 0,
+      "src": "BestChange"
+    },
+    {
+      "id": 1973,
+      "s": "BTC",
+      "d": "CARDRUB",
+      "course": "5157055.196778816",
+      "export": 2,
+      "src": "\u0420\u0443\u0447\u043d\u043e\u0439 \u043a\u0443\u0440\u0441"
+    }
+  ],
+  "bc_ready": [],
+  "vis_dest": [
+    "CARDRUB",
+    "FFBKZT",
+    "BRBKZT",
+    "CARDCNY"
+  ],
+  "vis_src": [
+    "DAI"
+  ],
+  "derived_ids": [
+    133,
+    1217,
+    1218,
+    1219,
+    1220,
+    1221,
+    1231,
+    1232,
+    1234,
+    1247,
+    1248,
+    1249,
+    1250,
+    1251,
+    1252,
+    1276,
+    1599,
+    1600,
+    1601,
+    1602,
+    1603,
+    1606,
+    1607,
+    1608,
+    1609,
+    1610,
+    1622,
+    1624,
+    1626,
+    1628,
+    1634,
+    1638,
+    1642,
+    1644,
+    1646,
+    1650,
+    1652,
+    1684,
+    1703,
+    1721,
+    1738,
+    1739,
+    1744,
+    1756,
+    1917,
+    1961,
+    1962,
+    1963,
+    1964,
+    1965,
+    1967,
+    1968,
+    1970,
+    1971
+  ],
+  "sticky_protect": [
+    1274,
+    1275
+  ],
+  "keep_quarantined": [
+    737,
+    1330,
+    1351,
+    1361,
+    1370,
+    1384,
+    1409
+  ]
+}

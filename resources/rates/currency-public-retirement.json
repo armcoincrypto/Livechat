@@ -1,22 +1,29 @@
 {
-  "version": 1,
-  "approved_at": "20260806T222058Z",
+  "version": 2,
+  "approved_at": "20260808T113200Z",
   "policy": "retire_listed_currencies_from_new_public_operation_without_deleting_rows",
   "retire_currency_ids": [
     41,
-    43
+    43,
+    60,
+    73
   ],
   "retire_designation_xml": [
     "DAI",
-    "TUSDTRC20"
+    "TUSDTRC20",
+    "FTN Bahamut",
+    "FTN",
+    "A7A5"
   ],
   "never_retire_designation_xml": [
     "USDTTRC20",
     "ZELLEUSD"
   ],
   "notes": {
-    "43": "TUSDTRC20 owner-approved retirement",
-    "41": "DAI owner-approved retirement",
-    "zelle": "all ZELLEUSD directions deferred to dedicated audit"
+    "43": "TUSDTRC20 owner-approved retirement (preserved C3-B)",
+    "41": "DAI owner-approved retirement (preserved C3-B)",
+    "60": "FTN Bahamut owner-approved retirement 20260808 final catalog pass; historical tasks preserved",
+    "73": "A7A5 owner-approved retirement 20260808 final catalog pass; historical tasks preserved",
+    "zelle": "ZELLEUSD outgoing rate authority unchanged; retired destinations fail closed in ZelleUsdBenchmarkResolver"
   }
 }
