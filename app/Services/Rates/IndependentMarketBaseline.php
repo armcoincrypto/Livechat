@@ -254,7 +254,7 @@ final class IndependentMarketBaseline
     public function coverage(): array
     {
         $assets = ['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC', 'SOL', 'XMR', 'XRP', 'DOGE', 'ADA', 'BCH', 'ETC', 'DASH'];
-        $fiats = ['USD', 'EUR', 'GEL', 'AMD', 'RUB', 'UAH', 'KZT', 'BYN', 'AED', 'CNY', 'IDR', 'INR', 'CAD'];
+        $fiats = ['USD', 'EUR', 'GEL', 'AMD', 'RUB', 'UAH', 'KZT', 'BYN', 'AED', 'CNY', 'IDR', 'INR', 'CAD', 'THB'];
         $gaps = [];
         foreach ($assets as $a) {
             if ($a === 'USDT' || $a === 'USDC') {
@@ -264,7 +264,7 @@ final class IndependentMarketBaseline
                 $gaps[] = $a . 'USDT missing_or_stale';
             }
         }
-        foreach (['USDGEL', 'USDEUR', 'USDAMD', 'USDRUB', 'USDUAH', 'USDKZT', 'USDBYN', 'USDAED', 'USDCNY', 'USDIDR', 'USDINR', 'USDCAD'] as $fx) {
+        foreach (['USDGEL', 'USDEUR', 'USDAMD', 'USDRUB', 'USDUAH', 'USDKZT', 'USDBYN', 'USDAED', 'USDCNY', 'USDIDR', 'USDINR', 'USDCAD', 'USDTHB'] as $fx) {
             if ($this->quote($fx) === null) {
                 $gaps[] = $fx . ' missing_or_stale';
             }
@@ -445,6 +445,7 @@ final class IndependentMarketBaseline
             'USDIDR' => [['USD', 'IDR']],
             'USDINR' => [['USD', 'INR']],
             'USDCAD' => [['USD', 'CAD']],
+            'USDTHB' => [['USD', 'THB']],
             default => [],
         };
     }

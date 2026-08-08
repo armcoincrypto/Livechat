@@ -46,8 +46,10 @@ class DirectionDetailResource extends JsonResource
             if (!empty($surface['quote_allowed'])) {
                 $baseCourse = CalculatorFacade::setDirectionExchange($this->resource)->calculate()->toArray();
                 // Release A: server provides fixed/floating/display; default display = floating (percent fee).
+                // Never pass CalculatorFacade rate as base override — that double-applies
+                // floating_fee / legacy profit+add_course and bypasses ZELLE USDTTRC20 resolveBaseRate.
                 $canonical = \App\Services\Rates\CanonicalDirectionRateCalculator::make()
-                    ->websiteCoursePayload($this->resource, (string) ($baseCourse['rate'] ?? '0'));
+                    ->websiteCoursePayload($this->resource);
                 $coursePayload = array_merge($baseCourse, $canonical);
             } else {
                 $rateUnavailable = true;
@@ -65,6 +67,8 @@ class DirectionDetailResource extends JsonResource
         $response =  [
             'id' => $this->id,
             'type' => 'direction_exchange',
+            // Preserve numeric zeros (min_in/max_in=0). Default array_filter drops them and
+            // leaves the frontend without seeds → empty send amount / false precision errors.
             'attributes' => array_filter([
                 'course' => $coursePayload,
                 'rate_unavailable' => $rateUnavailable ?: null,
@@ -89,7 +93,16 @@ class DirectionDetailResource extends JsonResource
                 'text_selector_fee' => $this->when(!empty($this->text_selector_fee), $this->text_selector_fee),
                 'checkbox_agreements' => $this->getCheckboxAgreements(),
                 'verification_settings' => $this->getVerificationSettings(),
-            ]),
+            ], static function ($value) {
+                if ($value instanceof \Illuminate\Http\Resources\MissingValue) {
+                    return false;
+                }
+                if ($value === null || $value === '' || $value === false || $value === []) {
+                    return false;
+                }
+
+                return true;
+            }),
         ];
 
         // Верификация личности: базовые настройки берем с уровня валюты

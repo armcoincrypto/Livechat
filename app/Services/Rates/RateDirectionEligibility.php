@@ -162,6 +162,49 @@ final class RateDirectionEligibility
             ];
         }
 
+        // ZELLEUSD→dest: require exact valid USDTTRC20→dest benchmark (fail closed).
+        $zelleResolver = ZelleUsdBenchmarkResolver::make();
+        if ($zelleResolver->isZelleOutgoing($direction)) {
+            $bench = $zelleResolver->resolve($direction);
+            if (!$bench->eligible) {
+                $from = strtoupper((string) ($direction->currency1?->designation_xml ?? ''));
+                $to = strtoupper((string) ($direction->currency2?->designation_xml ?? ''));
+
+                return [
+                    'direction_id' => (int) $direction->id,
+                    'from' => $from,
+                    'to' => $to,
+                    'quote_allowed' => false,
+                    'order_allowed' => false,
+                    'export_allowed' => false,
+                    'BestChange_allowed' => false,
+                    'eligible_for_quote' => false,
+                    'eligible_for_order' => false,
+                    'eligible_for_export' => false,
+                    'classification' => $bench->reasonCode,
+                    'baseline_status' => 'zelle_usdt_benchmark_required',
+                    'policy_status' => 'not_applicable',
+                    'reserve_status' => 'not_applicable',
+                    'mapping_status' => [],
+                    'parity_status' => 'not_applicable',
+                    'blocking_reasons' => [$bench->reasonCode],
+                    'reasons' => [$bench->reasonCode],
+                    'error_code' => self::ERROR_DIRECTION_TEMPORARILY_UNAVAILABLE,
+                    'course_value' => (string) ($direction->course_value ?? ''),
+                    'baseline_rate' => $bench->benchmarkRate,
+                    'raw_market_deviation' => null,
+                    'unexplained_vs_expected_percent' => null,
+                    'active' => false,
+                    'quarantined' => true,
+                    'deprecated' => false,
+                    'status' => (int) ($direction->status ?? 0),
+                    'allow_export' => (int) ($direction->allow_export ?? 0),
+                    'rate_quarantine' => ['ok' => false, 'reason' => $bench->reasonCode],
+                    'provider_status' => ZelleUsdUsdtBenchmarkAuthority::PARSER_SOURCE_NAME,
+                ];
+            }
+        }
+
         $from = strtoupper((string) ($direction->currency1?->designation_xml ?? ''));
         $to = strtoupper((string) ($direction->currency2?->designation_xml ?? ''));
         // Every RUB destination is policy-bound. An unknown source identity is
@@ -269,7 +312,19 @@ final class RateDirectionEligibility
                 && (bool) $eval['export_allowed']
                 && $reserve['ok'];
 
-            if ($reviewClass) {
+            // ZELLEUSD single-rate authority: BASE is the USDTTRC20 peer / ZELLE
+            // hierarchy, not a free-floating CBR premium. Rub-family REVIEW vs CBR
+            // must not strip order/export from otherwise AUTO_CANONICAL ZELLE→RUB
+            // rows; hard quarantine / NO_BASELINE still fail closed above.
+            $zelleAutoCanonical = $from === 'ZELLEUSD'
+                && (string) ($direction->parser_source_name ?? '') === ZelleUsdUsdtBenchmarkAuthority::PARSER_SOURCE_NAME;
+            // Rub-family sets order_allowed/export_allowed=false on REVIEW itself;
+            // for ZELLE AUTO_CANONICAL that flag must not gate the exemption.
+            if ($reviewClass && $zelleAutoCanonical && !$blockQuote && $reserve['ok']) {
+                $payload['eligible_for_order'] = (bool) $payload['eligible_for_quote'];
+                $payload['eligible_for_export'] = (bool) $payload['eligible_for_quote'];
+                $reasons[] = 'zelle_authority_owns_rub_review_band';
+            } elseif ($reviewClass) {
                 $payload['eligible_for_order'] = false;
                 $payload['eligible_for_export'] = false;
                 $reasons[] = 'rub_family_review_public_blocked';

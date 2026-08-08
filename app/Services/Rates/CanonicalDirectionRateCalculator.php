@@ -12,9 +12,15 @@ use Throwable;
 /**
  * Single server authority for website / order / BestChange rates (Release A revised).
  *
- * Formula: final = base × (1 + fee_percent / 100)
+ * Non-ZELLE formula: final = base × (1 + mode_fee_percent / 100)
+ *   FLOATING → floating_fee; FIXED → fix_fee.
+ *
+ * ZELLEUSD outgoing (owner-approved):
+ *   FLOATING → benchmark × (1 + floating_fee/100)
+ *   FIXED    → benchmark × (1 + floating_fee/100) × (1 + fix_fee/100)
+ *   XML      → always FLOATING (never includes the additional fix_fee step)
+ *
  * Default public / order mode: FLOATING.
- * BestChange XML: always FLOATING (never fix_fee).
  */
 final class CanonicalDirectionRateCalculator
 {
@@ -42,15 +48,27 @@ final class CanonicalDirectionRateCalculator
             $baseRate = $this->resolveBaseRate($direction);
         }
 
+        $typeRateEnabled = (int) ($direction->is_type_rate ?? 0) === 1
+            || $channel === RateChannel::Bestchange;
+
+        // ZELLE FIXED compounds floating commercial adjustment then additional fix_fee.
+        // Non-ZELLE FIXED remains fix_fee alone (platform-wide legacy semantics).
+        if ($mode === RateMode::Fixed && $this->isZelleOutgoing($direction)) {
+            return $this->calculateZelleFixed(
+                $direction,
+                (string) $baseRate,
+                $channel,
+                $typeRateEnabled,
+            );
+        }
+
         $rawFee = $mode === RateMode::Fixed
             ? ($direction->fix_fee ?? '0')
             : ($direction->floating_fee ?? '0');
 
         // When type_rate is disabled, still expose fixed/floating as base (0% fee)
         // for API symmetry. BestChange always uses floating_fee (see calculateForExport).
-        if ((int) ($direction->is_type_rate ?? 0) !== 1
-            && $channel !== RateChannel::Bestchange
-        ) {
+        if (!$typeRateEnabled) {
             $rawFee = '0';
         }
 
@@ -103,6 +121,87 @@ final class CanonicalDirectionRateCalculator
             reason: $normalized['ok'] ? null : $normalized['reason'],
             feeClassification: $normalized['classification'],
         );
+    }
+
+    /**
+     * ZELLEUSD FIXED: floating_fee first, then fix_fee once. No legacy profit/add_course.
+     * adjustmentValue reports the additional fix_fee percent (admin field semantics).
+     */
+    private function calculateZelleFixed(
+        DirectionExchange $direction,
+        string $baseRate,
+        RateChannel $channel,
+        bool $typeRateEnabled,
+    ): CalculatedDirectionRate {
+        $floatRaw = $typeRateEnabled ? ($direction->floating_fee ?? '0') : '0';
+        $fixRaw = $typeRateEnabled ? ($direction->fix_fee ?? '0') : '0';
+
+        $floatNorm = $this->normalizer->toPercentExpressionOrZero($floatRaw);
+        $fixNorm = $this->normalizer->toPercentExpressionOrZero($fixRaw);
+
+        if (!$floatNorm['ok'] || !$fixNorm['ok']) {
+            Log::warning('canonical_zelle_fixed_fee_malformed', [
+                'direction_id' => $direction->id,
+                'channel' => $channel->value,
+                'floating_raw' => $floatRaw,
+                'fix_raw' => $fixRaw,
+                'floating_classification' => $floatNorm['classification'],
+                'fix_classification' => $fixNorm['classification'],
+            ]);
+        }
+
+        $afterFloating = $this->normalizer->applyPercentToRate(
+            $baseRate,
+            $floatNorm['percent'],
+            self::ROUNDING_SCALE
+        );
+        $final = $this->normalizer->applyPercentToRate(
+            $afterFloating,
+            $fixNorm['percent'],
+            self::ROUNDING_SCALE
+        );
+
+        $ok = $floatNorm['ok'] && $fixNorm['ok'];
+        $classification = !$fixNorm['ok']
+            ? $fixNorm['classification']
+            : $floatNorm['classification'];
+
+        if (bccomp($final, '0', self::ROUNDING_SCALE) <= 0) {
+            return new CalculatedDirectionRate(
+                directionId: (int) $direction->id,
+                baseRate: $baseRate,
+                mode: RateMode::Fixed,
+                adjustmentValue: $fixNorm['percent'],
+                adjustmentUnit: RateAdjustmentUnit::Percent,
+                finalRate: '0',
+                roundingScale: self::ROUNDING_SCALE,
+                sourceTimestamp: $this->sourceTimestamp($direction),
+                channel: $channel,
+                eligible: false,
+                reason: 'non_positive_final_rate',
+                feeClassification: $classification,
+            );
+        }
+
+        return new CalculatedDirectionRate(
+            directionId: (int) $direction->id,
+            baseRate: $baseRate,
+            mode: RateMode::Fixed,
+            adjustmentValue: $fixNorm['percent'],
+            adjustmentUnit: RateAdjustmentUnit::Percent,
+            finalRate: $final,
+            roundingScale: self::ROUNDING_SCALE,
+            sourceTimestamp: $this->sourceTimestamp($direction),
+            channel: $channel,
+            eligible: true,
+            reason: $ok ? null : ($fixNorm['reason'] ?? $floatNorm['reason']),
+            feeClassification: $classification,
+        );
+    }
+
+    private function isZelleOutgoing(DirectionExchange $direction): bool
+    {
+        return (int) ($direction->id_currency1 ?? 0) === ZelleUsdBenchmarkResolver::ZELLE_CURRENCY_ID;
     }
 
     /**
@@ -180,6 +279,30 @@ final class CanonicalDirectionRateCalculator
 
     private function resolveBaseRate(DirectionExchange $direction): string
     {
+        // ZELLEUSD outgoing: base is exact USDTTRC20→destination benchmark (never BC ZELLE offers).
+        try {
+            $zelleResolver = ZelleUsdBenchmarkResolver::make();
+            if ($zelleResolver->isZelleOutgoing($direction)) {
+                $bench = $zelleResolver->resolve($direction);
+                if ($bench->eligible && $bench->benchmarkRate !== null
+                    && is_numeric($bench->benchmarkRate)
+                    && bccomp($bench->benchmarkRate, '0', self::ROUNDING_SCALE) > 0
+                ) {
+                    return $bench->benchmarkRate;
+                }
+
+                return '0';
+            }
+        } catch (Throwable $e) {
+            Log::error('zelle_benchmark_base_resolve_failed', [
+                'direction_id' => $direction->id ?? null,
+                'message' => $e->getMessage(),
+            ]);
+            if ((int) ($direction->id_currency1 ?? 0) === ZelleUsdBenchmarkResolver::ZELLE_CURRENCY_ID) {
+                return '0';
+            }
+        }
+
         try {
             $payload = CalculatorFacade::setDirectionExchange($direction)->calculate()->toArray();
             $rate = (string) ($payload['rate'] ?? '0');

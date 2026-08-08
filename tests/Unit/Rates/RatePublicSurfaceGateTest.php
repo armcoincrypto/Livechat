@@ -20,17 +20,6 @@ use PHPUnit\Framework\TestCase;
  */
 final class RatePublicSurfaceGateTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        $dir = sys_get_temp_dir() . '/rate_surface_mapping_' . getmypid();
-        if (is_dir($dir)) {
-            @unlink($dir . '/currencies.json');
-            @unlink($dir . '/codes.json');
-            @rmdir($dir);
-        }
-        parent::tearDown();
-    }
-
     private function approvedPolicy(): RubFamilyPremiumPolicy
     {
         return new RubFamilyPremiumPolicy([

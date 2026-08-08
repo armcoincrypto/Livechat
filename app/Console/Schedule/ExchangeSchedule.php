@@ -225,6 +225,13 @@ class ExchangeSchedule
             ->appendOutputTo(storage_path('logs/compiler_bestchange.log'));
         self::applyMinuteCadence($bestchange, $ratesMinutes);
 
+        // ZELLEUSD outgoing: refresh course_value from USDTTRC20→dest after BC peer updates.
+        $zelle = $schedule->command('rates:zelleusd-usdt-preview --all --apply')
+            ->onOneServer()
+            ->withoutOverlapping(120)
+            ->appendOutputTo(storage_path('logs/zelle_usdt_benchmark.log'));
+        self::applyMinuteCadence($zelle, $ratesMinutes);
+
         // Проверка и обновление файлов курсов / public XML exports
         $scheme = $schedule->exec("{$compilerWrapper} scheme:files")
             ->onOneServer()
@@ -265,6 +272,18 @@ class ExchangeSchedule
             ->withoutOverlapping(55);
 
         $schedule->command('proxy:prune-health-logs --days=30')->dailyAt('03:15');
+
+        // Bounded rates_history_logs retention (90d). Multiple daily runs drain backlog safely.
+        $schedule->command('rates-history:prune --days=90 --batch=5000 --max-rows=50000 --sleep-ms=50')
+            ->hourlyAt(20)
+            ->onOneServer()
+            ->withoutOverlapping(50);
+
+        // Batch 11 / C.3C: 30-day session_attributions retention (attribution table only).
+        $schedule->command('analytics:attribution-prune --days=30 --batch=500 --max-rows=5000 --sleep-ms=50')
+            ->dailyAt('03:25')
+            ->onOneServer()
+            ->withoutOverlapping(50);
 
         // Часовой мониторинг данных
         $schedule->command('monitoring:hourly')->hourly();

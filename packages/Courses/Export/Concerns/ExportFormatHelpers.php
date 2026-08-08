@@ -102,9 +102,11 @@ trait ExportFormatHelpers
                 return false;
             }
 
-            // Every verified RUB destination reaches canonical eligibility
-            // before an unknown source mapping can reject the export.
-            if (!$this->passesIndependentCryptoRubExportGate($rate, $fromCode, $toCode)) {
+            // Every destination must pass canonical BestChange export eligibility
+            // (quote∧order∧export∧BC∧¬excluded) before mapping checks can reject.
+            // Non-RUB pairs previously bypassed RateDirectionEligibility here and
+            // could export without orderability; RUB already used this gate.
+            if (!$this->passesCanonicalBestChangeExportGate($rate)) {
                 return false;
             }
             if ($fromCode !== '' && !$this->isExportMappingAllowed($fromCode)) {
@@ -163,28 +165,38 @@ trait ExportFormatHelpers
     }
 
     /**
-     * Every RUB destination uses the canonical public-surface decision.
-     * Unknown source assets and missing/stale baselines therefore fail closed
-     * instead of bypassing policy evaluation.
+     * Canonical BestChange XML membership: CTX_BESTCHANGE_EXPORT
+     * (export_allowed ∧ BestChange_allowed via RateDirectionEligibility).
+     *
+     * Formerly limited to RUB destinations (`passesIndependentCryptoRubExportGate`);
+     * non-RUB pairs now fail closed the same way so quoteable≠orderable rows
+     * cannot reach the partner feed.
      */
-    protected function passesIndependentCryptoRubExportGate(DirectionExchange $rate, string $fromCode, string $toCode): bool
+    protected function passesCanonicalBestChangeExportGate(DirectionExchange $rate): bool
     {
-        if (!$this->isRubDestination($toCode)) {
-            return true;
-        }
-
         try {
-            $surface = \App\Services\Rates\RateDirectionEligibility::make()->evaluateDirection($rate);
+            $decision = \App\Services\Rates\CanonicalDirectionEligibility::make()
+                ->evaluate($rate, \App\Services\Rates\CanonicalDirectionEligibility::CTX_BESTCHANGE_EXPORT);
 
-            return !empty($surface['export_allowed']) && !empty($surface['BestChange_allowed']);
+            return !empty($decision['eligible']);
         } catch (Throwable $e) {
-            Log::error('crypto_rub_export_gate_failed', [
+            Log::error('canonical_bestchange_export_gate_failed', [
                 'direction_exchange_id' => $rate->id ?? null,
                 'message' => $e->getMessage(),
             ]);
 
             return false;
         }
+    }
+
+    /**
+     * @deprecated Use passesCanonicalBestChangeExportGate — retained for tests/back-compat callers.
+     */
+    protected function passesIndependentCryptoRubExportGate(DirectionExchange $rate, string $fromCode, string $toCode): bool
+    {
+        unset($fromCode, $toCode);
+
+        return $this->passesCanonicalBestChangeExportGate($rate);
     }
 
     protected function isRubDestination(string $toCode): bool

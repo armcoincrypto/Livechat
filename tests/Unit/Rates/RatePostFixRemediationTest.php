@@ -14,22 +14,6 @@ use PHPUnit\Framework\TestCase;
 
 final class RatePostFixRemediationTest extends TestCase
 {
-    /** @var list<string> */
-    private array $tempDirsToClean = [];
-
-    protected function tearDown(): void
-    {
-        foreach ($this->tempDirsToClean as $dir) {
-            if (is_dir($dir)) {
-                @unlink($dir . '/bestchange/currencies.json');
-                @unlink($dir . '/bestchange-codes.json');
-                @rmdir($dir . '/bestchange');
-                @rmdir($dir);
-            }
-        }
-        parent::tearDown();
-    }
-
     public function testTonPrusdOrientationUsesDirectUsdtAskNotReciprocal(): void
     {
         // Rapira TON-USDT ask 1.3042 → after 0.5% profit → 1.297679 (observed course_value)
@@ -167,7 +151,6 @@ final class RatePostFixRemediationTest extends TestCase
     public function testCatalogGuardDetectsPrusdVndCollision(): void
     {
         $dir = sys_get_temp_dir() . '/exswaping_bc_guard_' . getmypid();
-        $this->tempDirsToClean[] = $dir;
         @mkdir($dir . '/bestchange', 0777, true);
         file_put_contents($dir . '/bestchange/currencies.json', json_encode([
             ['id' => 108, 'name' => '[CARDVND] - Банковская карта VND'],

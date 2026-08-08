@@ -85,7 +85,7 @@ final class TrustedBaselineRecoveryTest extends TestCase
         $this->assertSame('USDT', IndependentMarketBaseline::assetFromCode('USDTTRC20'));
         $this->assertSame('BNB', IndependentMarketBaseline::assetFromCode('BNBBEP20'));
         $this->assertSame('ZEC', IndependentMarketBaseline::assetFromCode('ZEC'));
-        $this->assertSame('DASH', IndependentMarketBaseline::assetFromCode('DASH'));
+        $this->assertNull(IndependentMarketBaseline::assetFromCode('DASH'));
     }
 
     public function testStaleZecQuoteRejected(): void

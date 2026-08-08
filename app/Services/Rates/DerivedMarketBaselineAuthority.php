@@ -175,6 +175,23 @@ final class DerivedMarketBaselineAuthority
             return ['ok' => false, 'reason' => 'direction_missing', 'eval' => $eval];
         }
 
+        // ZELLEUSD outgoing is exclusively owned by ZelleUsdUsdtBenchmarkAuthority.
+        // Derived may still exist as a READ upstream for other pairs, but must never
+        // write course_value / parser_source_name on ZELLE rows.
+        $zelleDeny = ZelleOutgoingRateWriteGuard::denyGenericWrite(
+            $directionId,
+            'DerivedMarketBaselineAuthority'
+        );
+        if ($zelleDeny['blocked']) {
+            return [
+                'ok' => true,
+                'skipped' => $zelleDeny['reason'],
+                'direction_id' => $directionId,
+                'dry_run' => $dryRun,
+                'eval' => $eval,
+            ];
+        }
+
         // Prefer live BestChange when admin enabled it — do not overwrite course/parser.
         $bc = DB::table('bestchange_directions')
             ->where('id_direction_exchange', $directionId)
