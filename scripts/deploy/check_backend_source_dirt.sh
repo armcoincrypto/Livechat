@@ -44,6 +44,9 @@ if os.path.isfile(manifest_path):
 
 PROD_RE = re.compile(
     r"^(app/Services/Rates/|resources/rates/|resources/deploy/|"
+    r"config/calculator\.php|"
+    r"packages/Calculator/(SourceChecks\.php|Strategies/(Derived|Zelle)BaselineStrategy\.php)|"
+    r"packages/Courses/Console/UpdateCoursesConsole\.php|"
     r"scripts/deploy/(apply_backend_protected_patch|verify_backend_candidate|"
     r"exswaping_deploy_lock|test_release_integrity|check_backend_source_dirt)|"
     r"packages/BestChange/Services/DirectionExchangeRecalculateService\.php|"

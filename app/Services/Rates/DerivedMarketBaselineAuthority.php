@@ -96,6 +96,7 @@ final class DerivedMarketBaselineAuthority
             $asset = $this->baseline->quote($assetSym);
         }
         // USD destinations (ADVCUSD/CASHUSD/…): fiat leg is unity via USDT_PEG.
+        $fiatOri = (string) ($cfg['fiat_leg']['orientation'] ?? '');
         if (in_array($fiatSym, ['USDT_PEG', 'UNITY', 'USDT', 'USDUSD'], true)) {
             $fiat = [
                 'rate' => '1',
@@ -106,6 +107,15 @@ final class DerivedMarketBaselineAuthority
                 'divergence' => null,
                 'selection_reason' => 'usd_peg',
             ];
+        } elseif ($fiatOri === 'inverse_usdt') {
+            $q = $this->baseline->quote($fiatSym);
+            if ($q !== null && isset($q['rate']) && (float) $q['rate'] > 0) {
+                $fiat = $q;
+                $fiat['rate'] = bcdiv('1', (string) $q['rate'], 18);
+                $fiat['selection_reason'] = 'inverse_usdt';
+            } else {
+                $fiat = null;
+            }
         } else {
             $fiat = $this->baseline->quote($fiatSym);
         }

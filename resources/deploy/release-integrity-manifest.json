@@ -231,6 +231,54 @@
       "candidate_sha256": "7fc308a46aa0aae8f99f6f8c20c00d8195292870d50915af7c03166b9089e191",
       "sha256": "0e0b67c3614c5194427e0535b8bf75921b698904c3b47457ede3c8286308b3cd",
       "class": null
+    },
+    {
+      "path": "packages/Calculator/SourceChecks.php",
+      "required": true,
+      "candidate_sha256": "9dfa967754e3c79d4c2c4e3e037a63e77381937d41d5fd88d40d7e14c7b3a327",
+      "class": null
+    },
+    {
+      "path": "packages/Calculator/Strategies/DerivedBaselineStrategy.php",
+      "required": true,
+      "candidate_sha256": "a862c2fce776439277be70467933efb4622e5b20e461c88a2bf9ffd821684231",
+      "class": null
+    },
+    {
+      "path": "packages/Calculator/Strategies/ZelleBaselineStrategy.php",
+      "required": true,
+      "candidate_sha256": "0658fa50c1bfe9db39f11c683646d41f472f9b439f7cfd430f8311e71c91d62b",
+      "class": null
+    },
+    {
+      "path": "config/calculator.php",
+      "required": true,
+      "candidate_sha256": "ee86fa7b80e4d3cb9e4002e44ce05d4091761756550fbf4630ef79642021abb5",
+      "class": null
+    },
+    {
+      "path": "packages/Courses/Console/UpdateCoursesConsole.php",
+      "required": true,
+      "candidate_sha256": "9312eda561015bd8851a4d0ac711add991fa55f1d8818fb04dc31d21e7f2f951",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/DerivedMarketBaselineAuthority.php",
+      "required": true,
+      "candidate_sha256": "65979ec1f3334da641b1998d30ca06312b3b7cb26f62100fc42921d4e2ac14b0",
+      "class": null
+    },
+    {
+      "path": "resources/rates/derived-market-baseline-directions.json",
+      "required": true,
+      "candidate_sha256": "6b9fa29b125e72d0f50354d6cb0da4c8e6c6101fa382a1beaa26fe02597f670a",
+      "class": null
+    },
+    {
+      "path": "scripts/deploy/check_backend_source_dirt.sh",
+      "required": true,
+      "candidate_sha256": "0e90a02f9f2d8554ab182913397c5b9950af195d4c8fc835d18cffc7a1a849a8",
+      "class": null
     }
   ]
 }
