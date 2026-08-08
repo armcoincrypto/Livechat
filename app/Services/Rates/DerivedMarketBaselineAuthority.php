@@ -95,7 +95,20 @@ final class DerivedMarketBaselineAuthority
         } else {
             $asset = $this->baseline->quote($assetSym);
         }
-        $fiat = $this->baseline->quote($fiatSym);
+        // USD destinations (ADVCUSD/CASHUSD/…): fiat leg is unity via USDT_PEG.
+        if (in_array($fiatSym, ['USDT_PEG', 'UNITY', 'USDT', 'USDUSD'], true)) {
+            $fiat = [
+                'rate' => '1',
+                'source' => 'usd_peg',
+                'as_of' => gmdate('Y-m-d H:i:s'),
+                'age_seconds' => 0,
+                'sample_size' => 1,
+                'divergence' => null,
+                'selection_reason' => 'usd_peg',
+            ];
+        } else {
+            $fiat = $this->baseline->quote($fiatSym);
+        }
         $components = [
             'asset_leg' => $asset,
             'fiat_leg' => $fiat,
