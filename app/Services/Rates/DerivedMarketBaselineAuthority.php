@@ -219,7 +219,7 @@ final class DerivedMarketBaselineAuthority
             $action['write'] = [
                 'course_value' => $eval['rate'],
                 'manual_rate_value' => $eval['rate'],
-                'parser_source_name' => (string) ($cfg['ownership']['parser_source_name'] ?? 'Ручной курс'),
+                'parser_source_name' => (string) ($cfg['ownership']['parser_source_name'] ?? 'DERIVED_MARKET_BASELINE'),
                 'is_error_rate' => 0,
                 'error_rate_text' => null,
                 'status' => 1,

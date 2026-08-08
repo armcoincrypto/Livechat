@@ -239,9 +239,15 @@ final class IndependentMarketBaseline
             return 'USDT';
         }
 
+        // PEPE local designation is title-case "Pepe"; normalize already uppercased above.
+        if ($code === 'PEPE') {
+            return 'PEPE';
+        }
+
         foreach ([
-            'USDT', 'USDC', 'BTC', 'ETH', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC',
+            'USDT', 'USDC', 'TUSD', 'BTC', 'ETH', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC',
             'SOL', 'XMR', 'XRP', 'DOGE', 'ADA', 'BCH', 'ETC', 'DASH',
+            'DOT', 'NEO', 'XLM', 'XTZ', 'SHIB', 'PEPE',
         ] as $asset) {
             if ($code === $asset || str_starts_with($code, $asset)) {
                 return $asset;
@@ -253,18 +259,28 @@ final class IndependentMarketBaseline
 
     public function coverage(): array
     {
-        $assets = ['BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC', 'SOL', 'XMR', 'XRP', 'DOGE', 'ADA', 'BCH', 'ETC', 'DASH'];
-        $fiats = ['USD', 'EUR', 'GEL', 'AMD', 'RUB', 'UAH', 'KZT', 'BYN', 'AED', 'CNY', 'IDR', 'INR', 'CAD', 'THB'];
+        $assets = [
+            'BTC', 'ETH', 'USDT', 'USDC', 'TUSD', 'BNB', 'TRX', 'TON', 'ZEC', 'LTC',
+            'SOL', 'XMR', 'XRP', 'DOGE', 'ADA', 'BCH', 'ETC', 'DASH',
+            'DOT', 'NEO', 'XLM', 'XTZ', 'SHIB', 'PEPE',
+        ];
+        $fiats = [
+            'USD', 'EUR', 'GEL', 'AMD', 'RUB', 'UAH', 'KZT', 'BYN', 'AED', 'CNY',
+            'IDR', 'INR', 'CAD', 'THB', 'KGS', 'TJS', 'UZS',
+        ];
         $gaps = [];
         foreach ($assets as $a) {
-            if ($a === 'USDT' || $a === 'USDC') {
+            if ($a === 'USDT' || $a === 'USDC' || $a === 'TUSD') {
                 continue;
             }
             if ($this->quote($a . 'USDT') === null) {
                 $gaps[] = $a . 'USDT missing_or_stale';
             }
         }
-        foreach (['USDGEL', 'USDEUR', 'USDAMD', 'USDRUB', 'USDUAH', 'USDKZT', 'USDBYN', 'USDAED', 'USDCNY', 'USDIDR', 'USDINR', 'USDCAD', 'USDTHB'] as $fx) {
+        foreach ([
+            'USDGEL', 'USDEUR', 'USDAMD', 'USDRUB', 'USDUAH', 'USDKZT', 'USDBYN', 'USDAED',
+            'USDCNY', 'USDIDR', 'USDINR', 'USDCAD', 'USDTHB', 'USDKGS', 'USDTJS', 'USDUZS',
+        ] as $fx) {
             if ($this->quote($fx) === null) {
                 $gaps[] = $fx . ' missing_or_stale';
             }
@@ -431,6 +447,13 @@ final class IndependentMarketBaseline
             'BCHUSDT' => [['BCH', 'USDT'], ['BCH', 'USD']],
             'ETCUSDT' => [['ETC', 'USDT'], ['ETC', 'USD']],
             'DASHUSDT' => [['DASH', 'USDT'], ['DASH', 'USD']],
+            'DOTUSDT' => [['DOT', 'USDT'], ['DOT', 'USD']],
+            'NEOUSDT' => [['NEO', 'USDT'], ['NEO', 'USD']],
+            'XLMUSDT' => [['XLM', 'USDT'], ['XLM', 'USD']],
+            'XTZUSDT' => [['XTZ', 'USDT'], ['XTZ', 'USD']],
+            'SHIBUSDT' => [['SHIB', 'USDT'], ['SHIB', 'USD']],
+            'PEPEUSDT' => [['PEPE', 'USDT'], ['PEPE', 'USD'], ['1000PEPE', 'USDT']],
+            'TUSDUSDT' => [['TUSD', 'USDT'], ['TUSD', 'USD']],
             'USDCUSDT' => [['USDC', 'USDT'], ['USDC', 'USD']],
             'USDTRUB' => [['USDT', 'RUB'], ['USD', 'RUB']],
             'USDGEL' => [['USD', 'GEL']],
@@ -446,6 +469,9 @@ final class IndependentMarketBaseline
             'USDINR' => [['USD', 'INR']],
             'USDCAD' => [['USD', 'CAD']],
             'USDTHB' => [['USD', 'THB']],
+            'USDKGS' => [['USD', 'KGS']],
+            'USDTJS' => [['USD', 'TJS']],
+            'USDUZS' => [['USD', 'UZS']],
             default => [],
         };
     }
