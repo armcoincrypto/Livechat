@@ -1,8 +1,8 @@
 {
     "version": 3,
-    "approved_at": "2026-08-08T21:23:35Z",
+    "approved_at": "2026-08-08T21:38:24Z",
     "authority": "DERIVED_MARKET_BASELINE",
-    "count": 810,
+    "count": 841,
     "directions": {
         "1220": {
             "from": "TUSDTRC20",
@@ -20574,6 +20574,781 @@
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
                 "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "701": {
+            "from": "USDCERC20",
+            "to": "USDTTRC20",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1046": {
+            "from": "USDTBEP20",
+            "to": "USDTTON",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1267": {
+            "from": "CASHUSD",
+            "to": "USDTBEP20",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1324": {
+            "from": "USDTTRC20",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1325": {
+            "from": "USDTERC20",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1326": {
+            "from": "USDTSOL",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1327": {
+            "from": "USDTTON",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1328": {
+            "from": "USDTBEP20",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1329": {
+            "from": "BTC",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "BTCUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1330": {
+            "from": "LTC",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "LTCUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1331": {
+            "from": "BNBBEP20",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "BNBUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1332": {
+            "from": "DASH",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "DASHUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1333": {
+            "from": "ETH",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "ETHUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1334": {
+            "from": "GRAM",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "TONUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1335": {
+            "from": "USDCERC20",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1336": {
+            "from": "XMR",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "XMRUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1337": {
+            "from": "BCH",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "BCHUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "2678": {
+            "from": "ADA",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "ADAUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "2681": {
+            "from": "DOGE",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "DOGEUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "2683": {
+            "from": "DOT",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "DOTUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "2685": {
+            "from": "ETC",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "ETCUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "2687": {
+            "from": "NEO",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "NEOUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "2689": {
+            "from": "SHIBBEP20",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "SHIBUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "2691": {
+            "from": "SHIBERC20",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "SHIBUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "2692": {
+            "from": "SOL",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "SOLUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "2694": {
+            "from": "TRX",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "TRXUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "2696": {
+            "from": "XLM",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "XLMUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "2697": {
+            "from": "XRP",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "XRPUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "2699": {
+            "from": "XTZ",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "XTZUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "2701": {
+            "from": "ZEC",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "ZECUSDT",
+                "orientation": "asset_per_usdt"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "2703": {
+            "from": "TUSDERC20",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"

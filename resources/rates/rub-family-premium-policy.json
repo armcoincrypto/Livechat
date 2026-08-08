@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "schema": "rub_family_premium_policy_v3",
   "approved": true,
   "approved_at": "2026-07-20T14:25:23Z",
@@ -113,6 +113,20 @@
       "order_allowed_when_approved": true,
       "export_allowed_when_approved": true
     },
+    "PRRUB": {
+      "label": "Payeer RUB",
+      "destination_codes": [
+        "PRRUB"
+      ],
+      "decision": "APPROVE",
+      "target_premium_min_percent": 3.0,
+      "target_premium_max_percent": 6.0,
+      "warning_premium_percent": 7.0,
+      "hard_maximum_premium_percent": 9.0,
+      "order_allowed_when_approved": true,
+      "export_allowed_when_approved": true,
+      "notes": "Website/order enabled via derived USDRUB baseline. BestChange export still fail-closed while live catalog mapping is ABSENT (direction allow_export=0 + mapping verifier)."
+    },
     "OTHER_RUB": {
       "label": "Other RUB rails (unverified)",
       "destination_codes": [
@@ -127,6 +141,6 @@
       "export_allowed_when_approved": false
     }
   },
-  "updated_at": "2026-07-28T11:00:00Z",
-  "update_note": "Map MTSBRUB into CARDRUB family; enable baselines for DASH/XMR/BCH/ETC/XRP/DOGE/SOL."
+  "updated_at": "2026-08-08T21:38:23Z",
+  "update_note": "Approve PRRUB (Payeer RUB) for website/order with derived USDRUB baseline; BestChange export remains blocked until live catalog mapping VERIFIED"
 }
