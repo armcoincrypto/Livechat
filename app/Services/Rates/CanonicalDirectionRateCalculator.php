@@ -303,6 +303,25 @@ final class CanonicalDirectionRateCalculator
             }
         }
 
+        // Derived-market ownership: course_value IS the automatic BASE.
+        // Do not route through Calculator profit/add_course (avoids double commercial %).
+        $parser = (string) ($direction->parser_source_name ?? '');
+        $dirId = (int) ($direction->id ?? 0);
+        if (
+            $dirId > 0
+            && (
+                $parser === 'DERIVED_MARKET_BASELINE'
+                || DerivedMarketBaselineAuthority::fromStorageApp()->owns($dirId)
+            )
+        ) {
+            $derivedBase = (string) ($direction->course_value ?? '0');
+            if (is_numeric($derivedBase) && bccomp($derivedBase, '0', self::ROUNDING_SCALE) > 0) {
+                return $derivedBase;
+            }
+
+            return '0';
+        }
+
         try {
             $payload = CalculatorFacade::setDirectionExchange($direction)->calculate()->toArray();
             $rate = (string) ($payload['rate'] ?? '0');
