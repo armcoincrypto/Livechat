@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Rates;
 
 /**
- * C3-B: owner-approved currency public retirement (TUSDTRC20, DAI, FTN, A7A5).
+ * C3-B: owner-approved currency public retirement (TUSDTRC20, DAI, FTN, A7A5, SHIBBEP20).
  * Blocks new public catalog/quote/order/export without deleting rows.
  * ZELLEUSD is intentionally not listed here.
  */

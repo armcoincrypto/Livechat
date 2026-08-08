@@ -11,7 +11,7 @@
     {
       "path": "app/Services/Rates/CurrencyPublicRetirement.php",
       "required": true,
-      "candidate_sha256": "76eb3e740c7fe3b6c5abcad224e4195b8bdd376e9613893482a7ee877f3446f2",
+      "candidate_sha256": "cefab467ac112e87cab203cb58a34b0b20df5cc53740ab7df5d3b504b2e67309",
       "class": null
     },
     {
@@ -126,7 +126,7 @@
     {
       "path": "resources/rates/currency-public-retirement.json",
       "required": true,
-      "candidate_sha256": "47d6377b25fa63733881e572433af5a68d1d9b1c27e5fa460c4bc61853bb3287",
+      "candidate_sha256": "993ab07e245c2f17a8727c5ab8ddf5dace244a285e0d1c34ad25addb263805da",
       "class": null
     },
     {
@@ -271,7 +271,7 @@
     {
       "path": "resources/rates/derived-market-baseline-directions.json",
       "required": true,
-      "candidate_sha256": "6b9fa29b125e72d0f50354d6cb0da4c8e6c6101fa382a1beaa26fe02597f670a",
+      "candidate_sha256": "0ead8fcc4b43ae60cabd93bc96990893ba5589fbf38ccb686bed7e14be0b1b5b",
       "class": null
     },
     {

@@ -1,19 +1,21 @@
 {
-  "version": 2,
-  "approved_at": "20260808T113200Z",
+  "version": 3,
+  "approved_at": "20260808T223000Z",
   "policy": "retire_listed_currencies_from_new_public_operation_without_deleting_rows",
   "retire_currency_ids": [
+    34,
     41,
     43,
     60,
     73
   ],
   "retire_designation_xml": [
+    "A7A5",
     "DAI",
-    "TUSDTRC20",
-    "FTN Bahamut",
     "FTN",
-    "A7A5"
+    "FTN Bahamut",
+    "SHIBBEP20",
+    "TUSDTRC20"
   ],
   "never_retire_designation_xml": [
     "USDTTRC20",
@@ -24,6 +26,7 @@
     "41": "DAI owner-approved retirement (preserved C3-B)",
     "60": "FTN Bahamut owner-approved retirement 20260808 final catalog pass; historical tasks preserved",
     "73": "A7A5 owner-approved retirement 20260808 final catalog pass; historical tasks preserved",
-    "zelle": "ZELLEUSD outgoing rate authority unchanged; retired destinations fail closed in ZelleUsdBenchmarkResolver"
+    "zelle": "ZELLEUSD outgoing rate authority unchanged; retired destinations fail closed in ZelleUsdBenchmarkResolver",
+    "34": "SHIBBEP20 owner-approved retirement 20260809 all-destinations pass; SHIBERC20 remains wanted; historical tasks preserved"
   }
 }
