@@ -815,9 +815,8 @@ class Calculator implements Arrayable
      */
     protected function applyProfitAdjustments(CalculatorMathService $mathValue): void
     {
-        // Automatic market authorities: commercial % lives only in floating_fee/fix_fee
-        // (CanonicalDirectionRateCalculator / type_rate). Legacy «Прибыль» must not
-        // stack into course_value / exchange_rate / quotes (admin vs BestChange drift).
+        // Automatic market authorities: commercial % lives in CanonicalDirectionRateCalculator
+        // (DERIVED/ZELLE via «Прибыль» → fee=-profit). Do not bake into course_value.
         $parser = (string) ($this->directionExchange->parser_source_name ?? '');
         if (
             $parser === 'DERIVED_MARKET_BASELINE'
@@ -834,10 +833,21 @@ class Calculator implements Arrayable
         $profitPercent = (string) ($profitPercentSource ?? '0');
 
         if ($this->isGreaterThanZero($profitPercent)) {
+            // +profit = more margin (worse for customer)
             if ($this->isInverted) {
                 $mathValue->addPercentage($profitPercent);
             } else {
                 $mathValue->subtractPercentage($profitPercent);
+            }
+        } elseif ($this->cmpNum($profitPercent, '0') === -1) {
+            // -profit = more competitive (better for customer)
+            $abs = ltrim($profitPercent, '-');
+            if ($abs === '' || !$this->isGreaterThanZero($abs)) {
+                // no-op
+            } elseif ($this->isInverted) {
+                $mathValue->subtractPercentage($abs);
+            } else {
+                $mathValue->addPercentage($abs);
             }
         }
 

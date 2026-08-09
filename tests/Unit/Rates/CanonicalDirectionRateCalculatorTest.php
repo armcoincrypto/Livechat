@@ -101,4 +101,40 @@ final class CanonicalDirectionRateCalculatorTest extends TestCase
         $this->assertSame(0, bccomp($fixed->finalRate, '97', 18));
         $this->assertSame(RateMode::Fixed, $fixed->mode);
     }
+
+    public function test_derived_profit_margin_semantics_map_to_floating_fee(): void
+    {
+        $direction = new DirectionExchange();
+        $direction->id = 419;
+        $direction->is_type_rate = 1;
+        $direction->parser_source_name = 'DERIVED_MARKET_BASELINE';
+        $direction->floating_fee = '0';
+        $direction->fix_fee = '0';
+        $direction->profit = '5'; // more margin → fee -5%
+
+        $calc = CanonicalDirectionRateCalculator::make();
+        $this->assertSame(0, bccomp($calc->resolveFloatingFeePercent($direction), '-5', 8));
+
+        $export = $calc->calculateForExport($direction, '100');
+        $this->assertSame(0, bccomp($export->finalRate, '95', 18));
+
+        $direction->profit = '-5'; // more competitive → fee +5%
+        $this->assertSame(0, bccomp($calc->resolveFloatingFeePercent($direction), '5', 8));
+        $exportUp = $calc->calculateForExport($direction, '100');
+        $this->assertSame(0, bccomp($exportUp->finalRate, '105', 18));
+    }
+
+    public function test_derived_profit_zero_falls_back_to_floating_fee(): void
+    {
+        $direction = new DirectionExchange();
+        $direction->id = 419;
+        $direction->parser_source_name = 'DERIVED_MARKET_BASELINE';
+        $direction->profit = '0';
+        $direction->floating_fee = '-6';
+
+        $this->assertSame(
+            '-6',
+            CanonicalDirectionRateCalculator::make()->resolveFloatingFeePercent($direction)
+        );
+    }
 }

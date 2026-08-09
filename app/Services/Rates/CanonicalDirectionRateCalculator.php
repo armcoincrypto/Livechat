@@ -13,10 +13,15 @@ use Throwable;
  * Single server authority for website / order / BestChange rates (Release A revised).
  *
  * Non-ZELLE formula: final = base × (1 + mode_fee_percent / 100)
- *   FLOATING → floating_fee; FIXED → fix_fee.
+ *   FLOATING → see resolveFloatingFeePercent(); FIXED → fix_fee.
+ *
+ * DERIVED_MARKET_BASELINE floating commercial control is admin «Прибыль» (profit):
+ *   +5 = more margin (worse for customer), -5 = more competitive.
+ *   Applied as fee = -profit so final = base × (1 - profit/100).
+ *   When profit is 0, floating_fee is used as fallback.
  *
  * ZELLEUSD outgoing (owner-approved):
- *   FLOATING → benchmark × (1 + floating_fee/100)
+ *   FLOATING → benchmark × (1 + floating_fee/100)  (or -profit when profit ≠ 0)
  *   FIXED    → benchmark × (1 + floating_fee/100) × (1 + fix_fee/100)
  *   XML      → always FLOATING (never includes the additional fix_fee step)
  *
@@ -64,10 +69,10 @@ final class CanonicalDirectionRateCalculator
 
         $rawFee = $mode === RateMode::Fixed
             ? ($direction->fix_fee ?? '0')
-            : ($direction->floating_fee ?? '0');
+            : $this->resolveFloatingFeePercent($direction);
 
         // When type_rate is disabled, still expose fixed/floating as base (0% fee)
-        // for API symmetry. BestChange always uses floating_fee (see calculateForExport).
+        // for API symmetry. BestChange always applies floating commercial % (see calculateForExport).
         if (!$typeRateEnabled) {
             $rawFee = '0';
         }
@@ -133,7 +138,7 @@ final class CanonicalDirectionRateCalculator
         RateChannel $channel,
         bool $typeRateEnabled,
     ): CalculatedDirectionRate {
-        $floatRaw = $typeRateEnabled ? ($direction->floating_fee ?? '0') : '0';
+        $floatRaw = $typeRateEnabled ? $this->resolveFloatingFeePercent($direction) : '0';
         $fixRaw = $typeRateEnabled ? ($direction->fix_fee ?? '0') : '0';
 
         $floatNorm = $this->normalizer->toPercentExpressionOrZero($floatRaw);
@@ -231,7 +236,9 @@ final class CanonicalDirectionRateCalculator
         $display = $floating;
 
         $fixedNorm = $this->normalizer->toPercentExpressionOrZero($direction->fix_fee ?? '0');
-        $floatNorm = $this->normalizer->toPercentExpressionOrZero($direction->floating_fee ?? '0');
+        $floatNorm = $this->normalizer->toPercentExpressionOrZero(
+            $this->resolveFloatingFeePercent($direction)
+        );
 
         return [
             // display_rate is the initial public rate (= fixed)
@@ -269,12 +276,45 @@ final class CanonicalDirectionRateCalculator
     public function percentExpressionsForCalculator(DirectionExchange $direction): array
     {
         $fixed = $this->normalizer->toPercentExpressionOrZero($direction->fix_fee ?? '0');
-        $floating = $this->normalizer->toPercentExpressionOrZero($direction->floating_fee ?? '0');
+        $floating = $this->normalizer->toPercentExpressionOrZero(
+            $this->resolveFloatingFeePercent($direction)
+        );
 
         return [
             'fixed' => $fixed['expression'],
             'floating' => $floating['expression'],
         ];
+    }
+
+    /**
+     * FLOATING commercial percent for final = base × (1 + fee/100).
+     *
+     * Admin «Прибыль» (profit) uses margin semantics for DERIVED / optional ZELLE:
+     *   +5 = more margin (worse for customer), -5 = more competitive.
+     * Mapped to fee = -profit. When profit is 0, floating_fee is the fallback.
+     * BestChange keeps floating_fee only (legacy profit stays in course via compiler).
+     */
+    public function resolveFloatingFeePercent(DirectionExchange $direction): string
+    {
+        $parser = (string) ($direction->parser_source_name ?? '');
+        $profitRaw = trim((string) ($direction->profit ?? '0'));
+        if ($profitRaw === '' || !is_numeric($profitRaw)) {
+            $profitRaw = '0';
+        }
+
+        $preferProfit = $parser === 'DERIVED_MARKET_BASELINE'
+            || (
+                $this->isZelleOutgoing($direction)
+                && bccomp($profitRaw, '0', 8) !== 0
+            );
+
+        if ($preferProfit && bccomp($profitRaw, '0', 8) !== 0) {
+            return bcmul($profitRaw, '-1', 8);
+        }
+
+        $fee = trim((string) ($direction->floating_fee ?? '0'));
+
+        return ($fee === '' || !is_numeric($fee)) ? '0' : $fee;
     }
 
     private function resolveBaseRate(DirectionExchange $direction): string

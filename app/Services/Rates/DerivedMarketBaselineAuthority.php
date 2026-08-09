@@ -259,12 +259,9 @@ final class DerivedMarketBaselineAuthority
             'eval' => $eval,
         ];
 
-        // Legacy «Прибыль» / add_course must stay zero: commercial edge is only
-        // floating_fee/fix_fee. Otherwise compiler/Calculator bake profit into
-        // course_value and leave a stale admin exchange_rate (e.g. 396 vs BC ~376).
+        // Keep add_course* neutralized. Do NOT zero profit — admin «Прибыль»
+        // is the commercial % control for DERIVED ( Canonical applies as -profit ).
         $neutralize = [
-            'profit' => 0,
-            'profit_s' => 0,
             'add_course1' => 0,
             'add_course2' => 0,
             'your_add_course1' => 0,
