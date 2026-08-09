@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DirectionExchange;
 use App\Models\GroupCommission;
 use App\Models\ProfitProfile;
+use App\Services\Rates\CommercialAdjustmentResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,13 +17,21 @@ class DirectionExchangeProfitController extends Controller
     public function edit(int $id): JsonResponse
     {
         $item = DirectionExchange::query()->findOrFail($id);
+        $resolver = new CommercialAdjustmentResolver();
+        $family = $resolver->family($item);
 
         $attributes = [
             'type_profit_field'   => $item->type_profit_field ?? 0,
-            'profit'              => $item->profit ?? 0,
+            // Universal owner control: always expose margin % as «Прибыль».
+            'profit'              => $resolver->displayProfitPercent($item),
             'profit_s'            => $item->profit_s ?? 0,
             'ids_group_commissions' => $item->groupCommissions->pluck('id')->toArray(),
             'profit_profile_id'   => $item->profit_profile_id,
+            // Read-only context for admin UX (BASE / fees remain on other panels).
+            'commercial_storage_field' => $resolver->storageField($item),
+            'floating_fee' => $item->floating_fee ?? 0,
+            'fix_fee' => $item->fix_fee ?? 0,
+            'course_value' => $item->course_value,
         ];
 
         $group_commission = GroupCommission::orderByDesc('id')->get()->map(function ($item) {
@@ -52,19 +61,16 @@ class DirectionExchangeProfitController extends Controller
                 ];
             });
 
-        $parser = (string) ($item->parser_source_name ?? '');
-        $derived = $parser === 'DERIVED_MARKET_BASELINE';
-
         return response()->json([
             'options'    => [
                 'groupFees'      => $group_commission,
                 'profitProfiles' => $profitProfiles,
                 'rateAuthority'  => [
-                    'parser_source_name' => $parser,
-                    'commercial_field' => $derived ? 'profit' : 'profit_or_floating_fee',
-                    'help' => $derived
-                        ? 'Автоматический BASE. «Прибыль»: +5 = больше маржа (хуже клиенту), -5 = конкурентнее (лучше клиенту). Рынок обновляется сам.'
-                        : '«Прибыль» % для направления. Для BestChange учитывается в курсе; знак + = маржа, − = конкурентнее.',
+                    'parser_source_name' => (string) ($item->parser_source_name ?? ''),
+                    'family' => $family,
+                    'commercial_field' => 'profit',
+                    'storage_field' => $resolver->storageField($item),
+                    'help' => $resolver->helpText($item),
                 ],
             ],
             'attributes' => $attributes,
@@ -75,6 +81,7 @@ class DirectionExchangeProfitController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $item = DirectionExchange::query()->findOrFail($id);
+        $resolver = new CommercialAdjustmentResolver();
 
         $validator = Validator::make($request->all(), [
             'profit'                => ['nullable'],
@@ -97,44 +104,84 @@ class DirectionExchangeProfitController extends Controller
             $item->groupCommissions()->sync($idsGroupCommissions);
         }
 
-        $profit = $this->normalizeDecimalString($request->input('profit'));
+        $displayProfit = $this->normalizeDecimalString($request->input('profit'));
         $profitS = $this->normalizeDecimalString($request->input('profit_s'));
 
-        $payload = [
-            'profit' => $profit,
-            'profit_s' => $profitS,
-            'profit_profile_id' => $request->input('profit_profile_id'),
-        ];
-
-        // DERIVED: Прибыль drives public/XML via Canonical (fee = -profit).
-        // Enable type_rate so website/order apply the same commercial %.
-        if ((string) ($item->parser_source_name ?? '') === 'DERIVED_MARKET_BASELINE') {
-            $payload['is_type_rate'] = 1;
-            // Clear floating_fee so Прибыль is the single commercial knob.
-            $payload['floating_fee'] = '0';
-        }
+        $payload = array_merge(
+            $resolver->buildUpdatePayload($item, $displayProfit),
+            [
+                'profit_s' => $profitS,
+                'profit_profile_id' => $request->input('profit_profile_id'),
+            ]
+        );
 
         $item->update($payload);
         $item->refresh();
 
-        // Refresh admin «Курс» label to commercial rate (BASE ± Прибыль) so it
-        // matches currencies.xml / BestChange after save — not stale BASE.
+        $family = $resolver->family($item);
         $commercialLabel = null;
-        if ((string) ($item->parser_source_name ?? '') === 'DERIVED_MARKET_BASELINE') {
-            $commercialLabel = $this->refreshDerivedExchangeRateLabel($item);
+
+        // BestChange: profit is applied in Calculator base. Rewrite course_value so
+        // XML (export override = course_value) stays aligned with website/order.
+        if ($family === 'BESTCHANGE') {
+            $commercialLabel = $this->refreshBestChangeCommercialCourse($item);
+            $item->refresh();
+        } elseif (in_array($family, ['DERIVED', 'ZELLE'], true)) {
+            // Refresh admin «Курс» label; BASE (course_value) stays compiler-owned.
+            $commercialLabel = $this->refreshCommercialExchangeRateLabel($item, $family);
         }
 
         return response()->json([
             'status'  => 0,
             'message' => __('Настройки прибыли направления успешно обновлены'),
             'exchange_rate' => $commercialLabel ?? $item->exchange_rate,
+            'attributes' => [
+                'profit' => $resolver->displayProfitPercent($item),
+                'floating_fee' => $item->floating_fee,
+                'fix_fee' => $item->fix_fee,
+                'course_value' => $item->course_value,
+            ],
         ]);
+    }
+
+    /**
+     * Persist Calculator commercial rate into course_value for BestChange-owned pairs.
+     * Does not invent a second floating_fee adjustment.
+     */
+    private function refreshBestChangeCommercialCourse(DirectionExchange $item): ?string
+    {
+        try {
+            $payload = \iEXPackages\Calculator\CalculatorFacade::setDirectionExchange($item)
+                ->withoutOptions()
+                ->calculate()
+                ->toArray();
+            $rate = (string) ($payload['rate'] ?? '0');
+            if (!is_numeric($rate) || bccomp($rate, '0', 18) !== 1) {
+                return null;
+            }
+
+            $label = (string) \iEXPackages\Calculator\CalculatorFacade::setDirectionExchange($item)
+                ->withoutOptions()
+                ->calculate()
+                ->getFullRate();
+
+            DB::table('direction_exchange')->where('id', $item->id)->update([
+                'course_value' => $rate,
+                'manual_rate_value' => $rate,
+                'exchange_rate' => $label !== '' ? $label : $rate,
+                'updated_at' => now(),
+            ]);
+
+            return $label !== '' ? $label : $rate;
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     /**
      * Write admin exchange_rate from Canonical floating (Прибыль-aware) rate.
      */
-    private function refreshDerivedExchangeRateLabel(DirectionExchange $item): ?string
+    private function refreshCommercialExchangeRateLabel(DirectionExchange $item, string $family): ?string
     {
         try {
             $base = (string) ($item->course_value ?? '0');
@@ -161,9 +208,13 @@ class DirectionExchangeProfitController extends Controller
             }
 
             $dir->course_value = $rate;
-            $dir->parser_source_name = 'DERIVED_MARKET_BASELINE';
+            // Avoid double commercial % inside Calculator label path.
             $dir->profit = 0;
             $dir->profit_s = 0;
+            if ($family === 'ZELLE') {
+                $dir->floating_fee = 0;
+                $dir->fix_fee = 0;
+            }
 
             $label = (string) \iEXPackages\Calculator\CalculatorFacade::setDirectionExchange($dir)
                 ->withoutOptions()

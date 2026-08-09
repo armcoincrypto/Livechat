@@ -289,10 +289,12 @@ final class CanonicalDirectionRateCalculator
     /**
      * FLOATING commercial percent for final = base × (1 + fee/100).
      *
-     * Admin «Прибыль» (profit) uses margin semantics for DERIVED / optional ZELLE:
+     * Admin «Прибыль» margin semantics (via CommercialAdjustmentResolver):
      *   +5 = more margin (worse for customer), -5 = more competitive.
-     * Mapped to fee = -profit. When profit is 0, floating_fee is the fallback.
-     * BestChange keeps floating_fee only (legacy profit stays in course via compiler).
+     * DERIVED: fee = -profit (floating_fee kept 0).
+     * ZELLE: profit stays 0; floating_fee = -Прибыль (compiler may zero profit).
+     * BestChange: profit applied in Calculator base path; Canonical floating adj = 0.
+     * Never stack profit + floating_fee for the floating quote.
      */
     public function resolveFloatingFeePercent(DirectionExchange $direction): string
     {
