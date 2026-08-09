@@ -421,13 +421,14 @@ class OrderPayController extends Controller
             ]
         ]);
 
-        // Existing channel event — operators receive via configured Telegram bots/channels.
-        iEXApp::telegramNotificationForChannel('new_order_for_operator', $task);
-        // Explicit customer-marked-paid signal (same channel family; fail-open upstream).
+        // Customer-marked-paid uses the operator new-order channel.
+        // Do NOT call 'order_pay' here — that event expects an autopay provider
+        // argument (see AutoPaymentSuccessfulListener) and TypeErrors on Task-only calls.
         try {
-            iEXApp::telegramNotificationForChannel('order_pay', $task);
+            iEXApp::telegramNotificationForChannel('new_order_for_operator', $task);
         } catch (\Throwable $e) {
-            Log::warning('telegram_order_pay_notify_failed', [
+            // Acknowledgement already persisted upstream — never roll back for notify failure.
+            Log::warning('telegram_customer_marked_paid_notify_failed', [
                 'task_id' => $task->id,
                 'exception_class' => $e::class,
             ]);
