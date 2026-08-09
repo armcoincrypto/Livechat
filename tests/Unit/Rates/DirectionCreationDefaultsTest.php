@@ -15,6 +15,6 @@ final class DirectionCreationDefaultsTest extends TestCase
         $this->assertSame('1.5', $d->defaultProfitPercent());
         $gram = $d->giveLimitsForXml('GRAM');
         $this->assertSame('400', $gram['min']);
-        $this->assertSame('500', $gram['max']);
+        $this->assertSame('2000', $gram['max']);
     }
 }

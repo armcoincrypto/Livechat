@@ -1,28 +1,221 @@
 {
-  "version": 1,
-  "default_profit_percent": "1.5",
-  "notes": "Owner commercial default for new automatic pairs. Give limits are in currency1 (give) units. GRAM/TON owner-tuned to 400-500.",
-  "give_limits_by_xml": {
-    "ADA": { "min": "300", "max": "100000" },
-    "BCH": { "min": "2.1", "max": "400" },
-    "BNBBEP20": { "min": "0.3", "max": "10" },
-    "BTC": { "min": "0.01592", "max": "10" },
-    "DASH": { "min": "7", "max": "300" },
-    "DOGE": { "min": "3000", "max": "100000" },
-    "DOT": { "min": "40", "max": "4000" },
-    "ETC": { "min": "60", "max": "5000" },
-    "ETH": { "min": "0.25", "max": "5" },
-    "GRAM": { "min": "400", "max": "500" },
-    "LTC": { "min": "4", "max": "300" },
-    "NEO": { "min": "20", "max": "70000" },
-    "SHIBERC20": { "min": "1000000", "max": "500000000" },
-    "SOL": { "min": "3", "max": "400" },
-    "TRX": { "min": "1000", "max": "15000000" },
-    "XLM": { "min": "1000", "max": "1000000" },
-    "XMR": { "min": "1.5", "max": "400" },
-    "XRP": { "min": "250", "max": "2000" },
-    "XTZ": { "min": "2000", "max": "500000" },
-    "ZEC": { "min": "1", "max": "4000" }
-  },
-  "fallback_give_limits": { "min": "1", "max": "100" }
+    "version": 2,
+    "default_profit_percent": "1.5",
+    "usd_min_target": 400,
+    "usd_max_target": 3000,
+    "notes": "Give min/max in currency1 units. GRAM owner-fixed 400-2000 with min2/max2=0 manual. Other coins sized to >=$400 min and ~$3000 max.",
+    "give_limits_by_xml": {
+        "GRAM": {
+            "min": "400",
+            "max": "2000",
+            "usd_min": 511.22,
+            "usd_max": 2556.08,
+            "price_ref": 1.2780412755248571,
+            "note": "owner_fixed_GRAM"
+        },
+        "ADA": {
+            "min": "2027",
+            "max": "15198",
+            "usd_min": 400.13,
+            "usd_max": 3000.09,
+            "price_ref": 0.1974,
+            "note": "usd_sized"
+        },
+        "BCH": {
+            "min": "1.84",
+            "max": "13.8",
+            "usd_min": 400.02,
+            "usd_max": 3000.12,
+            "price_ref": 217.4,
+            "note": "usd_sized"
+        },
+        "BNBBEP20": {
+            "min": "0.6595",
+            "max": "4.9458",
+            "usd_min": 400.04,
+            "usd_max": 3000.02,
+            "price_ref": 606.58,
+            "note": "usd_sized"
+        },
+        "BTC": {
+            "min": "0.006133",
+            "max": "0.045996",
+            "usd_min": 400.02,
+            "usd_max": 3000.04,
+            "price_ref": 65223.9,
+            "note": "usd_sized"
+        },
+        "DASH": {
+            "min": "12.655",
+            "max": "94.907",
+            "usd_min": 400.02,
+            "usd_max": 3000.01,
+            "price_ref": 31.61,
+            "note": "usd_sized"
+        },
+        "DOGE": {
+            "min": "5689",
+            "max": "42663",
+            "usd_min": 400.05,
+            "usd_max": 3000.06,
+            "price_ref": 0.07032,
+            "note": "usd_sized"
+        },
+        "DOT": {
+            "min": "494.5",
+            "max": "3708.3",
+            "usd_min": 400.05,
+            "usd_max": 3000.01,
+            "price_ref": 0.809,
+            "note": "usd_sized"
+        },
+        "ETC": {
+            "min": "61.4",
+            "max": "460.2",
+            "usd_min": 400.33,
+            "usd_max": 3000.5,
+            "price_ref": 6.52,
+            "note": "usd_sized"
+        },
+        "ETH": {
+            "min": "0.208",
+            "max": "1.5599",
+            "usd_min": 400.03,
+            "usd_max": 3000.05,
+            "price_ref": 1923.23,
+            "note": "usd_sized"
+        },
+        "LTC": {
+            "min": "8.634",
+            "max": "64.753",
+            "usd_min": 400.01,
+            "usd_max": 3000.01,
+            "price_ref": 46.33,
+            "note": "usd_sized"
+        },
+        "NEO": {
+            "min": "216.3",
+            "max": "1621.7",
+            "usd_min": 400.16,
+            "usd_max": 3000.15,
+            "price_ref": 1.85,
+            "note": "usd_sized"
+        },
+        "SHIBERC20": {
+            "min": "86393089",
+            "max": "647948165",
+            "usd_min": 400,
+            "usd_max": 3000,
+            "price_ref": 4.63e-6,
+            "note": "usd_sized"
+        },
+        "SOL": {
+            "min": "5.219",
+            "max": "39.139",
+            "usd_min": 400.04,
+            "usd_max": 3000,
+            "price_ref": 76.65,
+            "note": "usd_sized"
+        },
+        "TRX": {
+            "min": "1212",
+            "max": "9088",
+            "usd_min": 400.12,
+            "usd_max": 3000.27,
+            "price_ref": 0.330135,
+            "note": "usd_sized"
+        },
+        "XLM": {
+            "min": "2451",
+            "max": "18383",
+            "usd_min": 400,
+            "usd_max": 3000.11,
+            "price_ref": 0.1632,
+            "note": "usd_sized"
+        },
+        "XMR": {
+            "min": "1.041",
+            "max": "7.808",
+            "usd_min": 400.03,
+            "usd_max": 3000.38,
+            "price_ref": 384.27,
+            "note": "usd_sized"
+        },
+        "XRP": {
+            "min": "385",
+            "max": "2887",
+            "usd_min": 400.08,
+            "usd_max": 3000.05,
+            "price_ref": 1.03916,
+            "note": "usd_sized"
+        },
+        "XTZ": {
+            "min": "1959",
+            "max": "14692",
+            "usd_min": 400.03,
+            "usd_max": 3000.11,
+            "price_ref": 0.2042,
+            "note": "usd_sized"
+        },
+        "ZEC": {
+            "min": "0.762",
+            "max": "5.715",
+            "usd_min": 400.02,
+            "usd_max": 3000.15,
+            "price_ref": 524.96,
+            "note": "usd_sized"
+        },
+        "USDTTRC20": {
+            "min": "400",
+            "max": "3000",
+            "usd_min": 400,
+            "usd_max": 3000,
+            "price_ref": 1,
+            "note": "usd_sized"
+        },
+        "USDTERC20": {
+            "min": "400",
+            "max": "3000",
+            "usd_min": 400,
+            "usd_max": 3000,
+            "price_ref": 1,
+            "note": "usd_sized"
+        },
+        "USDTBEP20": {
+            "min": "400",
+            "max": "3000",
+            "usd_min": 400,
+            "usd_max": 3000,
+            "price_ref": 1,
+            "note": "usd_sized"
+        },
+        "USDTTON": {
+            "min": "400",
+            "max": "3000",
+            "usd_min": 400,
+            "usd_max": 3000,
+            "price_ref": 1,
+            "note": "usd_sized"
+        },
+        "USDCERC20": {
+            "min": "400",
+            "max": "3000",
+            "usd_min": 400,
+            "usd_max": 3000,
+            "price_ref": 1,
+            "note": "usd_sized"
+        },
+        "DAI": {
+            "min": "400",
+            "max": "3000",
+            "usd_min": 400,
+            "usd_max": 3000,
+            "price_ref": 1,
+            "note": "usd_sized"
+        }
+    },
+    "fallback_give_limits": {
+        "min": "1",
+        "max": "100"
+    }
 }
