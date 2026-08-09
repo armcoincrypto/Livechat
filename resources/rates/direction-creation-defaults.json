@@ -204,14 +204,6 @@
             "usd_max": 3000,
             "price_ref": 1,
             "note": "usd_sized"
-        },
-        "DAI": {
-            "min": "400",
-            "max": "3000",
-            "usd_min": 400,
-            "usd_max": 3000,
-            "price_ref": 1,
-            "note": "usd_sized"
         }
     },
     "fallback_give_limits": {

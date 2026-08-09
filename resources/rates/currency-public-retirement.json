@@ -1,11 +1,12 @@
 {
-  "version": 3,
-  "approved_at": "20260808T223000Z",
+  "version": 4,
+  "approved_at": "20260809T140000Z",
   "policy": "retire_listed_currencies_from_new_public_operation_without_deleting_rows",
   "retire_currency_ids": [
     34,
     41,
     43,
+    44,
     60,
     73
   ],
@@ -13,8 +14,10 @@
     "A7A5",
     "DAI",
     "FTN",
-    "FTN Bahamut",
+    "FTN BAHAMUT",
     "SHIBBEP20",
+    "TUSD",
+    "TUSDERC20",
     "TUSDTRC20"
   ],
   "never_retire_designation_xml": [
@@ -27,6 +30,8 @@
     "60": "FTN Bahamut owner-approved retirement 20260808 final catalog pass; historical tasks preserved",
     "73": "A7A5 owner-approved retirement 20260808 final catalog pass; historical tasks preserved",
     "zelle": "ZELLEUSD outgoing rate authority unchanged; retired destinations fail closed in ZelleUsdBenchmarkResolver",
-    "34": "SHIBBEP20 owner-approved retirement 20260809 all-destinations pass; SHIBERC20 remains wanted; historical tasks preserved"
+    "34": "SHIBBEP20 owner-approved retirement 20260809 all-destinations pass; SHIBERC20 remains wanted; historical tasks preserved",
+    "44": "TUSDERC20 owner-approved retirement 20260809; remove all public TUSD rails with TUSDTRC20",
+    "owner": "20260809 delete/retire TUSD TRC20+ERC20, DAI, A7A5, SHIBBEP20 from public catalog; historical rows preserved (soft-disable only)"
   }
 }
