@@ -92,6 +92,12 @@ final class DerivedMarketBaselineAuthority
                 'divergence' => null,
                 'selection_reason' => 'usdt_peg',
             ];
+        } elseif (($cfg['asset_leg']['source'] ?? '') === 'direction_course') {
+            // Live peer direction course (e.g. BestChange GRAM→USDTTRC20 as TON USD peg).
+            $asset = $this->quoteDirectionCourse($cfg['asset_leg'], $cryptoMax);
+            if ($asset === null && $assetSym !== '') {
+                $asset = $this->baseline->quote($assetSym);
+            }
         } else {
             $asset = $this->baseline->quote($assetSym);
         }
@@ -107,6 +113,19 @@ final class DerivedMarketBaselineAuthority
                 'divergence' => null,
                 'selection_reason' => 'usd_peg',
             ];
+        } elseif (($cfg['fiat_leg']['source'] ?? '') === 'direction_course') {
+            $fiat = $this->quoteDirectionCourse($cfg['fiat_leg'], $fiatMax);
+            if ($fiat !== null && $fiatOri === 'inverse_usdt') {
+                $fiat['rate'] = bcdiv('1', (string) $fiat['rate'], 18);
+                $fiat['selection_reason'] = 'direction_course_inverse';
+            } elseif ($fiat === null && $fiatOri === 'inverse_usdt' && $fiatSym !== '') {
+                $q = $this->baseline->quote($fiatSym);
+                if ($q !== null && isset($q['rate']) && (float) $q['rate'] > 0) {
+                    $fiat = $q;
+                    $fiat['rate'] = bcdiv('1', (string) $q['rate'], 18);
+                    $fiat['selection_reason'] = 'inverse_usdt';
+                }
+            }
         } elseif ($fiatOri === 'inverse_usdt') {
             $q = $this->baseline->quote($fiatSym);
             if ($q !== null && isset($q['rate']) && (float) $q['rate'] > 0) {
@@ -280,6 +299,64 @@ final class DerivedMarketBaselineAuthority
         }
 
         return $action;
+    }
+
+    /**
+     * Read a positive live course from another public direction as a market leg.
+     *
+     * Used for GRAM/TON: BestChange GRAM→USDTTRC20 is the commercial TON USD peg
+     * so GRAM→coin does not price from raw Binance TONUSDT mid (too rich vs BC).
+     *
+     * @param  array<string,mixed>  $leg
+     * @return array{rate:string,source:string,as_of:string,age_seconds:int,sample_size:int,divergence:null,selection_reason:string}|null
+     */
+    private function quoteDirectionCourse(array $leg, int $maxAgeSeconds): ?array
+    {
+        $peerId = (int) ($leg['direction_id'] ?? 0);
+        if ($peerId <= 0) {
+            return null;
+        }
+
+        // Peer courses (esp. BestChange) refresh slower than Binance ticks.
+        $maxAgeSeconds = max($maxAgeSeconds, (int) ($leg['max_age_seconds'] ?? 21600));
+
+        $peer = DB::table('direction_exchange')
+            ->where('id', $peerId)
+            ->where('status', 1)
+            ->whereNull('deleted_at')
+            ->first(['id', 'course_value', 'updated_at', 'parser_source_name']);
+
+        if ($peer === null) {
+            return null;
+        }
+
+        $rate = (string) ($peer->course_value ?? '0');
+        if (bccomp($rate, '0', 18) !== 1) {
+            return null;
+        }
+
+        $updatedAt = (string) ($peer->updated_at ?? '');
+        $age = 0;
+        if ($updatedAt !== '') {
+            try {
+                $age = max(0, time() - strtotime($updatedAt));
+            } catch (\Throwable) {
+                $age = PHP_INT_MAX;
+            }
+        }
+        if ($age > $maxAgeSeconds) {
+            return null;
+        }
+
+        return [
+            'rate' => $rate,
+            'source' => 'direction_course:' . $peerId . ':' . (string) ($peer->parser_source_name ?? ''),
+            'as_of' => $updatedAt !== '' ? $updatedAt : gmdate('Y-m-d H:i:s'),
+            'age_seconds' => $age,
+            'sample_size' => 1,
+            'divergence' => null,
+            'selection_reason' => 'direction_course',
+        ];
     }
 
     /**

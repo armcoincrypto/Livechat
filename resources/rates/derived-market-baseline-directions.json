@@ -22077,7 +22077,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -22952,7 +22955,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -23827,7 +23833,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -24527,7 +24536,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -25027,7 +25039,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -25652,7 +25667,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -26527,7 +26545,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -27402,7 +27423,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -28177,7 +28201,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -28573,7 +28600,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "ADAUSDT",
@@ -28598,7 +28628,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "BCHUSDT",
@@ -28623,7 +28656,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "BNBUSDT",
@@ -28648,7 +28684,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "BTCUSDT",
@@ -28673,7 +28712,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "DASHUSDT",
@@ -28698,7 +28740,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "DOGEUSDT",
@@ -28723,7 +28768,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "DOTUSDT",
@@ -28748,7 +28796,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "ETCUSDT",
@@ -28773,7 +28824,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "ETHUSDT",
@@ -28798,7 +28852,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "LTCUSDT",
@@ -28823,7 +28880,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "NEOUSDT",
@@ -28848,7 +28908,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "SHIBUSDT",
@@ -28873,7 +28936,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "SOLUSDT",
@@ -28898,7 +28964,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "TRXUSDT",
@@ -28923,7 +28992,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "XLMUSDT",
@@ -28948,7 +29020,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "XMRUSDT",
@@ -28973,7 +29048,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "XRPUSDT",
@@ -28998,7 +29076,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "XTZUSDT",
@@ -29023,7 +29104,10 @@
             "public_aliases": [],
             "asset_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "asset_per_usdt"
+                "orientation": "asset_per_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "fiat_leg": {
                 "symbol": "ZECUSDT",
@@ -29552,7 +29636,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -30152,7 +30239,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -31027,7 +31117,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -31902,7 +31995,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -32777,7 +32873,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -33652,7 +33751,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -34527,7 +34629,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -35402,7 +35507,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -36277,7 +36385,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -37152,7 +37263,10 @@
             },
             "fiat_leg": {
                 "symbol": "TONUSDT",
-                "orientation": "inverse_usdt"
+                "orientation": "inverse_usdt",
+                "source": "direction_course",
+                "direction_id": 11,
+                "max_age_seconds": 21600
             },
             "formula": "course=asset*fiat*haircut",
             "haircut": "0.999",
@@ -38320,7 +38434,7 @@
             "ZELLEUSD/CARDIDR",
             "ZELLEUSD/CARDIDR"
         ],
-        "reason": "ZELLE_SINGLE_RATE_AUTHORITY \u2014 derived must not write ZELLE course/parser_source_name"
+        "reason": "ZELLE_SINGLE_RATE_AUTHORITY — derived must not write ZELLE course/parser_source_name"
     },
-    "updated_at": "2026-08-09T01:15:02+00:00"
+    "updated_at": "2026-08-09T01:27:43.763422Z"
 }
