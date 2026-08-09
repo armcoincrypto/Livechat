@@ -321,7 +321,8 @@ final class DerivedMarketBaselineAuthority
     }
 
     /**
-     * Admin list «Курс» string from BASE only (no legacy profit stack).
+     * Admin list «Курс» string = public commercial rate (BASE ± Прибыль),
+     * matching BestChange XML — not raw BASE alone.
      */
     private function formatExchangeRateLabel(int $directionId, string $rate): string
     {
@@ -345,7 +346,15 @@ final class DerivedMarketBaselineAuthority
             $dir->course_value = $rate;
             $dir->manual_rate_value = $rate;
             $dir->parser_source_name = 'DERIVED_MARKET_BASELINE';
-            $dir->profit = 0;
+
+            $commercial = CanonicalDirectionRateCalculator::make()
+                ->calculateForExport($dir, $rate);
+            $displayRate = ($commercial->eligible && bccomp($commercial->finalRate, '0', 18) === 1)
+                ? $commercial->finalRate
+                : $rate;
+
+            $dir->course_value = $displayRate;
+            $dir->profit = 0; // already applied into displayRate
             $dir->profit_s = 0;
 
             return (string) CalculatorFacade::setDirectionExchange($dir)
