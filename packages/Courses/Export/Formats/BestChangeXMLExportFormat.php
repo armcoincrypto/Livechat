@@ -116,6 +116,7 @@ class BestChangeXMLExportFormat extends AbstractExportFormat
             [
                 'rootElementName' => 'rates',
                 '_attributes' => [
+                    'version' => '1',
                     'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
                     'xsi:noNamespaceSchemaLocation' => 'https://docs.bestchange.biz/schema/1.1.xsd',
                 ],
@@ -203,15 +204,23 @@ class BestChangeXMLExportFormat extends AbstractExportFormat
         $labels = explode(',', (string) ($city->param ?? ($rate->export_label_param ?? 'manual')));
         $labels = array_values(array_filter(array_map('trim', $labels), static fn ($v) => $v !== ''));
 
-        $item += array_fill_keys($labels, null);
+        // Schema 1.1 boolean flags must be true/false — empty <manual></manual> is invalid.
+        $item += array_fill_keys($labels, 'true');
 
-        // BestChange: min/max
+        // BestChange: min/max (schema 1.1 frommin/frommax + classic minamount/maxamount).
+        // bestchange.ru cabinet still reads legacy minamount/maxamount; frommin alone
+        // is shown as «нет мин. суммы» / «нет макс. суммы».
         if (!empty($city->min_price)) {
-            $item['frommin'] = iex_number_format($city->min_price, $currencyIn->number_format ?? 2);
+            $formatted = iex_number_format($city->min_price, $currencyIn->number_format ?? 2);
+            $item['frommin'] = $formatted;
+            // Place legacy fields after labels so ArrayToXml order matches XSD legacy group.
+            $item['minamount'] = $formatted;
         }
 
         if (!empty($city->max_price)) {
-            $item['frommax'] = iex_number_format($city->max_price, $currencyIn->number_format ?? 2);
+            $formatted = iex_number_format($city->max_price, $currencyIn->number_format ?? 2);
+            $item['frommax'] = $formatted;
+            $item['maxamount'] = $formatted;
         }
 
         return $item;
@@ -277,7 +286,8 @@ class BestChangeXMLExportFormat extends AbstractExportFormat
 
         $labels = explode(',', (string) ($rate->export_label_param ?? 'manual'));
         $labels = array_values(array_filter(array_map('trim', $labels), static fn ($v) => $v !== ''));
-        $params = array_fill_keys($labels, null);
+        // Schema 1.1 boolean flags (manual/reg/…) require true/false, not empty tags.
+        $params = array_fill_keys($labels, 'true');
 
         // Если есть step, а min/max не заполнены — берём базу из step.
         $baseFromMin = $this->isPositiveAmount($rate->min_price1) ? $rate->min_price1 : null;
@@ -330,11 +340,16 @@ class BestChangeXMLExportFormat extends AbstractExportFormat
             unset($item['amount']);
         }
 
+        // Schema 1.1 required limits (from-side / customer send amounts).
+        $legacyMin = null;
+        $legacyMax = null;
         if ($baseFromMin !== null) {
-            $item['frommin'] = $this->formatAmount($baseFromMin, $currencyIn);
+            $legacyMin = $this->formatAmount($baseFromMin, $currencyIn);
+            $item['frommin'] = $legacyMin;
         }
         if ($baseFromMax !== null) {
-            $item['frommax'] = $this->formatAmount($baseFromMax, $currencyIn);
+            $legacyMax = $this->formatAmount($baseFromMax, $currencyIn);
+            $item['frommax'] = $legacyMax;
         }
 
         // Fees (как в твоей исходной логике, через float — оставляем без изменений по стилю BestChange)
@@ -378,6 +393,17 @@ class BestChangeXMLExportFormat extends AbstractExportFormat
 
         foreach ($params as $k => $v) {
             $item[$k] = $v;
+        }
+
+        // Classic BestChange.ru fields (schema 1.0 / XSD 1.1 legacy group).
+        // Emit AFTER params so order matches RateItem sequence: … params → legacy.
+        // Without these, the cabinet shows «нет мин. суммы» / «нет макс. суммы»
+        // even when frommin/frommax are present.
+        if ($legacyMin !== null) {
+            $item['minamount'] = $legacyMin;
+        }
+        if ($legacyMax !== null) {
+            $item['maxamount'] = $legacyMax;
         }
 
         return $item;
