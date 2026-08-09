@@ -128,7 +128,11 @@ abstract class AbstractExportFormat
                 ? $rate->direction_exchange_cities
                 : collect($rate->direction_exchange_cities);
 
-            return $cities;
+            // Eager-load from ManagesAttributes includes inactive city rows.
+            // Accidental inactive cities must not emit duplicate BestChange from|to items.
+            return $cities
+                ->filter(static fn ($city): bool => (int) ($city->status ?? 0) === 1)
+                ->values();
         }
 
         return $rate->direction_exchange_cities()

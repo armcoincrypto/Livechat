@@ -1,95 +1,166 @@
 {
-  "version": 1,
-  "approved_at": "2026-08-07T11:55:00Z",
-  "selection_basis": "highest_historical_order_count_then_earliest_order_then_lowest_direction_id",
-  "identities": {
-    "CARDAMD": {
-      "bestchange_currency_id": 5,
-      "display_name": "Visa/MasterCard AMD",
-      "internal_currency_ids": [
-        52,
-        53,
-        54,
-        55,
-        56,
-        57,
-        58,
-        71
-      ],
-      "direction_ids_by_pair": {
-        "BNBBEP20->CARDAMD": 1018,
-        "BTC->CARDAMD": 967,
-        "DASH->CARDAMD": 307,
-        "ETC->CARDAMD": 181,
-        "ETH->CARDAMD": 402,
-        "LTC->CARDAMD": 968,
-        "USDCERC20->CARDAMD": 1168,
-        "USDTBEP20->CARDAMD": 1049,
-        "USDTERC20->CARDAMD": 361,
-        "USDTSOL->CARDAMD": 180,
-        "USDTTON->CARDAMD": 1128,
-        "USDTTRC20->CARDAMD": 81,
-        "ZELLEUSD->CARDAMD": 1558,
-        "ZEC->CARDAMD": 832
-      },
-      "url_currency_ids_by_pair": {
-        "BNBBEP20->CARDAMD": [
-          5,
-          52
-        ],
-        "BTC->CARDAMD": [
-          1,
-          56
-        ],
-        "DASH->CARDAMD": [
-          4,
-          56
-        ],
-        "ETC->CARDAMD": [
-          27,
-          52
-        ],
-        "ETH->CARDAMD": [
-          7,
-          53
-        ],
-        "LTC->CARDAMD": [
-          2,
-          58
-        ],
-        "USDCERC20->CARDAMD": [
-          40,
-          58
-        ],
-        "USDTBEP20->CARDAMD": [
-          49,
-          52
-        ],
-        "USDTERC20->CARDAMD": [
-          6,
-          56
-        ],
-        "USDTSOL->CARDAMD": [
-          47,
-          56
-        ],
-        "USDTTON->CARDAMD": [
-          48,
-          52
-        ],
-        "USDTTRC20->CARDAMD": [
-          3,
-          52
-        ],
-        "ZELLEUSD->CARDAMD": [
-          87,
-          56
-        ],
-        "ZEC->CARDAMD": [
-          31,
-          58
-        ]
-      }
+    "version": 2,
+    "approved_at": "2026-08-09T16:19:02Z",
+    "selection_basis": "live_public_status1_prefer_BestChange_then_ZELLE_then_DERIVED__highest_task_count_then_lowest_id",
+    "prior_version_defect": "v1 direction_ids pointed at status=0 bank variants; live public derived\/BC twins were excluded from XML",
+    "identities": {
+        "CARDAMD": {
+            "bestchange_currency_id": 5,
+            "display_name": "Visa\/MasterCard AMD",
+            "internal_currency_ids": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                71
+            ],
+            "direction_ids_by_pair": {
+                "ADA->CARDAMD": 2027,
+                "BCH->CARDAMD": 2028,
+                "BNBBEP20->CARDAMD": 2083,
+                "BTC->CARDAMD": 2075,
+                "DASH->CARDAMD": 303,
+                "DOGE->CARDAMD": 2026,
+                "DOT->CARDAMD": 2179,
+                "ETC->CARDAMD": 181,
+                "ETH->CARDAMD": 2080,
+                "GRAM->CARDAMD": 841,
+                "LTC->CARDAMD": 2082,
+                "NEO->CARDAMD": 2226,
+                "REVBUSD->CARDAMD": 1626,
+                "SHIBERC20->CARDAMD": 998,
+                "SOL->CARDAMD": 2024,
+                "TRX->CARDAMD": 2023,
+                "USDCERC20->CARDAMD": 1163,
+                "USDTBEP20->CARDAMD": 1049,
+                "USDTERC20->CARDAMD": 2081,
+                "USDTSOL->CARDAMD": 180,
+                "USDTTON->CARDAMD": 1128,
+                "USDTTRC20->CARDAMD": 81,
+                "XLM->CARDAMD": 804,
+                "XMR->CARDAMD": 2025,
+                "XRP->CARDAMD": 2340,
+                "XTZ->CARDAMD": 2353,
+                "ZEC->CARDAMD": 832,
+                "ZELLEUSD->CARDAMD": 1558
+            },
+            "url_currency_ids_by_pair": {
+                "ADA->CARDAMD": [
+                    35,
+                    52
+                ],
+                "BCH->CARDAMD": [
+                    26,
+                    52
+                ],
+                "BNBBEP20->CARDAMD": [
+                    5,
+                    58
+                ],
+                "BTC->CARDAMD": [
+                    1,
+                    52
+                ],
+                "DASH->CARDAMD": [
+                    4,
+                    52
+                ],
+                "DOGE->CARDAMD": [
+                    30,
+                    52
+                ],
+                "DOT->CARDAMD": [
+                    38,
+                    52
+                ],
+                "ETC->CARDAMD": [
+                    27,
+                    52
+                ],
+                "ETH->CARDAMD": [
+                    7,
+                    71
+                ],
+                "GRAM->CARDAMD": [
+                    10,
+                    54
+                ],
+                "LTC->CARDAMD": [
+                    2,
+                    71
+                ],
+                "NEO->CARDAMD": [
+                    36,
+                    52
+                ],
+                "REVBUSD->CARDAMD": [
+                    88,
+                    71
+                ],
+                "SHIBERC20->CARDAMD": [
+                    46,
+                    52
+                ],
+                "SOL->CARDAMD": [
+                    39,
+                    52
+                ],
+                "TRX->CARDAMD": [
+                    33,
+                    52
+                ],
+                "USDCERC20->CARDAMD": [
+                    40,
+                    52
+                ],
+                "USDTBEP20->CARDAMD": [
+                    49,
+                    52
+                ],
+                "USDTERC20->CARDAMD": [
+                    6,
+                    71
+                ],
+                "USDTSOL->CARDAMD": [
+                    47,
+                    56
+                ],
+                "USDTTON->CARDAMD": [
+                    48,
+                    52
+                ],
+                "USDTTRC20->CARDAMD": [
+                    3,
+                    52
+                ],
+                "XLM->CARDAMD": [
+                    32,
+                    52
+                ],
+                "XMR->CARDAMD": [
+                    29,
+                    52
+                ],
+                "XRP->CARDAMD": [
+                    28,
+                    52
+                ],
+                "XTZ->CARDAMD": [
+                    37,
+                    52
+                ],
+                "ZEC->CARDAMD": [
+                    31,
+                    58
+                ],
+                "ZELLEUSD->CARDAMD": [
+                    87,
+                    56
+                ]
+            }
+        }
     }
-  }
 }

@@ -1,6 +1,6 @@
 {
-  "version": 3,
-  "approved_at": "2026-08-08T22:42:00Z",
+  "version": 4,
+  "approved_at": "2026-08-09T16:19:31Z",
   "authority": "DERIVED_MARKET_BASELINE",
   "count": 1509,
   "directions": {
@@ -433,8 +433,11 @@
         "orientation": "unity"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course = 1 * USDBYN * haircut",
       "haircut": "0.999",
@@ -448,7 +451,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "1644": {
       "from": "REVBUSD",
@@ -677,8 +681,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -691,7 +698,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2125": {
       "from": "ADA",
@@ -852,8 +860,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -866,7 +877,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "2132": {
       "from": "ADA",
@@ -1056,8 +1068,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -1070,7 +1085,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2139": {
       "from": "BCH",
@@ -1231,8 +1247,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -1245,7 +1264,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "2146": {
       "from": "BCH",
@@ -1406,8 +1426,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -1420,7 +1443,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2153": {
       "from": "BNBBEP20",
@@ -1481,8 +1505,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -1495,7 +1522,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "2003": {
       "from": "BNBBEP20",
@@ -1736,8 +1764,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -1750,7 +1781,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2160": {
       "from": "DASH",
@@ -1786,8 +1818,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -1800,7 +1835,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "2162": {
       "from": "DASH",
@@ -1940,8 +1976,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -1954,7 +1993,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2166": {
       "from": "DOGE",
@@ -2115,8 +2155,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -2129,7 +2172,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "2173": {
       "from": "DOGE",
@@ -2319,8 +2363,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -2333,7 +2380,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2181": {
       "from": "DOT",
@@ -2494,8 +2542,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -2508,7 +2559,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "2188": {
       "from": "DOT",
@@ -2669,8 +2721,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -2683,7 +2738,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2195": {
       "from": "ETC",
@@ -2844,8 +2900,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -2858,7 +2917,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "2202": {
       "from": "ETC",
@@ -3019,8 +3079,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -3033,7 +3096,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2209": {
       "from": "ETH",
@@ -3069,8 +3133,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -3083,7 +3150,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "1994": {
       "from": "ETH",
@@ -3419,8 +3487,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -3433,7 +3504,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2222": {
       "from": "LTC",
@@ -3469,8 +3541,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -3483,7 +3558,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "1995": {
       "from": "LTC",
@@ -3623,8 +3699,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -3637,7 +3716,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2228": {
       "from": "NEO",
@@ -3798,8 +3878,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -3812,7 +3895,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "2235": {
       "from": "NEO",
@@ -4002,8 +4086,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -4016,7 +4103,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2257": {
       "from": "SHIBERC20",
@@ -4177,8 +4265,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -4191,7 +4282,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "2264": {
       "from": "SHIBERC20",
@@ -4381,8 +4473,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -4395,7 +4490,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2271": {
       "from": "SOL",
@@ -4506,8 +4602,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -4520,7 +4619,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "1996": {
       "from": "SOL",
@@ -4710,8 +4810,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -4724,7 +4827,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2282": {
       "from": "TRX",
@@ -4885,8 +4989,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -4899,7 +5006,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "1982": {
       "from": "TRX",
@@ -5635,8 +5743,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -5649,7 +5760,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2315": {
       "from": "XLM",
@@ -5810,8 +5922,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -5824,7 +5939,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "2322": {
       "from": "XLM",
@@ -6014,8 +6130,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -6028,7 +6147,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2329": {
       "from": "XMR",
@@ -6164,8 +6284,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -6178,7 +6301,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "1991": {
       "from": "XMR",
@@ -6368,8 +6492,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -6382,7 +6509,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2342": {
       "from": "XRP",
@@ -6518,8 +6646,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -6532,7 +6663,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "1584": {
       "from": "XRP",
@@ -6722,8 +6854,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -6736,7 +6871,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2355": {
       "from": "XTZ",
@@ -6897,8 +7033,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -6911,7 +7050,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "2362": {
       "from": "XTZ",
@@ -7072,8 +7212,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDBYN",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTBYN_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1185,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -7086,7 +7229,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDBYN commercial BYN peg (not floatrates mid FX)"
     },
     "2369": {
       "from": "ZEC",
@@ -7247,8 +7391,11 @@
         "orientation": "asset_per_usdt"
       },
       "fiat_leg": {
-        "symbol": "USDKZT",
-        "orientation": "fiat_per_usd"
+        "symbol": "USDTKZT_BC",
+        "orientation": "fiat_per_usd",
+        "source": "direction_course",
+        "direction_id": 1183,
+        "max_age_seconds": 21600
       },
       "formula": "course=asset*fiat*haircut",
       "haircut": "0.999",
@@ -7261,7 +7408,8 @@
         "block_bestchange_overwrite": false,
         "keep_bestchange_link_status": 0
       },
-      "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+      "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+      "fiat_leg_note": "BestChange USDT→CARDKZT commercial KZT peg (not floatrates mid FX)"
     },
     "2376": {
       "from": "ZEC",
