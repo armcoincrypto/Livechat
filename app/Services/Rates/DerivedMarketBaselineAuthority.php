@@ -272,14 +272,17 @@ final class DerivedMarketBaselineAuthority
         ];
 
         if (!empty($eval['ok']) && is_string($eval['rate'])) {
+            // Rate ownership only. Do NOT force status=1 — admin enable/disable
+            // must stick across */10 derived baseline refresh ticks.
             $action['write'] = array_merge([
                 'course_value' => $eval['rate'],
                 'manual_rate_value' => $eval['rate'],
                 'parser_source_name' => (string) ($cfg['ownership']['parser_source_name'] ?? 'DERIVED_MARKET_BASELINE'),
                 'is_error_rate' => 0,
                 'error_rate_text' => null,
-                'status' => 1,
-                'allow_export' => (int) ($row->allow_export === 2 ? 0 : $row->allow_export),
+                // Preserve owner export policy: 0=unrestricted, 1=time-windowed, 2=blocked.
+                // Never auto-clear quarantine (2→0); that desyncs XML from intentional blocks.
+                'allow_export' => (int) ($row->allow_export ?? 0),
                 'exchange_rate' => $this->formatExchangeRateLabel($directionId, $eval['rate']),
             ], $neutralize);
         } else {
