@@ -236,14 +236,17 @@ final class DerivedMarketBaselineAuthority
             ];
         }
 
-        // Prefer live BestChange when admin enabled it — do not overwrite course/parser.
+        // Prefer live BestChange when admin enabled it — unless this direction
+        // explicitly blocks BC overwrite (e.g. GRAM/TON pairs whose BC self-rate
+        // is corrupt and must stay on IndependentMarketBaseline TONUSDT).
+        $blockBc = !empty($cfg['ownership']['block_bestchange_overwrite']);
         $bc = DB::table('bestchange_directions')
             ->where('id_direction_exchange', $directionId)
             ->where('status', 1)
             ->where('is_error_parser', 0)
             ->whereRaw('CAST(rate_value AS DECIMAL(36,18)) > 0')
             ->first();
-        if ($bc !== null) {
+        if ($bc !== null && !$blockBc) {
             return [
                 'ok' => true,
                 'skipped' => 'bestchange_active',
@@ -308,11 +311,13 @@ final class DerivedMarketBaselineAuthority
             DB::table('direction_exchange')->where('id', $directionId)->update(array_merge($action['write'], [
                 'updated_at' => $now,
             ]));
-            // Do not force-disable BestChange links. Admin/BC compiler own link
-            // status; derived authority only writes course when it successfully
-            // evaluates. Disabling BC here made admin "save BestChange" impossible.
-            if (!empty($cfg['ownership']['block_bestchange_overwrite'])) {
-                // no-op retained for config compatibility
+            // When ownership blocks BC overwrite, disable active BC links so the
+            // BestChange compiler cannot re-poison course_value on the next tick.
+            if ($blockBc) {
+                DB::table('bestchange_directions')
+                    ->where('id_direction_exchange', $directionId)
+                    ->where('status', 1)
+                    ->update(['status' => 0, 'updated_at' => $now]);
             }
             Log::info('derived_market_baseline_applied', $action);
         }
@@ -374,8 +379,9 @@ final class DerivedMarketBaselineAuthority
     /**
      * Read a positive live course from another public direction as a market leg.
      *
-     * Used for GRAM/TON: BestChange GRAM→USDTTRC20 is the commercial TON USD peg
-     * so GRAM→coin does not price from raw Binance TONUSDT mid (too rich vs BC).
+     * Used for optional peer-direction legs. GRAM/TON crypto crosses must NOT
+     * peer our own BestChange GRAM→USDT self-rate (historically ~2× under-priced);
+     * prefer IndependentMarketBaseline TONUSDT instead.
      *
      * @param  array<string,mixed>  $leg
      * @return array{rate:string,source:string,as_of:string,age_seconds:int,sample_size:int,divergence:null,selection_reason:string}|null
