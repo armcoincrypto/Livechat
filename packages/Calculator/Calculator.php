@@ -815,6 +815,17 @@ class Calculator implements Arrayable
      */
     protected function applyProfitAdjustments(CalculatorMathService $mathValue): void
     {
+        // Automatic market authorities: commercial % lives only in floating_fee/fix_fee
+        // (CanonicalDirectionRateCalculator / type_rate). Legacy «Прибыль» must not
+        // stack into course_value / exchange_rate / quotes (admin vs BestChange drift).
+        $parser = (string) ($this->directionExchange->parser_source_name ?? '');
+        if (
+            $parser === 'DERIVED_MARKET_BASELINE'
+            || $parser === \App\Services\Rates\ZelleUsdUsdtBenchmarkAuthority::PARSER_SOURCE_NAME
+        ) {
+            return;
+        }
+
         // Источник процентной прибыли: сначала индивидуальная для направления, затем профиль, иначе 0
         $profitPercentSource = $this->resolveEffectiveProfit(
             $this->directionExchange->profit,

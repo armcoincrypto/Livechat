@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Rates;
 
+use App\Models\DirectionExchange;
+use iEXPackages\Calculator\CalculatorFacade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -257,8 +259,20 @@ final class DerivedMarketBaselineAuthority
             'eval' => $eval,
         ];
 
+        // Legacy «Прибыль» / add_course must stay zero: commercial edge is only
+        // floating_fee/fix_fee. Otherwise compiler/Calculator bake profit into
+        // course_value and leave a stale admin exchange_rate (e.g. 396 vs BC ~376).
+        $neutralize = [
+            'profit' => 0,
+            'profit_s' => 0,
+            'add_course1' => 0,
+            'add_course2' => 0,
+            'your_add_course1' => 0,
+            'your_add_course2' => 0,
+        ];
+
         if (!empty($eval['ok']) && is_string($eval['rate'])) {
-            $action['write'] = [
+            $action['write'] = array_merge([
                 'course_value' => $eval['rate'],
                 'manual_rate_value' => $eval['rate'],
                 'parser_source_name' => (string) ($cfg['ownership']['parser_source_name'] ?? 'DERIVED_MARKET_BASELINE'),
@@ -266,7 +280,8 @@ final class DerivedMarketBaselineAuthority
                 'error_rate_text' => null,
                 'status' => 1,
                 'allow_export' => (int) ($row->allow_export === 2 ? 0 : $row->allow_export),
-            ];
+                'exchange_rate' => $this->formatExchangeRateLabel($directionId, $eval['rate']),
+            ], $neutralize);
         } else {
             // Retain last positive course for site/admin; only hard-error when
             // there is nothing usable. Temporary fiat/crypto gaps must not flip
@@ -275,14 +290,21 @@ final class DerivedMarketBaselineAuthority
             // on derived-owned rows when a refresh retains the last valid BASE.
             $lastCourse = (string) ($row->course_value ?? '0');
             $lastManual = (string) ($row->manual_rate_value ?? '0');
-            $hasRetained = (float) $lastCourse > 0 || (float) $lastManual > 0;
-            $action['write'] = [
+            $retainedRate = (float) $lastCourse > 0 ? $lastCourse : $lastManual;
+            $hasRetained = (float) $retainedRate > 0;
+            $action['write'] = array_merge([
                 'parser_source_name' => (string) ($cfg['ownership']['parser_source_name'] ?? 'DERIVED_MARKET_BASELINE'),
                 'is_error_rate' => $hasRetained ? 0 : 1,
                 'error_rate_text' => $hasRetained
                     ? ('derived_baseline_retained:' . ($eval['reason'] ?? 'unavailable'))
                     : ('derived_baseline_' . ($eval['reason'] ?? 'unavailable')),
-            ];
+            ], $neutralize);
+            if ($hasRetained) {
+                $action['write']['exchange_rate'] = $this->formatExchangeRateLabel(
+                    $directionId,
+                    (string) $retainedRate
+                );
+            }
         }
 
         if (!$dryRun) {
@@ -299,6 +321,48 @@ final class DerivedMarketBaselineAuthority
         }
 
         return $action;
+    }
+
+    /**
+     * Admin list «Курс» string from BASE only (no legacy profit stack).
+     */
+    private function formatExchangeRateLabel(int $directionId, string $rate): string
+    {
+        if (!is_numeric($rate) || bccomp($rate, '0', 18) !== 1) {
+            return $rate;
+        }
+
+        try {
+            $dir = DirectionExchange::query()
+                ->with([
+                    'currency1:id,number_format,id_code_currency',
+                    'currency1.code_currency:id,name',
+                    'currency2:id,number_format,id_code_currency',
+                    'currency2.code_currency:id,name',
+                ])
+                ->find($directionId);
+            if ($dir === null) {
+                return $rate;
+            }
+
+            $dir->course_value = $rate;
+            $dir->manual_rate_value = $rate;
+            $dir->parser_source_name = 'DERIVED_MARKET_BASELINE';
+            $dir->profit = 0;
+            $dir->profit_s = 0;
+
+            return (string) CalculatorFacade::setDirectionExchange($dir)
+                ->withoutOptions()
+                ->calculate()
+                ->getFullRate();
+        } catch (\Throwable $e) {
+            Log::warning('derived_exchange_rate_label_failed', [
+                'direction_id' => $directionId,
+                'message' => $e->getMessage(),
+            ]);
+
+            return $rate;
+        }
     }
 
     /**
