@@ -1,7 +1,7 @@
 {
-  "version": 4,
-  "approved_at": "20260809T140000Z",
-  "policy": "retire_listed_currencies_from_new_public_operation_without_deleting_rows",
+  "version": 5,
+  "approved_at": "20260809T142500Z",
+  "policy": "soft_delete_retired_currencies_and_directions_from_admin_without_hard_delete",
   "retire_currency_ids": [
     34,
     41,
@@ -32,6 +32,7 @@
     "zelle": "ZELLEUSD outgoing rate authority unchanged; retired destinations fail closed in ZelleUsdBenchmarkResolver",
     "34": "SHIBBEP20 owner-approved retirement 20260809 all-destinations pass; SHIBERC20 remains wanted; historical tasks preserved",
     "44": "TUSDERC20 owner-approved retirement 20260809; remove all public TUSD rails with TUSDTRC20",
-    "owner": "20260809 delete/retire TUSD TRC20+ERC20, DAI, A7A5, SHIBBEP20 from public catalog; historical rows preserved (soft-disable only)"
+    "owner": "20260809 delete/retire TUSD TRC20+ERC20, DAI, A7A5, SHIBBEP20 from public catalog; historical rows preserved (soft-disable only)",
+    "admin_hide": "20260809 owner: soft-deleted directions+currencies (deleted_at, status=2 archive) so they do not appear in admin active list"
   }
 }
