@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "default_profit_percent": "1.5",
+  "notes": "Owner commercial default for new automatic pairs. Give limits are in currency1 (give) units. GRAM/TON owner-tuned to 400-500.",
+  "give_limits_by_xml": {
+    "ADA": { "min": "300", "max": "100000" },
+    "BCH": { "min": "2.1", "max": "400" },
+    "BNBBEP20": { "min": "0.3", "max": "10" },
+    "BTC": { "min": "0.01592", "max": "10" },
+    "DASH": { "min": "7", "max": "300" },
+    "DOGE": { "min": "3000", "max": "100000" },
+    "DOT": { "min": "40", "max": "4000" },
+    "ETC": { "min": "60", "max": "5000" },
+    "ETH": { "min": "0.25", "max": "5" },
+    "GRAM": { "min": "400", "max": "500" },
+    "LTC": { "min": "4", "max": "300" },
+    "NEO": { "min": "20", "max": "70000" },
+    "SHIBERC20": { "min": "1000000", "max": "500000000" },
+    "SOL": { "min": "3", "max": "400" },
+    "TRX": { "min": "1000", "max": "15000000" },
+    "XLM": { "min": "1000", "max": "1000000" },
+    "XMR": { "min": "1.5", "max": "400" },
+    "XRP": { "min": "250", "max": "2000" },
+    "XTZ": { "min": "2000", "max": "500000" },
+    "ZEC": { "min": "1", "max": "4000" }
+  },
+  "fallback_give_limits": { "min": "1", "max": "100" }
+}

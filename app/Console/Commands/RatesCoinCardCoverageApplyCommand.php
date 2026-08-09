@@ -419,6 +419,9 @@ final class RatesCoinCardCoverageApplyCommand extends Command
      */
     private function limitsForCoinCard(array $coin, array $card, ?array $template): array
     {
+        $defaults = \App\Services\Rates\DirectionCreationDefaults::fromStorageApp();
+        $give = $defaults->giveLimitsForXml((string) ($coin['designation_xml'] ?? $coin['code'] ?? ''));
+
         $peer = DB::selectOne("
             SELECT d.min_price1, d.max_price1, d.min_price2, d.max_price2, d.type_reserve, d.direction_reserve, d.is_type_rate, d.profit, d.floating_fee
             FROM direction_exchange d
@@ -434,13 +437,9 @@ final class RatesCoinCardCoverageApplyCommand extends Command
             LIMIT 1
         ", [$coin['id']]);
 
-        $min1 = $peer->min_price1 ?? ($template['min_price1'] ?? '1');
-        $max1 = $peer->max_price1 ?? ($template['max_price1'] ?? '100');
-        // Prefer coin-unit mins from crypto peers; CARDAMD historical rows sometimes wrongly used USDT mins.
-        if ($peer && (float) $peer->min_price1 > 0) {
-            $min1 = $peer->min_price1;
-            $max1 = $peer->max_price1;
-        }
+        // Owner give-limits policy wins for currency1 (e.g. GRAM 400–500).
+        $min1 = $give['min'];
+        $max1 = $give['max'];
         if ((float) $max1 < (float) $min1) {
             $max1 = $min1;
         }
@@ -452,9 +451,11 @@ final class RatesCoinCardCoverageApplyCommand extends Command
             'max_price2' => (string) ($template['max_price2'] ?? '0'),
             'type_reserve' => (int) ($peer->type_reserve ?? $template['type_reserve'] ?? 0),
             'direction_reserve' => (string) ($peer->direction_reserve ?? $template['direction_reserve'] ?? '0'),
-            'is_type_rate' => (int) ($peer->is_type_rate ?? $template['is_type_rate'] ?? 0),
-            'profit' => (string) ($peer->profit ?? $template['profit'] ?? '0'),
-            'floating_fee' => (string) ($peer->floating_fee ?? $template['floating_fee'] ?? '0'),
+            'is_type_rate' => 1,
+            'profit' => $defaults->defaultProfitPercent(),
+            'floating_fee' => '0',
+            'is_manual_min_price1' => 1,
+            'is_manual_max_price1' => 1,
         ];
     }
 
@@ -512,6 +513,11 @@ final class RatesCoinCardCoverageApplyCommand extends Command
                 'max_price1' => $limits['max_price1'],
                 'min_price2' => $limits['min_price2'],
                 'max_price2' => $limits['max_price2'],
+                'profit' => $limits['profit'],
+                'floating_fee' => $limits['floating_fee'],
+                'is_type_rate' => $limits['is_type_rate'],
+                'is_manual_min_price1' => (int) ($limits['is_manual_min_price1'] ?? 1),
+                'is_manual_max_price1' => (int) ($limits['is_manual_max_price1'] ?? 1),
                 'updated_at' => now(),
             ]);
             $modified[] = (int) $dirId;
@@ -543,6 +549,8 @@ final class RatesCoinCardCoverageApplyCommand extends Command
             $data['is_type_rate'] = $limits['is_type_rate'];
             $data['profit'] = $limits['profit'];
             $data['floating_fee'] = $limits['floating_fee'];
+            $data['is_manual_min_price1'] = (int) ($limits['is_manual_min_price1'] ?? 1);
+            $data['is_manual_max_price1'] = (int) ($limits['is_manual_max_price1'] ?? 1);
             $data['tech_name'] = $action['tech_name'];
             $data['seo_title'] = $action['tech_name'];
             $data['seo_description'] = $action['tech_name'];

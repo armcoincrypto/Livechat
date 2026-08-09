@@ -87,9 +87,9 @@ class DirectionExchangeController extends Controller
             'min_price2' => ['default' => 0],
             'max_price1' => ['default' => 0],
             'max_price2' => ['default' => 0],
-            'is_manual_min_price1' => ['type' => 'int','default' => 0],
+            'is_manual_min_price1' => ['type' => 'int','default' => 1],
             'is_manual_min_price2' => ['type' => 'int','default' => 0],
-            'is_manual_max_price1' => ['type' => 'int','default' => 0],
+            'is_manual_max_price1' => ['type' => 'int','default' => 1],
             'is_manual_max_price2' => ['type' => 'int','default' => 0],
         ],
 
@@ -154,7 +154,7 @@ class DirectionExchangeController extends Controller
 
         'fees' => [
             'type_profit_field' => ['default' => 0],
-            'profit' => ['default' => 0],
+            'profit' => ['default' => 1.5],
             'profit_s' => ['default' => 0],
             'ids_group_commissions' => ['relationship' => 'groupCommissions', 'pluck' => 'id', 'sync' => true],
         ],
@@ -615,9 +615,11 @@ class DirectionExchangeController extends Controller
         ]);
 
         $name = direction_name($response);
-        $response->update([
+        $defaults = \App\Services\Rates\DirectionCreationDefaults::fromStorageApp()
+            ->attributesForNewDirection((int) $request->get('id_currency1'));
+        $response->update(array_merge($defaults, [
             'tech_name' => $request->get('tech_name') ?? $name,
-        ]);
+        ]));
 
         return response()->json([
             'status' => 0,
