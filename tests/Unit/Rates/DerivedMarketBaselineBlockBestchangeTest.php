@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Rates;
 
 use App\Services\Rates\DerivedMarketBaselineAuthority;
+use App\Services\Rates\ProtectedMarketBaselineWriteGuard;
 use Tests\TestCase;
 
 /**
@@ -92,5 +93,46 @@ final class DerivedMarketBaselineBlockBestchangeTest extends TestCase
             ->where('status', 1)
             ->count();
         $this->assertSame(0, $activeBc, 'block_bestchange_overwrite must disable active BC links');
+    }
+
+    public function test_bestchange_recalculate_skips_protected_even_with_active_link(): void
+    {
+        ProtectedMarketBaselineWriteGuard::clearCache();
+        $this->assertTrue(ProtectedMarketBaselineWriteGuard::blocksBestchangeOverwrite(11));
+
+        $before = \DB::table('direction_exchange')->where('id', 11)->first(['course_value', 'parser_source_name']);
+        $this->assertNotNull($before);
+
+        $existing = \DB::table('bestchange_directions')->where('id_direction_exchange', 11)->first();
+        if ($existing === null) {
+            \DB::table('bestchange_directions')->insert([
+                'id_direction_exchange' => 11,
+                'status' => 1,
+                'is_error_parser' => 0,
+                'rate_value' => '1.339',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } else {
+            \DB::table('bestchange_directions')->where('id', $existing->id)->update([
+                'status' => 1,
+                'is_error_parser' => 0,
+                'rate_value' => '1.339',
+                'updated_at' => now(),
+            ]);
+        }
+
+        // Simulate the fail-closed gate used by DirectionExchangeRecalculateService.
+        $deny = ProtectedMarketBaselineWriteGuard::denyBestchangeWrite(11, 'DirectionExchangeRecalculateService');
+        $this->assertTrue($deny['blocked']);
+
+        $after = \DB::table('direction_exchange')->where('id', 11)->first(['course_value', 'parser_source_name']);
+        $this->assertSame((string) $before->course_value, (string) $after->course_value);
+        $this->assertSame((string) $before->parser_source_name, (string) $after->parser_source_name);
+
+        // Cleanup: re-disable BC link as derived ownership requires.
+        \DB::table('bestchange_directions')
+            ->where('id_direction_exchange', 11)
+            ->update(['status' => 0, 'updated_at' => now()]);
     }
 }

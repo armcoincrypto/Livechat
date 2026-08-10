@@ -48,7 +48,7 @@ final class AtomicPublicXmlPublisher
         }
 
         $tmp = $dir . '/.' . basename($destinationPath) . '.tmp.' . getmypid() . '.' . bin2hex(random_bytes(4));
-        $fh = fopen($tmp, 'wb');
+        $fh = @fopen($tmp, 'wb');
         if ($fh === false) {
             throw new RuntimeException('cannot_open_temp_xml');
         }

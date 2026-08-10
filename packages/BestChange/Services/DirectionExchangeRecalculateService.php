@@ -83,6 +83,19 @@ final class DirectionExchangeRecalculateService
 
             foreach ($exchanges as $exchange) {
                 try {
+                    $directionId = (int) $exchange->id;
+
+                    // Fail-closed: derived market BASE with block_bestchange_overwrite
+                    // must never be rewritten by BestChange recalculate, even if an
+                    // admin/link race re-enabled bestchange_directions.status=1.
+                    $protected = \App\Services\Rates\ProtectedMarketBaselineWriteGuard::denyBestchangeWrite(
+                        $directionId,
+                        'DirectionExchangeRecalculateService'
+                    );
+                    if ($protected['blocked']) {
+                        continue;
+                    }
+
                     $calculator = CalculatorFacade::setDirectionExchange($exchange)->withoutOptions()->calculate();
                     $courseValue = (string) $calculator->getRateValue();
 
@@ -90,7 +103,7 @@ final class DirectionExchangeRecalculateService
                     // is enabled but yields no positive market rate.
                     if (!is_numeric($courseValue) || (float) $courseValue <= 0) {
                         $errorUpdates[] = [
-                            'id'                 => (int) $exchange->id,
+                            'id'                 => $directionId,
                             'is_error_rate'      => 1,
                             'error_rate_text'    => 'bestchange_recalculate_non_positive_rate',
                             'parser_source_name' => 'BestChange',
@@ -99,8 +112,9 @@ final class DirectionExchangeRecalculateService
                         continue;
                     }
 
+                    $oldBase = (string) ($exchange->course_value ?? '');
                     $successUpdates[] = [
-                        'id'                 => (int) $exchange->id,
+                        'id'                 => $directionId,
                         'course_value'       => $courseValue,
                         'exchange_rate'      => (string) $calculator->getFullRate(),
                         'is_error_rate'      => 0,
@@ -108,6 +122,17 @@ final class DirectionExchangeRecalculateService
                         'parser_source_name' => 'BestChange',
                         'updated_at'         => $now,
                     ];
+                    if ($oldBase !== $courseValue) {
+                        \App\Services\Rates\RateWriteAuditLogger::record([
+                            'event' => 'base_change',
+                            'direction_id' => $directionId,
+                            'old_base' => $oldBase,
+                            'new_base' => $courseValue,
+                            'writer' => 'DirectionExchangeRecalculateService',
+                            'source' => 'BestChange',
+                            'reason' => 'bestchange_recalculate',
+                        ]);
+                    }
                 } catch (\Throwable $e) {
                     $errorUpdates[] = [
                         'id'                 => (int) $exchange->id,

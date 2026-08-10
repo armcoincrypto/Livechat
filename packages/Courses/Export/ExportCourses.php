@@ -49,29 +49,39 @@ final class ExportCourses
         $publisher = new AtomicPublicXmlPublisher();
         $xml = (string) $contents;
         $items = substr_count($xml, '<item>');
+        $livePath = $filename;
 
-        if ($publisher->collapsesAgainstLastGood($filename, $items)) {
+        // Fail-closed start: while pause flag is set, stage to .candidate so the
+        // public empty feed stays empty until operation:start promotes + goes online.
+        $stageCandidate = \App\Services\Rates\RatesXmlMonitorGate::isHidden() && !$this->isClear;
+        if ($stageCandidate) {
+            $filename = $filename.'.candidate';
+        }
+
+        // Collapse guard always vs the live path's last-good (not the candidate).
+        if ($publisher->collapsesAgainstLastGood($livePath, $items)) {
             Log::error('rates_xml_publish_refused_item_collapse', [
                 'path' => $filename,
+                'live' => $livePath,
                 'new_items' => $items,
             ]);
-            @file_put_contents($filename . '.failed.' . gmdate('Ymd\THis\Z'), $xml);
+            @file_put_contents($filename.'.failed.'.gmdate('Ymd\THis\Z'), $xml);
 
             return;
         }
 
-        $isCanonicalCurrencies = str_contains($filename, '/static/exports/')
-            && str_ends_with($filename, 'currencies.xml');
+        $isCanonicalCurrencies = str_contains($livePath, '/static/exports/')
+            && str_ends_with($livePath, 'currencies.xml');
 
         $result = $publisher->publish($filename, $xml, [
             'min_items' => 1,
-            'backup' => true,
-            'sync_legacy' => $isCanonicalCurrencies,
+            'backup' => !$stageCandidate,
+            'sync_legacy' => $isCanonicalCurrencies && !$stageCandidate,
         ]);
 
         if (!$result['published']) {
             Log::error('rates_xml_publish_refused', $result);
-            @file_put_contents($filename . '.failed.' . gmdate('Ymd\THis\Z'), $xml);
+            @file_put_contents($filename.'.failed.'.gmdate('Ymd\THis\Z'), $xml);
         }
     }
 
@@ -82,8 +92,34 @@ final class ExportCourses
 
     public function clear(string $filename): void
     {
-        // Never truncate the live public export (causes 0-byte client timeouts).
-        Log::warning('rates_xml_clear_skipped_live_path', ['path' => $filename]);
+        // Ensure nginx 404 flag is set for the whole pause window.
+        \App\Services\Rates\RatesXmlMonitorGate::hide('scheme:files_clear');
+
+        // Intentional pause (work_is_offline / operation:stop): publish a valid
+        // empty <rates/> document so BestChange/monitors see 0 pairs — not a
+        // truncated 0-byte file (which caused client timeouts historically).
+        $empty = \App\Services\Rates\RatesXmlMonitorGate::EMPTY_RATES_XML;
+
+        $publisher = new AtomicPublicXmlPublisher();
+        $isCanonicalCurrencies = str_contains($filename, '/static/exports/')
+            && str_ends_with($filename, 'currencies.xml');
+
+        $result = $publisher->publish($filename, $empty, [
+            'min_items' => 0,
+            'backup' => true,
+            'sync_legacy' => $isCanonicalCurrencies,
+        ]);
+
+        if (!$result['published']) {
+            Log::error('rates_xml_clear_publish_failed', $result);
+            return;
+        }
+
+        Log::warning('rates_xml_cleared_for_offline', [
+            'path' => $filename,
+            'items' => $result['items'],
+            'reason' => 'work_is_offline',
+        ]);
     }
 
     public function setIsRead(bool $read): self

@@ -45,4 +45,26 @@ final class AtomicPublicXmlPublisherTest extends TestCase
         $this->assertTrue($pub->collapsesAgainstLastGood($live, 10));
         $this->assertFalse($pub->collapsesAgainstLastGood($live, 80));
     }
+
+    public function testIntentionalEmptyRatesPublishForOfflineHide(): void
+    {
+        $dir = sys_get_temp_dir() . '/xmlpub_empty_' . getmypid();
+        @mkdir($dir, 0777, true);
+        $live = $dir . '/currencies.xml';
+        file_put_contents(
+            $live,
+            '<?xml version="1.0"?><rates>'
+            . str_repeat('<item><from>BTC</from><to>USDT</to></item>', 50)
+            . '</rates>'
+        );
+
+        $empty = '<?xml version="1.0"?><rates version="1"></rates>';
+        $pub = new AtomicPublicXmlPublisher();
+        $r = $pub->publish($live, $empty, ['min_items' => 0, 'backup' => true]);
+        $this->assertTrue($r['published'], (string) ($r['reason'] ?? 'publish failed'));
+        $this->assertSame(0, $r['items']);
+        $this->assertSame(0, substr_count((string) file_get_contents($live), '<item>'));
+        $this->assertFileExists($live . '.last-good');
+        $this->assertGreaterThan(0, filesize($live)); // valid non-zero empty document
+    }
 }

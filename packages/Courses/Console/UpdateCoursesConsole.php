@@ -68,8 +68,8 @@ final class UpdateCoursesConsole extends Command
         try {
             $isUpdate = $this->normalizeBoolOption($this->option('isUpdate'));
 
-            // Отключаем обновление курсов, если обменник отключен (по твоей логике).
-            if ($isUpdate === false && work_is_offline()) {
+            // Fresh authoritative offline check (never request-stale work_is_offline).
+            if ($isUpdate === false && \App\Support\WorkStatusFresh::isOffline()) {
                 $this->warn('Курсы не обновлены: обменник отключен');
                 return self::SUCCESS;
             }

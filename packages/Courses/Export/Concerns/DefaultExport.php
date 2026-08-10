@@ -25,7 +25,8 @@ trait DefaultExport
      */
     protected function loadingDefault(): void
     {
-        $this->isOperatorStatus = work_is_offline() ? 1 : 0;
+        // Fresh status — avoid stale WorkStatusMiddleware cache during Artisan::call.
+        $this->isOperatorStatus = \App\Support\WorkStatusFresh::isOffline() ? 1 : 0;
 
         // cursor() вместо get(): не грузим все конфиги в память
         foreach (ExportRatesFile::query()->where('status', 1)->cursor() as $fileConfig) {
