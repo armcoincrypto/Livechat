@@ -439,6 +439,14 @@ class OrdersController extends Controller
                     ])
                     ->withSum('exchangeTotals as exchanges_sum_usd', 'exchange_usd');
             },
+            // Soft-deleted directions must still resolve for historical order detail.
+            'direction_exchange' => function ($q) {
+                $q->withTrashed();
+            },
+            'direction_exchange.currency1.code_currency',
+            'direction_exchange.currency1.payment.explorer',
+            'direction_exchange.currency2.code_currency',
+            'direction_exchange.currency2.payment.explorer',
         ]);
 
         if($detail->trashed()) {
