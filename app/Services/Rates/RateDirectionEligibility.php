@@ -250,18 +250,46 @@ final class RateDirectionEligibility
         if ($isRubDirection) {
             $policy = $this->rubPolicy ?? RubFamilyPremiumPolicy::fromStorageApp();
             $expectation = $this->expectation ?? new RateConfiguredExpectation();
+            $baselineRateFloat = $baselineInfo['rate'] !== null && is_numeric((string) $baselineInfo['rate'])
+                ? (float) $baselineInfo['rate']
+                : null;
+            $courseRaw = null;
+            $commercialRaw = null;
             if ($baselineInfo['rate'] !== null) {
                 $analysis = $expectation->analyze(
                     baseline: (string) $baselineInfo['rate'],
                     actual: (string) ($direction->course_value ?? ''),
                     profitPercent: (string) ($direction->profit ?? '0'),
                 );
-                $raw = $analysis['raw_market_deviation'] ?? null;
+                $courseRaw = $analysis['raw_market_deviation'] ?? null;
+
+                // Prefer customer-facing commercial floating vs CBR when intentional
+                // commercial pricing is configured (or DERIVED ownership applies).
+                try {
+                    $calc = CanonicalDirectionRateCalculator::make();
+                    $floating = $calc->calculate($direction, RateMode::Floating, RateChannel::Website);
+                    if (
+                        is_numeric($floating->finalRate)
+                        && bccomp($floating->finalRate, '0', 8) > 0
+                        && $baselineRateFloat !== null
+                        && $baselineRateFloat > 0.0
+                    ) {
+                        $commercialRaw = (((float) $floating->finalRate) / $baselineRateFloat - 1.0) * 100.0;
+                    }
+                } catch (Throwable) {
+                    $commercialRaw = null;
+                }
             }
+
+            $useCommercial = $policy->familyUsesIntentionalAbsoluteTarget($to)
+                || (string) ($direction->parser_source_name ?? '') === 'DERIVED_MARKET_BASELINE';
+            $raw = ($useCommercial && $commercialRaw !== null) ? $commercialRaw : $courseRaw;
+
             $eval = $policy->evaluateCoinRub(
                 $to,
                 $raw === null ? null : (float) $raw,
                 (float) ($direction->profit ?? 0),
+                $baselineRateFloat,
             );
             $classification = $eval['classification'];
             $unexplained = $eval['unexplained_vs_expected_percent'];

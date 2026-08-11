@@ -1,8 +1,8 @@
 {
     "version": 4,
-    "approved_at": "2026-08-09T16:19:31Z",
+    "approved_at": "2026-08-09T23:50:00Z",
     "authority": "DERIVED_MARKET_BASELINE",
-    "count": 1463,
+    "count": 1495,
     "directions": {
         "1599": {
             "from": "REVBUSD",
@@ -3248,7 +3248,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -3273,7 +3273,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -3298,7 +3298,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -3323,7 +3323,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -3348,7 +3348,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -3373,7 +3373,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -3398,7 +3398,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -3423,7 +3423,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -3448,7 +3448,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -10060,7 +10060,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -10085,7 +10085,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -12585,7 +12585,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -14062,7 +14062,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -14087,7 +14087,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -14112,7 +14112,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -15098,7 +15098,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
@@ -15356,7 +15356,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -15706,7 +15706,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -16056,7 +16056,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -16556,7 +16556,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -17181,7 +17181,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -18206,7 +18206,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -18231,7 +18231,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -18256,7 +18256,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -19131,7 +19131,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -19631,7 +19631,7 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": false,
+                "block_bestchange_overwrite": true,
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
@@ -37255,6 +37255,786 @@
                 "keep_bestchange_link_status": 0
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "1057": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTBEP20",
+            "to": "ACRUB"
+        },
+        "110": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTERC20",
+            "to": "ACRUB"
+        },
+        "1077": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTSOL",
+            "to": "ACRUB"
+        },
+        "1114": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTTON",
+            "to": "ACRUB"
+        },
+        "25": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTTRC20",
+            "to": "ACRUB"
+        },
+        "1058": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTBEP20",
+            "to": "RFBRUB"
+        },
+        "1070": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTERC20",
+            "to": "RFBRUB"
+        },
+        "1078": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTSOL",
+            "to": "RFBRUB"
+        },
+        "1115": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTTON",
+            "to": "RFBRUB"
+        },
+        "26": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTTRC20",
+            "to": "RFBRUB"
+        },
+        "1056": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTBEP20",
+            "to": "SBERRUB"
+        },
+        "108": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTERC20",
+            "to": "SBERRUB"
+        },
+        "1075": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTSOL",
+            "to": "SBERRUB"
+        },
+        "1112": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTTON",
+            "to": "SBERRUB"
+        },
+        "15": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTTRC20",
+            "to": "SBERRUB"
+        },
+        "1029": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTBEP20",
+            "to": "SBPRUB"
+        },
+        "109": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTERC20",
+            "to": "SBPRUB"
+        },
+        "1076": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTSOL",
+            "to": "SBPRUB"
+        },
+        "1113": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTTON",
+            "to": "SBPRUB"
+        },
+        "268": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTTRC20",
+            "to": "SBPRUB"
+        },
+        "1059": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTBEP20",
+            "to": "TBRUB"
+        },
+        "1071": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTERC20",
+            "to": "TBRUB"
+        },
+        "1080": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTSOL",
+            "to": "TBRUB"
+        },
+        "1117": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTTON",
+            "to": "TBRUB"
+        },
+        "28": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTTRC20",
+            "to": "TBRUB"
+        },
+        "1030": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTBEP20",
+            "to": "TCSBRUB"
+        },
+        "111": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTERC20",
+            "to": "TCSBRUB"
+        },
+        "1079": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTSOL",
+            "to": "TCSBRUB"
+        },
+        "1116": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTTON",
+            "to": "TCSBRUB"
+        },
+        "27": {
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "from": "USDTTRC20",
+            "to": "TCSBRUB"
         }
     },
     "note": "Admin-safe: never force-disable BestChange; prefer BC when link active. Removed dirs with live BC rates. | 20260808: removed ZELLEUSD outgoing ownership; ZelleUsdUsdtBenchmarkAuthority is sole ZELLE writer. | 2026-08-09: remove direction_course:11 peer; GRAM priced from Binance TONUSDT; block BestChange overwrite on GRAM/USDT and crypto<->GRAM dependents | 2026-08-09 global integrity: USDCERC20→GRAM(706) + USDCERC20→USDTERC20(704) moved from poisoned/mispriced BestChange to derived TONUSDT/USDT peg",
@@ -37286,5 +38066,6 @@
         ],
         "reason": "ZELLE_SINGLE_RATE_AUTHORITY — derived must not write ZELLE course/parser_source_name"
     },
-    "updated_at": "2026-08-09T18:00:53Z"
+    "updated_at": "2026-08-11T10:41:38Z",
+    "update_note": "USDT classic RUB DERIVED BASE; owner owns Прибыль; commercial-target does not write profit"
 }

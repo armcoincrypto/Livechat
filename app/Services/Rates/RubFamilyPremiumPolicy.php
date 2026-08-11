@@ -120,8 +120,13 @@ final class RubFamilyPremiumPolicy
     /**
      * Target-band top used as policy-calculated expected commercial premium (not hard max).
      * Does not mutate direction.profit.
+     *
+     * When an absolute USDT→RUB commercial target is configured and a positive
+     * CBR/mid baseline is supplied, expected premium is derived as:
+     *   (target / baseline - 1) * 100
+     * so review compares commercial reality to intentional pricing, not "must ≈ CBR".
      */
-    public function targetPremiumMaxPercent(string $toCode): ?float
+    public function targetPremiumMaxPercent(string $toCode, ?float $baselineRate = null): ?float
     {
         if (!$this->isApproved()) {
             return null;
@@ -130,9 +135,39 @@ final class RubFamilyPremiumPolicy
         if ($family === null || !$this->isFamilyExportAllowed($toCode)) {
             return null;
         }
+
+        $absolute = $family['target_commercial_usdt_rub']
+            ?? ($this->config['intentional_commercial']['usdt_rub_customer_floating'] ?? null);
+        if (
+            is_numeric($absolute)
+            && $baselineRate !== null
+            && $baselineRate > 0.0
+            && $this->familyUsesIntentionalAbsoluteTarget($toCode)
+        ) {
+            return (((float) $absolute) / $baselineRate - 1.0) * 100.0;
+        }
+
         $v = $family['target_premium_max_percent'] ?? $family['target_premium_percent'] ?? null;
 
         return is_numeric($v) ? (float) $v : null;
+    }
+
+    public function familyUsesIntentionalAbsoluteTarget(string $toCode): bool
+    {
+        $family = $this->familyForDestination($toCode);
+        if ($family === null) {
+            return false;
+        }
+        if (isset($family['target_commercial_usdt_rub']) && is_numeric($family['target_commercial_usdt_rub'])) {
+            return true;
+        }
+        $key = (string) ($family['family_key'] ?? '');
+        $applies = $this->config['intentional_commercial']['applies_to_families'] ?? [];
+        if (!is_array($applies)) {
+            return false;
+        }
+
+        return in_array($key, $applies, true);
     }
 
     public function hardMaximumPremiumPercent(string $toCode): ?float
@@ -176,6 +211,7 @@ final class RubFamilyPremiumPolicy
         string $toCode,
         ?float $rawPremiumVsMidPercent,
         float $configuredProfitPercent = 0.0,
+        ?float $baselineRate = null,
     ): array {
         $family = $this->familyForDestination($toCode);
         $reasons = [];
@@ -211,12 +247,15 @@ final class RubFamilyPremiumPolicy
 
         $hardMax = $this->hardMaximumPremiumPercent($toCode) ?? 0.0;
         $warnPrem = $this->warningPremiumPercent($toCode) ?? $hardMax;
-        $targetMax = $this->targetPremiumMaxPercent($toCode) ?? 0.0;
+        $targetMax = $this->targetPremiumMaxPercent($toCode, $baselineRate) ?? 0.0;
         $unexplWarn = (float) (($this->config['default_thresholds']['unexplained_warning_percent'] ?? 1.0));
         $unexplBlock = (float) (($this->config['default_thresholds']['unexplained_block_percent'] ?? 2.0));
 
         // Ceiling on configured profit — never auto-raise profit to target/max.
-        if ($configuredProfitPercent - $hardMax > 1e-9) {
+        // Negative profit = more competitive commercial adjustment (fee = -profit);
+        // compare the absolute commercial magnitude against the family hard ceiling.
+        $configuredMagnitude = abs($configuredProfitPercent);
+        if ($configuredMagnitude - $hardMax > 1e-9) {
             $reasons[] = 'configured_premium_exceeds_family_hard_maximum';
             $base['classification'] = 'QUARANTINE_REQUIRED';
 

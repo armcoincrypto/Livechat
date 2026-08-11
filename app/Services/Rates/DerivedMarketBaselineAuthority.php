@@ -311,6 +311,11 @@ final class DerivedMarketBaselineAuthority
         }
 
         if (!$dryRun) {
+            $oldBase = (string) ($row->course_value ?? '');
+            $newBase = isset($action['write']['course_value'])
+                ? (string) $action['write']['course_value']
+                : $oldBase;
+
             DB::table('direction_exchange')->where('id', $directionId)->update(array_merge($action['write'], [
                 'updated_at' => $now,
             ]));
@@ -321,6 +326,19 @@ final class DerivedMarketBaselineAuthority
                     ->where('id_direction_exchange', $directionId)
                     ->where('status', 1)
                     ->update(['status' => 0, 'updated_at' => $now]);
+            }
+            if ($oldBase !== $newBase || ($action['write']['parser_source_name'] ?? null) !== null) {
+                RateWriteAuditLogger::record([
+                    'event' => 'base_change',
+                    'direction_id' => $directionId,
+                    'from' => $cfg['from'] ?? null,
+                    'to' => $cfg['to'] ?? null,
+                    'old_base' => $oldBase,
+                    'new_base' => $newBase,
+                    'writer' => 'DerivedMarketBaselineAuthority',
+                    'source' => (string) ($cfg['ownership']['parser_source_name'] ?? 'DERIVED_MARKET_BASELINE'),
+                    'reason' => $blockBc ? 'derived_refresh_block_bc' : 'derived_refresh',
+                ]);
             }
             Log::info('derived_market_baseline_applied', $action);
         }

@@ -53,7 +53,7 @@
     {
       "path": "app/Services/Rates/RateDirectionEligibility.php",
       "required": true,
-      "candidate_sha256": "ee14aa6338a4576c5e316468b5a009aed3ed46c4d510a35464af226b5d3c68a6",
+      "candidate_sha256": "cf8d8332ab7f37ad3eb22a4de6da7d2becbf092228f1928ec83f1e0afa2a5815",
       "class": null
     },
     {
@@ -265,13 +265,13 @@
     {
       "path": "app/Services/Rates/DerivedMarketBaselineAuthority.php",
       "required": true,
-      "candidate_sha256": "65979ec1f3334da641b1998d30ca06312b3b7cb26f62100fc42921d4e2ac14b0",
+      "candidate_sha256": "8a8a0ee59ca42aeb41b7e1d03c6c0578838639580ce8e52eb077b5aeee77eaf6",
       "class": null
     },
     {
       "path": "resources/rates/derived-market-baseline-directions.json",
       "required": true,
-      "candidate_sha256": "0ead8fcc4b43ae60cabd93bc96990893ba5589fbf38ccb686bed7e14be0b1b5b",
+      "candidate_sha256": "4f7651bdcb4e5c0f4beaa5bd028011dbe012a7922eba749ef74bf50f9e56d386",
       "class": null
     },
     {
@@ -332,6 +332,18 @@
       "path": "tests/Unit/Rates/UsdtRubCommercialTargetProfitDriftContractTest.php",
       "required": true,
       "candidate_sha256": "48f37c35f768a38f0b19a526decb237633bd02a363cedd3ea6ee06dd78775f77",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/RubFamilyPremiumPolicy.php",
+      "required": true,
+      "candidate_sha256": "588387b473fcc8afe4799ff08ec55f28cb9382363a04beb7eb632c10a03c6a26",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/RateWriteAuditLogger.php",
+      "required": true,
+      "candidate_sha256": "81b66d98a315754b63701c77da7f607932c411a163f484c2f80f69f7b8b8af42",
       "class": null
     }
   ]
