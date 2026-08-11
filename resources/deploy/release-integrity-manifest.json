@@ -71,7 +71,7 @@
     {
       "path": "app/Services/Rates/ZelleUsdUsdtBenchmarkAuthority.php",
       "required": true,
-      "candidate_sha256": "ad9c1da08bf239de5b16267274d503d7d7e1df5d0b1c8e8ce4997d7eb8a365c0",
+      "candidate_sha256": "b9ef7c30e77fac1758d6ea2586d0ee8b8fbf0fc832b6cd51ded37652bffbe91e",
       "class": null
     },
     {
@@ -181,7 +181,7 @@
     {
       "path": "resources/deploy/release-integrity-manifest.json",
       "required": true,
-      "candidate_sha256": "4da0624003afc2f9f42cb9a8815081b86a219db141110438ca296ffc22f00ea4"
+      "candidate_sha256": "84c0e94a68d722aa628df2e0cbdccd6595b84bf91beb3b5b886a3adc0287ceac"
     },
     {
       "path": "packages/Calculator/Calculator.php",
@@ -277,7 +277,61 @@
     {
       "path": "scripts/deploy/check_backend_source_dirt.sh",
       "required": true,
-      "candidate_sha256": "0e90a02f9f2d8554ab182913397c5b9950af195d4c8fc835d18cffc7a1a849a8",
+      "candidate_sha256": "e22635b0ee748a4a9cc7a8fbeea0d060471df44ee408d30ab3acb6ad26cc9fe7",
+      "class": null
+    },
+    {
+      "path": "app/Console/Commands/RatesApplyUsdtRubCommercialTargetCommand.php",
+      "required": true,
+      "candidate_sha256": "9c5a9932f720ce71a1cfeba77f1f6a367ca7db1b98e60c46500a2cffd10f1df3",
+      "class": null
+    },
+    {
+      "path": "app/Services/Rates/CommercialAdjustmentWriteGate.php",
+      "required": true,
+      "candidate_sha256": "853dcef942107bd92d76efc690e147a282b366b89f827ececc77f824702427b6",
+      "class": null
+    },
+    {
+      "path": "app/Observers/CommercialAdjustmentOwnershipObserver.php",
+      "required": true,
+      "candidate_sha256": "42845cd8da6faff0dd9f7b340cb72a82682dd68c6a73ce83d95f7efe0f0e8b04",
+      "class": null
+    },
+    {
+      "path": "app/Providers/RatesOwnerControlServiceProvider.php",
+      "required": true,
+      "candidate_sha256": "023f0fe91117fe7147ce7fb0903af78a8a797ba71bde331af05e152187b14fa4",
+      "class": null
+    },
+    {
+      "path": "bootstrap/providers.php",
+      "required": true,
+      "candidate_sha256": "31ce055209d2a0e05e7b273288f93f14447ebdeb70258c00365db0aa0a75db33",
+      "class": null
+    },
+    {
+      "path": "resources/rates/rub-family-premium-policy.json",
+      "required": true,
+      "candidate_sha256": "26379ebd01ffcd34f664910dcb7dff9bceac8df97ba402457d6688afccdece73",
+      "class": null
+    },
+    {
+      "path": "app/Http/Controllers/Administrator/Basic/DirectionExchange/Fees/DirectionExchangeProfitController.php",
+      "required": true,
+      "candidate_sha256": "e2386acdc179adb2703084489839efd2ec3cd9763512281515980784849059ed",
+      "class": null
+    },
+    {
+      "path": "tests/Unit/Rates/UsdtRubCommercialTargetOwnerProfitGuardTest.php",
+      "required": true,
+      "candidate_sha256": "c7812ecef6997e51c15d8ddd54e57d9053071c20466a9f88298bde989a5542bc",
+      "class": null
+    },
+    {
+      "path": "tests/Unit/Rates/UsdtRubCommercialTargetProfitDriftContractTest.php",
+      "required": true,
+      "candidate_sha256": "48f37c35f768a38f0b19a526decb237633bd02a363cedd3ea6ee06dd78775f77",
       "class": null
     }
   ]

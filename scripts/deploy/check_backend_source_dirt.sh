@@ -43,7 +43,11 @@ if os.path.isfile(manifest_path):
         prod.add(e if isinstance(e, str) else e["path"])
 
 PROD_RE = re.compile(
-    r"^(app/Services/Rates/|resources/rates/|resources/deploy/|"
+    r"^(app/Services/Rates/|app/Observers/CommercialAdjustment|"
+    r"app/Providers/RatesOwnerControlServiceProvider\.php|"
+    r"app/Console/Commands/RatesApplyUsdtRubCommercialTargetCommand\.php|"
+    r"bootstrap/providers\.php|"
+    r"resources/rates/|resources/deploy/|"
     r"config/calculator\.php|"
     r"packages/Calculator/(SourceChecks\.php|Strategies/(Derived|Zelle)BaselineStrategy\.php)|"
     r"packages/Courses/Console/UpdateCoursesConsole\.php|"
@@ -51,7 +55,7 @@ PROD_RE = re.compile(
     r"exswaping_deploy_lock|test_release_integrity|check_backend_source_dirt)|"
     r"packages/BestChange/Services/DirectionExchangeRecalculateService\.php|"
     r"packages/Courses/Export/|"
-    r"tests/Unit/Rates/(Zelle|CurrencyPublicRetirement|ActivePairClosure))"
+    r"tests/Unit/Rates/(Zelle|CurrencyPublicRetirement|ActivePairClosure|UsdtRubCommercialTarget|UniversalAdminProfit))"
 )
 
 ALLOWED_RE = re.compile(

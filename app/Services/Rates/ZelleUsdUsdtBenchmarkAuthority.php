@@ -62,21 +62,25 @@ final class ZelleUsdUsdtBenchmarkAuthority
 
         $course = $result->benchmarkRate;
         if (!$dryRun) {
-            DB::table('direction_exchange')->where('id', $direction->id)->update([
-                'course_value' => $course,
-                'manual_rate_value' => $course,
-                'is_error_rate' => 0,
-                'error_rate_text' => null,
-                'parser_source_name' => self::PARSER_SOURCE_NAME,
-                'exchange_rate' => $course,
-                // Neutralize legacy Calculator profit/add_course so fees apply only via floating_fee/fix_fee.
-                'profit' => 0,
-                'add_course1' => 0,
-                'add_course2' => 0,
-                'your_add_course1' => 0,
-                'your_add_course2' => 0,
-                'updated_at' => now(),
-            ]);
+            // profit=0 is ZELLE family invariant (Прибыль lives in floating_fee).
+            // Gate marks this as an approved compiler neutralization, not RUB magic profit.
+            CommercialAdjustmentWriteGate::run('zelle:ZelleUsdUsdtBenchmarkAuthority', function () use ($direction, $course): void {
+                DB::table('direction_exchange')->where('id', $direction->id)->update([
+                    'course_value' => $course,
+                    'manual_rate_value' => $course,
+                    'is_error_rate' => 0,
+                    'error_rate_text' => null,
+                    'parser_source_name' => self::PARSER_SOURCE_NAME,
+                    'exchange_rate' => $course,
+                    // Neutralize legacy Calculator profit/add_course so fees apply only via floating_fee/fix_fee.
+                    'profit' => 0,
+                    'add_course1' => 0,
+                    'add_course2' => 0,
+                    'your_add_course1' => 0,
+                    'your_add_course2' => 0,
+                    'updated_at' => now(),
+                ]);
+            });
             Log::info('zelle_usdt_benchmark_applied', [
                 'direction_id' => $direction->id,
                 'benchmark_direction_id' => $result->benchmarkDirectionId,

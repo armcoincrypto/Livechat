@@ -7,6 +7,7 @@ use App\Models\DirectionExchange;
 use App\Models\GroupCommission;
 use App\Models\ProfitProfile;
 use App\Services\Rates\CommercialAdjustmentResolver;
+use App\Services\Rates\CommercialAdjustmentWriteGate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -115,7 +116,9 @@ class DirectionExchangeProfitController extends Controller
             ]
         );
 
-        $item->update($payload);
+        CommercialAdjustmentWriteGate::run('admin:DirectionExchangeProfitController', function () use ($item, $payload): void {
+            $item->update($payload);
+        });
         $item->refresh();
 
         $family = $resolver->family($item);
