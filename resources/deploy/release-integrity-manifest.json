@@ -271,7 +271,7 @@
     {
       "path": "resources/rates/derived-market-baseline-directions.json",
       "required": true,
-      "candidate_sha256": "4f7651bdcb4e5c0f4beaa5bd028011dbe012a7922eba749ef74bf50f9e56d386",
+      "candidate_sha256": "7aa16b55147719e16d6ff21c376b1eefb2ac1d7a0920c285945851056d6f6fea",
       "class": null
     },
     {
