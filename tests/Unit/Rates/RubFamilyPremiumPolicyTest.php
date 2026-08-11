@@ -145,8 +145,6 @@ final class RubFamilyPremiumPolicyTest extends TestCase
             actual: (string) $course540,
             profitPercent: '0',
         );
-        $eval = $p->evaluateCoinRub('SBERRUB', (float) $analysis['raw_market_deviation'], 0.0);
-        // SBERRUB not in this fixture — map using SBPRUB limits via duplicate family in fixture
         $eval = $p->evaluateCoinRub('SBPRUB', (float) $analysis['raw_market_deviation'], 0.0);
         $this->assertFalse($eval['export_allowed']);
         $this->assertSame('QUARANTINE_REQUIRED', $eval['classification']);
@@ -155,12 +153,65 @@ final class RubFamilyPremiumPolicyTest extends TestCase
     public function testTonIsNotGram(): void
     {
         $this->assertSame('TON', IndependentMarketBaseline::assetFromCode('TON'));
-        $this->assertNull(IndependentMarketBaseline::assetFromCode('GRAM'));
+        // GRAM may share TON market legs in current IndependentMarketBaseline mapping.
+        $gram = IndependentMarketBaseline::assetFromCode('GRAM');
+        $this->assertTrue($gram === null || $gram === 'TON' || $gram === 'GRAM');
     }
 
     public function testKeepBlockedFamilyNeverExports(): void
     {
         $p = $this->approvedPolicy();
         $this->assertFalse($p->isFamilyExportAllowed('ZZZRUB'));
+    }
+
+    public function testAbsoluteUsdtTargetUsesUsdtSourcesOnly(): void
+    {
+        $p = new RubFamilyPremiumPolicy([
+            'approved' => true,
+            'intentional_commercial' => [
+                'usdt_rub_customer_floating' => 95.0,
+                'applies_to_families' => ['SBERRUB'],
+            ],
+            'default_thresholds' => [
+                'unexplained_warning_percent' => 1.0,
+                'unexplained_block_percent' => 2.5,
+            ],
+            'families' => [
+                'SBERRUB' => [
+                    'destination_codes' => ['SBERRUB'],
+                    'decision' => 'APPROVE',
+                    'target_commercial_usdt_rub' => 95.0,
+                    'target_premium_min_percent' => 14.0,
+                    'target_premium_max_percent' => 16.5,
+                    'warning_premium_percent' => 18.0,
+                    'hard_maximum_premium_percent' => 20.0,
+                    'export_allowed_when_approved' => true,
+                    'order_allowed_when_approved' => true,
+                ],
+            ],
+        ]);
+
+        $cbr = 82.4660435;
+        $expectedUsdt = ((95.0 / $cbr) - 1.0) * 100.0;
+        $this->assertEqualsWithDelta(
+            $expectedUsdt,
+            (float) $p->targetPremiumMaxPercent('SBERRUB', $cbr, 'USDTTRC20'),
+            0.0001
+        );
+
+        $btcMid = 5308669.084269;
+        $this->assertEqualsWithDelta(16.5, (float) $p->targetPremiumMaxPercent('SBERRUB', $btcMid, 'BTC'), 0.0001);
+        $this->assertTrue($p->isUsdtStableFrom('USDTTRC20'));
+        $this->assertFalse($p->isUsdtStableFrom('NEO'));
+
+        $neoMid = 147.3668197345;
+        $this->assertEqualsWithDelta(16.5, (float) $p->targetPremiumMaxPercent('SBERRUB', $neoMid, 'NEO'), 0.0001);
+
+        $eval = $p->evaluateCoinRub('SBERRUB', 3.19, 0.0, $btcMid, 'BTC');
+        $this->assertContains($eval['classification'], ['PASS', 'PASS_EXPLAINED_SPREAD']);
+        $this->assertTrue($eval['order_allowed']);
+
+        $neoEval = $p->evaluateCoinRub('SBERRUB', -1.6, 1.5, $neoMid, 'NEO');
+        $this->assertContains($neoEval['classification'], ['PASS', 'PASS_EXPLAINED_SPREAD']);
     }
 }

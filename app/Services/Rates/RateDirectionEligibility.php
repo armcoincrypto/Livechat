@@ -290,6 +290,7 @@ final class RateDirectionEligibility
                 $raw === null ? null : (float) $raw,
                 (float) ($direction->profit ?? 0),
                 $baselineRateFloat,
+                $from,
             );
             $classification = $eval['classification'];
             $unexplained = $eval['unexplained_vs_expected_percent'];

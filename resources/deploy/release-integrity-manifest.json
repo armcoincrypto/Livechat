@@ -53,7 +53,7 @@
     {
       "path": "app/Services/Rates/RateDirectionEligibility.php",
       "required": true,
-      "candidate_sha256": "cf8d8332ab7f37ad3eb22a4de6da7d2becbf092228f1928ec83f1e0afa2a5815",
+      "candidate_sha256": "584cfb41ac87b9bf4af05b634528cb8489d44646b231df57750508987686552d",
       "class": null
     },
     {
@@ -337,7 +337,7 @@
     {
       "path": "app/Services/Rates/RubFamilyPremiumPolicy.php",
       "required": true,
-      "candidate_sha256": "588387b473fcc8afe4799ff08ec55f28cb9382363a04beb7eb632c10a03c6a26",
+      "candidate_sha256": "a23177880ff62b71c868283c9ef5359a9db4c261868eeab7962718b2fd83871f",
       "class": null
     },
     {
@@ -345,6 +345,11 @@
       "required": true,
       "candidate_sha256": "81b66d98a315754b63701c77da7f607932c411a163f484c2f80f69f7b8b8af42",
       "class": null
+    },
+    {
+      "path": "tests/Unit/Rates/RubFamilyPremiumPolicyTest.php",
+      "required": true,
+      "candidate_sha256": "b37a098a5c657e95891731043b6eb102bb1e6661b8cf299773836a1f5e327794"
     }
   ]
 }

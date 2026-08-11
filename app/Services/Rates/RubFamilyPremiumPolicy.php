@@ -121,13 +121,15 @@ final class RubFamilyPremiumPolicy
      * Target-band top used as policy-calculated expected commercial premium (not hard max).
      * Does not mutate direction.profit.
      *
-     * When an absolute USDT→RUB commercial target is configured and a positive
-     * CBR/mid baseline is supplied, expected premium is derived as:
-     *   (target / baseline - 1) * 100
-     * so review compares commercial reality to intentional pricing, not "must ≈ CBR".
+     * Absolute USDT→RUB commercial target (~95) applies ONLY to USDT-stable sources
+     * with a CBR-like USDRUB baseline. Crypto→RUB (including cheap assets whose
+     * asset×USDRUB mid lands near 50–200) must use percent-band expectations.
      */
-    public function targetPremiumMaxPercent(string $toCode, ?float $baselineRate = null): ?float
-    {
+    public function targetPremiumMaxPercent(
+        string $toCode,
+        ?float $baselineRate = null,
+        ?string $fromCode = null,
+    ): ?float {
         if (!$this->isApproved()) {
             return null;
         }
@@ -141,7 +143,8 @@ final class RubFamilyPremiumPolicy
         if (
             is_numeric($absolute)
             && $baselineRate !== null
-            && $baselineRate > 0.0
+            && $this->isUsdtStableFrom($fromCode)
+            && $this->isUsdtRubScaleBaseline($baselineRate)
             && $this->familyUsesIntentionalAbsoluteTarget($toCode)
         ) {
             return (((float) $absolute) / $baselineRate - 1.0) * 100.0;
@@ -150,6 +153,28 @@ final class RubFamilyPremiumPolicy
         $v = $family['target_premium_max_percent'] ?? $family['target_premium_percent'] ?? null;
 
         return is_numeric($v) ? (float) $v : null;
+    }
+
+    /**
+     * True when FROM is a USDT stable network code (absolute ~95 target applies).
+     */
+    public function isUsdtStableFrom(?string $fromCode): bool
+    {
+        $from = strtoupper(trim((string) $fromCode));
+        if ($from === '') {
+            return false;
+        }
+
+        return str_starts_with($from, 'USDT');
+    }
+
+    /**
+     * True when baseline is a USDT/USD→RUB mid (CBR-like), not asset×USDRUB.
+     * Secondary guard — primary gate is {@see isUsdtStableFrom()}.
+     */
+    public function isUsdtRubScaleBaseline(float $baselineRate): bool
+    {
+        return $baselineRate >= 20.0 && $baselineRate <= 500.0;
     }
 
     public function familyUsesIntentionalAbsoluteTarget(string $toCode): bool
@@ -212,6 +237,7 @@ final class RubFamilyPremiumPolicy
         ?float $rawPremiumVsMidPercent,
         float $configuredProfitPercent = 0.0,
         ?float $baselineRate = null,
+        ?string $fromCode = null,
     ): array {
         $family = $this->familyForDestination($toCode);
         $reasons = [];
@@ -247,7 +273,7 @@ final class RubFamilyPremiumPolicy
 
         $hardMax = $this->hardMaximumPremiumPercent($toCode) ?? 0.0;
         $warnPrem = $this->warningPremiumPercent($toCode) ?? $hardMax;
-        $targetMax = $this->targetPremiumMaxPercent($toCode, $baselineRate) ?? 0.0;
+        $targetMax = $this->targetPremiumMaxPercent($toCode, $baselineRate, $fromCode) ?? 0.0;
         $unexplWarn = (float) (($this->config['default_thresholds']['unexplained_warning_percent'] ?? 1.0));
         $unexplBlock = (float) (($this->config['default_thresholds']['unexplained_block_percent'] ?? 2.0));
 
