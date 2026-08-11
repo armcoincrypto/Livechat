@@ -295,7 +295,7 @@
     {
       "path": "app/Observers/CommercialAdjustmentOwnershipObserver.php",
       "required": true,
-      "candidate_sha256": "42845cd8da6faff0dd9f7b340cb72a82682dd68c6a73ce83d95f7efe0f0e8b04",
+      "candidate_sha256": "a8f93bcac035ddfc3a7d2be5e5734d1ec150363e7a0787d94686e4bb87cc065f",
       "class": null
     },
     {

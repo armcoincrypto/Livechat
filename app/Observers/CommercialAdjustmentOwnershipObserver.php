@@ -6,6 +6,7 @@ namespace App\Observers;
 
 use App\Models\DirectionExchange;
 use App\Services\Rates\CommercialAdjustmentWriteGate;
+use App\Services\Rates\RateWriteAuditLogger;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -83,5 +84,17 @@ final class CommercialAdjustmentOwnershipObserver
             'timestamp' => gmdate('c'),
             'parser_source_name' => (string) ($direction->parser_source_name ?? ''),
         ]);
+
+        if (class_exists(RateWriteAuditLogger::class)) {
+            RateWriteAuditLogger::record([
+                'event' => CommercialAdjustmentWriteGate::EVENT_UNAUTHORIZED,
+                'direction_id' => $direction->id,
+                'writer' => $writer,
+                'old_base' => $changed['profit']['old'] ?? null,
+                'new_base' => $changed['profit']['new'] ?? null,
+                'reason' => 'commercial_adjustment_field_mutated_without_approved_writer',
+                'source' => 'CommercialAdjustmentOwnershipObserver',
+            ]);
+        }
     }
 }
