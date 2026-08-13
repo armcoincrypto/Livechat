@@ -1,18 +1,24 @@
 {
-  "version": 8,
+  "version": 9,
   "schema": "rub_family_premium_policy_v3",
   "approved": true,
   "approved_at": "2026-08-09T22:10:00Z",
   "approved_by": "exswaping-owner-chat-commercial-95",
-  "approval_source": "Owner intentional commercial USDT→RUB target ≈95 RUB/USDT; review must compare commercial rate to approved expectation, not require commercial≈CBR",
+  "approval_source": "Owner correction 2026-08-13: classic USDT→RUB commercial target is ≈85–86 RUB/USDT (applied as 85.5), not ≈95",
   "notes": "Family maximum is a CEILING only — never auto-increase configured premiums to target/max. Expected commercial rate uses intentional absolute USDT→RUB target when set, else target-band top. Unexplained vs expected: warn >1%, block >2.5%. Hard max blocks regardless. Classic bank rails keep CBR-near course_value (DERIVED BASE) with commercial adjustment via dynamic Прибыль synced from this absolute target.",
   "intentional_commercial": {
-    "usdt_rub_customer_floating": 95.0,
+    "usdt_rub_customer_floating": 85.5,
     "orientation": "RUB_per_1_USDT",
-    "applies_to_families": ["SBERRUB", "TCSBRUB", "SBPRUB", "RFBRUB", "ACRUB"],
-    "implementation": "DERIVED_MARKET_BASELINE owns BASE (CBR×haircut). Policy absolute target (~95) is the single commercial source of truth. UsdtRubCommercialTargetSyncService derives profit=(1-target/BASE)*100 after each BASE refresh via rates:apply-usdt-rub-commercial-target --sync-commercial (WriteGate policy:UsdtRubCommercialTargetSync). Never restore frozen legacy −15.661082. --apply refreshes BASE only. RUB REVIEW compares effective floating to ≈95.",
+    "applies_to_families": [
+      "SBERRUB",
+      "TCSBRUB",
+      "SBPRUB",
+      "RFBRUB",
+      "ACRUB"
+    ],
+    "implementation": "DERIVED_MARKET_BASELINE owns BASE (CBR×haircut). Policy absolute target (~85.5 RUB/USDT) is the single commercial source of truth. UsdtRubCommercialTargetSyncService derives profit=(1-target/BASE)*100 after each BASE refresh via rates:apply-usdt-rub-commercial-target --sync-commercial. Never restore frozen legacy −15.661082 or the prior mistaken ~95 bootstrap.",
     "approved_at": "2026-08-09T22:10:00Z",
-    "ownership_updated_at": "2026-08-13T11:15:00Z"
+    "ownership_updated_at": "2026-08-13T12:15:00Z"
   },
   "baseline": {
     "crypto_path": "ASSETUSDT from approved live independent provider (not BestChange)",
@@ -30,46 +36,56 @@
   "families": {
     "SBPRUB": {
       "label": "SBP RUB",
-      "destination_codes": ["SBPRUB"],
+      "destination_codes": [
+        "SBPRUB"
+      ],
       "decision": "APPROVE",
-      "target_commercial_usdt_rub": 95.0,
-      "target_premium_min_percent": 14.0,
-      "target_premium_max_percent": 16.5,
-      "warning_premium_percent": 18.0,
-      "hard_maximum_premium_percent": 20.0,
+      "target_commercial_usdt_rub": 85.5,
+      "target_premium_min_percent": 1.5,
+      "target_premium_max_percent": 4.0,
+      "warning_premium_percent": 6.0,
+      "hard_maximum_premium_percent": 9.0,
       "order_allowed_when_approved": true,
       "export_allowed_when_approved": true,
-      "notes": "Owner commercial target ~95 RUB/USDT (2026-08-09)"
+      "notes": "Owner commercial target ~85.5 RUB/USDT (corrected 2026-08-13; was 95)"
     },
     "SBERRUB": {
       "label": "Sberbank RUB",
-      "destination_codes": ["SBERRUB"],
+      "destination_codes": [
+        "SBERRUB"
+      ],
       "decision": "APPROVE",
-      "target_commercial_usdt_rub": 95.0,
-      "target_premium_min_percent": 14.0,
-      "target_premium_max_percent": 16.5,
-      "warning_premium_percent": 18.0,
-      "hard_maximum_premium_percent": 20.0,
+      "target_commercial_usdt_rub": 85.5,
+      "target_premium_min_percent": 1.5,
+      "target_premium_max_percent": 4.0,
+      "warning_premium_percent": 6.0,
+      "hard_maximum_premium_percent": 9.0,
       "order_allowed_when_approved": true,
       "export_allowed_when_approved": true,
-      "notes": "Owner commercial target ~95 RUB/USDT (2026-08-09)"
+      "notes": "Owner commercial target ~85.5 RUB/USDT (corrected 2026-08-13; was 95)"
     },
     "TCSBRUB": {
       "label": "Tinkoff / T-Bank RUB",
-      "destination_codes": ["TCSBRUB", "TBRUB"],
+      "destination_codes": [
+        "TCSBRUB",
+        "TBRUB"
+      ],
       "decision": "APPROVE",
-      "target_commercial_usdt_rub": 95.0,
-      "target_premium_min_percent": 14.0,
-      "target_premium_max_percent": 16.5,
-      "warning_premium_percent": 18.0,
-      "hard_maximum_premium_percent": 20.0,
+      "target_commercial_usdt_rub": 85.5,
+      "target_premium_min_percent": 1.5,
+      "target_premium_max_percent": 4.0,
+      "warning_premium_percent": 6.0,
+      "hard_maximum_premium_percent": 9.0,
       "order_allowed_when_approved": true,
       "export_allowed_when_approved": true,
-      "notes": "Owner commercial target ~95 RUB/USDT (2026-08-09)"
+      "notes": "Owner commercial target ~85.5 RUB/USDT (corrected 2026-08-13; was 95)"
     },
     "CARDRUB": {
       "label": "Card RUB",
-      "destination_codes": ["CARDRUB", "MTSBRUB"],
+      "destination_codes": [
+        "CARDRUB",
+        "MTSBRUB"
+      ],
       "decision": "APPROVE",
       "target_premium_min_percent": 3.0,
       "target_premium_max_percent": 6.0,
@@ -81,20 +97,24 @@
     },
     "ACRUB": {
       "label": "Advanced Cash RUB",
-      "destination_codes": ["ACRUB"],
+      "destination_codes": [
+        "ACRUB"
+      ],
       "decision": "APPROVE",
-      "target_commercial_usdt_rub": 95.0,
-      "target_premium_min_percent": 14.0,
-      "target_premium_max_percent": 16.5,
-      "warning_premium_percent": 18.0,
-      "hard_maximum_premium_percent": 20.0,
+      "target_commercial_usdt_rub": 85.5,
+      "target_premium_min_percent": 1.5,
+      "target_premium_max_percent": 4.0,
+      "warning_premium_percent": 6.0,
+      "hard_maximum_premium_percent": 9.0,
       "order_allowed_when_approved": true,
       "export_allowed_when_approved": true,
-      "notes": "Owner commercial target ~95 RUB/USDT (2026-08-09)"
+      "notes": "Owner commercial target ~85.5 RUB/USDT (corrected 2026-08-13; was 95)"
     },
     "YAMRUB": {
       "label": "Yandex Money RUB",
-      "destination_codes": ["YAMRUB"],
+      "destination_codes": [
+        "YAMRUB"
+      ],
       "decision": "APPROVE",
       "target_premium_min_percent": 3.0,
       "target_premium_max_percent": 5.0,
@@ -105,20 +125,24 @@
     },
     "RFBRUB": {
       "label": "Raiffeisen RUB",
-      "destination_codes": ["RFBRUB"],
+      "destination_codes": [
+        "RFBRUB"
+      ],
       "decision": "APPROVE",
-      "target_commercial_usdt_rub": 95.0,
-      "target_premium_min_percent": 14.0,
-      "target_premium_max_percent": 16.5,
-      "warning_premium_percent": 18.0,
-      "hard_maximum_premium_percent": 20.0,
+      "target_commercial_usdt_rub": 85.5,
+      "target_premium_min_percent": 1.5,
+      "target_premium_max_percent": 4.0,
+      "warning_premium_percent": 6.0,
+      "hard_maximum_premium_percent": 9.0,
       "order_allowed_when_approved": true,
       "export_allowed_when_approved": true,
-      "notes": "Owner commercial target ~95 RUB/USDT (2026-08-09)"
+      "notes": "Owner commercial target ~85.5 RUB/USDT (corrected 2026-08-13; was 95)"
     },
     "PRRUB": {
       "label": "Payeer RUB",
-      "destination_codes": ["PRRUB"],
+      "destination_codes": [
+        "PRRUB"
+      ],
       "decision": "APPROVE",
       "target_premium_min_percent": 3.0,
       "target_premium_max_percent": 6.0,
@@ -130,7 +154,9 @@
     },
     "OTHER_RUB": {
       "label": "Other RUB rails (unverified)",
-      "destination_codes": ["*RUB"],
+      "destination_codes": [
+        "*RUB"
+      ],
       "decision": "KEEP_BLOCKED",
       "target_premium_min_percent": 0.0,
       "target_premium_max_percent": 0.0,
