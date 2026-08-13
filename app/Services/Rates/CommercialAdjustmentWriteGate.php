@@ -69,6 +69,8 @@ final class CommercialAdjustmentWriteGate
             'zelle:ZelleUsdUsdtBenchmarkAuthority',
             'defaults:DirectionCreationDefaults',
             'legacy:RatesApplyUsdtRubCommercialTargetCommand',
+            // Dynamic policy-owned USDT→classic-RUB commercial sync (absolute target ~95).
+            UsdtRubCommercialTargetSyncService::WRITER,
         ];
     }
 }

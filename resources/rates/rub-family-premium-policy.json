@@ -1,18 +1,18 @@
 {
-  "version": 7,
+  "version": 8,
   "schema": "rub_family_premium_policy_v3",
   "approved": true,
   "approved_at": "2026-08-09T22:10:00Z",
   "approved_by": "exswaping-owner-chat-commercial-95",
   "approval_source": "Owner intentional commercial USDT→RUB target ≈95 RUB/USDT; review must compare commercial rate to approved expectation, not require commercial≈CBR",
-  "notes": "Family maximum is a CEILING only — never auto-increase configured premiums to target/max. Expected commercial rate uses intentional absolute USDT→RUB target when set, else target-band top. Unexplained vs expected: warn >1%, block >2.5%. Hard max blocks regardless. Classic bank rails may keep CBR-near course_value with commercial adjustment via admin profit (DERIVED path).",
+  "notes": "Family maximum is a CEILING only — never auto-increase configured premiums to target/max. Expected commercial rate uses intentional absolute USDT→RUB target when set, else target-band top. Unexplained vs expected: warn >1%, block >2.5%. Hard max blocks regardless. Classic bank rails keep CBR-near course_value (DERIVED BASE) with commercial adjustment via dynamic Прибыль synced from this absolute target.",
   "intentional_commercial": {
     "usdt_rub_customer_floating": 95.0,
     "orientation": "RUB_per_1_USDT",
     "applies_to_families": ["SBERRUB", "TCSBRUB", "SBPRUB", "RFBRUB", "ACRUB"],
-    "implementation": "DERIVED_MARKET_BASELINE owns BASE (CBR×haircut). Owner/admin owns Прибыль (profit). RUB REVIEW compares commercial floating to intentional ≈95 expectation but MUST NOT write profit. rates:apply-usdt-rub-commercial-target --apply refreshes BASE only.",
+    "implementation": "DERIVED_MARKET_BASELINE owns BASE (CBR×haircut). Policy absolute target (~95) is the single commercial source of truth. UsdtRubCommercialTargetSyncService derives profit=(1-target/BASE)*100 after each BASE refresh via rates:apply-usdt-rub-commercial-target --sync-commercial (WriteGate policy:UsdtRubCommercialTargetSync). Never restore frozen legacy −15.661082. --apply refreshes BASE only. RUB REVIEW compares effective floating to ≈95.",
     "approved_at": "2026-08-09T22:10:00Z",
-    "ownership_updated_at": "2026-08-11T10:40:00Z"
+    "ownership_updated_at": "2026-08-13T11:15:00Z"
   },
   "baseline": {
     "crypto_path": "ASSETUSDT from approved live independent provider (not BestChange)",

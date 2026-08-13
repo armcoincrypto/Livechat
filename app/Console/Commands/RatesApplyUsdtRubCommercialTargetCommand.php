@@ -13,42 +13,60 @@ use App\Services\Rates\RateChannel;
 use App\Services\Rates\RateDirectionEligibility;
 use App\Services\Rates\RateMode;
 use App\Services\Rates\RubFamilyPremiumPolicy;
+use App\Services\Rates\UsdtRubCommercialTargetSyncService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 /**
- * USDT→classic-RUB commercial-target diagnostic / BASE ownership helper.
+ * USDT→classic-RUB commercial-target command.
  *
- * Owner policy (2026-08-11):
- *   BASE     = automatic / DERIVED compiler-owned
- *   Прибыль  = owner/admin-owned (direction_exchange.profit for DERIVED)
+ * Modes:
+ *   (default / --dry-run)  diagnostics only
+ *   --apply                refresh DERIVED BASE ownership (does NOT write Прибыль)
+ *   --sync-commercial      derive Прибыль from policy absolute target vs current BASE
+ *                          via UsdtRubCommercialTargetSyncService + WriteGate
+ *   --legacy-overwrite…    DANGEROUS frozen bootstrap (dual-gated; keep unused)
  *
- * This command MUST NOT overwrite profit / floating_fee / fix_fee on normal --apply.
- * Historical ~95 RUB/USDT bootstrap that wrote profit is demoted behind an explicit
- * dual-gate legacy flag that cannot be triggered accidentally.
+ * Policy source of truth: resources/rates/rub-family-premium-policy.json
  */
 final class RatesApplyUsdtRubCommercialTargetCommand extends Command
 {
     protected $signature = 'rates:apply-usdt-rub-commercial-target
-        {--target=95 : Reference customer floating RUB per 1 USDT (diagnostic / REVIEW expectation)}
-        {--dry-run : plan / diagnostics only (default when --apply omitted)}
+        {--target= : Optional override; default = policy absolute target}
+        {--dry-run : plan / diagnostics only (default when --apply/--sync-commercial omitted)}
         {--apply : refresh DERIVED BASE ownership + eligibility report; never writes owner Прибыль}
+        {--sync-commercial : derive and persist policy commercial Прибыль from current BASE}
         {--from=USDTTRC20,USDTERC20,USDTBEP20,USDTTON,USDTSOL : restrict source letter codes (comma)}
-        {--to=SBERRUB,TBRUB,TCSBRUB,SBPRUB,RFBRUB,ACRUB : classic bank destinations}
+        {--to= : classic bank destinations (default = policy intentional absolute families)}
         {--export=0 : ignored for profit; retained for eligibility reporting only}
         {--legacy-overwrite-owner-profit : DANGEROUS bootstrap only; requires EXSWAPING_ALLOW_LEGACY_RUB_PROFIT_BOOTSTRAP=1}
-        {--skip-xml-sync : skip scheme:files after apply (tests / diagnostics)}';
+        {--skip-xml-sync : skip scheme:files after apply/sync (tests / diagnostics)}';
 
-    protected $description = 'USDT→RUB commercial-target diagnostics + DERIVED BASE refresh (Прибыль is owner-owned)';
+    protected $description = 'USDT→RUB commercial-target: BASE refresh and/or policy commercial sync';
 
     public function handle(): int
     {
         $apply = (bool) $this->option('apply');
-        $dry = (bool) $this->option('dry-run') || !$apply;
+        $syncCommercial = (bool) $this->option('sync-commercial');
         $legacyProfit = (bool) $this->option('legacy-overwrite-owner-profit');
-        $target = (float) $this->option('target');
+        $dry = (bool) $this->option('dry-run') || (!$apply && !$syncCommercial && !$legacyProfit);
+
+        if ($syncCommercial && $legacyProfit) {
+            $this->error('sync_commercial_and_legacy_are_mutually_exclusive');
+
+            return self::FAILURE;
+        }
+
+        $policy = RubFamilyPremiumPolicy::fromStorageApp();
+        $syncService = UsdtRubCommercialTargetSyncService::make();
+        $policyTarget = $syncService->absoluteTarget();
+        $targetOpt = $this->option('target');
+        $target = ($targetOpt !== null && $targetOpt !== '')
+            ? (float) $targetOpt
+            : (float) ($policyTarget ?? 95.0);
+
         if ($target < 50.0 || $target > 200.0) {
             $this->error('target_out_of_sane_bounds');
 
@@ -71,14 +89,21 @@ final class RatesApplyUsdtRubCommercialTargetCommand extends Command
             return self::FAILURE;
         }
 
+        if ($syncCommercial) {
+            return $this->handleSyncCommercial($dry, $syncService);
+        }
+
         $fromCodes = array_values(array_filter(array_map(
             static fn (string $s) => strtoupper(trim($s)),
             explode(',', (string) $this->option('from')),
         )));
-        $toCodes = array_values(array_filter(array_map(
-            static fn (string $s) => strtoupper(trim($s)),
-            explode(',', (string) $this->option('to')),
-        )));
+        $toOption = trim((string) $this->option('to'));
+        $toCodes = $toOption !== ''
+            ? array_values(array_filter(array_map(
+                static fn (string $s) => strtoupper(trim($s)),
+                explode(',', $toOption),
+            )))
+            : $syncService->eligibleDestinationCodes();
 
         $baseline = (new IndependentMarketBaseline())->quote('USDRUB');
         $cbr = isset($baseline['rate']) && is_numeric((string) $baseline['rate'])
@@ -118,7 +143,7 @@ final class RatesApplyUsdtRubCommercialTargetCommand extends Command
             'fiat_leg' => ['symbol' => 'USDRUB', 'orientation' => 'fiat_per_usd'],
             'formula' => 'course = asset_leg * fiat_leg * haircut',
             'haircut' => '0.999',
-            'haircut_note' => 'USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command',
+            'haircut_note' => 'USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial',
             'freshness' => [
                 'crypto_max_age_seconds' => 900,
                 'fiat_max_age_seconds' => 21600,
@@ -135,8 +160,6 @@ final class RatesApplyUsdtRubCommercialTargetCommand extends Command
         foreach ($rows as $row) {
             $id = (int) $row->id;
             $haircutBase = bcmul($cbr, '0.999', 12);
-            // Reference profit only (diagnostic): what would hit target if owner chose it.
-            // MUST NOT be persisted on normal --apply.
             $referenceProfit = bcmul(bcsub('1', bcdiv((string) $target, $haircutBase, 12), 12), '100', 6);
             $plan[] = [
                 'id' => $id,
@@ -165,7 +188,7 @@ final class RatesApplyUsdtRubCommercialTargetCommand extends Command
 
         $registry['count'] = count($registry['directions']);
         $registry['updated_at'] = gmdate('Y-m-d\TH:i:s\Z');
-        $registry['update_note'] = 'USDT classic RUB DERIVED BASE; owner owns Прибыль; commercial-target does not write profit';
+        $registry['update_note'] = 'USDT classic RUB DERIVED BASE; use --sync-commercial for policy Прибыль';
 
         $snapDir = storage_path('app/rates/usdt-rub-commercial-target');
         if (!is_dir($snapDir)) {
@@ -188,14 +211,14 @@ final class RatesApplyUsdtRubCommercialTargetCommand extends Command
                 'snapshot' => $snapFile,
                 'count' => count($plan),
                 'owner_profit_protected' => true,
-                'note' => 'Прибыль is owner-controlled; --apply refreshes BASE only and never writes profit/floating_fee/fix_fee',
+                'policy_target' => $policyTarget,
+                'note' => 'Use --sync-commercial to derive Прибыль from policy absolute target vs current BASE; --apply refreshes BASE only',
                 'sample' => array_slice($plan, 0, 5),
             ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
             return self::SUCCESS;
         }
 
-        // Persist DERIVED registry so BASE refresh owns these rails (not BestChange).
         file_put_contents(
             $registryPath,
             json_encode($registry, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)."\n",
@@ -211,9 +234,9 @@ final class RatesApplyUsdtRubCommercialTargetCommand extends Command
         Log::info('rub_commercial_target_apply_owner_profit_protected', [
             'count' => count($plan),
             'legacy_profit' => $legacyProfit,
-            'message' => 'Прибыль is owner-controlled; normal apply does not mutate profit/floating_fee/fix_fee',
+            'message' => 'Normal --apply does not mutate profit; use --sync-commercial for policy sync',
         ]);
-        $this->info('owner_profit_protected=1 (Прибыль will not be overwritten by normal --apply)');
+        $this->info('owner_profit_protected=1 on --apply (use --sync-commercial for policy Прибыль)');
 
         foreach ($plan as $item) {
             $id = (int) $item['id'];
@@ -227,7 +250,6 @@ final class RatesApplyUsdtRubCommercialTargetCommand extends Command
             $floatingBefore = (string) $dir->floating_fee;
             $fixBefore = (string) $dir->fix_fee;
 
-            // Ownership label only — never commercial adjustment fields.
             $dir->parser_source_name = 'DERIVED_MARKET_BASELINE';
             $dir->is_error_rate = 0;
             $dir->error_rate_text = null;
@@ -287,7 +309,8 @@ final class RatesApplyUsdtRubCommercialTargetCommand extends Command
             'refresh_owned' => count($refresh),
             'owner_profit_protected' => !$legacyProfit,
             'results' => $results,
-            'policy' => RubFamilyPremiumPolicy::fromStorageApp()->summary(),
+            'policy' => $policy->summary(),
+            'legacy_magic_rub_profit_count' => UsdtRubCommercialTargetSyncService::legacyMagicProfitCount(),
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         $failed = count(array_filter($results, static fn ($r) => empty($r['ok'])));
@@ -305,15 +328,76 @@ final class RatesApplyUsdtRubCommercialTargetCommand extends Command
             return self::FAILURE;
         }
 
+        return $this->maybeXmlSync();
+    }
+
+    private function handleSyncCommercial(bool $dry, UsdtRubCommercialTargetSyncService $syncService): int
+    {
+        $fromCodes = array_values(array_filter(array_map(
+            static fn (string $s) => strtoupper(trim($s)),
+            explode(',', (string) $this->option('from')),
+        )));
+        $toOption = trim((string) $this->option('to'));
+        $toCodes = $toOption !== ''
+            ? array_values(array_filter(array_map(
+                static fn (string $s) => strtoupper(trim($s)),
+                explode(',', $toOption),
+            )))
+            : null;
+
+        $result = $syncService->sync($dry, $fromCodes, $toCodes);
+
+        $snapDir = storage_path('app/rates/usdt-rub-commercial-target');
+        if (!is_dir($snapDir)) {
+            File::makeDirectory($snapDir, 0755, true);
+        }
+        $snapFile = $snapDir.'/sync-'.gmdate('Ymd\THis\Z').'.json';
+        @file_put_contents($snapFile, json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+        $this->line(json_encode([
+            'mode' => $dry ? 'sync-commercial-dry-run' : 'sync-commercial',
+            'snapshot' => $snapFile,
+            'legacy_magic_rub_profit_count' => UsdtRubCommercialTargetSyncService::legacyMagicProfitCount(),
+            'result' => [
+                'ok' => $result['ok'],
+                'reason' => $result['reason'],
+                'policy_version' => $result['policy_version'],
+                'target_default' => $result['target_default'],
+                'evaluated' => $result['evaluated'],
+                'written' => $result['written'],
+                'skipped' => $result['skipped'],
+                'failed' => $result['failed'],
+                'locked' => $result['locked'],
+                'sample' => array_slice($result['rows'], 0, 8),
+            ],
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+        if (!$result['ok']) {
+            $this->error('sync_commercial_failed reason='.($result['reason'] ?? 'row_failures'));
+
+            return self::FAILURE;
+        }
+
+        if ($dry) {
+            return self::SUCCESS;
+        }
+
+        return $this->maybeXmlSync();
+    }
+
+    private function maybeXmlSync(): int
+    {
         try {
             if (!(bool) $this->option('skip-xml-sync')) {
                 $this->call('scheme:files');
-                $this->info('post_apply_xml_sync=scheme:files');
+                $this->info('post_sync_xml=scheme:files');
             } else {
-                $this->info('post_apply_xml_sync=skipped');
+                $this->info('post_sync_xml=skipped');
             }
         } catch (\Throwable $e) {
-            $this->warn('post_apply_xml_sync_failed='.$e->getMessage());
+            $this->warn('post_sync_xml_failed='.$e->getMessage());
+
+            return self::FAILURE;
         }
 
         return self::SUCCESS;
