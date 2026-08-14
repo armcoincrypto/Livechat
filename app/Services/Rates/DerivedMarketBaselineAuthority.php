@@ -236,17 +236,9 @@ final class DerivedMarketBaselineAuthority
             ];
         }
 
-        // Prefer live BestChange when admin enabled it — unless this direction
-        // explicitly blocks BC overwrite (e.g. GRAM/TON pairs whose BC self-rate
-        // is corrupt and must stay on IndependentMarketBaseline TONUSDT).
+        // Prefer healthy BestChange; stale/outlier must not suppress DERIVED fallback.
         $blockBc = !empty($cfg['ownership']['block_bestchange_overwrite']);
-        $bc = DB::table('bestchange_directions')
-            ->where('id_direction_exchange', $directionId)
-            ->where('status', 1)
-            ->where('is_error_parser', 0)
-            ->whereRaw('CAST(rate_value AS DECIMAL(36,18)) > 0')
-            ->first();
-        if ($bc !== null && !$blockBc) {
+        if (!$blockBc && BestChangeMarketBaseHealth::isHealthy($directionId)) {
             return [
                 'ok' => true,
                 'skipped' => 'bestchange_active',
@@ -463,6 +455,8 @@ final class DerivedMarketBaselineAuthority
      */
     public function refreshAll(bool $dryRun = true): array
     {
+        ProtectedMarketBaselineWriteGuard::clearCache();
+
         $out = [];
         foreach (array_keys($this->config()['directions'] ?? []) as $id) {
             $out[] = $this->apply((int) $id, $dryRun);

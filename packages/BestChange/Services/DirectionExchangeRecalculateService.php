@@ -96,8 +96,41 @@ final class DirectionExchangeRecalculateService
                         continue;
                     }
 
-                    $calculator = CalculatorFacade::setDirectionExchange($exchange)->withoutOptions()->calculate();
-                    $courseValue = (string) $calculator->getRateValue();
+                    $health = \App\Services\Rates\BestChangeMarketBaseHealth::evaluate($directionId);
+                    if (!$health['healthy']) {
+                        continue;
+                    }
+
+                    $derivedOwned = \App\Services\Rates\DerivedMarketBaselineAuthority::fromStorageApp()
+                        ->owns($directionId);
+
+                    if ($derivedOwned) {
+                        // Raw competitor BASE; Canonical applies admin Прибыль.
+                        $courseValue = (string) ($health['rate_value'] ?? '0');
+                        $exchangeRateLabel = $courseValue;
+                        try {
+                            $tmp = clone $exchange;
+                            $tmp->course_value = $courseValue;
+                            $tmp->manual_rate_value = $courseValue;
+                            $tmp->parser_source_name = 'BestChange';
+                            $commercial = \App\Services\Rates\CanonicalDirectionRateCalculator::make()
+                                ->calculateForExport($tmp, $courseValue);
+                            if ($commercial->eligible && bccomp($commercial->finalRate, '0', 18) === 1) {
+                                $tmp->course_value = $commercial->finalRate;
+                                $tmp->profit = 0;
+                                $exchangeRateLabel = (string) CalculatorFacade::setDirectionExchange($tmp)
+                                    ->withoutOptions()
+                                    ->calculate()
+                                    ->getFullRate();
+                            }
+                        } catch (\Throwable) {
+                            $exchangeRateLabel = $courseValue;
+                        }
+                    } else {
+                        $calculator = CalculatorFacade::setDirectionExchange($exchange)->withoutOptions()->calculate();
+                        $courseValue = (string) $calculator->getRateValue();
+                        $exchangeRateLabel = (string) $calculator->getFullRate();
+                    }
 
                     // Never wipe a healthy manual/baseline course when BestChange
                     // is enabled but yields no positive market rate.
@@ -116,7 +149,7 @@ final class DirectionExchangeRecalculateService
                     $successUpdates[] = [
                         'id'                 => $directionId,
                         'course_value'       => $courseValue,
-                        'exchange_rate'      => (string) $calculator->getFullRate(),
+                        'exchange_rate'      => $exchangeRateLabel,
                         'is_error_rate'      => 0,
                         'error_rate_text'    => null,
                         'parser_source_name' => 'BestChange',
@@ -130,7 +163,10 @@ final class DirectionExchangeRecalculateService
                             'new_base' => $courseValue,
                             'writer' => 'DirectionExchangeRecalculateService',
                             'source' => 'BestChange',
-                            'reason' => 'bestchange_recalculate',
+                            'reason' => $derivedOwned
+                                ? 'bestchange_recalculate_raw_base'
+                                : 'bestchange_recalculate',
+                            'position' => $health['position_num'] ?? null,
                         ]);
                     }
                 } catch (\Throwable $e) {

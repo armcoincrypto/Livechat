@@ -38,8 +38,13 @@ final class SourceChecks
      */
     public static function bestchange(object $dir): bool
     {
-        if (self::isZelleOutgoing($dir) || self::isDerivedOwned($dir)) {
+        if (self::isZelleOutgoing($dir)) {
             return false;
+        }
+
+        // Derived-owned rails may use healthy BestChange as primary BASE.
+        if (self::isDerivedOwned($dir)) {
+            return self::isHealthyBestChangeBase($dir);
         }
 
         return isset($dir->bestchange_directions)
@@ -73,6 +78,10 @@ final class SourceChecks
     public static function derived(object $dir): bool
     {
         if (self::isZelleOutgoing($dir) || !self::isDerivedOwned($dir)) {
+            return false;
+        }
+
+        if (self::isHealthyBestChangeBase($dir)) {
             return false;
         }
 
@@ -189,6 +198,25 @@ final class SourceChecks
 
         try {
             return DerivedMarketBaselineAuthority::fromStorageApp()->owns($id);
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    private static function isHealthyBestChangeBase(object $dir): bool
+    {
+        $id = (int) ($dir->id ?? 0);
+        if ($id <= 0) {
+            return false;
+        }
+        if (isset($dir->bestchange_directions)) {
+            $bc = $dir->bestchange_directions;
+            if ($bc === null || (int) ($bc->status ?? 0) !== 1) {
+                return false;
+            }
+        }
+        try {
+            return \App\Services\Rates\BestChangeMarketBaseHealth::isHealthy($id);
         } catch (Throwable) {
             return false;
         }

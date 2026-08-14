@@ -304,7 +304,18 @@ final class CanonicalDirectionRateCalculator
             $profitRaw = '0';
         }
 
+        $derivedOwned = false;
+        $dirId = (int) ($direction->id ?? 0);
+        if ($dirId > 0) {
+            try {
+                $derivedOwned = DerivedMarketBaselineAuthority::fromStorageApp()->owns($dirId);
+            } catch (Throwable) {
+                $derivedOwned = false;
+            }
+        }
+
         $preferProfit = $parser === 'DERIVED_MARKET_BASELINE'
+            || $derivedOwned
             || (
                 $this->isZelleOutgoing($direction)
                 && bccomp($profitRaw, '0', 8) !== 0

@@ -5,21 +5,17 @@ declare(strict_types=1);
 namespace Tests\Unit\Rates;
 
 use App\Models\DirectionExchange;
-use App\Services\Rates\CanonicalDirectionRateCalculator;
-use App\Services\Rates\RateChannel;
-use App\Services\Rates\RateMode;
 use App\Services\Rates\UsdtRubCommercialTargetSyncService;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
- * Live-DB: --sync-commercial derives Прибыль from BASE to hit policy ~95;
- * --apply still must not mutate Прибыль; legacy magic count stays 0.
+ * Live-DB: MANUAL_PROFIT ownership — --sync-commercial must not rewrite Прибыль.
  */
 final class UsdtRubCommercialTargetSyncPersistenceContractTest extends TestCase
 {
-    public function test_sync_commercial_dry_run_then_apply_hits_target_and_is_idempotent(): void
+    public function test_sync_commercial_refuses_to_rewrite_under_manual_profit(): void
     {
         $row = DB::selectOne(
             "SELECT de.id, de.course_value, de.profit
@@ -29,12 +25,13 @@ final class UsdtRubCommercialTargetSyncPersistenceContractTest extends TestCase
              WHERE de.deleted_at IS NULL
                AND cb.designation_xml = 'USDTTRC20'
                AND cs.designation_xml = 'SBERRUB'
-               AND de.parser_source_name = 'DERIVED_MARKET_BASELINE'
              LIMIT 1"
         );
         if (!$row) {
-            $this->markTestSkipped('missing USDTTRC20→SBERRUB DERIVED');
+            $this->markTestSkipped('missing USDTTRC20→SBERRUB');
         }
+
+        $before = (string) $row->profit;
 
         $code = Artisan::call('rates:apply-usdt-rub-commercial-target', [
             '--sync-commercial' => true,
@@ -45,6 +42,10 @@ final class UsdtRubCommercialTargetSyncPersistenceContractTest extends TestCase
         ]);
         $this->assertSame(0, $code, Artisan::output());
 
+        $probe = UsdtRubCommercialTargetSyncService::make()->sync(dryRun: true);
+        $this->assertSame('manual_profit_ownership', $probe['reason'] ?? null);
+        $this->assertSame(0, (int) ($probe['written'] ?? -1));
+
         $code = Artisan::call('rates:apply-usdt-rub-commercial-target', [
             '--sync-commercial' => true,
             '--skip-xml-sync' => true,
@@ -53,27 +54,21 @@ final class UsdtRubCommercialTargetSyncPersistenceContractTest extends TestCase
         ]);
         $this->assertSame(0, $code, Artisan::output());
 
-        $dir = DirectionExchange::query()->with(['currency1', 'currency2'])->findOrFail((int) $row->id);
-        $calc = CanonicalDirectionRateCalculator::make();
-        $floating = $calc->calculate($dir, RateMode::Floating, RateChannel::Website);
-        $this->assertTrue($floating->eligible);
-        $this->assertTrue(abs((float) $floating->finalRate - 95.0) < 0.05, 'floating='.$floating->finalRate);
+        $after = DirectionExchange::query()->findOrFail((int) $row->id);
+        $this->assertSame($before, (string) $after->profit, 'MANUAL_PROFIT must keep admin Прибыль');
         $this->assertSame(0, UsdtRubCommercialTargetSyncService::legacyMagicProfitCount());
 
-        $profitAfterFirst = (string) $dir->profit;
-
-        $sync = \App\Services\Rates\UsdtRubCommercialTargetSyncService::make()->sync(
+        $sync = UsdtRubCommercialTargetSyncService::make()->sync(
             dryRun: false,
             fromCodes: ['USDTTRC20'],
             toCodes: ['SBERRUB', 'TBRUB', 'TCSBRUB', 'SBPRUB', 'RFBRUB', 'ACRUB'],
         );
         $this->assertTrue($sync['ok'], json_encode($sync));
-        $this->assertSame(0, (int) $sync['written'], 'idempotent second sync must not rewrite');
-        $dir2 = DirectionExchange::query()->findOrFail((int) $row->id);
-        $this->assertSame($profitAfterFirst, (string) $dir2->profit);
+        $this->assertSame('manual_profit_ownership', $sync['reason']);
+        $this->assertSame(0, (int) $sync['written']);
     }
 
-    public function test_cardrub_not_forced_to_absolute_95(): void
+    public function test_cardrub_not_forced_by_classic_sync(): void
     {
         $row = DB::selectOne(
             "SELECT de.id, de.profit, de.course_value

@@ -179,6 +179,15 @@ final class RubFamilyPremiumPolicy
 
     public function familyUsesIntentionalAbsoluteTarget(string $toCode): bool
     {
+        $mode = strtoupper((string) (
+            $this->config['intentional_commercial']['commercial_mode']
+            ?? $this->config['intentional_commercial']['mode']
+            ?? 'MANUAL_PROFIT'
+        ));
+        if ($mode !== 'AUTO_TARGET') {
+            return false;
+        }
+
         $family = $this->familyForDestination($toCode);
         if ($family === null) {
             return false;
@@ -193,6 +202,29 @@ final class RubFamilyPremiumPolicy
         }
 
         return in_array($key, $applies, true);
+    }
+
+    /**
+     * @return array{min: float, max: float}|null
+     */
+    public function preferredCustomerFloatingBand(string $toCode): ?array
+    {
+        $family = $this->familyForDestination($toCode);
+        $band = null;
+        if (is_array($family) && isset($family['preferred_customer_floating_band'])
+            && is_array($family['preferred_customer_floating_band'])) {
+            $band = $family['preferred_customer_floating_band'];
+        } else {
+            $band = $this->config['intentional_commercial']['preferred_customer_floating_band'] ?? null;
+        }
+        if (!is_array($band) || !isset($band['min'], $band['max'])) {
+            return null;
+        }
+        if (!is_numeric($band['min']) || !is_numeric($band['max'])) {
+            return null;
+        }
+
+        return ['min' => (float) $band['min'], 'max' => (float) $band['max']];
     }
 
     public function hardMaximumPremiumPercent(string $toCode): ?float

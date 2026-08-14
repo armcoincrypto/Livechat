@@ -32,16 +32,21 @@ final class UsdtRubCommercialTargetSyncServiceTest extends TestCase
         $this->assertNull(UsdtRubCommercialTargetSyncService::profitForTarget('-1', '95'));
     }
 
-    public function test_policy_absolute_target_is_95(): void
+    public function test_policy_manual_profit_has_no_absolute_target(): void
     {
         $path = dirname(__DIR__, 3).'/resources/rates/rub-family-premium-policy.json';
         $this->assertFileExists($path);
         $raw = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
         $policy = new RubFamilyPremiumPolicy($raw);
         $this->assertTrue($policy->isApproved());
+        $mode = $raw['intentional_commercial']['commercial_mode']
+            ?? $raw['intentional_commercial']['mode']
+            ?? null;
+        $this->assertSame('MANUAL_PROFIT', $mode);
         $sync = new UsdtRubCommercialTargetSyncService($policy);
-        $this->assertSame('95.00000000', $sync->absoluteTarget());
-        $this->assertSame('95.00000000', $sync->absoluteTarget('SBERRUB'));
+        $this->assertNull($sync->absoluteTarget());
+        $this->assertNull($sync->absoluteTarget('SBERRUB'));
+        $this->assertFalse($sync->autoTargetEnabled());
         $codes = $sync->eligibleDestinationCodes();
         foreach (['SBERRUB', 'TBRUB', 'TCSBRUB', 'SBPRUB', 'RFBRUB', 'ACRUB'] as $code) {
             $this->assertContains($code, $codes);

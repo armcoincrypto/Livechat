@@ -37268,15 +37268,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTBEP20",
@@ -37294,15 +37294,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "haircut_note": "USDT→RUB DERIVED BASE fallback; BestChange position BASE when healthy; admin Прибыль durable (no --sync-commercial)",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTERC20",
@@ -37320,15 +37320,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTSOL",
@@ -37346,15 +37346,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTTON",
@@ -37372,15 +37372,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTTRC20",
@@ -37398,15 +37398,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "haircut_note": "USDT→RUB DERIVED BASE fallback; BestChange position BASE when healthy; admin Прибыль durable (no --sync-commercial)",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTBEP20",
@@ -37424,15 +37424,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "haircut_note": "USDT→RUB DERIVED BASE fallback; BestChange position BASE when healthy; admin Прибыль durable (no --sync-commercial)",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTERC20",
@@ -37450,15 +37450,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "haircut_note": "USDT→RUB DERIVED BASE fallback; BestChange position BASE when healthy; admin Прибыль durable (no --sync-commercial)",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTSOL",
@@ -37476,15 +37476,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "haircut_note": "USDT→RUB DERIVED BASE fallback; BestChange position BASE when healthy; admin Прибыль durable (no --sync-commercial)",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTTON",
@@ -37502,15 +37502,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "haircut_note": "USDT→RUB DERIVED BASE fallback; BestChange position BASE when healthy; admin Прибыль durable (no --sync-commercial)",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTTRC20",
@@ -37528,15 +37528,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTBEP20",
@@ -37554,15 +37554,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "haircut_note": "USDT→RUB DERIVED BASE fallback; BestChange position BASE when healthy; admin Прибыль durable (no --sync-commercial)",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTERC20",
@@ -37580,15 +37580,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTSOL",
@@ -37606,15 +37606,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTTON",
@@ -37632,15 +37632,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTTRC20",
@@ -37658,15 +37658,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTBEP20",
@@ -37684,15 +37684,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "haircut_note": "USDT→RUB DERIVED BASE fallback; BestChange position BASE when healthy; admin Прибыль durable (no --sync-commercial)",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTERC20",
@@ -37710,15 +37710,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTSOL",
@@ -37736,15 +37736,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTTON",
@@ -37762,15 +37762,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTTRC20",
@@ -37788,15 +37788,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTBEP20",
@@ -37814,15 +37814,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "haircut_note": "USDT→RUB DERIVED BASE fallback; BestChange position BASE when healthy; admin Прибыль durable (no --sync-commercial)",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTERC20",
@@ -37840,15 +37840,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTSOL",
@@ -37866,15 +37866,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTTON",
@@ -37892,15 +37892,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTTRC20",
@@ -37918,15 +37918,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTBEP20",
@@ -37944,15 +37944,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB commercial target ownership; profit applies once via CanonicalDirectionRateCalculator",
+            "haircut_note": "USDT→RUB DERIVED BASE fallback; BestChange position BASE when healthy; admin Прибыль durable (no --sync-commercial)",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTERC20",
@@ -37970,15 +37970,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTSOL",
@@ -37996,15 +37996,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTTON",
@@ -38022,15 +38022,15 @@
             },
             "formula": "course = asset_leg * fiat_leg * haircut",
             "haircut": "0.999",
-            "haircut_note": "USDT→RUB DERIVED BASE ownership; owner Прибыль is NOT written by this command",
+            "haircut_note": "USDT→RUB DERIVED BASE ownership; commercial Прибыль via --sync-commercial",
             "freshness": {
                 "crypto_max_age_seconds": 900,
                 "fiat_max_age_seconds": 21600
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTTRC20",
@@ -38066,6 +38066,6 @@
         ],
         "reason": "ZELLE_SINGLE_RATE_AUTHORITY — derived must not write ZELLE course/parser_source_name"
     },
-    "updated_at": "2026-08-11T11:16:49Z",
-    "update_note": "USDT classic RUB DERIVED BASE; owner owns Прибыль; commercial-target does not write profit"
+    "updated_at": "2026-08-13T14:34:15Z",
+    "update_note": "USDT classic RUB DERIVED BASE; use --sync-commercial for policy Прибыль"
 }

@@ -63,11 +63,19 @@ final class RatesApplyUsdtRubCommercialTargetCommand extends Command
         $syncService = UsdtRubCommercialTargetSyncService::make();
         $policyTarget = $syncService->absoluteTarget();
         $targetOpt = $this->option('target');
-        $target = ($targetOpt !== null && $targetOpt !== '')
-            ? (float) $targetOpt
-            : (float) ($policyTarget ?? 95.0);
+        if ($targetOpt !== null && $targetOpt !== '') {
+            $target = (float) $targetOpt;
+        } elseif ($policyTarget !== null) {
+            $target = (float) $policyTarget;
+        } else {
+            // MANUAL_PROFIT: no absolute target. Diagnostics use preferred-band midpoint only.
+            $band = $policy->raw()['intentional_commercial']['preferred_customer_floating_band'] ?? null;
+            $target = (is_array($band) && isset($band['min'], $band['max']))
+                ? (((float) $band['min'] + (float) $band['max']) / 2.0)
+                : 0.0;
+        }
 
-        if ($target < 50.0 || $target > 200.0) {
+        if ($target > 0.0 && ($target < 50.0 || $target > 200.0)) {
             $this->error('target_out_of_sane_bounds');
 
             return self::FAILURE;
@@ -333,6 +341,20 @@ final class RatesApplyUsdtRubCommercialTargetCommand extends Command
 
     private function handleSyncCommercial(bool $dry, UsdtRubCommercialTargetSyncService $syncService): int
     {
+        if (!$syncService->autoTargetEnabled()) {
+            $this->warn('sync_commercial_skipped reason=manual_profit_ownership (AUTO_TARGET dual-gate off)');
+            $this->line(json_encode([
+                'mode' => $dry ? 'sync-commercial-dry-run' : 'sync-commercial',
+                'ok' => true,
+                'reason' => 'manual_profit_ownership',
+                'written' => 0,
+                'auto_target_enabled' => false,
+                'legacy_magic_rub_profit_count' => UsdtRubCommercialTargetSyncService::legacyMagicProfitCount(),
+            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+            return self::SUCCESS;
+        }
+
         $fromCodes = array_values(array_filter(array_map(
             static fn (string $s) => strtoupper(trim($s)),
             explode(',', (string) $this->option('from')),

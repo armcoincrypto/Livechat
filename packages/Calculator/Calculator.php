@@ -815,11 +815,20 @@ class Calculator implements Arrayable
      */
     protected function applyProfitAdjustments(CalculatorMathService $mathValue): void
     {
-        // Automatic market authorities: commercial % lives in CanonicalDirectionRateCalculator
-        // (DERIVED/ZELLE via «Прибыль» → fee=-profit). Do not bake into course_value.
+        // Automatic market authorities: commercial % lives in CanonicalDirectionRateCalculator.
+        // Do not bake into course_value — BASE remains raw market rate for derived-owned rails.
         $parser = (string) ($this->directionExchange->parser_source_name ?? '');
+        $dirId = (int) ($this->directionExchange->id ?? 0);
+        $derivedOwned = false;
+        try {
+            $derivedOwned = $dirId > 0
+                && \App\Services\Rates\DerivedMarketBaselineAuthority::fromStorageApp()->owns($dirId);
+        } catch (\Throwable) {
+            $derivedOwned = false;
+        }
         if (
-            $parser === 'DERIVED_MARKET_BASELINE'
+            $derivedOwned
+            || $parser === 'DERIVED_MARKET_BASELINE'
             || $parser === \App\Services\Rates\ZelleUsdUsdtBenchmarkAuthority::PARSER_SOURCE_NAME
         ) {
             return;

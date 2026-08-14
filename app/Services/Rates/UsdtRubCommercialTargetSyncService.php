@@ -11,12 +11,12 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * Durable USDT→classic-RUB commercial sync.
+ * OPTIONAL USDT→classic-RUB absolute commercial sync.
  *
- * Policy owns absolute target (~95 RUB/USDT). DERIVED owns BASE (course_value).
- * This service derives owner Прибыль dynamically:
- *   profit = (1 - target/base) × 100
- * so floating final = base × (1 - profit/100) ≈ target.
+ * Default production ownership is MANUAL_PROFIT: admin «Прибыль» is durable.
+ * Absolute AUTO_TARGET is opt-in only when BOTH are true:
+ *   - policy intentional_commercial.commercial_mode = AUTO_TARGET
+ *   - env EXSWAPING_ALLOW_USDT_RUB_AUTO_TARGET=1
  *
  * Never writes the frozen legacy bootstrap −15.661082.
  */
@@ -29,6 +29,8 @@ final class UsdtRubCommercialTargetSyncService
     public const LOCK_TTL_SECONDS = 120;
 
     public const LAST_SYNC_CACHE_KEY = 'exswaping:rates:usdt_rub_commercial_last_sync_v1';
+
+    public const AUTO_TARGET_ENV = 'EXSWAPING_ALLOW_USDT_RUB_AUTO_TARGET';
 
     /** Persist profit to 6 decimal places (matches historical commercial precision). */
     public const PROFIT_SCALE = 6;
@@ -59,6 +61,27 @@ final class UsdtRubCommercialTargetSyncService
     public static function make(): self
     {
         return new self(RubFamilyPremiumPolicy::fromStorageApp());
+    }
+
+    /**
+     * Absolute AUTO_TARGET is disabled unless dual-gated (env + policy mode).
+     */
+    public function autoTargetEnabled(): bool
+    {
+        $env = (string) (getenv(self::AUTO_TARGET_ENV)
+            ?: ($_ENV[self::AUTO_TARGET_ENV] ?? $_SERVER[self::AUTO_TARGET_ENV] ?? ''));
+        if (!in_array(strtolower(trim($env)), ['1', 'true', 'yes', 'on'], true)) {
+            return false;
+        }
+
+        $raw = $this->policy->raw();
+        $mode = strtoupper((string) (
+            $raw['intentional_commercial']['commercial_mode']
+            ?? $raw['intentional_commercial']['mode']
+            ?? 'MANUAL_PROFIT'
+        ));
+
+        return $mode === 'AUTO_TARGET';
     }
 
     /**
@@ -140,6 +163,17 @@ final class UsdtRubCommercialTargetSyncService
 
         if (!$this->policy->isApproved()) {
             $result['reason'] = 'rub_policy_not_approved';
+
+            return $result;
+        }
+
+        if (!$this->autoTargetEnabled()) {
+            $result['ok'] = true;
+            $result['reason'] = 'manual_profit_ownership';
+            Log::info('usdt_rub_commercial_sync_skipped_manual_ownership', [
+                'dry_run' => $dryRun,
+                'policy_version' => $result['policy_version'],
+            ]);
 
             return $result;
         }
