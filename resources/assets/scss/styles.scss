@@ -1,0 +1,538 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   Tailwind v4 + Vue 3 + shadcn-vue — Global Styles (SCSS)
+   ----------------------------------------------------------------------------
+   Цели файла:
+   1) Объявить responsive-варианты без tailwind.config через @custom-variant
+   2) Настроить токены темы через @theme inline (CSS-first подход v4)
+   3) Вынести keyframes в обычные @keyframes и дать утилиты через @utility
+   4) Задать читаемую, предсказуемую базу (body, типографика, бордеры)
+   5) Не использовать проблемные @apply токены в глобале (border-border → CSS)
+   ============================================================================ */
+
+/* --------------------------------------------------------------------------
+   1) Custom responsive variants (без необходимости править tailwind.config)
+   -------------------------------------------------------------------------- */
+@custom-variant xs (@media (max-width: 639px));
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Продолжение официальной шкалы — очень большие брейкпоинты */
+@custom-variant 3xl (@media (min-width: 112rem));  /* 1792px */
+@custom-variant 4xl (@media (min-width: 128rem));  /* 2048px */
+@custom-variant 5xl (@media (min-width: 144rem));  /* 2304px */
+@custom-variant 6xl (@media (min-width: 160rem));  /* 2560px */
+@custom-variant 7xl (@media (min-width: 176rem));  /* 2816px */
+
+/* --------------------------------------------------------------------------
+   2) Theme tokens (CSS-first). ВАЖНО: используем SCSS-интерполяцию, чтобы
+      Sass не пытался распарсить hsl(var(...)).
+   -------------------------------------------------------------------------- */
+@theme inline {
+    /* Цвета, привязанные к CSS-переменным (HSL-components) */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    /* Кастомные размеры (бывшее theme.extend.width в v3) */
+    --width-128: 32rem;
+    --width-150: 40rem;
+    --width-200: 50rem;
+    --width-220: 60rem;
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* --------------------------------------------------------------------------
+   3) Animations: keyframes и утилиты. Keyframes — обычный CSS, а классы —
+      через @utility под Tailwind v4.
+   -------------------------------------------------------------------------- */
+@keyframes accordion-down { from { height: 0 } to { height: var(--radix-accordion-content-height) } }
+@keyframes accordion-up   { from { height: var(--radix-accordion-content-height) } to { height: 0 } }
+@keyframes collapsible-down { from { height: 0 } to { height: var(--radix-collapsible-content-height) } }
+@keyframes collapsible-up   { from { height: var(--radix-collapsible-content-height) } to { height: 0 } }
+@keyframes copy-to-clipboard { 0% { color: inherit } 50% { color: #33ff33 } 100% { color: inherit } }
+@keyframes tree-open {
+    from {
+        height: 0;
+        opacity: 0;
+        transform: translateY(-4px) scaleY(.98);
+    }
+    to {
+        height: var(--subtree-content-height);
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+    }
+}
+@keyframes tree-close {
+    from {
+        height: var(--subtree-content-height);
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+    }
+    to {
+        height: 0;
+        opacity: 0;
+        transform: translateY(-4px) scaleY(.98);
+    }
+}
+
+/* --- Generic enter/exit animations (Tailwind v4 utilities) ----------------- */
+@keyframes enter {
+  from {
+    opacity: var(--enter-opacity, 1);
+    transform:
+      translateX(var(--enter-translate-x, 0))
+      translateY(var(--enter-translate-y, 0))
+      scale(var(--enter-scale, 1));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes exit {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: var(--exit-opacity, 1);
+    transform:
+      translateX(var(--exit-translate-x, 0))
+      translateY(var(--exit-translate-y, 0))
+      scale(var(--exit-scale, 1));
+  }
+}
+
+@utility animate-in  { animation: enter var(--animate-duration, 200ms) cubic-bezier(.22,1,.36,1) both; }
+@utility animate-out { animation: exit  var(--animate-duration, 160ms) ease-in                  both; }
+
+/* Tokens (compose with animate-in/out) */
+@utility fade-in-0   { --enter-opacity: 0; }
+@utility fade-out-0  { --exit-opacity: 0; }
+@utility zoom-in-95  { --enter-scale: .95; }
+@utility zoom-out-95 { --exit-scale: .95; }
+@utility slide-in-from-top-2    { --enter-translate-y: -0.5rem; }
+@utility slide-in-from-bottom-2 { --enter-translate-y:  0.5rem; }
+@utility slide-in-from-left-2   { --enter-translate-x: -0.5rem; }
+@utility slide-in-from-right-2  { --enter-translate-x:  0.5rem; }
+@utility slide-out-to-top-2     { --exit-translate-y: -0.5rem; }
+@utility slide-out-to-bottom-2  { --exit-translate-y:  0.5rem; }
+@utility slide-out-to-left-2    { --exit-translate-x: -0.5rem; }
+@utility slide-out-to-right-2   { --exit-translate-x:  0.5rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-in, .animate-out { animation-duration: 1ms !important; }
+}
+
+@utility animate-accordion-down   { animation: accordion-down .2s ease-out; }
+@utility animate-accordion-up     { animation: accordion-up .2s ease-out; }
+@utility animate-collapsible-down { animation: collapsible-down .2s ease-in-out; }
+@utility animate-collapsible-up   { animation: collapsible-up .2s ease-in-out; }
+@utility animate-copy-to-clipboard { animation: copy-to-clipboard 1s linear; }
+@utility animate-tree-open  {
+    animation: tree-open var(--tree-duration, 220ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+    will-change: height, opacity, transform;
+    transform-origin: top;
+}
+@utility animate-tree-close {
+    animation: tree-close var(--tree-duration, 200ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+    will-change: height, opacity, transform;
+    transform-origin: top;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-tree-open,
+    .animate-tree-close {
+        animation-duration: 1ms !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   4) Core variables: :root/.dark — HSL components; базовые твики PrimeVue
+   -------------------------------------------------------------------------- */
+:root {
+    /* PrimeVue tweaks (не мешают Tailwind) */
+    --p-scrollbar-width: 8px;
+    --p-toast-border-radius: 15px !important;
+    --p-toast-error-border-color: transparent !important;
+    --p-datatable-header-cell-background: transparent !important;
+    --p-datatable-row-background: transparent !important;
+}
+
+@layer base {
+    /* Базовая палитра (HSL components) */
+    :root {
+        --background: oklch(1 0 0);
+
+        --foreground-card: oklch(0.931 0 89.876);
+
+        --foreground: oklch(0.145 0 0);
+
+        --foreground-muted: oklch(0.435 0 89.876);
+
+
+        --card: oklch(1 0 0);
+        --card-foreground: oklch(0.145 0 0);
+
+        --popover: oklch(1 0 0);
+        --popover-foreground: oklch(0.145 0 0);
+
+        /* bright blue (≈ tailwind blue-600) */
+        --primary: oklch(0.623 0.233 264.052);
+        --primary-foreground: oklch(0.985 0 0);
+
+        --primary-card: var(--color-blue-100);
+        --primary-card-text: var(--color-blue-600);
+
+        --secondary: oklch(0.97 0 0);
+        --secondary-foreground: oklch(0.205 0 0);
+
+        --muted: oklch(0.97 0 0);
+        --muted-foreground: oklch(0.556 0 0);
+
+        --accent: oklch(0.97 0 0);
+        --accent-foreground: oklch(0.205 0 0);
+
+        /* red */
+        --destructive: oklch(0.577 0.245 27.325);
+        --destructive-foreground: oklch(0.985 0 0);
+
+        --border: oklch(0.922 0 0);
+        --input: oklch(0.922 0 0);
+
+        /* outline color — можно взять как primary */
+        --ring: oklch(0.623 0.233 264.052);
+        --chart-1: oklch(0.646 0.222 41.116);
+        --chart-2: oklch(0.6 0.118 184.704);
+        --chart-3: oklch(0.398 0.07 227.392);
+        --chart-4: oklch(0.828 0.189 84.429);
+        --chart-5: oklch(0.769 0.188 70.08);
+        --radius: 0.625rem;
+        --sidebar: oklch(0.985 0 0);
+        --sidebar-foreground: oklch(0.145 0 0);
+        --sidebar-primary: oklch(0.205 0 0);
+        --sidebar-primary-foreground: oklch(0.985 0 0);
+        --sidebar-accent: oklch(0.97 0 0);
+        --sidebar-accent-foreground: oklch(0.205 0 0);
+        --sidebar-border: oklch(0.922 0 0);
+        --sidebar-ring: oklch(0.708 0 0);
+    }
+
+    .dark {
+        --background: oklch(0.145 0 0);
+        --foreground: oklch(0.985 0 0);
+
+
+        --foreground-muted: oklch(0.904 0 89.876);
+
+        --card: oklch(0.145 0 0);
+        --card-foreground: oklch(0.985 0 0);
+
+        --popover: oklch(0.145 0 0);
+        --popover-foreground: oklch(0.985 0 0);
+
+        /* primary: светлый текст/иконки на тёмном фоне */
+        --primary: oklch(0.985 0 0);
+        --primary-foreground: oklch(0.145 0 0);
+
+        --secondary: oklch(0.205 0 0);
+        --secondary-foreground: oklch(0.985 0 0);
+
+        --muted: oklch(0.205 0 0);
+        --muted-foreground: oklch(0.70 0 0);
+
+        --accent: oklch(0.205 0 0);
+        --accent-foreground: oklch(0.985 0 0);
+
+        /* красный для destructive */
+        --destructive: oklch(0.40 0.20 29.234);
+        --destructive-foreground: oklch(0.985 0 0);
+
+        --border: oklch(0.356 0 89.876);
+        --input: oklch(0.205 0 0);
+
+        /* кольцо/outline — чуть приглушённая синяя */
+        --ring: oklch(0.70 0.10 264.052);
+
+        --chart-1: oklch(0.488 0.243 264.376);
+        --chart-2: oklch(0.696 0.17 162.48);
+        --chart-3: oklch(0.769 0.188 70.08);
+        --chart-4: oklch(0.627 0.265 303.9);
+        --chart-5: oklch(0.645 0.246 16.439);
+        --sidebar: oklch(0.205 0 0);
+        --sidebar-foreground: oklch(0.985 0 0);
+        --sidebar-primary: oklch(0.488 0.243 264.376);
+        --sidebar-primary-foreground: oklch(0.985 0 0);
+        --sidebar-accent: oklch(0.269 0 0);
+        --sidebar-accent-foreground: oklch(0.985 0 0);
+        --sidebar-border: oklch(0.269 0 0);
+        --sidebar-ring: oklch(0.439 0 0);
+    }
+
+    /* База страницы: делаем без @apply, чтобы исключить генерацию утилит на этапе
+       компиляции SCSS. Это устойчиво для любых настроек. */
+    body {
+        overflow: scroll;
+        overflow-x: hidden;
+        min-height: 100vh;
+        @apply bg-white/95 dark:bg-neutral-900/95;
+    }
+
+    /* Глобально приводим цвет бордера к токену. Это заменяет @apply border-border */
+    * { border-color: var(--color-border); }
+}
+
+.footer-bg {
+    @apply bg-gray-50 dark:bg-neutral-950;
+}
+
+/* --------------------------------------------------------------------------
+   5) Layout helpers — небольшие утилиты/обёртки проекта
+   -------------------------------------------------------------------------- */
+.default-router__wrapper { @apply ms-3 me-3; }
+.page-router__wrapper    { @apply ms-3 me-3; }
+.default-page__body      { @apply px-0 sm:pt-2; }
+
+.p-dialog-content { padding-bottom: 0 !important; }
+.p-dialog         { padding-bottom: 15px !important; }
+
+.label-main__headline { @apply font-medium text-muted-foreground; }
+
+/* --------------------------------------------------------------------------
+   6) Panels / Cards — универсальные панели
+   -------------------------------------------------------------------------- */
+.i-panel__layout {
+    position: relative;
+    @apply bg-background dark:bg-neutral-900 border shadow-sm rounded-3xl w-full mb-4 block;
+    font-size: .92rem;
+    -webkit-column-break-inside: avoid;
+    -moz-column-break-inside: avoid;
+    column-break-inside: avoid;
+    opacity: 1;
+    transition: all .2s ease;
+
+    &.i-panel-layout__p { padding: 1.5rem; }
+
+    .i-panel__title {
+        color: var(--p-content-color);
+        h2 { font-size: 1.15rem; font-weight: 500; }
+        @apply flex flex-row items-center p-5 relative;
+    }
+
+    .i-panel__content {
+        position: relative;
+
+        .i-panel-table__without-border {
+            .p-datatable-tbody > tr {
+                background: transparent;
+                &:last-child { td { border-bottom: 0; } }
+            }
+        }
+
+        h4 { font-size: 16px; font-weight: 500; }
+    }
+}
+
+.page-header__end { button { box-shadow: 0 3px 4px #00000008 !important; } }
+
+.p-toast-message-content {
+    .p-toast-message-icon { display: none; }
+    .p-toast-summary      { display: none; }
+}
+
+.route-loading__page { padding: 20px; text-align: center; }
+
+.table-sorting__icon {
+    box-shadow: 0 3px 4px #00000008 !important;
+    border: 1px solid #edf2f9;
+    margin-right: 10px;
+    cursor: move;
+    padding: 6px;
+    font-size: 16px;
+}
+
+button {
+    cursor: pointer;
+}
+
+/* Скроллбар – мягкий и ненавязчивый */
+::-webkit-scrollbar { width: .5rem; height: .5rem }
+::-webkit-scrollbar-track { background-color: var(--muted) !important; }
+::-webkit-scrollbar-thumb {
+    border-radius: calc(var(--radius) - 4px);
+    background-color: var(--muted-foreground) !important;
+}
+
+/* Заголовок страницы (опционально) */
+.page-header__inner {
+    @apply mx-[-0.75rem] border-b flex flex-row justify-between items-center py-2 px-5 mb-3 bg-background xs:flex-col xs:items-start;
+}
+
+/* Ссылки по умолчанию */
+.default-link__url {
+    @apply dark:text-white whitespace-nowrap text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-blue-500 underline-offset-4 hover:underline;
+}
+
+/* --------------------------------------------------------------------------
+   7) Default panel (без фона) — лёгкая обёртка
+   -------------------------------------------------------------------------- */
+.default-panel__layout {
+    position: relative;
+    @apply w-full mb-4 block;
+    font-size: .92rem;
+    -webkit-column-break-inside: avoid;
+    -moz-column-break-inside: avoid;
+    column-break-inside: avoid;
+    opacity: 1;
+    transition: all .2s ease;
+
+    &.i-panel-layout__p { padding: 1.5rem; }
+
+    .default-panel__title {
+        color: var(--p-content-color);
+        h2 { font-size: 1.15rem; font-weight: 500; }
+        @apply flex flex-row items-center ps-2 p-5 relative;
+    }
+
+    .default-panel__content {
+        position: relative;
+
+        .i-panel-table__without-border {
+            .p-datatable-tbody > tr {
+                background: transparent;
+                &:last-child { td { border-bottom: 0; } }
+            }
+        }
+
+        h4 { font-size: 16px; font-weight: 500; }
+    }
+}
+
+@keyframes tree-item-in {
+    from { opacity: 0; transform: translateY(-4px) scale(.98); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* Stagger children when opening via WAAPI (driven by data-animating) */
+.sidenav__relationships[data-animating='open'] > ul > * {
+    animation: tree-item-in var(--tree-item-duration, 220ms) cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+    animation-delay: calc(var(--i, 0) * var(--tree-stagger, 18ms));
+    transform-origin: top left;
+    will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sidenav__relationships[data-animating='open'] > ul > * {
+        animation: none !important;
+    }
+}
+
+
+
+
+.order-detail-field__item {
+    display: grid;
+    grid-template-columns: 2fr 5fr;
+    align-items: center;
+    gap: .5rem
+}
+
+.order-detail-field__name {
+    font-size: .875rem;
+    line-height: 1.25rem;
+    --tw-text-opacity: 1;
+    color: rgb(107 114 128 / var(--tw-text-opacity, 1))
+}
+
+
+.layout-background {
+    @apply bg-white/95 dark:bg-neutral-900/95;
+}
+
+
+.background-default {
+    @apply bg-white/95 dark:bg-neutral-900/95;
+}
+
+.background-default-content {
+    @apply bg-white/95 dark:bg-neutral-900/95;
+}
+
+
+.design-light-panel {
+}
+
+.design-light-panel__title {
+
+    @apply pb-3 px-3 pt-3 border-b;
+
+    h2 {
+        @apply text-xl font-normal;
+    }
+}
+
+.second-menu__active {
+    @apply bg-blue-100/70 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-semibold transition-colors duration-300;
+}
+
+.second-menu__default-icon {
+    @apply bg-(--muted)/40 text-(--foreground);
+}
+
+.second-menu__active-icon {
+    @apply bg-blue-100/70 dark:bg-blue-950/50 text-blue-600 dark:text-blue-300 transition-colors duration-300;
+}
+
+
+
+.section-with-bg {
+    @apply bg-slate-50 dark:bg-neutral-800;
+}
+
+
+.order-detail-field__item {
+    @apply grid grid-cols-[2fr_5fr] gap-2 items-center;
+}
+
+.order-detail-field__name {
+    @apply text-gray-500 text-sm;
+}
+
+.de-sortable-chosen {
+    @apply bg-gray-100;
+}

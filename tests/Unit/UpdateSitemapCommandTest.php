@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
 /**
- * P14.16 — Sitemap EN/RU owned-locale policy tests (no live write).
+ * P14.16 + P16 — Sitemap owned-locale policy tests (no live write).
  */
 final class UpdateSitemapCommandTest extends TestCase
 {
@@ -57,9 +57,10 @@ final class UpdateSitemapCommandTest extends TestCase
         self::assertContains('en/blog', $routes);
         self::assertContains('ru/guides', $routes);
         self::assertContains('en/guides', $routes);
+        self::assertContains('uk/guides', $routes);
+        self::assertContains('ka/guides', $routes);
+        self::assertContains('zh/guides', $routes);
         self::assertNotContains('ru/news', $routes);
-        self::assertNotContains('uk/guides', $routes);
-        self::assertNotContains('ka/guides', $routes);
     }
 
     public function test_indexable_guide_articles_include_ru_set_and_en_owned_slugs(): void
@@ -70,14 +71,16 @@ final class UpdateSitemapCommandTest extends TestCase
         self::assertContains('en/guides/usdt-exchange', $routes);
         self::assertContains('en/guides/usdt-to-bank-card', $routes);
         self::assertContains('en/guides/usdt-trc20-exchange', $routes);
+        $enStemCount = count($this->invokePrivate('indexableEnGuideArticleRoutes')) * 3;
         self::assertCount(
             count($this->invokePrivate('indexableRuGuideArticleRoutes'))
-            + count($this->invokePrivate('indexableEnGuideArticleRoutes')),
+            + count($this->invokePrivate('indexableEnGuideArticleRoutes'))
+            + $enStemCount,
             $routes
         );
-        foreach ($routes as $route) {
-            self::assertDoesNotMatchRegularExpression('#^(uk|ka|zh)/#', $route);
-        }
+        self::assertContains('uk/guides/usdt-exchange', $routes);
+        self::assertContains('ka/guides/usdt-exchange', $routes);
+        self::assertContains('zh/guides/usdt-exchange', $routes);
     }
 
     public function test_join_localized_url_emits_en_and_ru_homepages(): void
@@ -123,15 +126,17 @@ final class UpdateSitemapCommandTest extends TestCase
         self::assertFalse($this->invokePrivateScalar('isExcludedLegalDeadSlug', 'about'));
     }
 
-    public function test_owned_locales_constant_is_en_ru_only(): void
+    public function test_owned_locales_constant_includes_p16_locales(): void
     {
         $ref = new ReflectionClass(UpdateSitemapCommand::class);
         $const = $ref->getConstant('OWNED_SITEMAP_LOCALES');
-        self::assertSame(['ru', 'en'], $const);
+        self::assertSame(['ru', 'en', 'uk', 'ka', 'zh'], $const);
     }
 
     public function test_live_sitemap_locs_are_unique_and_canonical_host(): void
     {
+        // Live sitemap remains EN/RU until Phase 4 nginx cutover + regenerate.
+        // Command unit routes already cover P16 locale emission.
         $locs = $this->sitemapLocs();
         self::assertNotEmpty($locs);
         self::assertSame(count($locs), count(array_unique($locs)), 'Duplicate <loc> entries found');
