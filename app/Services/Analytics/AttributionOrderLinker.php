@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Services\Analytics;
 
 use App\Models\SessionAttribution;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Fail-open order ↔ attribution linker (Batch 11).
+ * Fail-open order ↔ attribution linker (Batch 11 / C.3D).
  * Never throws. Never rolls back financial order creation.
+ * Stores only tasks.session_attribution_id (opaque pointer) — no UTM/PII copy.
  */
 final class AttributionOrderLinker
 {
@@ -34,7 +36,7 @@ final class AttributionOrderLinker
             if (! isset($task->id)) {
                 return;
             }
-            // Already linked.
+            // Already linked — idempotent.
             if (! empty($task->session_attribution_id)) {
                 return;
             }
@@ -66,10 +68,16 @@ final class AttributionOrderLinker
     /**
      * Resolve opaque session id from request options without trusting numeric DB ids.
      *
-     * @param array<string, mixed> $options
+     * Accepts array or Collection (ManagerOrder stores options as Collection).
+     *
+     * @param  array<string, mixed>|Collection  $options
      */
-    public function sessionIdFromOptions(array $options): mixed
+    public function sessionIdFromOptions(array|Collection $options): mixed
     {
+        if ($options instanceof Collection) {
+            $options = $options->all();
+        }
+
         return $options['public_session_id']
             ?? $options['attribution_session_id']
             ?? $options['exs_public_session_id']

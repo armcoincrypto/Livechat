@@ -16,18 +16,25 @@ use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
 
 /**
- * SEO sitemap generator for owned EN/RU public canonical routes.
+ * SEO sitemap generator for owned public canonical routes.
  *
- * P14.16: emit EN and RU locale-prefixed URLs for owned Next.js cutover surfaces.
- * INDEX-tier exchanges only (see storage/app/seo/exchange_index_tier_ids.txt).
- * UK/KA/ZH are intentionally excluded (vendor-owned / not in owned LOCALES).
+ * P14.16 + P16: emit EN/RU/UK/KA/ZH locale-prefixed URLs for owned Next.js
+ * cutover surfaces. INDEX-tier exchanges only
+ * (see storage/app/seo/exchange_index_tier_ids.txt).
+ * UK/KA/ZH guide/blog stems reuse EN slugs (P16 slug policy).
  */
 final class UpdateSitemapCommand extends Command
 {
-    /** @var list<string> Owned sitemap locales (nginx + Next cutover). Order: RU then EN. */
-    private const OWNED_SITEMAP_LOCALES = ['ru', 'en'];
+    /** @var list<string> Owned sitemap locales. Order: RU, EN, then P16 locales. */
+    private const OWNED_SITEMAP_LOCALES = ['ru', 'en', 'uk', 'ka', 'zh'];
+
+    /** @var list<string> Locales that share EN guide/blog slug stems. */
+    private const EN_STEM_LOCALES = ['en', 'uk', 'ka', 'zh'];
 
     private const INDEX_TIER_IDS_PATH = 'app/seo/exchange_index_tier_ids.txt';
+
+    /** FROM->TO pairs that must never be emitted (operationally unavailable). */
+    private const SITEMAP_DENY_PAIRS_PATH = 'app/seo/sitemap_deny_pairs.txt';
 
     /** Locales that may already appear in a path (detect / strip). */
     private const LOCALE_PREFIXES = ['ru', 'en', 'uk', 'ka', 'zh'];
@@ -44,7 +51,7 @@ final class UpdateSitemapCommand extends Command
     /**
      * @var string
      */
-    protected $description = 'Обновление карты сайта (EN/RU owned public routes)';
+    protected $description = 'Обновление карты сайта (EN/RU/UK/KA/ZH owned public routes)';
 
     public function handle(): int
     {
@@ -68,12 +75,16 @@ final class UpdateSitemapCommand extends Command
 
         $sitemap = Sitemap::create();
 
+        $homeByLocale = [];
         foreach (self::OWNED_SITEMAP_LOCALES as $locale) {
-            $sitemap->add(
-                Url::create($this->joinLocalizedUrl($frontendUrl, $locale, ''))
-                    ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
-                    ->setPriority(1.0)
-            );
+            $homeByLocale[$locale] = $this->joinLocalizedUrl($frontendUrl, $locale, '');
+        }
+        foreach ($homeByLocale as $locale => $homeUrl) {
+            $tag = Url::create($homeUrl)
+                ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
+                ->setPriority(1.0);
+            $this->attachOwnedAlternates($tag, $homeByLocale);
+            $sitemap->add($tag);
         }
 
         $this->addPagesAndGroupsUrls($sitemap, $frontendUrl, $silent);
@@ -199,33 +210,55 @@ final class UpdateSitemapCommand extends Command
     {
         $ruCount = 0;
         $enCount = 0;
+        $enStems = $this->blogEnSlugStemById();
 
         foreach ($ruBlogUrls as $ruUrl) {
-            $sitemap->add(
-                Url::create($ruUrl)
-                    ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
-                    ->setPriority(0.6)
-            );
-            $ruCount++;
-
             if (preg_match('#/ru/blog/(.+)$#', $ruUrl, $m) !== 1) {
                 continue;
             }
-
-            if (!$this->newsSlugHasEnglishBody($m[1])) {
+            $ruSlug = $m[1];
+            if (preg_match('/-(\d+)$/', $ruSlug, $idMatch) !== 1) {
                 continue;
             }
+            $id = (int) $idMatch[1];
 
-            $sitemap->add(
-                Url::create(str_replace('/ru/blog/', '/en/blog/', $ruUrl))
+            $enUrl = null;
+            if ($this->newsSlugHasEnglishBody($ruSlug)) {
+                $enStem = $enStems[$id] ?? null;
+                if (is_string($enStem) && $enStem !== '') {
+                    $enUrl = preg_replace('#/ru/blog/.+$#', '/en/blog/' . $enStem . '-' . $id, $ruUrl);
+                } else {
+                    $enUrl = str_replace('/ru/blog/', '/en/blog/', $ruUrl);
+                }
+            }
+
+            // Blog articles are authored only in RU/EN. UK/KA/ZH hubs exist but
+            // article translations do not — never emit 404 article locs or
+            // hreflang alternates for those locales (SEO batch1).
+            $byLocale = ['ru' => $ruUrl];
+            if (is_string($enUrl) && $enUrl !== '') {
+                $byLocale['en'] = $enUrl;
+            }
+
+            foreach ($byLocale as $locale => $url) {
+                $tag = Url::create($url)
                     ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
-                    ->setPriority(0.6)
-            );
-            $enCount++;
+                    ->setPriority(0.6);
+                $this->attachOwnedAlternates($tag, $byLocale);
+                $sitemap->add($tag);
+                if ($locale === 'ru') {
+                    $ruCount++;
+                } elseif ($locale === 'en') {
+                    $enCount++;
+                }
+            }
         }
 
         if (!$silent && $ruBlogUrls !== []) {
-            $this->line('Blog: RU ' . $ruCount . ' + EN ' . $enCount . ' URL (authoritative EN only).');
+            $this->line(
+                'Blog: RU ' . $ruCount . ' + EN ' . $enCount
+                . ' URL (UK/KA/ZH article locs omitted — no translations).'
+            );
         }
     }
 
@@ -324,7 +357,7 @@ final class UpdateSitemapCommand extends Command
             }, 'page_id');
 
         if (!$silent) {
-            $this->line('Страницы: добавлено ' . $added . ' URL (EN+RU).');
+            $this->line('Страницы: добавлено ' . $added . ' URL (owned locales).');
         }
     }
 
@@ -335,7 +368,21 @@ final class UpdateSitemapCommand extends Command
         $added = 0;
 
         foreach ($this->topLevelTrustStaticRoutes() as $route) {
-            // Batch 9: RU-only Security page (other locales are empty noindex shells).
+            // FAQ CMS bodies are authentic for EN/RU only. UK/KA/ZH FAQ URLs
+            // currently render cross-locale fallback content — omit from sitemap
+            // (Next keeps routes functional + noindex until real translations exist).
+            if ($route === 'faq') {
+                $added += $this->addOwnedLocaleUrlsForLocales(
+                    $sitemap,
+                    $frontendUrl,
+                    $route,
+                    0.5,
+                    $this->safeLastMod($lastMod),
+                    ['ru', 'en']
+                );
+                continue;
+            }
+
             if ($route === 'pages/security') {
                 $added += $this->addOwnedLocaleUrlsForLocales(
                     $sitemap,
@@ -344,20 +391,6 @@ final class UpdateSitemapCommand extends Command
                     0.5,
                     $this->safeLastMod($lastMod),
                     ['ru']
-                );
-                continue;
-            }
-
-            // Batch 9: network-checker is genuine in all five interface locales.
-            // Locale list is explicit so this does not depend on P16 global expansion.
-            if ($route === 'tools/network-checker') {
-                $added += $this->addOwnedLocaleUrlsForLocales(
-                    $sitemap,
-                    $frontendUrl,
-                    $route,
-                    0.5,
-                    $this->safeLastMod($lastMod),
-                    ['ru', 'en', 'uk', 'ka', 'zh']
                 );
                 continue;
             }
@@ -372,21 +405,31 @@ final class UpdateSitemapCommand extends Command
         }
 
         if (!$silent) {
-            $this->line('Статические страницы: добавлено ' . $added . ' URL (EN+RU).');
+            $this->line('Статические страницы: добавлено ' . $added . ' URL (owned locales).');
         }
     }
 
     private function addGuideDirectoryUrls(Sitemap $sitemap, string $frontendUrl, bool $silent): void
     {
         $added = 0;
-        foreach ($this->guideDirectoryRoutes() as $route) {
-            // Routes already include locale prefix.
-            $sitemap->add(
-                Url::create($this->joinAbsoluteLocalizedPath($frontendUrl, $route))
+        $pairs = [
+            ['en' => 'en/guides', 'ru' => 'ru/guides'],
+            ['en' => 'en/blog', 'ru' => 'ru/blog'],
+            ['en' => 'en/usdt', 'ru' => 'ru/usdt'],
+            ['en' => 'en/methods/sber', 'ru' => 'ru/methods/sber'],
+            ['en' => 'en/methods/sbp', 'ru' => 'ru/methods/sbp'],
+            ['en' => 'en/methods/tbank', 'ru' => 'ru/methods/tbank'],
+        ];
+        foreach ($pairs as $pair) {
+            $byLocale = $this->expandPairWithEnStemLocales($frontendUrl, $pair);
+            foreach ($byLocale as $url) {
+                $tag = Url::create($url)
                     ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
-                    ->setPriority(0.6)
-            );
-            $added++;
+                    ->setPriority(0.6);
+                $this->attachOwnedAlternates($tag, $byLocale);
+                $sitemap->add($tag);
+                $added++;
+            }
         }
 
         if (!$silent) {
@@ -401,13 +444,14 @@ final class UpdateSitemapCommand extends Command
      */
     private function guideDirectoryRoutes(): array
     {
+        $hubs = [];
+        foreach (self::OWNED_SITEMAP_LOCALES as $locale) {
+            $hubs[] = $locale . '/guides';
+            $hubs[] = $locale . '/blog';
+        }
+
         return array_merge(
-            [
-                'ru/guides',
-                'en/guides',
-                'ru/blog',
-                'en/blog',
-            ],
+            $hubs,
             // SEO P1.1 — payment-method + USDT topical hubs (owned Next.js routes).
             $this->seoTopicHubRoutes()
         );
@@ -427,7 +471,7 @@ final class UpdateSitemapCommand extends Command
             'methods/tbank',
         ];
         $routes = [];
-        foreach (['en', 'ru'] as $locale) {
+        foreach (self::OWNED_SITEMAP_LOCALES as $locale) {
             foreach ($paths as $path) {
                 $routes[] = $locale . '/' . $path;
             }
@@ -445,7 +489,8 @@ final class UpdateSitemapCommand extends Command
     {
         return array_merge(
             $this->indexableRuGuideArticleRoutes(),
-            $this->indexableEnGuideArticleRoutes()
+            $this->indexableEnGuideArticleRoutes(),
+            $this->indexableEnStemGuideArticleRoutes(['uk', 'ka', 'zh'])
         );
     }
 
@@ -495,28 +540,88 @@ final class UpdateSitemapCommand extends Command
         ];
     }
 
+    /**
+     * P16: UK/KA/ZH guide articles reuse EN slug stems.
+     *
+     * @param list<string> $locales
+     * @return list<string>
+     */
+    private function indexableEnStemGuideArticleRoutes(array $locales): array
+    {
+        $routes = [];
+        foreach ($locales as $locale) {
+            foreach ($this->indexableEnGuideArticleRoutes() as $enRoute) {
+                $routes[] = preg_replace('#^en/#', $locale . '/', $enRoute) ?? $enRoute;
+            }
+        }
+
+        return $routes;
+    }
+
+    /**
+     * Expand an EN/RU route pair with UK/KA/ZH URLs that share the EN stem path.
+     *
+     * @param array<string, string> $pair
+     * @return array<string, string>
+     */
+    private function expandPairWithEnStemLocales(string $frontendUrl, array $pair): array
+    {
+        $byLocale = [];
+        foreach ($pair as $locale => $route) {
+            $byLocale[$locale] = $this->joinAbsoluteLocalizedPath($frontendUrl, $route);
+        }
+        if (isset($pair['en'])) {
+            foreach (['uk', 'ka', 'zh'] as $stemLocale) {
+                $stemRoute = preg_replace('#^en/#', $stemLocale . '/', $pair['en']) ?? $pair['en'];
+                $byLocale[$stemLocale] = $this->joinAbsoluteLocalizedPath($frontendUrl, $stemRoute);
+            }
+        }
+
+        return $byLocale;
+    }
+
     private function addIndexableGuideArticleUrls(Sitemap $sitemap, string $frontendUrl, bool $silent): void
     {
-        $routes = $this->indexableGuideArticleRoutes();
+        $pairs = [
+            ['en' => 'en/guides/usdt-exchange', 'ru' => 'ru/guides/obmen-usdt-na-rubli'],
+            ['en' => 'en/guides/usdt-to-bank-card', 'ru' => 'ru/guides/obmen-usdt-na-kartu'],
+            ['en' => 'en/guides/usdt-trc20-exchange', 'ru' => 'ru/guides/obmen-usdt-trc20'],
+            ['en' => 'en/guides/usdt-networks', 'ru' => 'ru/guides/seti-usdt'],
+            ['en' => 'en/guides/usdt-trc20-vs-erc20', 'ru' => 'ru/guides/usdt-trc20-i-erc20'],
+            ['en' => 'en/guides/usdt-trc20-to-sberbank', 'ru' => 'ru/guides/usdt-trc20-na-sberbank'],
+            ['en' => 'en/guides/usdt-trc20-to-tbank', 'ru' => 'ru/guides/usdt-trc20-na-t-bank'],
+            ['en' => 'en/guides/bitcoin-to-rubles', 'ru' => 'ru/guides/bitcoin-na-rubli'],
+            ['en' => 'en/guides/what-is-sbp', 'ru' => 'ru/guides/chto-takoe-sbp'],
+            ['en' => 'en/guides/safe-crypto-exchange', 'ru' => 'ru/guides/bezopasnyj-kriptoobmen'],
+            ['en' => 'en/guides/how-exchanger-reserves-work', 'ru' => 'ru/guides/kak-rabotayut-rezervy-obmennikov'],
+            ['en' => 'en/guides/crypto-exchange-monitors', 'ru' => 'ru/guides/monitoring-kriptovalyutnyh-obmennikov'],
+        ];
 
-        foreach ($routes as $route) {
-            $url = Url::create($this->joinAbsoluteLocalizedPath($frontendUrl, $route))
-                ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
-                ->setPriority(0.75);
-            // No request-time lastmod — guide bodies are filesystem/CMS without a shared timestamp here.
-            $sitemap->add($url);
+        $added = 0;
+        foreach ($pairs as $pair) {
+            $byLocale = $this->expandPairWithEnStemLocales($frontendUrl, $pair);
+            foreach ($byLocale as $url) {
+                $tag = Url::create($url)
+                    ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
+                    ->setPriority(0.75);
+                $this->attachOwnedAlternates($tag, $byLocale);
+                $sitemap->add($tag);
+                $added++;
+            }
         }
 
         if (!$silent) {
-            $this->line('Guide articles: добавлено ' . count($routes) . ' URL.');
+            $this->line('Guide articles: добавлено ' . $added . ' URL.');
         }
     }
 
     private function addDirectionExchangeUrls(Sitemap $sitemap, string $frontendUrl, bool $silent): void
     {
         $indexTierIds = $this->loadIndexTierDirectionIds();
+        $denyPairs = $this->loadSitemapDenyPairs();
         $added = 0;
         $skippedMissingAssets = 0;
+        $skippedDenied = 0;
 
         DirectionExchange::query()
             // Fail-closed: INDEX-tier membership alone is not enough — direction
@@ -530,13 +635,26 @@ final class UpdateSitemapCommand extends Command
             ])
             ->select(['id', 'id_currency1', 'id_currency2', 'updated_at'])
             ->orderBy('id')
-            ->chunkById(500, function ($items) use ($sitemap, $frontendUrl, &$added, &$skippedMissingAssets) {
+            ->chunkById(500, function ($items) use (
+                $sitemap,
+                $frontendUrl,
+                $denyPairs,
+                &$added,
+                &$skippedMissingAssets,
+                &$skippedDenied
+            ) {
                 foreach ($items as $item) {
                     $from = strtoupper(trim((string) ($item->currency1?->designation_xml ?? '')));
                     $to = strtoupper(trim((string) ($item->currency2?->designation_xml ?? '')));
 
                     if ($from === '' || $to === '' || $from === $to) {
                         $skippedMissingAssets++;
+                        continue;
+                    }
+
+                    $pairKey = $from . '->' . $to;
+                    if (isset($denyPairs[$pairKey])) {
+                        $skippedDenied++;
                         continue;
                     }
 
@@ -553,11 +671,14 @@ final class UpdateSitemapCommand extends Command
 
         if (!$silent) {
             $this->line(
-                'Направления: добавлено ' . $added . ' INDEX-tier URL EN+RU (из '
+                'Направления: добавлено ' . $added . ' INDEX-tier URL (owned locales) (из '
                 . count($indexTierIds) . ' ID).'
             );
             if ($skippedMissingAssets > 0) {
                 $this->warn('Направления: пропущено без designation_xml: ' . $skippedMissingAssets);
+            }
+            if ($skippedDenied > 0) {
+                $this->warn('Направления: пропущено deny-list (noindex/unavailable): ' . $skippedDenied);
             }
         }
     }
@@ -583,7 +704,7 @@ final class UpdateSitemapCommand extends Command
     }
 
     /**
-     * Batch 9: add a path for an explicit locale subset.
+     * Add a path for an explicit locale subset (hreflang limited to that subset).
      *
      * @param list<string> $locales
      */
@@ -595,19 +716,79 @@ final class UpdateSitemapCommand extends Command
         ?Carbon $lastMod,
         array $locales
     ): int {
-        $count = 0;
+        // ZH privacy has no approved translation (EN fallback removed on Next) —
+        // never list a noindex / empty-localization URL.
+        if ($pathWithoutLocale === 'pages/privacy') {
+            $locales = array_values(array_filter(
+                $locales,
+                static fn (string $locale): bool => $locale !== 'zh'
+            ));
+        }
+
+        $byLocale = [];
         foreach ($locales as $locale) {
-            $tag = Url::create($this->joinLocalizedUrl($frontendUrl, $locale, $pathWithoutLocale))
+            $byLocale[$locale] = $this->joinLocalizedUrl($frontendUrl, $locale, $pathWithoutLocale);
+        }
+
+        $count = 0;
+        foreach ($byLocale as $locale => $url) {
+            $tag = Url::create($url)
                 ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
                 ->setPriority($priority);
             if ($lastMod !== null) {
                 $tag->setLastModificationDate($lastMod);
             }
+            $this->attachOwnedAlternates($tag, $byLocale);
             $sitemap->add($tag);
             $count++;
         }
 
         return $count;
+    }
+
+    /**
+     * Attach owned-locale (+ x-default→EN) xhtml:link alternates for a URL tag.
+     *
+     * @param array<string, string> $byLocale
+     */
+    private function attachOwnedAlternates(Url $tag, array $byLocale): void
+    {
+        foreach ($byLocale as $locale => $url) {
+            $tag->addAlternate($url, $locale);
+        }
+        if (isset($byLocale['en'])) {
+            $tag->addAlternate($byLocale['en'], 'x-default');
+        }
+    }
+
+    /**
+     * Owned EN readable blog stems (must stay aligned with Next blog-en-slugs.ts).
+     *
+     * @return array<int, string>
+     */
+    private function blogEnSlugStemById(): array
+    {
+        return [
+            2 => 'crypto-to-ruble-cards-guide',
+            3 => 'crypto-to-ukrainian-cards-guide',
+            4 => 'crypto-to-crypto-exchange-guide',
+            5 => 'popular-cryptocurrencies-for-exchange',
+            6 => 'cryptocurrency-basics-for-beginners',
+            7 => 'protect-cryptocurrency-avoid-scams',
+            8 => 'aml-kyc-and-your-security',
+            9 => 'cryptocurrency-legislation-updates',
+            10 => 'exswaping-complete-guide',
+            11 => 'exchange-usdt-to-rubles-safely-2025',
+            12 => 'exswaping-now-on-cryptoru',
+            13 => 'usdt-to-amd',
+            14 => 'usdt-to-kzt',
+            15 => 'exswaping-now-on-exchangesumo',
+            16 => 'crypto-exchangers-2025-compare-services',
+            17 => 'exswaping-now-listed-on-exnode',
+            18 => 'p2p-exchanges-in-russia-delays-and-protection',
+            19 => 'crypto-to-cash-los-angeles',
+            20 => 'exswaping-added-to-bestchange-monitoring',
+        ];
     }
 
     /**
@@ -640,6 +821,31 @@ final class UpdateSitemapCommand extends Command
         }
 
         return $ids;
+    }
+
+    /**
+     * @return array<string, true> Map of "FROM->TO" => true
+     */
+    private function loadSitemapDenyPairs(): array
+    {
+        $path = storage_path(self::SITEMAP_DENY_PAIRS_PATH);
+        if (!File::exists($path)) {
+            return [];
+        }
+
+        $deny = [];
+        foreach (File::lines($path) as $line) {
+            $line = strtoupper(trim((string) $line));
+            if ($line === '' || str_starts_with($line, '#')) {
+                continue;
+            }
+            if (!preg_match('/^[A-Z0-9]+->[A-Z0-9]+$/', $line)) {
+                continue;
+            }
+            $deny[$line] = true;
+        }
+
+        return $deny;
     }
 
     /**
@@ -691,8 +897,10 @@ final class UpdateSitemapCommand extends Command
      */
     private function topLevelTrustStaticRoutes(): array
     {
-        // Batch 9: tools/network-checker (all five interface locales) and
-        // pages/security (RU-only). Compliance remains unpublished.
+        // tools/network-checker: owned Next tool (Batch 9). All five
+        // interface locales are genuine — emit full OWNED_SITEMAP_LOCALES.
+        // pages/security: RU-only owned trust page (Batch 9); other locales
+        // omit until genuine translations exist (same pattern as FAQ).
         return ['contacts', 'faq', 'partners', 'contests', 'tools/network-checker', 'pages/security'];
     }
 
