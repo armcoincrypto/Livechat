@@ -1,0 +1,11 @@
+route,method,auth_middleware,required_permission,current_behavior,expected_behavior
+GET /iexadmin/frontend-api/vue/liveOrders,GET,frontend+force-json+2fa+is_reading_mode+admin.auth+admin,admin_tasks,unauth JSON 401; missing admin_tasks JSON 403; authorized 200,unauthenticated→401; unauthorized→403; authorized→success
+GET /iexadmin/frontend-api/orders/list,GET,same+permission:admin_tasks,admin_tasks,JSON list via OrdersListRowMapper without customer email,same
+GET /iexadmin/frontend-api/orders/list/{id},GET,permission:admin_tasks,admin_tasks,detail OrderIdResource; preview minimizes PII,authorized detail may include settlement PII; preview minimized
+POST /iexadmin/frontend-api/vue/orderHandler/{id},POST,admin_tasks,admin_tasks + admin_orders_execute for success,Wave1 manual complete JSON 401/403,same
+POST /iexadmin/frontend-api/vue/checkOrderPayment/{id},POST,admin_tasks,admin_tasks,authorized JSON,same
+orders-steps resource,*,admin_orders_control_status,admin_orders_control_status,status actions,same
+parser/bestchange/profit groups,*,admin_parser / admin_parser_bestchange,those permissions,unchanged,unchanged
+POST /iexadmin/frontend-api/vue/layoutSettings,POST,permission:admin_autopayment,admin_autopayment,403 without privilege; setting remains OFF unless owner,owner-controlled; unauthorized mutation rejected
+POST /iexadmin/frontend-api/autopayment showPage=settings,POST,permission:admin_autopayment + can(),admin_autopayment,403 without privilege,same
+GET /iexadmin/frontend-api/vue/layoutOptions,GET,allow_admin,allow_admin,reads autopay flag only,read OK; write gated

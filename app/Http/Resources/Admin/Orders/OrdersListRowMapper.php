@@ -29,7 +29,7 @@ final class OrdersListRowMapper
                     $isCurrentUser = $value->user->id === $currentUserId;
 
                     return [
-                        'user' => $value->user,
+                        'id' => $value->user->id,
                         'name' => $value->user->name,
                         'avatar' => Str::upper(Str::substr((string) ($value->user->name ?? ''), 0, 1)),
                         'is_current_user' => $isCurrentUser,
@@ -54,7 +54,6 @@ final class OrdersListRowMapper
                 'user' => [
                     'id' => $item->user->id ?? null,
                     'name' => $item->user->name ?? null,
-                    'email' => $item->user->email ?? null,
                     'language' => $item->meta?->user_flag ?? null,
                 ],
                 'operators' => $operators,

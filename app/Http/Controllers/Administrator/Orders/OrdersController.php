@@ -162,38 +162,11 @@ class OrdersController extends Controller
                 },
 
                 'task_info:id_task,country_name,city_name,language',
-                'user:id,name,email,language',
+                'user:id,name,language',
                 'merchant',
-                // Historical orders may reference soft-deleted (retired) directions.
-                'direction_exchange' => function ($q) {
-                    $q->withTrashed()->select('id', 'id_currency1', 'id_currency2', 'tech_name', 'deleted_at');
-                },
-                'direction_exchange.currency1' => function ($q) {
-                    $q->select('id', 'id_code_currency', 'id_payment', 'number_format');
-                },
-                'direction_exchange.currency1.code_currency' => function ($q) {
-                    $q->select('id', 'name');
-                },
-                'direction_exchange.currency1.payment' => function ($q) {
-                    $q->select('id', 'name', 'logo');
-                },
-                'direction_exchange.currency2' => function ($q) {
-                    $q->select('id', 'id_code_currency', 'id_payment', 'id_aml_service', 'number_format');
-                },
-                'direction_exchange.currency2.code_currency' => function ($q) {
-                    $q->select('id', 'name');
-                },
-                'direction_exchange.currency2.payment' => function ($q) {
-                    $q->select('id', 'name', 'logo');
-                },
+                ...\App\Http\Resources\Admin\Orders\HistoricalOrderRelationConstraints::forOrdersList(),
                 'pending_order_status',
                 'task_status',
-                'task_operators' => function ($q) {
-                    $q->select('id', 'id_user', 'id_task', 'created_at');
-                },
-                'task_operators.user' => function ($q) {
-                    $q->select('id', 'name', 'email');
-                }
             ])
             ->where('is_archive', '=', 0)
             ->filter($requestAll);
@@ -364,7 +337,6 @@ class OrdersController extends Controller
                         $operators[$opId] = [
                             'id' => $opId,
                             'name' => $operator->user->name,
-                            'email' => $operator->user->email,
                             'total_orders' => 0,
                             'statuses' => [],
                         ];

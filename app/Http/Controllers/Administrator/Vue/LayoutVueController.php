@@ -129,6 +129,20 @@ class LayoutVueController extends Controller
      */
     public function postLayoutSettings(Request $request)
     {
+        $user = Auth::user();
+        if ($user === null) {
+            return response()->json([
+                'status' => 1,
+                'message' => 'Unauthenticated',
+            ], 401);
+        }
+        if (! $user->can('admin_autopayment')) {
+            return response()->json([
+                'status' => 1,
+                'message' => 'Forbidden',
+            ], 403);
+        }
+
         iEXSetting([
             'is_enabled_autopay_cron' => $request->settings['is_enabled_autopay_cron'] ?? 0,
         ]);

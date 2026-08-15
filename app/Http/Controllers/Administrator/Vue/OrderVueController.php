@@ -109,29 +109,7 @@ class OrderVueController extends Controller
         }
 
         // Получаем последний ID
-        $list = Task::query()->with(['direction_exchange' => function ($q) {
-            $q->select('id', 'id_currency1', 'id_currency2');
-        }, 'direction_exchange.currency1' => function ($q) {
-            $q->select('id', 'id_code_currency', 'id_payment', 'number_format');
-        }, 'direction_exchange.currency1.code_currency' => function ($q) {
-            $q->select('id', 'name');
-        }, 'direction_exchange.currency1.payment' => function ($q) {
-            $q->select('id', 'name');
-        }, 'direction_exchange.currency2' => function ($q) {
-            $q->select('id', 'id_code_currency', 'id_payment', 'number_format');
-        }, 'direction_exchange.currency2.code_currency' => function ($q) {
-            $q->select('id', 'name');
-        }, 'direction_exchange.currency2.payment' => function ($q) {
-            $q->select('id', 'name');
-        }, 'task_info' => function ($q) {
-            $q->select('id', 'is_freeze_scam');
-        }, 'task_messages' => function ($q) {
-            $q->select('id', 'is_view')->where('is_view', '=', 0);
-        }, 'task_operators' => function ($q) {
-            $q->select('id', 'id_user', 'id_task');
-        }, 'task_operators.user' => function ($q) {
-            $q->select('id', 'name', 'email');
-        }])
+        $list = Task::query()->with(\App\Http\Resources\Admin\Orders\HistoricalOrderRelationConstraints::forLiveOrders())
             ->select('id', 'public_id', 'created_at', 'is_frozen', 'status', 'id_direction_exchange', 'in_flow_funds', 'give_price', 'started_at', 'receiving_price')
             ->orderBy('id', 'desc')->where('is_frozen', 0)
             ->where('is_archive', '=', 0)
@@ -165,34 +143,7 @@ class OrderVueController extends Controller
             ];
 
             foreach ($orderGroup as $value) {
-                $return = [];
-                $return['auth_id'] = $user_id;
-                $return['in_flow_funds'] = $value['in_flow_funds'];
-                $return['amount'] = display_in_price_auto($value, 'give_price', true, true).' '.$value['direction_exchange']['currency1']['code_currency']['name'].' → '.
-                    display_out_price_auto($value, 'receiving_price', false, true).' '.$value['direction_exchange']['currency2']['code_currency']['name'];
-                $return['status_int'] = $value['status'];
-                $return['id'] = $value['id'];
-                $return['public_id'] = $value['public_id'] > 0 ? $value['public_id'] : $value['id'];
-                $return['name'] = $value['direction_exchange']['currency1']['payment']['name'].' '.$value['direction_exchange']['currency1']['code_currency']['name'].' → '.
-                    $value['direction_exchange']['currency2']['payment']['name'].' '.$value['direction_exchange']['currency2']['code_currency']['name'];
-                $return['created'] = Carbon::parse($value['created_at'])->diffForHumans();
-                $return['hidden'] = false;
-                $return['is_freeze_scam'] = (isset($value['task_info']) and $value['task_info']['is_freeze_scam'] == 1);
-                $return['payment_in_name'] = $value['direction_exchange']['currency1']['payment']['name'];
-
-                // Получение операторов
-                $return['operators'] = [];
-                if (isset($value->task_operators) and count($value->task_operators) > 0) {
-                    foreach ($value->task_operators as $operator) {
-                        $return['operators'][] = [
-                            'id' => $operator->user->id,
-                            'name' => $operator->user->name,
-                            'email' => $operator->user->email
-                        ];
-                    }
-                }
-
-                $orders[$key]['items'][] = $return;
+                $orders[$key]['items'][] = \App\Http\Resources\Admin\Orders\LiveOrdersRowMapper::map($value, $user_id);
             }
         }
 

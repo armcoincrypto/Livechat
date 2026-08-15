@@ -153,23 +153,68 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $exceptions->shouldRenderJsonWhen(fn (Request $request, Throwable $e) =>
-            $request->is('api/*') || $request->is('frontend/*') || $request->expectsJson()
+            $request->is('api/*')
+            || $request->is('frontend/*')
+            || $request->is(config('iexexchanger.admin_folder').'/frontend-api/*')
+            || $request->expectsJson()
         );
 
         $exceptions->render(function (\App\Services\Orders\ManualCompletion\ManualCompletionException $e, Request $request) {
             return $e->toJsonResponse();
         });
 
-        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, Request $request) {
-            $unauthenticatedResponse = response()->json(['message' => 'Unauthenticated.'], 401);
+        $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e, Request $request) {
+            if ($request->is(config('iexexchanger.admin_folder').'/frontend-api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'status' => 1,
+                    'message' => 'Forbidden',
+                ], 403);
+            }
 
-            if ($request->is(config('iexexchanger.admin_folder') . '/*')) {
-                return $request->expectsJson() ? $unauthenticatedResponse : redirect()->guest('/');
+            return null;
+        });
+
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, Request $request) {
+            $unauthenticatedResponse = response()->json([
+                'status' => 1,
+                'is_authenticated' => 0,
+                'message' => 'Unauthorized',
+            ], 401);
+
+            if ($request->is(config('iexexchanger.admin_folder').'/frontend-api/*')
+                || $request->is('frontend-api/*')
+                || $request->expectsJson()) {
+                return $unauthenticatedResponse;
             }
 
             return $request->wantsJson()
-                ? response()->json(['success' => false, 'error' => ['code' => $e->getCode(), 'message' => $e->getMessage()]], 401)
+                ? $unauthenticatedResponse
                 : redirect()->guest('/');
+        });
+
+        $exceptions->render(function (Throwable $e, Request $request) {
+            $isAdminApi = $request->is(config('iexexchanger.admin_folder').'/frontend-api/*')
+                || $request->is('frontend-api/*');
+            if (! $isAdminApi) {
+                return null;
+            }
+            if ($e instanceof \Illuminate\Validation\ValidationException
+                || $e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
+                || $e instanceof \Illuminate\Auth\AuthenticationException
+                || $e instanceof \Spatie\Permission\Exceptions\UnauthorizedException
+                || $e instanceof \App\Services\Orders\ManualCompletion\ManualCompletionException) {
+                return null;
+            }
+
+            \Illuminate\Support\Facades\Log::error('admin_api_unhandled_exception', [
+                'event' => 'admin_api_unhandled_exception',
+                'exception' => $e::class,
+            ]);
+
+            return response()->json([
+                'status' => 1,
+                'message' => 'Internal server error',
+            ], 500);
         });
     })
     ->withSchedule(function (Schedule $schedule) {
