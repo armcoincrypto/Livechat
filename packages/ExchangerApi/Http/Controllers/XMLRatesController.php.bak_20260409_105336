@@ -1,0 +1,24 @@
+<?php
+
+namespace iEXPackages\ExchangerApi\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\File;
+
+class XMLRatesController extends Controller
+{
+    /**
+     * Получаем список курсов
+     */
+    public function index(): Response
+    {
+        // Получаем файл курсов
+        $xmlFile = File::get(public_path(sprintf('/%s.xml', iEXSetting('grates_filename'))));
+
+        // Выводим данные курсов
+        return new Response($xmlFile, 200, [
+            'Content-Type' => 'application/xml',
+        ]);
+    }
+}

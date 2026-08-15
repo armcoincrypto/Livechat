@@ -1,0 +1,74 @@
+{
+    "name": "GETBlock",
+    "version": "2.0",
+
+    "parameters": {
+        "is_recommended": 1
+    },
+
+    "inputs" : {
+        "fields": [
+            {
+                "type": "input",
+                "label": "Токен",
+                "key": "token",
+                "is_hidden": 1
+            },
+            {
+                "type": "input",
+                "label": "Критический уровень риска",
+                "key": "risk_level"
+            },
+            {
+                "type": "input",
+                "label": "Макс. риск для (dark market)",
+                "key": "max_risk_dark_market"
+            },
+            {
+                "type": "input",
+                "label": "Макс. риск для (dark service)",
+                "key": "max_risk_dark_service"
+            },
+            {
+                "type": "input",
+                "label": "Макс. риск для (exchange fraudulent)",
+                "key": "max_risk_exchange_fraudulent"
+            },
+            {
+                "type": "input",
+                "label": "Макс. риск для (gambling)",
+                "key": "max_risk_gambling"
+            },
+            {
+                "type": "input",
+                "label": "Макс. риск для (mixer)",
+                "key": "max_risk_mixer"
+            },
+            {
+                "type": "input",
+                "label": "Макс. риск для (ransom)",
+                "key": "max_risk_ransom"
+            },
+            {
+                "type": "input",
+                "label": "Макс. риск для (sanctions)",
+                "key": "max_risk_sanctions"
+            },
+            {
+                "type": "input",
+                "label": "Макс. риск для (scam)",
+                "key": "max_risk_scam"
+            },
+            {
+                "type": "input",
+                "label": "Макс. риск для (stolen_coins)",
+                "key": "max_risk_stolen_coins"
+            },
+            {
+                "type": "input",
+                "label": "Макс. риск для (terrorism_financing)",
+                "key": "max_risk_terrorism_financing"
+            }
+        ]
+    }
+}

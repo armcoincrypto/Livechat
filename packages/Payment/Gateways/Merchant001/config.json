@@ -1,0 +1,92 @@
+{
+    "name": "Merchant001",
+    "version": "1.2",
+
+    "parameters": {
+        "is_merchant": 1,
+        "is_pay": 1
+    },
+    "payment_options": {
+        "is_checkout": true,
+        "gateways": true,
+        "balance": true,
+        "check_payment": true,
+        "except_callbacks": true,
+        "receiving_requisites_default": false,
+        "receiving_requisites_types": true,
+        "payment_status_checkout_redirected": true,
+        "is_crypto": false,
+        "ipn_status_url": false
+    },
+
+    "inputs" : {
+        "merchant": {
+            "callback_id_from_merchant": "transaction.id",
+            "is_merchant_callback_urls": true,
+            "type_callbacks_route": "merchant.webhook",
+            "is_callback_without_success": true,
+            "is_callback_without_failed": true,
+
+            "fields": [
+                {
+                    "type": "input",
+                    "label": "API Token",
+                    "key": "api_token",
+                    "is_hidden": 1
+                }
+            ],
+
+            "options_fields": [
+                {
+                    "type": "select",
+                    "label": "Тип оплаты",
+                    "key": "type_method_receiving_pay",
+                    "options": {
+                        "0": "Переадресация на (платежную форму)",
+                        "1": "Выдача реквизитов"
+                    }
+                },
+                {
+                    "type": "select",
+                    "label": "Способ оплаты",
+                    "key": "method_pay",
+                    "options_file": "merchant001_codes.json"
+                },
+                {
+                    "type": "input",
+                    "label": "Мин. время ожидании поступлений (в мин.)",
+                    "key": "max_time_register_in_network",
+                    "default_value": 30,
+                    "value_type": "int"
+
+                }, {
+                    "type": "input",
+                    "label": "Макс. время ожидании поступлений (в часах.)",
+                    "key": "max_time_confirm_in_network",
+                    "default_value": 2,
+                    "value_type": "int"
+                }
+            ]
+        },
+
+        "pay": {
+            "fields": [
+                {
+                    "type": "input",
+                    "label": "API Token",
+                    "key": "api_token",
+                    "is_hidden": 1
+                }
+            ],
+
+            "options_fields": [
+                {
+                    "type": "select",
+                    "label": "Способ выплаты",
+                    "key": "method_pay",
+                    "options_file": "merchant001_codes_withdrawal.json"
+                }
+            ]
+        }
+    }
+}

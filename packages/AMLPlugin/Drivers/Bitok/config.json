@@ -1,0 +1,30 @@
+{
+    "name": "BitOK",
+    "version": "2.0",
+
+    "parameters": {
+        "is_recommended": 0
+    },
+
+    "inputs" : {
+        "fields": [
+            {
+                "type": "input",
+                "label": "API Ключ",
+                "key": "api_key",
+                "is_hidden": 1
+            },
+            {
+                "type": "input",
+                "label": "Секрет API",
+                "key": "secret_api",
+                "is_hidden": 1
+            },
+            {
+                "type": "input",
+                "label": "Критический уровень риска",
+                "key": "risk_level"
+            }
+        ]
+    }
+}

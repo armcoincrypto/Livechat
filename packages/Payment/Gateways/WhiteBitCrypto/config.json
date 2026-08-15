@@ -1,0 +1,76 @@
+{
+    "name": "WhiteBit (Crypto)",
+    "version": "1.8",
+
+    "parameters": {
+        "is_merchant": 1,
+        "is_pay": 1
+    },
+
+    "payment_options": {
+        "gateways": true,
+        "balance": true,
+        "check_payment": true,
+        "is_crypto": true,
+        "ipn_status_url": true,
+        "is_balance_without_network": true
+    },
+
+
+    "inputs" : {
+        "merchant": {
+            "fields": [
+                {
+                    "type": "input",
+                    "label": "Публичный ключ",
+                    "key": "public_key",
+                    "is_hidden": 1
+                },
+                {
+                    "type": "input",
+                    "label": "Секретный ключ",
+                    "key": "secret_key",
+                    "is_hidden": 1
+                }
+            ],
+
+            "options_fields": [
+                {
+                    "type": "input",
+                    "label": "Макс. время регистрации в блокчейне (в мин.)",
+                    "key": "max_time_register_in_network",
+                    "default_value": 30,
+                    "value_type": "int"
+
+                }, {
+                    "type": "input",
+                    "label": "Макс. время получения 1-го подтверждения (в часах.)",
+                    "key": "max_time_confirm_in_network",
+                    "default_value": 2,
+                    "value_type": "int"
+                },
+                {
+                    "type": "input",
+                    "label": "Код валюты",
+                    "key": "network_code_currency"
+                }
+            ]
+        },
+        "pay": {
+            "fields": [
+                {
+                    "type": "input",
+                    "label": "Публичный ключ",
+                    "key": "public_key",
+                    "is_hidden": 1
+                },
+                {
+                    "type": "input",
+                    "label": "Секретный ключ",
+                    "key": "secret_key",
+                    "is_hidden": 1
+                }
+            ]
+        }
+    }
+}

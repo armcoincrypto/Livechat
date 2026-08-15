@@ -1,0 +1,104 @@
+{
+    "name": "Volet (ADVCash)",
+    "version": "2.0",
+
+    "parameters": {
+        "is_merchant": 1,
+        "is_pay": 1
+    },
+
+    "payment_options": {
+        "is_checkout": true,
+        "gateways": true,
+        "balance": true
+    },
+
+    "inputs" : {
+        "merchant": {
+            "is_merchant_callback_urls": true,
+            "callback_input_order_id": "ac_order_id",
+            "type_callbacks_route": "merchant.receive_money",
+            "is_allow_ip_address": true,
+
+            "fields": [
+                {
+                    "type": "input",
+                    "label": "E-mail аккаунта",
+                    "key": "sci_account_email",
+                    "is_hidden": 1
+                },
+                {
+                    "type": "input",
+                    "label": "Название SCI",
+                    "key": "sci_name"
+                },
+                {
+                    "type": "input",
+                    "label": "SCI Пароль",
+                    "key": "sci_password",
+                    "is_hidden": 1
+                },
+                {
+                    "type": "input",
+                    "label": "Название API",
+                    "key": "api_name",
+                    "is_hidden": 1
+                },
+                {
+                    "type": "input",
+                    "label": "Пароль от API",
+                    "key": "api_secret",
+                    "is_hidden": 1
+                }
+            ],
+
+            "options_fields": [
+                {
+                    "type": "select",
+                    "label": "Проверить на совпадение номера счета",
+                    "key": "is_from_check_wallet",
+                    "options": {
+                        "0": "Нет",
+                        "1": "Да"
+                    }
+                }
+            ]
+        },
+
+        "pay": {
+            "fields": [
+                {
+                    "type": "input",
+                    "label": "E-mail аккаунта",
+                    "key": "api_account_email",
+                    "is_hidden": 1
+                },
+                {
+                    "type": "input",
+                    "label": "Название API",
+                    "key": "api_name",
+                    "is_hidden": 1
+                },
+                {
+                    "type": "input",
+                    "label": "Пароль от API",
+                    "key": "api_secret",
+                    "is_hidden": 1
+                }
+            ],
+
+            "options_fields": [
+                {
+                    "type": "select",
+                    "label": "Тип транзакции",
+                    "key": "type_transaction",
+                    "options": {
+                        "wallet": "Кошелек",
+                        "email": "E-mail"
+                    },
+                    "default_value": "wallet"
+                }
+            ]
+        }
+    }
+}

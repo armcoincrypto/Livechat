@@ -1,0 +1,60 @@
+{
+    "name": "Payeer",
+    "version": "1.8",
+
+    "parameters": {
+        "is_merchant": 1,
+        "is_pay": 1
+    },
+    "payment_options": {
+        "is_checkout": true,
+        "gateways": true,
+        "balance": true
+    },
+
+    "inputs" : {
+        "merchant": {
+            "is_merchant_callback_urls": true,
+            "callback_input_order_id": "m_orderid",
+            "type_callbacks_route": "merchant.receive_money",
+            "is_allow_ip_address": true,
+
+            "fields": [
+                {
+                    "type": "input",
+                    "label": "ID Мерчанта",
+                    "key": "merchant_id",
+                    "is_hidden": 1
+                },
+                {
+                    "type": "input",
+                    "label": "Секретный ключ",
+                    "key": "secret_key",
+                    "is_hidden": 1
+                }
+            ]
+        },
+
+        "pay": {
+            "fields": [
+                {
+                    "type": "input",
+                    "label": "Номер кошелька",
+                    "key": "account_id"
+                },
+                {
+                    "type": "input",
+                    "label": "API ID",
+                    "key": "api_id",
+                    "is_hidden": 1
+                },
+                {
+                    "type": "input",
+                    "label": "API Ключ",
+                    "key": "api_key",
+                    "is_hidden": 1
+                }
+            ]
+        }
+    }
+}

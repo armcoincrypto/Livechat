@@ -1,0 +1,23 @@
+{
+    "name": "Shard",
+    "version": "1.0",
+
+    "parameters": {
+    },
+
+    "inputs" : {
+        "fields": [
+            {
+                "type": "input",
+                "label": "API Key",
+                "key": "api_key",
+                "is_hidden": 1
+            },
+            {
+                "type": "input",
+                "label": "Критический уровень риска",
+                "key": "risk_level"
+            }
+        ]
+    }
+}
