@@ -627,6 +627,23 @@ trait HasMerchant
             return [];
         }
 
+        if (\App\Services\Orders\PaymentDestinationRouter::isKobbopayInboundCurrency($this->currencyIn)) {
+            $providerToken = method_exists($response, 'getCurrency')
+                ? (string) ($response->getCurrency() ?? '')
+                : '';
+            $expected = \App\Services\Orders\PaymentDestinationRouter::expectedKobbopayNetworkCode($this->currencyIn);
+            if (! \App\Services\Orders\KobbopayDepositAddressValidator::accept($accountNumber, $expected, $providerToken)) {
+                Log::warning('kobbopay_network_mismatch', [
+                    'task_id' => $this->task->id,
+                    'expected_network' => $expected,
+                    'provider_token_present' => $providerToken !== '',
+                    'address_family' => str_starts_with($accountNumber, 'T') ? 'tron' : (str_starts_with($accountNumber, '0x') ? 'evm' : 'other'),
+                ]);
+
+                return [];
+            }
+        }
+
         $shouldIssueRequisites = $this->validateMerchantAccountOnce($accountNumber, 'handleSuccessfulPayment');
 
         DB::transaction(function () use ($accountNumber, $accountTag, $externalId, $bankName, $configProvider): void {
@@ -701,7 +718,16 @@ trait HasMerchant
     {
         $merchant = $merchantData->merchants
             ->sortBy([['priority', 'asc'], ['id', 'desc']])
-            ->first(fn($m) => $this->passesMerchantLimits($m, $merchantData));
+            ->first(function ($m) use ($merchantData) {
+                if (isset($this->currencyIn)
+                    && \App\Services\Orders\PaymentDestinationRouter::isKobbopayInboundCurrency($this->currencyIn)
+                    && ! \App\Services\Orders\PaymentDestinationRouter::isActiveKobbopayMerchant($m)
+                ) {
+                    return false;
+                }
+
+                return $this->passesMerchantLimits($m, $merchantData);
+            });
 
         if (!$merchant) {
             Log::error('Нет подходящих мерчантов, удовлетворяющих лимитам.', [
