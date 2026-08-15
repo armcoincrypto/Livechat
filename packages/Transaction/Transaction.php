@@ -4,6 +4,7 @@ namespace iEXPackages\Transaction;
 
 use App\Models\Task;
 use iEXPackages\OrderRecount\Jobs\RecountTaskJob;
+use App\Services\Orders\ManualCompletion\ManualCompletionGuard;
 use Illuminate\Support\Facades\Cache;
 
 class Transaction
@@ -228,8 +229,14 @@ class Transaction
         } elseif ($this->hasAction() == 'notification') {
             $this->sendNotification($this->getMessage(), $this->getTypeMessage());
 
-        } elseif ($this->hasAction() == 'success' and auth()->user()->can('admin_orders_execute')) {
-            $this->success();
+        } elseif ($this->hasAction() == 'success') {
+            if (!auth()->user()?->can('admin_orders_execute')) {
+                throw \App\Services\Orders\ManualCompletion\ManualCompletionException::forbidden();
+            }
+            $this->success([
+                'skip_auto_payment' => true,
+                'completion_source' => ManualCompletionGuard::SOURCE_MANUAL,
+            ]);
 
         } elseif ($this->hasAction() == 'defer') {
             $this->defer();

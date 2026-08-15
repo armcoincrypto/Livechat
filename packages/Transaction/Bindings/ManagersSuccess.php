@@ -16,8 +16,12 @@ use iEXPackages\Transaction\Services\ProfitCalculationService;
 use iEXPackages\Transaction\Services\ReferralBonusService;
 use iEXPackages\Transaction\Services\ReserveProfitService;
 use iEXPackages\Transaction\Services\UserWalletStoriesService;
+use App\Models\Task;
+use App\Services\Orders\ManualCompletion\ManualCompletionException;
+use App\Services\Orders\ManualCompletion\ManualCompletionGuard;
 use Illuminate\Broadcasting\BroadcastException;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
@@ -48,89 +52,138 @@ trait ManagersSuccess
      */
     public function success(array $options = []): void
     {
-        $this->validateBeforeComplete();
-        $this->disableRelation = true;
-
-        $this->handleCompletedMerchantEvents();
-
-        // --- Новый параметр skip_auto_payment ---
-        $skipAutoPayment = (bool)($options['skip_auto_payment'] ?? false);
-
-        // Если не передано skip_auto_payment — запускаем авто-выплату
-        if (!$skipAutoPayment && !$this->isDeferredAutoPay) {
-            $this->processAutoPayment();
+        if ($options !== []) {
+            $this->parameters = array_merge($this->parameters, $options);
         }
 
-        // Если был включён режим отложенной авто-выплаты — ставим статус "Ожидает выплату"
-        if (!$skipAutoPayment && $this->isDeferredAutoPay) {
-            if (method_exists($this, 'setChangeStatus')) {
-                $this->setChangeStatus(15);
-            } else {
-                $this->setStatus(15);
+        DB::transaction(function () use ($options) {
+            $this->lockTaskForCompletion();
+            $this->applyCompletionGuard($options);
+
+            $this->validateBeforeComplete();
+            $this->disableRelation = true;
+
+            $this->handleCompletedMerchantEvents();
+
+            // --- Новый параметр skip_auto_payment ---
+            $skipAutoPayment = (bool)($options['skip_auto_payment'] ?? false);
+
+            // Если не передано skip_auto_payment — запускаем авто-выплату
+            if (!$skipAutoPayment && !$this->isDeferredAutoPay) {
+                $this->processAutoPayment();
             }
 
-            $this->disableRelation = false;
-            return;
-        }
+            // Если был включён режим отложенной авто-выплаты — ставим статус "Ожидает выплату"
+            if (!$skipAutoPayment && $this->isDeferredAutoPay) {
+                if (method_exists($this, 'setChangeStatus')) {
+                    $this->setChangeStatus(15);
+                } else {
+                    $this->setStatus(15);
+                }
 
-        try {
-            app(FundInvestmentService::class)->invest($this->getAmountIn());
-
-
-            /** @var OrderProfitCalculator $calculator */
-            $calculator = app(OrderProfitCalculator::class);
-
-            $result = $calculator->calculateForTask($this->transaction, $this->getAmountIn());
-
-            if ($result !== null) {
-                /** @var OrderProfitResultStoreService $store */
-                $store = app(OrderProfitResultStoreService::class);
-                $store->storeForTask($this->transaction, $result);
+                $this->disableRelation = false;
+                return;
             }
 
-            app(ProfitCalculationService::class)->calculateProfit($this->transaction, $this->getAmountIn());
-            app(ReferralBonusService::class)->process($this->transaction);
-        } catch (Throwable $e) {
-            Log::error('Ошибка в TransactionCompletedListener: ' . $e->getMessage(). $e->getLine());
-            throw $e;
+            try {
+                app(FundInvestmentService::class)->invest($this->getAmountIn());
+
+
+                /** @var OrderProfitCalculator $calculator */
+                $calculator = app(OrderProfitCalculator::class);
+
+                $result = $calculator->calculateForTask($this->transaction, $this->getAmountIn());
+
+                if ($result !== null) {
+                    /** @var OrderProfitResultStoreService $store */
+                    $store = app(OrderProfitResultStoreService::class);
+                    $store->storeForTask($this->transaction, $result);
+                }
+
+                app(ProfitCalculationService::class)->calculateProfit($this->transaction, $this->getAmountIn());
+                app(ReferralBonusService::class)->process($this->transaction);
+            } catch (Throwable $e) {
+                Log::error('Ошибка в TransactionCompletedListener: ' . $e->getMessage(). $e->getLine());
+                throw $e;
+            }
+
+
+            $this->storeTransactionMeta();
+            $this->storeUserWalletStories();
+
+            $this->updateReserveProfit();
+
+            $this->finalizeTransaction();
+            $this->updateAnalytics();
+
+
+
+            $telegramId = optional($this->transaction->meta)->telegram_id;
+            if (is_numeric($telegramId)) {
+                $message = 'Ваша заявка №' . current_order_id($this->transaction) . ' успешно выполнена.';
+                $ok = sendTelegramNotification($telegramId, $message);
+                 if (!$ok) {
+                     Log::warning('Не удалось отправить Telegram-уведомление', [
+                         'order_id' => current_order_id($this->transaction),
+                         'telegram_id' => $telegramId,
+                     ]);
+                 }
+            }
+
+            // Отсылаем сообщение о завершении заявки
+            if (SmartMailerConditionFactory::make('order_completed', $this->transaction)->shouldSend())
+            {
+                SmartMailer::dispatch(
+                    sendable: 'order_completed_job',
+                    model: $this->transaction,
+                    delaySeconds: 5,
+                    queue: 'low'
+                );
+            }
+
+
+            $this->converterAmountGive();
+        });
+    }
+
+    /**
+     * Serialize completion against a single locked task row.
+     */
+    private function lockTaskForCompletion(): void
+    {
+        $id = (int) ($this->transaction->id ?? 0);
+        if ($id <= 0) {
+            throw ManualCompletionException::invalidStatus(0);
         }
 
-
-        $this->storeTransactionMeta();
-        $this->storeUserWalletStories();
-
-        $this->updateReserveProfit();
-
-        $this->finalizeTransaction();
-        $this->updateAnalytics();
-
-
-
-        $telegramId = optional($this->transaction->meta)->telegram_id;
-        if (is_numeric($telegramId)) {
-            $message = 'Ваша заявка №' . current_order_id($this->transaction) . ' успешно выполнена.';
-            $ok = sendTelegramNotification($telegramId, $message);
-             if (!$ok) {
-                 Log::warning('Не удалось отправить Telegram-уведомление', [
-                     'order_id' => current_order_id($this->transaction),
-                     'telegram_id' => $telegramId,
-                 ]);
-             }
+        $locked = Task::query()->whereKey($id)->lockForUpdate()->first();
+        if ($locked === null) {
+            throw ManualCompletionException::invalidStatus(0);
         }
 
-        // Отсылаем сообщение о завершении заявки
-        if (SmartMailerConditionFactory::make('order_completed', $this->transaction)->shouldSend())
-        {
-            SmartMailer::dispatch(
-                sendable: 'order_completed_job',
-                model: $this->transaction,
-                delaySeconds: 5,
-                queue: 'low'
-            );
+        $this->transaction = $locked;
+    }
+
+    /**
+     * Permission, inbound-status, settlement evidence, same-state idempotency.
+     */
+    private function applyCompletionGuard(array $options): void
+    {
+        $source = ManualCompletionGuard::detectSource(array_merge($this->parameters, $options));
+        $decision = app(ManualCompletionGuard::class)->authorizeLockedTask(
+            $this->transaction,
+            $source,
+            array_merge($this->parameters, $options),
+            auth()->user()
+        );
+
+        if ($decision['already_completed'] === true) {
+            throw ManualCompletionException::alreadyCompleted();
         }
 
-
-        $this->converterAmountGive();
+        $this->parameters['allow_complete_status_write'] = true;
+        $this->parameters['manual_settlement'] = $decision['settlement'];
+        $this->parameters['completion_from_status'] = $decision['from_status'];
     }
 
     /**
@@ -203,8 +256,17 @@ trait ManagersSuccess
      */
     private function storeTransactionMeta(): void
     {
+        $opt = $this->transaction->opt_params;
+        if (!is_array($opt)) {
+            $opt = [];
+        }
+        $opt['fields'] = $this->getOtherFieldsForSuccess();
+        if (!empty($this->parameters['manual_settlement']) && is_array($this->parameters['manual_settlement'])) {
+            $opt['manual_settlement'] = $this->parameters['manual_settlement'];
+        }
+
         $this->transaction->update([
-            'opt_params' => ['fields' => $this->getOtherFieldsForSuccess()],
+            'opt_params' => $opt,
             // Обновляем только один раз — если ещё не установлен
             'id_who_completed' => $this->transaction->id_who_completed > 0
                 ? $this->transaction->id_who_completed
