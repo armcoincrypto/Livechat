@@ -102,6 +102,24 @@ class OrderPayController extends Controller
             ], 422);
         }
 
+        $managerOrderPath = base_path('packages/Order/Bindings/ManagerOrder.php');
+        if (! is_file($managerOrderPath)) {
+            Log::critical('Order creation aborted: ManagerOrder binding missing', [
+                'path' => $managerOrderPath,
+                'request_id' => $request->headers->get('X-Request-Id'),
+            ]);
+
+            return response()->json([
+                'status' => 1,
+                'code' => 'SERVICE_UNAVAILABLE',
+                'errors' => [[
+                    'field' => 'system',
+                    'message' => __('Ошибка обработки заказ'),
+                    'modal' => false,
+                ]],
+            ], 503);
+        }
+
         try {
             $order = OrderFacade::request($request);
             $response = $order->created();
