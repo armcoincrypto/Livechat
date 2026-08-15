@@ -78,12 +78,14 @@ class Transaction
         if ($trashed) {
             $this->transaction = Task::withTrashed()->find($id);
             $this->parameters = $config;
+            $this->disableRelation = false;
             return $this;
 
         } elseif ($this->hasFind($id))
         {
             $this->transaction = Task::find($id);
             $this->parameters = $config;
+            $this->disableRelation = false;
 
             //            if(!$this->hasPreview()) {
             //                $this->bootstrap();

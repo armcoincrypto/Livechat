@@ -8,11 +8,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Task;
 use App\Models\TaskStatus;
 use App\Models\VerificationCard;
+use App\Services\Orders\ManualCompletion\ManualCompletionException;
+use App\Services\Orders\ManualCompletion\ManualCompletionGuard;
 use iEXPackages\Transaction\Facades\TransactionFacade;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 
 class OrderVueController extends Controller
@@ -262,9 +265,27 @@ class OrderVueController extends Controller
      */
     public function handlerOrder(int $id, Request $request)
     {
+        if ($request->exists('id') && (int) $request->input('id') !== $id) {
+            return ManualCompletionException::routeIdMismatch()->toJsonResponse();
+        }
+
+        $action = $request->input('action');
+        if ($action === 'success') {
+            $user = Auth::user();
+            if ($user === null) {
+                return ManualCompletionException::unauthenticated()->toJsonResponse();
+            }
+            if (!$user->can('admin_orders_execute')) {
+                return ManualCompletionException::forbidden()->toJsonResponse();
+            }
+        }
+
         $otherFieldsForSuccess = collect($request->input('extra_fields', []))
             ->take(5)
             ->map(function ($item) {
+                if (!is_array($item)) {
+                    return ['name' => '', 'value' => ''];
+                }
                 return [
                     'name'  => trim((string) ($item['name'] ?? '')),
                     'value' => trim((string) ($item['value'] ?? '')),
@@ -274,7 +295,7 @@ class OrderVueController extends Controller
             ->values()
             ->toArray();
 
-        $transaction = TransactionFacade::find($request->id, [
+        $transaction = TransactionFacade::find($id, [
             'preview' => false,
             'commission' => ($request->manual_fee ?? 0),
             'type' => ($request->type ?? 'default'),
@@ -283,6 +304,8 @@ class OrderVueController extends Controller
             'otherFieldsForSuccess' => $otherFieldsForSuccess,
             'rejection_status' => ($request->rejection_status ?? 0),
             'pin_code' => $request->has('pin_code') ? $request->get('pin_code') : null,
+            'settlement_reference' => $request->input('settlement_reference'),
+            'completion_source' => ManualCompletionGuard::SOURCE_MANUAL,
         ]);
 
 
@@ -290,8 +313,15 @@ class OrderVueController extends Controller
         $response['status'] = 0;
         try {
             if ($transaction->hasAction() == 'success') {
-                $transaction->success();
+                $transaction->success([
+                    'skip_auto_payment' => true,
+                    'completion_source' => ManualCompletionGuard::SOURCE_MANUAL,
+                    'settlement_reference' => $request->input('settlement_reference'),
+                    'otherFieldsForSuccess' => $otherFieldsForSuccess,
+                    'message' => $request->input('message_success'),
+                ]);
                 $response['message'] = 'Заявка выполнена';
+                $response['code'] = 'completed';
             } elseif ($transaction->hasAction() == 'failed') {
                 $transaction->reject();
                 $response['message'] = 'Заявка отклонена';
@@ -301,9 +331,18 @@ class OrderVueController extends Controller
                 $response['message'] = 'Заявка отложена';
             }
 
+        } catch (ManualCompletionException $exception) {
+            return $exception->toJsonResponse();
         } catch (\Exception $exception) {
+            Log::error('orderHandler failed', [
+                'task_id' => $id,
+                'action' => $action,
+                'exception' => $exception::class,
+            ]);
             $response['status'] = 1;
-            $response['message'] = $exception->getMessage();
+            $response['code'] = 'completion_failed';
+            $response['message'] = 'Completion failed';
+            return Response::json($response, 500);
         }
 
         return Response::json($response);
