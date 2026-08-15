@@ -47,3 +47,8 @@
 /xml-changer/__pycache__/
 *.pyc
 resources/deploy/*.sha256
+
+# IonCube vendor licenses (required to boot, never commit)
+iexexchanger_license*
+iexexchanger_docs.txt
+iex-config.json
