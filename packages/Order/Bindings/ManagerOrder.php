@@ -13,8 +13,8 @@ use App\Models\TaskField;
 use App\Models\TaskInfo;
 use App\Models\TaskShot;
 use App\Services\ExtraFields\ExtraFieldsService;
+use App\Services\Orders\OrderCreatedTelegramNotifier;
 use App\Services\SelectedFeesResolver;
-use App\Support\Facades\iEXApp;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use iEXPackages\GeoIp\Facades\GeoIP;
@@ -335,8 +335,8 @@ trait ManagerOrder
 
         $this->handleIdentityVerification($order);
 
-        // Отправка уведомления о создании заявки через Telegram
-        iEXApp::telegramNotificationForChannel('process_created_order', $this->getOrder());
+        // Operator Telegram is operational (queued). Never fail customer create after persist.
+        app(OrderCreatedTelegramNotifier::class)->notifyCreated($this->getOrder());
 
 
         // Отсылаем сообщение о создании заявки (стандартная)

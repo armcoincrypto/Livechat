@@ -4,43 +4,45 @@ namespace App\Notifications;
 
 use App\Models\Task;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
 
-class TelegramNewOrder extends Notification implements ShouldQueue
+class TelegramNewOrder extends Notification implements ShouldQueue, ShouldBeUnique
 {
     use Queueable;
 
-    /**
-     * Create a new notification instance.
-     *
-     * @return void
-     */
+    public int $tries = 3;
+
+    /** @var list<int> */
+    public array $backoff = [10, 30, 90];
+
+    public int $timeout = 20;
+
+    public int $uniqueFor = 86400;
+
     public function __construct(
         public mixed $tokens,
         public mixed $order
-    )
-    {
-        //
+    ) {
+        $this->onQueue('high');
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array
-     */
+    public function uniqueId(): string
+    {
+        $orderId = $this->order instanceof Task ? (string) $this->order->id : 'unknown';
+
+        return 'telegram-new-order:'.$orderId;
+    }
+
     public function via()
     {
         return [TelegramChannel::class];
     }
 
     /**
-     * Get the mail representation of the notification.
-     *
-     * @return TelegramMessage
-     *
      * @throws \Throwable
      */
     public function toTelegram()
