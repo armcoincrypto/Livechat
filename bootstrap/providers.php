@@ -9,6 +9,7 @@ use App\Providers\AuthServiceProvider;
 use App\Providers\HorizonServiceProvider;
 use App\Providers\RatesOwnerControlServiceProvider;
 use App\Providers\TelescopeServiceProvider;
+use App\Providers\TelegramHttpTimeoutServiceProvider;
 use iEXPackages\DynamicConfig\DynamicConfigServiceProvider;
 use iEXPackages\WorkStatus\WorkStatusServiceProvider;
 
@@ -37,6 +38,7 @@ $providers = [
     AuthServiceProvider::class,
     HorizonServiceProvider::class,
     WorkStatusServiceProvider::class,
+    TelegramHttpTimeoutServiceProvider::class,
 
     ...$administratorProviders
 ];
