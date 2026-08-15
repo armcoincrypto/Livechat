@@ -156,7 +156,11 @@ return Application::configure(basePath: dirname(__DIR__))
             $request->is('api/*') || $request->is('frontend/*') || $request->expectsJson()
         );
 
-        $exceptions->render(function (Request $request, Throwable $e) {
+        $exceptions->render(function (\App\Services\Orders\ManualCompletion\ManualCompletionException $e, Request $request) {
+            return $e->toJsonResponse();
+        });
+
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, Request $request) {
             $unauthenticatedResponse = response()->json(['message' => 'Unauthenticated.'], 401);
 
             if ($request->is(config('iexexchanger.admin_folder') . '/*')) {
@@ -164,7 +168,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return $request->wantsJson()
-                ? response()->json(['success' => false, 'error' => ['code' => $e->getCode(), 'message' => $e->getMessage()]])
+                ? response()->json(['success' => false, 'error' => ['code' => $e->getCode(), 'message' => $e->getMessage()]], 401)
                 : redirect()->guest('/');
         });
     })
