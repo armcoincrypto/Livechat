@@ -94,6 +94,26 @@ trait ValidatesOrderRules
             ]];
         }
 
+        $this->directionId->loadMissing([
+            'currency1.merchants',
+            'merchants',
+            'direction_requisites',
+        ]);
+        if (! \App\Services\Orders\InboundPaymentDestinationGuard::directionHasSource($this->directionId)) {
+            \Illuminate\Support\Facades\Log::warning('order_create_blocked_no_payment_destination', [
+                'direction_id' => $this->directionId->id ?? null,
+                'currency_id' => $this->directionId->id_currency1 ?? null,
+            ]);
+
+            return [[
+                'field' => 'direction',
+                'message' => __('Приём средств по этому направлению временно недоступен'),
+                'code' => \App\Services\Orders\InboundPaymentDestinationGuard::ERROR_PAYMENT_DESTINATION_UNAVAILABLE,
+                'modal' => false,
+                'meta' => [],
+            ]];
+        }
+
         $context = $this->buildValidationContext();
         $pipeline = $this->buildValidationPipeline();
 
