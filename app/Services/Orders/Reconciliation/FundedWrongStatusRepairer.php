@@ -6,6 +6,7 @@ namespace App\Services\Orders\Reconciliation;
 
 use App\Enums\TaskStatusEnum;
 use App\Models\Task;
+use App\Services\Orders\Transitions\OrderTransitionService;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -78,6 +79,11 @@ final class FundedWrongStatusRepairer
             }
 
             $this->assertSafeToPromote($task, $spec);
+            OrderTransitionService::assertSetStatusPermitted(
+                (int) $task->status,
+                (int) $spec['to_status'],
+                [OrderTransitionService::PERMIT_PAID => true]
+            );
 
             $audit = [
                 'actor' => self::ACTOR,

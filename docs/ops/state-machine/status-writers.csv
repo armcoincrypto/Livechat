@@ -1,0 +1,18 @@
+writer,file,from,to,financial,transaction,row_lock,guard,audit_log,production_caller
+setStatus,packages/Transaction/Bindings/ManagersDetails.php,any_non_same,requested,PAID_and_COMPLETED_gated,no,no,OrderTransitionService permits + Wave1 complete permit,TaskObserver iex_order_status_log,all Transaction callers
+ConfirmedInboundPaidTransition,app/Services/Orders/Transitions/ConfirmedInboundPaidTransition.php,3/12/13,7,financial,yes,lockForUpdate,txid unique + PAID_FROM,order_marked_paid + status log,merchant:webhook checkInPayment
+checkInPayment,packages/Transaction/Concerns/SupportsCheckPayment.php,3/12/13,7,financial,via ConfirmedInboundPaidTransition,yes,permit_paid,PAYMENT_SUCCESS only after PAID,merchant:webhook
+callback,packages/Payments/Callback/Traits/CallbackPaymentHandlingTrait.php,current,amount_resolved_often_7,financial_if_7,no,no,grantPaidWritePermit if 7,callback_payment_success,merchant HTTP callback
+manual_complete,packages/Transaction/Bindings/ManagersSuccess.php,3/7/12/14,4,financial,yes,lockForUpdate,ManualCompletionGuard,status log,admin orderHandler
+reject,packages/Transaction/Bindings/ManagersReject.php,current,5,nonfinancial,no,no,none,status log,admin failed
+defer,packages/Transaction/Bindings/ManagersDefer.php,current,8,nonfinancial,no,no,none,status log,admin defer
+restore,packages/Transaction/Bindings/ManagersBootstrap.php,5/6,3,nonfinancial,no,no,none,status log,admin restore
+customer_claim,packages/ExchangerClient/Http/Controller/Operations/OrderPayController.php,2,3_or_1,nonfinancial,no,no,status==2,status log,public confirm
+checkout,app/Http/Controllers/PaymentStatusController.php,2,3/9/13,nonfinancial,no,no,none,status log,checkout
+create,packages/Order/Bindings/ManagerOrder.php,new,2,nonfinancial,no,no,none,status log,order create
+kobbopay_expire,app/Gateways/Crypto/Kobbopay/Services/KobbopayInboundWebhookService.php,current,1,nonfinancial,no,no,none,status log,kobbopay webhook
+hourly_delete,app/Console/Commands/HourlyMonitoringCommand.php,configured,11,nonfinancial_raw,no,no,none,iex_order_status_log sometimes,hourly cron
+autopay_queue,app/Console/Commands/MerchantAutopayQueueCommand.php,7,16,financial_disabled,yes,lockForUpdate,autopay cron flag OFF,log only,DISABLED
+autopay_run,packages/Transaction/Concerns/SupportsAutoPayments.php,16/7,15/14/4,financial_disabled,partial,no,autopay OFF,logs,DISABLED
+funded_repair,app/Services/Orders/Reconciliation/FundedWrongStatusRepairer.php,3,7,financial_allowlisted,yes,lockForUpdate,PRODUCTION_ALLOWLIST+permit assert,opt_params+status log,CLI repair 2250 already applied
+admin_reject_orders,app/Http/Controllers/Administrator/Orders/OrdersController.php,current,5,nonfinancial,no,no,admin,status log,admin

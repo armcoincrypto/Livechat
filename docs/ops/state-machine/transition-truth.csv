@@ -1,0 +1,20 @@
+from,to,enum_allows,historically_observed,current_code_writes,business_valid,financial,canonical_decision
+0,2,n/a (create),4183,yes,yes,no,KEEP
+2,3,yes,1460,yes,yes,no,KEEP customer claim / checkout
+2,6,yes,684,yes,yes,no,KEEP
+2,1,yes,39,yes,yes,no,KEEP expire unpaid
+2,5,yes,7,yes,yes,no,KEEP
+2,13,yes,3,yes,yes,no,KEEP
+3,7,yes,315,yes detector/callback/repair,yes,yes,CANONICAL paid write with permit+lock
+3,4,yes,383,yes Wave1,yes,yes,CANONICAL manual complete with evidence
+3,5,yes,126,yes,yes,no,KEEP reject
+6,3,no,68,restoreOrder,yes,no,LEGACY_VALID restore
+5,3,no,12,restoreOrder,yes,no,LEGACY_VALID restore
+7,4,yes,13,yes Wave1,yes,yes,CANONICAL complete permit
+6,5,no,3,reject,yes,no,LEGACY_VALID
+12,7,yes,0_in_log_sample,yes detector,yes,yes,CANONICAL
+13,7,yes,0_in_log_sample,yes detector,yes,yes,CANONICAL
+14,4,yes (complete permit not enum-only),0,Wave1 SYSTEM_FROM,yes,yes,KEEP system complete; autopay OFF
+15,4,not via enum PAID path,0,system success,yes,yes,KEEP system; autopay OFF
+16,4,not direct,0,system success,yes,yes,KEEP system; autopay OFF
+7,16,yes,0,autopay-queue raw,yes,yes,DOCUMENTED_DISABLED

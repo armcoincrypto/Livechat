@@ -1,0 +1,17 @@
+code,name,meaning,terminal,financial_meaning,customer_visible
+1,EXPIRED,Timer elapsed without completion,terminal,no inbound proof by status,yes
+2,PENDING_PAYMENT,Awaiting customer payment,nonterminal,unpaid,yes
+3,WAITING_HANDLE,Customer claimed / awaiting operator or detector,nonterminal,not proof of funds,yes
+4,COMPLETED,Order settled,terminal,outbound complete (Wave 1 evidence for new completes),yes
+5,REJECTED,Rejected by operator/system,terminal,no settlement,yes
+6,CANCELED_BY_USER,User canceled,terminal,no settlement,yes
+7,PAID,Confirmed inbound; awaiting manual settlement,nonterminal,CONFIRMED_FUNDS expected via wallet txid,yes
+8,FROZEN,Deferred/frozen,nonterminal,not a funds proof,yes
+9,PROCESSING_PAYMENT,Payment in progress,nonterminal,unconfirmed,yes
+10,INVALID,Invalid order,terminal,none,yes
+11,DELETED,Removed by retention job,terminal,none,no
+12,CHECK_PAYMENT,Payment check,nonterminal,eligible for PAID write,yes
+13,MERCHANT_CONFIRMATION,Merchant confirmation,nonterminal,eligible for PAID write,yes
+14,AUTO_PAYOUT_ERROR,Autopay failed (autopay OFF),nonterminal,funded may exist; payout error,admin
+15,PAYOUT_IN_PROGRESS,Autopay in flight (autopay OFF),nonterminal,payout attempted,admin
+16,PAYOUT_QUEUE,Queued for autopay (autopay OFF),nonterminal,funded; not settled,admin

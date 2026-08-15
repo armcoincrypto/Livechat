@@ -59,6 +59,13 @@ class Transaction
         'pin_code' => null,
     ];
 
+    public function grantPaidWritePermit(): static
+    {
+        $this->parameters[\App\Services\Orders\Transitions\OrderTransitionService::PERMIT_PAID] = true;
+
+        return $this;
+    }
+
     /**
      * Создаем новый экземпляр транзакции.
      */

@@ -116,7 +116,7 @@ trait ManagersDetails
      */
     public function getStatus()
     {
-        return $this->transaction->status;
+        return (int) $this->transaction->status;
     }
 
     public function getStatusName()
@@ -440,10 +440,17 @@ trait ManagersDetails
     public function setStatus($status): static
     {
         $status = (int) $status;
+        $from = (int) $this->getStatus();
 
-        if ($status === 4 && empty($this->parameters['allow_complete_status_write'])) {
-            throw \App\Services\Orders\ManualCompletion\ManualCompletionException::bypassForbidden();
+        if ($from === $status) {
+            return $this;
         }
+
+        \App\Services\Orders\Transitions\OrderTransitionService::assertSetStatusPermitted(
+            $from,
+            $status,
+            is_array($this->parameters) ? $this->parameters : []
+        );
 
         $update = [
             'status' => $status,
