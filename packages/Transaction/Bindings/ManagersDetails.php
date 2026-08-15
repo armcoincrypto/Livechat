@@ -441,6 +441,10 @@ trait ManagersDetails
     {
         $status = (int) $status;
 
+        if ($status === 4 && empty($this->parameters['allow_complete_status_write'])) {
+            throw \App\Services\Orders\ManualCompletion\ManualCompletionException::bypassForbidden();
+        }
+
         $update = [
             'status' => $status,
         ];
