@@ -51,6 +51,18 @@ final class KobbopayWebhookSignatureVerifierTest extends TestCase
         $this->assertSame('invalid_signature', $result['error']);
     }
 
+    public function test_empty_signature_rejected(): void
+    {
+        $result = $this->verifier->verify('{}', [
+            'X-Kobbopay-Event-Id' => 'evt-1',
+            'X-Kobbopay-Timestamp' => (string) time(),
+            'X-Kobbopay-Signature' => '',
+        ], $this->secret);
+
+        $this->assertFalse($result['ok']);
+        $this->assertSame('missing_headers', $result['error']);
+    }
+
     public function test_missing_signature_rejected(): void
     {
         $result = $this->verifier->verify('{}', [

@@ -166,7 +166,7 @@ use iEXPackages\BinInspector\Http\Controllers\BinInspectorController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::prefix('frontend-api')->middleware('frontend')->group(function ()
+Route::prefix('frontend-api')->middleware(['frontend', 'force-json'])->group(function ()
 {
     Route::post('/uploads', [UploadController::class, 'upload']);
     Route::prefix('auth')->group(function ()
@@ -902,7 +902,8 @@ Route::prefix('frontend-api')->middleware('frontend')->group(function ()
             Route::put('/layoutNotificationById/{id}', [LayoutVueController::class, 'updateNotificationById']);
 
             Route::post('/layoutStatusOperator', [LayoutVueController::class, 'postStatusOperator']);
-            Route::post('/layoutSettings', [LayoutVueController::class, 'postLayoutSettings']);
+            Route::post('/layoutSettings', [LayoutVueController::class, 'postLayoutSettings'])
+                ->middleware('permission:admin_autopayment');
 
             // Направление обмена
             Route::get('/validateDirectionExchange', [DirectionExchangeVueController::class, 'checkValidate']);
@@ -914,13 +915,17 @@ Route::prefix('frontend-api')->middleware('frontend')->group(function ()
             Route::get('/getNotify', [NotificationVueController::class, 'getNotify']);
 
             Route::controller(OrderVueController::class)->group(function () {
-                //
-                Route::get('/getLiveOrderSettings', 'getLiveOrderSettings');
+                Route::get('/getLiveOrderSettings', 'getLiveOrderSettings')
+                    ->middleware('permission:admin_tasks');
 
-                Route::post('/orderHandler/{id}', 'handlerOrder');
-                Route::get('/liveOrders', 'liveOrders');
-                Route::post('/liveOrderSettings', 'liveOrderSettings');
-                Route::post('/checkOrderPayment/{id}', 'checkOrderPayment');
+                Route::post('/orderHandler/{id}', 'handlerOrder')
+                    ->middleware('permission:admin_tasks');
+                Route::get('/liveOrders', 'liveOrders')
+                    ->middleware('permission:admin_tasks');
+                Route::post('/liveOrderSettings', 'liveOrderSettings')
+                    ->middleware('permission:admin_tasks');
+                Route::post('/checkOrderPayment/{id}', 'checkOrderPayment')
+                    ->middleware('permission:admin_tasks');
             });
 
             // Онлайн чат в заявках

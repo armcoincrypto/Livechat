@@ -205,6 +205,9 @@ enum TaskStatusEnum: int
             self::PENDING_PAYMENT => $to->in(
                 self::PROCESSING_PAYMENT,
                 self::CHECK_PAYMENT,
+                self::WAITING_HANDLE,
+                self::MERCHANT_CONFIRMATION,
+                self::REJECTED,
                 self::CANCELED_BY_USER,
                 self::EXPIRED
             ),
@@ -226,7 +229,8 @@ enum TaskStatusEnum: int
             self::PAID => $to->in(
                 self::WAITING_HANDLE,
                 self::MERCHANT_CONFIRMATION,
-                self::PAYOUT_QUEUE
+                self::PAYOUT_QUEUE,
+                self::COMPLETED
             ),
 
             self::MERCHANT_CONFIRMATION => $to->in(
@@ -236,6 +240,7 @@ enum TaskStatusEnum: int
             ),
 
             self::WAITING_HANDLE => $to->in(
+                self::PAID,
                 self::COMPLETED,
                 self::REJECTED,
                 self::FROZEN

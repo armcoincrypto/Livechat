@@ -9,11 +9,14 @@ use App\Models\GatewayMerchant;
 use App\Models\MerchantTransactionData;
 use App\Models\MerchantTransactionWebhook;
 use App\Models\Task;
+use App\Services\Orders\Transitions\ConfirmedInboundPaidTransition;
+use App\Services\Orders\Transitions\OrderTransitionException;
 use iEXPackages\Payments\Callback\DTO\CallbackHttpResult;
 use iEXPackages\Payments\Core\Config\GatewayConfig;
 use iEXPackages\Payments\Payments;
 use iEXPackages\Transaction\Facades\TransactionFacade;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Psr\SimpleCache\InvalidArgumentException;
 
@@ -209,16 +212,77 @@ trait CallbackPaymentHandlingTrait
             stage: 'amount_check',
             flow: 'callback'
         );
-        $transaction->setStatus($finalStatus);
+
+        $alreadyPaid = false;
+        if ((int) $finalStatus === 7) {
+            $txid = '';
+            if (method_exists($paymentResponse, 'getTransactionHash')) {
+                $txid = trim((string) ($paymentResponse->getTransactionHash() ?? ''));
+            }
+            if ($txid === '' && method_exists($paymentResponse, 'getTransferId')) {
+                $txid = trim((string) ($paymentResponse->getTransferId() ?? ''));
+            }
+            if ($txid === '' && method_exists($paymentResponse, 'getTransactionId')) {
+                $txid = trim((string) ($paymentResponse->getTransactionId() ?? ''));
+            }
+
+            try {
+                $paid = app(ConfirmedInboundPaidTransition::class)->apply(
+                    (int) $task->id,
+                    [
+                        'amount' => $paidAmount,
+                        'confirmations' => 1,
+                        'txid' => $txid,
+                    ],
+                    function () use ($transaction) {
+                        $transaction->refresh();
+                        $transaction->grantPaidWritePermit();
+                        $transaction->setStatus(7);
+                    }
+                );
+                $alreadyPaid = ($paid['outcome'] ?? '') === 'already_paid';
+                if ($alreadyPaid) {
+                    $this->flowLogger->info(
+                        event: 'replay_detected',
+                        task: $task,
+                        merchant: $merchant,
+                        ctx: ['ip' => $ip],
+                        message: 'Повторное уведомление: заявка уже в статусе PAID.',
+                        stage: 'final',
+                        flow: 'callback'
+                    );
+                }
+            } catch (OrderTransitionException $e) {
+                Log::error('payment_transition_failed', [
+                    'event' => 'payment_transition_failed',
+                    'task_id' => (int) $task->id,
+                    'error' => $e->errorCode ?? $e->getMessage(),
+                ]);
+                $this->flowLogger->error(
+                    event: 'payment_transition_failed',
+                    task: $task,
+                    merchant: $merchant,
+                    ctx: ['ip' => $ip],
+                    message: 'Подтверждённый inbound не переведён в PAID.',
+                    stage: 'final',
+                    flow: 'callback'
+                );
+
+                return new CallbackHttpResult(409, 'OK');
+            }
+        } else {
+            $transaction->setStatus($finalStatus);
+        }
         $task->update(['started_at' => Carbon::now()->toDateTimeString()]);
 
-        // уведомления (как у тебя)
-        if ((int) iEXSetting('is_mail_notify_order_manager') === 1) {
-            dispatch(new AdminNewOrderJob($task))
-                ->delay(now()->addSeconds(30))
-                ->onQueue('low');
+        if (! $alreadyPaid) {
+            if ((int) iEXSetting('is_mail_notify_order_manager') === 1) {
+                dispatch(new AdminNewOrderJob($task))
+                    ->delay(now()->addSeconds(30))
+                    ->onQueue('low');
+            }
+            \iEXApp::telegramNotificationForChannel('new_order_for_operator', $task);
         }
-        \iEXApp::telegramNotificationForChannel('new_order_for_operator', $task);
 
         $this->flowLogger->info(
             event: 'callback_payment_success',

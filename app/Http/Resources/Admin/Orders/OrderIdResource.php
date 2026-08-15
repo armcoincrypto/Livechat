@@ -43,6 +43,8 @@ class OrderIdResource extends JsonResource
         }
         $sfSnapshot = is_array($this->resource['detail']->meta?->selected_fees) ? $this->resource['detail']->meta?->selected_fees : [];
         $sfFlat     = SelectedFeesPresenter::flatten($sfSnapshot);
+        $isPreview = (bool) ($this->resource['isPreview'] ?? false);
+        $taskInfo = $this->resource['detail']->task_info;
 
         return [
             'status' => $this->resource['detail']->status,
@@ -76,9 +78,9 @@ class OrderIdResource extends JsonResource
                     'different' => getAmountCreditMerchantFromOrder($this->resource['detail'])
                 ],
 
-                'card_details' => $this->resource['cardInfoIn'],
-                'fields' => get_order_fields_tx($this->resource['detail'], 'currency_in'),
-                'wallet_info_in' => $this->resource['walletInfo'],
+                'card_details' => $isPreview ? null : $this->resource['cardInfoIn'],
+                'fields' => $isPreview ? [] : get_order_fields_tx($this->resource['detail'], 'currency_in'),
+                'wallet_info_in' => $isPreview ? null : $this->resource['walletInfo'],
                 'is_enabled_check_pay' => !$this->resource['isPreview'] and
                     empty($this->resource['walletInfo']) and
                     in_array($this->resource['detail']->status, [3, 8, 12, 13]) and $this->resource['detail']->is_check_payment_merchant == 1,
@@ -105,12 +107,12 @@ class OrderIdResource extends JsonResource
                 'explorer' => (($__outExplorerLink = $direction?->currency2?->payment?->explorer?->link) !== null && $__outExplorerLink !== '')
                     ? ['link' => $__outExplorerLink]
                     : [],
-                'card_details' => $this->resource['cardInfoOut'],
-                'fields' => get_order_fields_tx($this->resource['detail'], 'currency_out'),
+                'card_details' => $isPreview ? null : $this->resource['cardInfoOut'],
+                'fields' => $isPreview ? [] : get_order_fields_tx($this->resource['detail'], 'currency_out'),
                 'status_pay_api' => $this->resource['detail']->status_pay_api,
             ],
 
-            'aml_data' => [
+            'aml_data' => $isPreview ? ['address' => [], 'tx' => []] : [
                 'address' => $this->resource['detail']->aml_response_data_address ?? [],
                 'tx'  => $this->resource['detail']->aml_response_data_tx ?? []
             ],
@@ -186,14 +188,14 @@ class OrderIdResource extends JsonResource
                 'name' => $this->resource['detail']->pending_order_status->name,
             ] : [],
 
-            'from_shot' => $this->resource['detail']->from_shot,
+            'from_shot' => $isPreview ? null : $this->resource['detail']->from_shot,
             'from_shot_verify' => is_verified_order_card_collect($this->resource['detail']),
-            'to_shot' => $this->resource['detail']->to_shot,
-            'is_city_value' => !empty($this->resource['detail']->task_info->country_name) and !empty($this->resource['detail']->task_info->city_name),
+            'to_shot' => $isPreview ? null : $this->resource['detail']->to_shot,
+            'is_city_value' => !empty($taskInfo?->country_name) and !empty($taskInfo?->city_name),
 
             'city_data' => [
-                'country' => $this->resource['detail']->task_info->country_name,
-                'city' => $this->resource['detail']->task_info->city_name
+                'country' => $taskInfo?->country_name,
+                'city' => $taskInfo?->city_name
             ],
 
             'radios_rejection' => $this->resource['reasonRejection'],
@@ -212,8 +214,8 @@ class OrderIdResource extends JsonResource
             'int_error_type' => $this->resource['detail']->int_error_type,
 
             'task_info' => [
-                'num_transaction' => $this->resource['detail']->task_info->num_transaction ?? '',
-                'note_tx' => $this->resource['detail']->task_info->note_tx ?? ''
+                'num_transaction' => $taskInfo->num_transaction ?? '',
+                'note_tx' => $taskInfo->note_tx ?? ''
             ],
 
             'is_bot' => $this->resource['detail']->is_bot,
@@ -244,22 +246,23 @@ class OrderIdResource extends JsonResource
             'created_at_human' => $this->resource['detail']->created_at->diffForHumans(),
             'updated_at' => $this->resource['detail']->updated_at->translatedFormat('d M Y H:i'),
             'updated_at_human' => $this->resource['detail']->updated_at->diffForHumans(),
-            'recalculated_at' => (!is_null($this->resource['detail']->task_info->recalculated_at)) ? Carbon::parse($this->resource['detail']->task_info->recalculated_at)->translatedFormat('d M Y H:i') : '',
-            'code_country' => $this->resource['detail']->task_info->code_country,
-            'device' => $this->resource['detail']->task_info->device,
-            'is_newbie' => $this->resource['detail']->task_info->newbie,
+            'recalculated_at' => (!is_null($taskInfo?->recalculated_at)) ? Carbon::parse($taskInfo->recalculated_at)->translatedFormat('d M Y H:i') : '',
+            'code_country' => $taskInfo?->code_country,
+            'device' => $taskInfo?->device,
+            'is_newbie' => $taskInfo?->newbie,
 
             'user' => $this->resource['detail']->user
                 ? new OrderUserResource(
                     $this->resource['detail']->user,
-                    telegramId: $this->resource['detail']->telegram_id,
-                    ip: $this->resource['detail']->ip,
+                    telegramId: $isPreview ? null : $this->resource['detail']->telegram_id,
+                    ip: $isPreview ? null : $this->resource['detail']->ip,
+                    minimizePii: $isPreview,
                 )
                 : null,
 
             'meta' => [
-                'telegram_id' => $this->resource['detail']->meta?->telegram_id,
-                'telegram_data' => $this->resource['detail']->meta?->telegram_data,
+                'telegram_id' => $isPreview ? null : $this->resource['detail']->meta?->telegram_id,
+                'telegram_data' => $isPreview ? null : $this->resource['detail']->meta?->telegram_data,
 
                'selected_fees' => $sfFlat,
 

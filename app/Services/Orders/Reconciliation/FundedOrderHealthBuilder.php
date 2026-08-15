@@ -12,6 +12,7 @@ final class FundedOrderHealthBuilder
      */
     public function build(array $rows, array $detector): array
     {
+        $metrics = \App\Services\Orders\Transitions\PaymentTransitionMetrics::snapshot();
         $paid = array_values(array_filter($rows, fn ($r) => (int) $r['current_status'] === 7));
         $wh = array_values(array_filter($rows, fn ($r) => (int) $r['current_status'] === 3));
         $classes = [];
@@ -59,6 +60,10 @@ final class FundedOrderHealthBuilder
             'ambiguous' => ($classes['AMBIGUOUS'] ?? 0) + ($classes['MANUAL_REVIEW'] ?? 0),
             'payment_detector_last_success' => $detector['last_bot_poll_touch_at'] ?? null,
             'payment_detector_state' => $detector['state'] ?? null,
+            'confirmed_funds_wrong_status' => (int) ($metrics['confirmed_funds_wrong_status'] ?? ($classes['FUNDED_WRONG_STATUS'] ?? 0)),
+            'payment_detected_transition_failed' => (int) ($metrics['payment_detected_transition_failed'] ?? 0),
+            'duplicate_payment_success_noop' => (int) ($metrics['duplicate_payment_success_noop'] ?? 0),
+            'payment_detector_transition_errors' => (int) ($metrics['payment_detector_transition_errors'] ?? 0),
             'class_counts' => $classes,
             'read_only' => true,
         ];

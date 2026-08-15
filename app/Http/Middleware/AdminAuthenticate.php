@@ -25,12 +25,12 @@ class AdminAuthenticate extends Authenticate
      */
     protected function unauthenticated($request, array $guards)
     {
-        if ($request->is(config('iexexchanger.admin_folder')) || $request->is(config('iexexchanger.admin_folder') . '/*')) {
-            return response()->json([
-                'status' => 1,
-                'is_authenticated' => 0,
-                'message' => 'Unauthorized',
-            ], 401);
+        if ($request->is(config('iexexchanger.admin_folder'))
+            || $request->is(config('iexexchanger.admin_folder') . '/*')
+            || $request->is('frontend-api')
+            || $request->is('frontend-api/*')
+            || $request->expectsJson()) {
+            throw new AuthenticationException('Unauthenticated.', $guards);
         }
 
         throw new AuthenticationException('Unauthenticated.', $guards, $this->redirectTo($request));

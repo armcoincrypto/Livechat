@@ -50,6 +50,21 @@ class WebhookMerchantCommand extends Command
                 // Перевод заявки в ручной режим, если истекло время ожидания платежа
                 if ($transaction->hasTimeOutCheckPayment()) {
                     $this->comment("Заявка #{$task->id} переведена в ручной режим (timeout)");
+                    $hasConfirmed = \App\Models\WalletTransaction::query()
+                        ->where('id_task', $task->id)
+                        ->whereNull('deleted_at')
+                        ->whereNotNull('txid')
+                        ->where('txid', '!=', '')
+                        ->exists();
+                    $task->refresh();
+                    if ($hasConfirmed && (int) $task->status !== 7) {
+                        \App\Services\Orders\Transitions\PaymentTransitionMetrics::increment('confirmed_funds_wrong_status');
+                        Log::critical('confirmed_funds_wrong_status', [
+                            'event' => 'confirmed_funds_wrong_status',
+                            'task_id' => $task->id,
+                            'status' => (int) $task->status,
+                        ]);
+                    }
                     $task->update(['is_bot' => 0]);
                     continue;
                 }
@@ -93,10 +108,11 @@ class WebhookMerchantCommand extends Command
                         ]);
                     }
                 } catch (\Throwable $exception) {
-                    Log::error('Ошибка проверки заявки', [
+                    \App\Services\Orders\Transitions\PaymentTransitionMetrics::increment('payment_detector_transition_errors');
+                    Log::error('payment_detector_exception', [
+                        'event' => 'payment_detector_exception',
                         'task_id' => $task->id,
                         'error' => $exception->getMessage(),
-                        'trace' => $exception->getTraceAsString(),
                     ]);
 
                     $this->comment("Ошибка при проверке заявки #{$task->id}. Подробности в логах.");

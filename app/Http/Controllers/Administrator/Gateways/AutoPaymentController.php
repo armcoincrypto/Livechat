@@ -75,9 +75,14 @@ class AutoPaymentController extends Controller
         // Если включена возможность обновления данных
         if($request->is_update == 1 and $request->has('showPage'))
         {
-            // Обновление колонок
             if($request->showPage == 'settings')
             {
+                if ($request->user() === null || ! $request->user()->can('admin_autopayment')) {
+                    return response()->json([
+                        'status' => 1,
+                        'message' => 'Forbidden',
+                    ], 403);
+                }
                 // Обновление конфига
                 $array = [];
                 foreach ($this->settingOptions[$request->showPage] as $value) {

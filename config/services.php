@@ -52,6 +52,8 @@ return [
     'telegram-bot-api' => [
         'token' => env('TELEGRAM_BOT_TOKEN', 'YOUR BOT TOKEN HERE'),
         'channel_id' => env('TELEGRAM_CHANNEL_ID', 'DEFAULT'),
+        'connect_timeout' => (float) env('TELEGRAM_HTTP_CONNECT_TIMEOUT', 2),
+        'timeout' => (float) env('TELEGRAM_HTTP_TIMEOUT', 5),
     ],
 
     'vkontakte' => [

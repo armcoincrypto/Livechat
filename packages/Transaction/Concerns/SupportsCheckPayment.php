@@ -9,6 +9,10 @@ use App\Models\MerchantTransactionHash;
 use App\Models\TaskCheckPaymentStatusLog;
 use App\Models\TaskMeta;
 use App\Models\WalletTransaction;
+use App\Services\Orders\Transitions\ConfirmedInboundPaidTransition;
+use App\Services\Orders\Transitions\OrderTransitionException;
+use App\Services\Orders\Transitions\OrderTransitionService;
+use App\Services\Orders\Transitions\PaymentTransitionMetrics;
 use App\Support\Facades\iEXApp;
 use Exception;
 use iEXPackages\Payments\Core\Contracts\BlockchainPaymentResponseInterface;
@@ -547,6 +551,11 @@ trait SupportsCheckPayment
                         OrderPaymentStatus::TRANSACTION_BLOCKED_WRONG_CURRENCY,
                         'Транзакция заблокирована: поступили средства в неправильной валюте'
                     );
+                    Log::warning('payment_network_mismatch', [
+                        'event' => 'payment_network_mismatch',
+                        'task_id' => $this->transaction->id,
+                        'expected' => $currencyCode,
+                    ]);
 
                     return [
                         'status' => 1,
@@ -554,42 +563,71 @@ trait SupportsCheckPayment
                     ];
                 }
 
-                // WalletTransaction/confirmation history (если есть hash/confirmations)
-                if ($transactionHash !== '' || (method_exists($paymentResponse, 'getTransactionHash') && $paymentResponse->getTransactionHash())) {
-                    $txid = $transactionHash !== '' ? $transactionHash : (string)($paymentResponse->getTransactionHash() ?? '');
+                $txid = $transactionHash !== ''
+                    ? $transactionHash
+                    : (string) (method_exists($paymentResponse, 'getTransactionHash') ? ($paymentResponse->getTransactionHash() ?? '') : '');
 
-                    $data = ['id_task' => $this->transaction->id];
+                $walletValues = [
+                    'amount' => $receivedAmount,
+                    'confirmations' => method_exists($paymentResponse, 'getTransactionConfirmation')
+                        ? (int) $paymentResponse->getTransactionConfirmation()
+                        : 1,
+                    'txid' => $txid,
+                ];
 
-                    $values = [
-                        'amount' => $receivedAmount,
-                        'confirmations' => method_exists($paymentResponse, 'getTransactionConfirmation')
-                            ? (int)$paymentResponse->getTransactionConfirmation()
-                            : 1,
-                    ];
-
+                if ((int) $changeStatus !== 7) {
                     if ($txid !== '') {
-                        $values['txid'] = $txid;
+                        WalletTransaction::updateOrCreate(
+                            ['id_task' => $this->transaction->id],
+                            $walletValues
+                        );
                     }
+                    Log::warning('payment_amount_mismatch', [
+                        'event' => 'payment_amount_mismatch',
+                        'task_id' => $this->transaction->id,
+                        'change_status' => (int) $changeStatus,
+                    ]);
 
-                    $wallet_tx = WalletTransaction::updateOrCreate($data, $values);
-
-//                    if (method_exists($paymentResponse, 'getTransactionConfirmation')) {
-//                        TaskLogConfirmation::create([
-//                            'id_task' => $this->transaction->id,
-//                            'confirmation' => (int)$paymentResponse->getTransactionConfirmation(),
-//                        ]);
-//                    }
-
-                    if ($wallet_tx->wasRecentlyCreated) {
-                        $this->writePaymentTxHistory($values, $merchantPay->alias);
-                    }
+                    return [
+                        'status' => 1,
+                        'message' => 'Payment observed but not eligible for PAID',
+                    ];
                 }
 
-                if (in_array($this->getStatus(), [3, 12, 13], true)) {
-                    $this->setStatus($changeStatus);
+                try {
+                    $paid = app(ConfirmedInboundPaidTransition::class)->apply(
+                        (int) $this->transaction->id,
+                        $walletValues,
+                        function () {
+                            $this->transaction->refresh();
+                            $this->parameters[OrderTransitionService::PERMIT_PAID] = true;
+                            $this->setStatus(7);
+                        }
+                    );
+                } catch (OrderTransitionException $e) {
+                    PaymentTransitionMetrics::increment('payment_detector_transition_errors');
+                    Log::error('payment_detected_transition_failed', [
+                        'event' => 'payment_detected_transition_failed',
+                        'task_id' => $this->transaction->id,
+                        'error' => $e->errorCode,
+                    ]);
+
+                    return [
+                        'status' => 1,
+                        'message' => 'Payment detected; PAID transition failed',
+                    ];
                 }
 
-                $this->logPaymentStatusChange($meta, OrderPaymentStatus::PAYMENT_SUCCESS, 'Оплата успешно подтверждена');
+                if ($paid['outcome'] === 'already_paid') {
+                    return [
+                        'status' => 0,
+                        'message' => 'Already PAID',
+                    ];
+                }
+
+                $this->notifyFirstConfirmIfNeeded();
+
+                $this->logPaymentStatusChange($meta, OrderPaymentStatus::PAYMENT_SUCCESS, 'ORDER_MARKED_PAID');
 
                 return [
                     'status' => 0,
@@ -602,9 +640,11 @@ trait SupportsCheckPayment
                 'message' => 'Платеж в обработке',
             ];
         } catch (\Throwable $e) {
-            Log::error('Ошибка проверки платежа', [
-                'exception' => $e->getMessage(),
+            PaymentTransitionMetrics::increment('payment_detector_transition_errors');
+            Log::error('payment_detector_exception', [
+                'event' => 'payment_detector_exception',
                 'task_id' => $this->transaction->id,
+                'exception' => $e->getMessage(),
             ]);
 
             return [
@@ -685,40 +725,20 @@ trait SupportsCheckPayment
      * @param string|null $provider Название провайдера
      * @return WalletTransaction
      */
-    private function writePaymentTxHistory(array $detail = [], ?string $provider = null): WalletTransaction
+    private function writePaymentTxHistory(array $detail = [], ?string $provider = null): void
     {
-        $response = WalletTransaction::create([
-            'id_task' => $this->transaction->id,
-            'address' => Arr::get($detail, 'address'),
-            'amount' => Arr::get($detail, 'amount'),
-            'confirmations' => Arr::get($detail, 'confirmations'),
-            'txid' => Arr::get($detail, 'txid'),
-        ]);
-//
-//        // Формируем сообщение для логов
-//        $event_value = sprintf(
-//            'Транзакция зафиксирована в блокчейне<br>
-//        Сумма: <span style="color: green;">%s</span><br>
-//        Код валюты: <span style="color: green;">%s</span><br>
-//        ID Транзакции: %s',
-//            $response->amount,
-//            $this->getCodeIn()->name,
-//            $response->txid
-//        );
-//
-//        iex_order_merchant_log($this->transaction->id, 1, 2, $event_value, $provider);
+        $this->notifyFirstConfirmIfNeeded();
+    }
 
-        // Уведомляем через Telegram
-        iEXApp::telegramNotificationForChannel('first_confirm_blockchain', $this->transaction);
-
-//        // Лог подтверждений, если они заданы
-//        if (Arr::has($detail, 'confirmations')) {
-//            TaskLogConfirmation::create([
-//                'id_task' => $this->transaction->id,
-//                'confirmation' => Arr::get($detail, 'confirmations'),
-//            ]);
-//        }
-
-        return $response;
+    private function notifyFirstConfirmIfNeeded(): void
+    {
+        try {
+            iEXApp::telegramNotificationForChannel('first_confirm_blockchain', $this->transaction);
+        } catch (\Throwable $e) {
+            Log::warning('first_confirm_notify_failed', [
+                'task_id' => $this->transaction->id,
+                'exception' => $e->getMessage(),
+            ]);
+        }
     }
 }

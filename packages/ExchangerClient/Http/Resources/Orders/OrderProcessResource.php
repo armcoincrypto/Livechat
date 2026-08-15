@@ -79,15 +79,6 @@ class OrderProcessResource extends JsonResource
         // Информация по валюте (Получаю)
         $out_currency = $this->currency[$this->direction_exchange->id_currency2];
 
-        // Если заявка не создана из сценариев верификации карты/личности и кошелёк ещё не выпущен — выпускаем один раз
-        if (
-            (int) $this->is_from_verification_card === 0
-            && (int) ($this->is_from_identity_verification ?? 0) === 0
-            && (int) $this->is_wallet_issued === 0
-        ) {
-            $this->resource->update(['is_wallet_issued' => 1]);
-        }
-
         // Получаем резерв (Получаю)
         $out_reserve = Reserve::select('id', 'id_currency')
             ->where('id_currency', $this->direction_exchange->id_currency2)
@@ -108,6 +99,18 @@ class OrderProcessResource extends JsonResource
         $paymentFieldValue = $invoiceMode === 'requisites'
             ? (string) ($invoiceCtx['account'] ?? '')
             : '';
+
+        $invoiceHasDest = $invoiceMode === 'checkout'
+            || ($invoiceMode === 'requisites' && $paymentFieldValue !== '');
+
+        if (
+            $invoiceHasDest
+            && (int) $this->is_from_verification_card === 0
+            && (int) ($this->is_from_identity_verification ?? 0) === 0
+            && (int) $this->is_wallet_issued === 0
+        ) {
+            $this->resource->update(['is_wallet_issued' => 1]);
+        }
 
         if (($invoiceCtx['mode'] ?? '') === 'requisites') {
             app(PaymentFieldsBuilder::class)->ensureTaskRequisitesSaved($task, $in_currency, $invoiceCtx);
@@ -319,6 +322,8 @@ class OrderProcessResource extends JsonResource
                 $accountValidatorPassed = $mtd->account_validator_passed;
             }
         }
+
+        $response['attributes']['payment_destination_ready'] = $invoiceHasDest;
 
         $response['attributes']['payment_field'] = [
             'name'         => ($in_currency->account_number_field ?? null),

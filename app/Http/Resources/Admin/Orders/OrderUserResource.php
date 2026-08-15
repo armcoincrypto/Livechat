@@ -14,13 +14,15 @@ final class OrderUserResource extends JsonResource
 
     private ?string $telegramId;
     private ?string $ip;
+    private bool $minimizePii;
 
-    public function __construct($resource, ?string $telegramId = null, ?string $ip = null)
+    public function __construct($resource, ?string $telegramId = null, ?string $ip = null, bool $minimizePii = false)
     {
         parent::__construct($resource);
 
         $this->telegramId = $telegramId;
         $this->ip = $ip;
+        $this->minimizePii = $minimizePii;
     }
 
     public function toArray($request): array
@@ -29,6 +31,16 @@ final class OrderUserResource extends JsonResource
         $user = $this->resource;
 
         $last = $user->last_activity_at ? Carbon::parse($user->last_activity_at) : null;
+
+        if ($this->minimizePii) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'is_verify_account' => (int) ($user->is_verify_account ?? 0),
+                'is_banned' => (bool) ($user->isBanned() ?? false),
+                'order_num' => (int) ($user->exchanges_count ?? 0),
+            ];
+        }
 
         return [
             'id' => $user->id,

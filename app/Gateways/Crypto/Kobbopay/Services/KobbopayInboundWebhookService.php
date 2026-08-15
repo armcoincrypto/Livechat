@@ -84,24 +84,39 @@ final class KobbopayInboundWebhookService
             };
 
             Log::warning('kobbopay_webhook_signature_rejected', [
-                'error' => $error,
+                'error' => $error === 'missing_headers' ? 'signature_missing' : $error,
                 'event_id' => $verify['event_id'] ?? null,
                 'delivery_id' => $verify['delivery_id'] ?? null,
             ]);
 
-            return $this->json($status, ['accepted' => false, 'error' => $error]);
+            $publicError = match ($error) {
+                'missing_headers' => 'signature_missing',
+                'invalid_signature' => 'signature_invalid',
+                default => $error,
+            };
+
+            return $this->json($status, ['accepted' => false, 'error' => $publicError]);
         }
 
         if ($merchant && trim((string) ($merchant->security_hash ?? '')) !== '') {
             $expected = trim((string) $merchant->security_hash);
-            if ($securityHashFromUrl === '' || !hash_equals($expected, $securityHashFromUrl)) {
-                return $this->json(403, ['accepted' => false, 'error' => 'invalid_hash']);
+            if ($securityHashFromUrl === '') {
+                Log::warning('kobbopay_webhook_signature_rejected', ['error' => 'signature_missing']);
+
+                return $this->json(403, ['accepted' => false, 'error' => 'signature_missing']);
+            }
+            if (!hash_equals($expected, $securityHashFromUrl)) {
+                Log::warning('kobbopay_webhook_signature_rejected', ['error' => 'signature_invalid']);
+
+                return $this->json(403, ['accepted' => false, 'error' => 'signature_invalid']);
             }
         }
 
         $payload = json_decode($rawBody, true);
         if (!is_array($payload)) {
-            return $this->json(400, ['accepted' => false, 'error' => 'invalid_json']);
+            Log::warning('kobbopay_webhook_provider_payload_invalid');
+
+            return $this->json(400, ['accepted' => false, 'error' => 'provider_payload_invalid']);
         }
 
         $eventId = (string) $verify['event_id'];

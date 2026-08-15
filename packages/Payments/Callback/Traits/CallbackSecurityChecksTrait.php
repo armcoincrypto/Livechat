@@ -7,6 +7,7 @@ namespace iEXPackages\Payments\Callback\Traits;
 use App\Models\GatewayMerchant;
 use App\Models\Task;
 use iEXPackages\Payments\Callback\DTO\CallbackHttpResult;
+use iEXPackages\Payments\Callback\Security\CallbackUrlHashGuard;
 use Symfony\Component\HttpFoundation\IpUtils;
 
 trait CallbackSecurityChecksTrait
@@ -41,22 +42,27 @@ trait CallbackSecurityChecksTrait
             return new CallbackHttpResult(200, 'OK');
         }
 
-        // 2) Проверка security_hash (если в URL передают)
-        $expectedHash = (string)($merchant->security_hash ?? '');
-        if ($expectedHash !== '') {
-            if ($securityHashFromUrl === '' || !hash_equals($expectedHash, $securityHashFromUrl)) {
-                $this->flowLogger->security(
-                    event: 'callback_blocked_invalid_hash',
-                    task: $task,
-                    merchant: $merchant,
-                    ctx: ['ip' => $ip],
-                    message: 'Уведомление отклонено: неверный защитный ключ.',
-                    stage: 'security',
-                    flow: 'callback'
-                );
+        // 2) URL security_hash — required for enabled callbacks unless config opts out
+        $hashCheck = CallbackUrlHashGuard::verify(
+            expectedHash: (string) ($merchant->security_hash ?? ''),
+            securityHashFromUrl: $securityHashFromUrl,
+            required: CallbackUrlHashGuard::urlHashRequired($callbackConfig),
+        );
+        if (! $hashCheck['ok']) {
+            $event = (string) ($hashCheck['event'] ?? 'signature_invalid');
+            $this->flowLogger->security(
+                event: $event,
+                task: $task,
+                merchant: $merchant,
+                ctx: ['ip' => $ip],
+                message: $event === 'signature_missing'
+                    ? 'Уведомление отклонено: защитный ключ отсутствует.'
+                    : 'Уведомление отклонено: неверный защитный ключ.',
+                stage: 'security',
+                flow: 'callback'
+            );
 
-                return new CallbackHttpResult(403, 'Invalid hash');
-            }
+            return new CallbackHttpResult((int) $hashCheck['http'], (string) $hashCheck['body']);
         }
 
         // 3) IP whitelist: проверяем только если список НЕ пустой

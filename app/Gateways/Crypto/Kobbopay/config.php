@@ -138,6 +138,7 @@ return [
                 'order_id_field'       => 'orderId',
                 'route_name'           => 'merchant.webhook',
                 'ip_whitelist_enabled' => false,
+                'url_hash_required'    => false,
                 'send_return_urls'     => false,
                 'success_url_enabled'  => false,
                 'fail_url_enabled'     => false,

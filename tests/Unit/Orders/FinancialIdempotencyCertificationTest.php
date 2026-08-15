@@ -34,18 +34,16 @@ final class FinancialIdempotencyCertificationTest extends TestCase
         }
     }
 
-    public function test_documented_matrix_excludes_known_production_happy_path(): void
+    public function test_documented_matrix_includes_production_happy_path(): void
     {
-        // Production writers routinely do PENDING_PAYMENT(2) → WAITING_HANDLE(3)
-        // and WAITING_HANDLE(3) → PAID(7). The enum matrix does NOT allow these.
-        // This test locks that divergence so enforcement cannot be added blindly.
-        $this->assertFalse(
+        // Canonical Wave 3 truth: detector 3→7 and completion 7→4 are business-valid.
+        $this->assertTrue(
             TaskStatusEnum::PENDING_PAYMENT->canTransitionTo(TaskStatusEnum::WAITING_HANDLE)
         );
-        $this->assertFalse(
+        $this->assertTrue(
             TaskStatusEnum::WAITING_HANDLE->canTransitionTo(TaskStatusEnum::PAID)
         );
-        $this->assertFalse(
+        $this->assertTrue(
             TaskStatusEnum::PAID->canTransitionTo(TaskStatusEnum::COMPLETED)
         );
         // Autopay queue path IS in the matrix:
@@ -112,9 +110,7 @@ final class FinancialIdempotencyCertificationTest extends TestCase
             $this->markTestSkipped('SupportsCheckPayment unavailable');
         }
         $src = (string) file_get_contents($path);
-        $this->assertMatchesRegularExpression(
-            '/in_array\(\$this->getStatus\(\),\s*\[3,\s*12,\s*13\]/',
-            $src
-        );
+        $this->assertStringContainsString('ConfirmedInboundPaidTransition', $src);
+        $this->assertStringContainsString('ORDER_MARKED_PAID', $src);
     }
 }
