@@ -1,0 +1,47 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Jobs\Telegram;
+
+use App\Models\TelegramNotification;
+use App\Notifications\Telegram\TelegramIPChangeControlAdmin;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
+
+class TelegramAdminIPChangeControlJob implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(
+        public Authenticatable $user,
+    ) {
+        //
+    }
+
+    /**
+     * Execute the job.
+     */
+    public function handle(): void
+    {
+        try {
+            $notifications = TelegramNotification::where('status', 1)->where('ext_params->is_admin_ip_change', 1)->get();
+            foreach ($notifications as $notification) {
+                Notification::route('telegram', $notification->id_channel)
+                    ->notify(new TelegramIPChangeControlAdmin($this->user, $notification));
+            }
+
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+        }
+    }
+}
+

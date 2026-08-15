@@ -47,3 +47,25 @@
 /xml-changer/__pycache__/
 *.pyc
 resources/deploy/*.sha256
+
+# Secrets / dumps / license blobs (never commit)
+/database/*.sql
+/iexexchanger_*
+/iex-config.json
+/iexexchanger_public.key
+/storage/oauth-private.key
+/storage/oauth-public.key
+/storage/default_env.txt
+/backups/
+/exswaping-nginx-backups/
+/probe_result.json
+/hash.txt
+
+# Protected overlay WIP copies (do not absorb into canonical source)
+/Attribution*.php
+/SessionAttribution.php
+/AnalyticsAttributionDryRunCommand.php
+/2026_08_06_222500_create_session_attributions_table.php
+/{x[to]}/
+
+/resources/admin-ops/pricing/node_modules/

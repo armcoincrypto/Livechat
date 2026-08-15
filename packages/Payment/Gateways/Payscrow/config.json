@@ -1,0 +1,124 @@
+{
+    "name": "PayScrow",
+    "version": "1.0",
+
+    "parameters": {
+        "is_merchant": 1,
+        "is_pay": 1
+    },
+
+    "payment_options": {
+        "is_checkout": true,
+        "balance": true,
+        "check_payment": true,
+        "receiving_requisites_default": false,
+        "receiving_requisites_types": true
+    },
+
+    "inputs" : {
+        "merchant": {
+            "fields": [
+                {
+                    "type": "input",
+                    "label": "Домен",
+                    "key": "api_domain",
+                    "is_hidden": 1
+                },
+                {
+                    "type": "input",
+                    "label": "API Key",
+                    "key": "api_key",
+                    "is_hidden": 1
+                },
+                {
+                    "type": "input",
+                    "label": "Api Secret",
+                    "key": "api_secret",
+                    "is_hidden": 1
+                }
+            ],
+
+            "options_fields": [
+                {
+                    "type": "select",
+                    "label": "Тип оплаты",
+                    "key": "type_method_receiving_pay",
+                    "options": {
+                        "1": "Выдача реквизитов"
+                    }
+                },
+
+                {
+                    "type": "select",
+                    "label": "Способ оплаты",
+                    "key": "method_pay",
+                    "options": {
+                        "RUB": "RUB",
+                        "UZS": "UZS"
+                    }
+                },
+                {
+                    "type": "select",
+                    "label": "Название банка",
+                    "key": "bank_name",
+                    "options_file": "payscrow_banks.json"
+                },
+                {
+                    "type": "input",
+                    "label": "Мин. время ожидании поступлений (в мин.)",
+                    "key": "max_time_register_in_network",
+                    "default_value": 30,
+                    "value_type": "int"
+
+                }, {
+                    "type": "input",
+                    "label": "Макс. время ожидании поступлений (в часах.)",
+                    "key": "max_time_confirm_in_network",
+                    "default_value": 2,
+                    "value_type": "int"
+                }
+            ]
+        },
+
+        "pay": {
+            "fields": [
+                {
+                    "type": "input",
+                    "label": "Домен",
+                    "key": "api_domain",
+                    "is_hidden": 1
+                },
+                {
+                    "type": "input",
+                    "label": "API Key",
+                    "key": "api_key",
+                    "is_hidden": 1
+                },
+                {
+                    "type": "input",
+                    "label": "Api Secret",
+                    "key": "api_secret",
+                    "is_hidden": 1
+                }
+            ],
+
+            "options_fields": [
+                {
+                    "type": "select",
+                    "label": "Способ оплаты",
+                    "key": "method_pay",
+                    "options": {
+                        "RUB": "RUB",
+                        "UZS": "UZS"
+                    }
+                },
+                {
+                    "type": "select",
+                    "label": "Название банка",
+                    "key": "bank_name",
+                    "options_file": "payscrow_banks.json"
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,345 @@
+/* Общие стили письма */
+body {
+    font-family: 'Inter', 'Avenir', Helvetica, sans-serif;
+    background-color: #f3f6fb;
+    color: #2d3748;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+a {
+    color: #3182ce;
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Основной контейнер письма */
+.wrapper {
+    width: 100%;
+    padding: 20px;
+    background-color: #f3f6fb;
+}
+
+.inner-body {
+    width: 650px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.04);
+}
+
+/* Шапка письма */
+.header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.header img.logotype {
+    width: 160px;
+}
+
+/* Заголовки и текст */
+h1 {
+    font-size: 26px;
+    font-weight: bold;
+    color: #1a202c;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+h2, .order-title__block {
+    font-size: 19px;
+    font-weight: bold;
+    color: #2d3748;
+    margin-bottom: 15px;
+}
+
+p {
+    font-size: 15px;
+    color: #4a5568;
+    margin: 0 0 12px;
+}
+
+/* Панели и блоки с информацией */
+.panel-content,
+.order-block-list__wrapper {
+    background-color: #edf2f7;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+}
+
+.panel-content p,
+.order-block-list__value {
+    font-size: 14px;
+    color: #2d3748;
+}
+
+.order-block-list__title {
+    font-weight: 600;
+    color: #2b6cb0;
+    margin-bottom: 10px;
+}
+
+.order-block-list__subtitle {
+    color: #718096;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+/* Статус заявки */
+.order-block-list__status-done {
+    background-color: #c6f6d5;
+    color: #22543d;
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    display: inline-block;
+}
+
+/* Кнопки */
+.button {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    color: #ffffff !important;
+    transition: opacity 0.2s ease;
+}
+
+.button:hover {
+    opacity: 0.9;
+}
+
+.button-primary {
+    background-color: #3182ce;
+}
+
+.button-success {
+    background-color: #38a169;
+}
+
+.button-error {
+    background-color: #e53e3e;
+}
+
+/* Разделитель */
+hr {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 25px 0;
+}
+
+/* Подвал письма */
+.footer {
+    margin-top: 25px;
+    text-align: center;
+    font-size: 13px;
+    color: #a0aec0;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 15px;
+}
+
+.footer p {
+    margin: 0;
+}
+
+/* Адаптивность */
+@media (max-width: 680px) {
+    .inner-body {
+        width: 100%;
+        padding: 15px;
+    }
+
+    .wrapper, .header, .footer {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+
+    .button {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px;
+    }
+}
+
+
+/* Общие заголовки блока */
+.order-title,
+.order-head__title {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
+    color: #010a29;
+    margin-bottom: 20px;
+}
+
+/* Общий контейнер блока заявки */
+.order-block-list__wrapper {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 0 auto 15px auto;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.02);
+}
+
+/* Заголовок внутри блока */
+.order-block-list__title,
+.order-title__block {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: #2b2b2e;
+    margin-bottom: 14px;
+    word-break: break-word;
+}
+
+/* Подзаголовок внутри блока */
+.order-block-list__subtitle {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #718096;
+    margin-bottom: 8px;
+}
+
+/* Основные значения текста */
+.order-block-list__value,
+.order-block-list__value-2 {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #2b2b2e;
+}
+
+.order-block-list__value-2 {
+    font-weight: 600;
+}
+
+/* Строки и отступы */
+.order-block-list__wrapper-line {
+    margin-bottom: 20px;
+}
+
+.order-block-list__wrapper-line:last-child {
+    margin-bottom: 0;
+}
+
+/* Колонки с шириной 50% */
+.column-per-50 {
+    width: 50%;
+    max-width: 50%;
+    display: inline-block;
+    vertical-align: top;
+    box-sizing: border-box;
+}
+
+/* Инлайновые элементы */
+.display-inline {
+    display: inline-block;
+    vertical-align: top;
+}
+
+/* Статус успешного выполнения */
+.order-block-list__status-done {
+    background-color: #c6f6d5;
+    color: #22543d;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* Транзакционные заголовки и значения */
+.order-tr__title {
+    font-size: 12px;
+    font-weight: 500;
+    color: #5568d4;
+    margin-bottom: 8px;
+}
+
+.order-tr__value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2b2b2e;
+}
+
+.order-tr__wrap {
+    margin-bottom: 16px;
+    word-break: break-word;
+}
+
+.order-tr__wrap:last-child {
+    margin-bottom: 0;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 680px) {
+    .order-block-list__wrapper {
+        padding: 15px;
+    }
+
+    .order-title,
+    .order-head__title {
+        font-size: 18px;
+    }
+
+    .column-per-50 {
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .order-block-list__value,
+    .order-block-list__value-2,
+    .order-tr__value {
+        font-size: 13px;
+    }
+}
+
+.info-table {
+    margin: 20px 0;
+    overflow-x: auto;
+}
+
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #e2e8f0;
+    font-family: 'Inter', sans-serif;
+}
+
+.styled-table th,
+.styled-table td {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: #2d3748;
+}
+
+.styled-table thead th {
+    background-color: #edf2f7;
+    font-weight: 600;
+}
+
+.styled-table tbody tr:nth-child(odd) {
+    background-color: #f9fafc;
+}
+
+.styled-table tbody tr:hover {
+    background-color: #f1f5f9;
+}

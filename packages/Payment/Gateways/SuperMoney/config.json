@@ -1,0 +1,97 @@
+{
+    "name": "SuperMoney",
+    "version": "1.0",
+
+    "parameters": {
+        "is_merchant": 1,
+        "is_pay": 1
+    },
+
+    "payment_options": {
+        "check_payment": true,
+        "receiving_requisites_default": false,
+        "receiving_requisites_types": true
+    },
+
+    "inputs" : {
+        "merchant": {
+            "fields": [
+                {
+                    "type": "input",
+                    "label": "API Domain",
+                    "key": "api_domain",
+                    "is_hidden": 1
+                }, {
+                    "type": "input",
+                    "label": "API Token",
+                    "key": "api_auth_token",
+                    "is_hidden": 1
+                }, {
+                    "type": "input",
+                    "label": "API Sign Token",
+                    "key": "api_sign_token",
+                    "is_hidden": 1
+                }
+            ],
+
+            "options_fields": [
+                {
+                    "type": "select",
+                    "label": "Способ приема оплаты",
+                    "key": "type_pay",
+                    "options": {
+                        "card": "Карты",
+                        "sbp": "SPB"
+                    }
+                },
+                {
+                    "type": "input",
+                    "label": "Мин. время ожидании поступлений (в мин.)",
+                    "key": "max_time_register_in_network",
+                    "default_value": 30,
+                    "value_type": "int"
+
+                }, {
+                    "type": "input",
+                    "label": "Макс. время ожидании поступлений (в часах.)",
+                    "key": "max_time_confirm_in_network",
+                    "default_value": 2,
+                    "value_type": "int"
+                }
+            ]
+        },
+
+        "pay": {
+            "fields": [
+                {
+                    "type": "input",
+                    "label": "API Domain",
+                    "key": "api_domain",
+                    "is_hidden": 1
+                }, {
+                    "type": "input",
+                    "label": "API Token",
+                    "key": "api_auth_token",
+                    "is_hidden": 1
+                }, {
+                    "type": "input",
+                    "label": "API Sign Token",
+                    "key": "api_sign_token",
+                    "is_hidden": 1
+                }
+            ],
+
+            "options_fields": [
+                {
+                    "type": "select",
+                    "label": "Способ выплаты",
+                    "key": "method_pay",
+                    "options": {
+                        "card": "Карты",
+                        "sbp": "SPB"
+                    }
+                }
+            ]
+        }
+    }
+}
