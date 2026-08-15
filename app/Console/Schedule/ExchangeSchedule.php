@@ -256,6 +256,12 @@ class ExchangeSchedule
             ->withoutOverlapping(5)
             ->appendOutputTo(storage_path('logs/orders_waiting_deposit_health.log'));
 
+        $schedule->command('orders:payment-routing-health --format=json')
+            ->everyFiveMinutes()
+            ->onOneServer()
+            ->withoutOverlapping(5)
+            ->appendOutputTo(storage_path('logs/orders_payment_routing_health.log'));
+
         // Генерация минимальной и максимальной цены
         $schedule->exec("{$compilerWrapper} compiler:generate_prices")
             ->everyFiveMinutes()

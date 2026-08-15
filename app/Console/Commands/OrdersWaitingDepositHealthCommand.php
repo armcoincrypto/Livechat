@@ -61,6 +61,7 @@ final class OrdersWaitingDepositHealthCommand extends Command
             'missing_and_no_source' => $missingAndNoSource,
             'ok' => $missingAndNoSource === 0,
             'blocked_public_ids' => $blockedPublicIds,
+            'WAITING_PAYMENT_WITHOUT_USABLE_DESTINATION' => $missingAssigned,
         ];
 
         Log::info('orders:waiting-deposit-health', [
