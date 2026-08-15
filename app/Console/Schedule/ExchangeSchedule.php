@@ -97,6 +97,12 @@ class ExchangeSchedule
         // Обработка ожидающих выплат
         $schedule->command('pay:pending-withdrawal')->everyMinute();
 
+        $schedule->command('orders:funded-health --alert')
+            ->everyFiveMinutes()
+            ->onOneServer()
+            ->withoutOverlapping(4)
+            ->runInBackground();
+
         // Обновление резервов из файла/сервера (если включено в настройках)
         if (iEXSetting('is_enabled_reserves_from_file') || iEXSetting('is_enabled_reserves_from_server')) {
             $schedule->command('reserve:update')->everyMinute();
