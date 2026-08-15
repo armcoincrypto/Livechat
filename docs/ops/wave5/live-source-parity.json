@@ -1,0 +1,50 @@
+{
+  "generated_at": "2026-08-15T22:02:30Z",
+  "live_path": "/var/www/app_exswapin_usr/data/www/app.exswaping.com",
+  "git_head": "07ab31f0727e1c2c003d851c4b1c0fb2fc9aa00d",
+  "result": "MATCH",
+  "mismatched": [],
+  "critical": {
+    "public/index.php": {
+      "live": "206830c27d6f7fcce67241c544b2322fd93a9e29517c3b2786b9ac9931ec2ef3",
+      "git": "206830c27d6f7fcce67241c544b2322fd93a9e29517c3b2786b9ac9931ec2ef3",
+      "match": true
+    },
+    "artisan": {
+      "live": "e313db8b935d646e728aef4402df1dd5345760268139449f13e98d9a294a9d97",
+      "git": "e313db8b935d646e728aef4402df1dd5345760268139449f13e98d9a294a9d97",
+      "match": true
+    },
+    "bootstrap/app.php": {
+      "live": "49a2329a886c24210b2efaca9f2208e6362ae895362cc2b2166772012fe5ad8d",
+      "git": "49a2329a886c24210b2efaca9f2208e6362ae895362cc2b2166772012fe5ad8d",
+      "match": true
+    },
+    "routes/web.php": {
+      "live": "da3754ff559e2e7726c4cfa379613b233efe3ebb7d37ba3cfb7d776121ddbc86",
+      "git": "da3754ff559e2e7726c4cfa379613b233efe3ebb7d37ba3cfb7d776121ddbc86",
+      "match": true
+    },
+    "routes/admin-frontend.php": {
+      "live": "938e86c906ad0adc8f544ba25716fc8c21ba4e19567190bfdcc65c3ad4030bd3",
+      "git": "938e86c906ad0adc8f544ba25716fc8c21ba4e19567190bfdcc65c3ad4030bd3",
+      "match": true
+    },
+    "packages/ExchangerClient/Http/Controller/TechController.php": {
+      "live": "d147acb5c30a53a44df9a0188b01bfc2ed2f224dec7e879a0825af11d53526ed",
+      "git": "d147acb5c30a53a44df9a0188b01bfc2ed2f224dec7e879a0825af11d53526ed",
+      "match": true
+    },
+    "packages/ExchangerClient/Http/Controller/StartController.php": {
+      "live": "8a29b7479fc8f45facab3d1d8d10f930989e907ca58a32b20549ef43818b0019",
+      "git": "8a29b7479fc8f45facab3d1d8d10f930989e907ca58a32b20549ef43818b0019",
+      "match": true
+    },
+    "xml-changer/main.py": {
+      "live": "7108a800e885c5a9f19cc9cc6d07c9aea50e658cb1f1eba899e91e0d629eb3b1",
+      "git": "7108a800e885c5a9f19cc9cc6d07c9aea50e658cb1f1eba899e91e0d629eb3b1",
+      "match": true
+    }
+  },
+  "note": "WIP files (sitemap/attribution) are intentionally not in this critical set"
+}
