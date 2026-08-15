@@ -48,6 +48,7 @@ final class InboundPaymentDestinationGuardTest extends TestCase
         $src = (string) file_get_contents(dirname(__DIR__, 3).'/packages/Order/Concerns/ValidatesOrderRules.php');
         $this->assertStringContainsString('InboundPaymentDestinationGuard::directionHasSource', $src);
         $this->assertStringContainsString('PAYMENT_DESTINATION_UNAVAILABLE', $src);
+        $this->assertStringContainsString('VERIFICATION_REQUIRED', $src);
     }
 
     public function test_process_resource_does_not_mark_wallet_issued_without_destination(): void

@@ -121,9 +121,29 @@ class RequisiteManager
         // Проверяем активных мерчантов (направление → валюта)
         $directionMerchants = $direction?->merchants?->where('status', 1) ?? collect();
         $currencyMerchants  = $this->currencyIn?->merchants?->where('status', 1) ?? collect();
-        $hasMerchant = $directionMerchants->isNotEmpty() || $currencyMerchants->isNotEmpty();
-        if (!$hasMerchant) {
-            return null; // передаём управление следующему источнику
+
+        if (\App\Services\Orders\PaymentDestinationRouter::isKobbopayInboundCurrency($this->currencyIn)) {
+            $kobbopayOnly = static function ($m): bool {
+                return strtolower(trim((string) ($m->alias ?? ''))) === \App\Services\Orders\PaymentDestinationRouter::ALIAS_KOBBOPAY;
+            };
+            $directionMerchants = $directionMerchants->filter($kobbopayOnly);
+            $currencyMerchants = $currencyMerchants->filter($kobbopayOnly);
+            $hasMerchant = $directionMerchants->isNotEmpty() || $currencyMerchants->isNotEmpty();
+            if (! $hasMerchant) {
+                \Illuminate\Support\Facades\Log::warning('kobbopay_destination_request_failure', [
+                    'reason' => 'merchant_missing',
+                    'task_id' => $this->task->id,
+                    'direction_id' => $direction->id ?? null,
+                    'currency_id' => $this->currencyIn->id ?? null,
+                ]);
+
+                return RequisitesResult::merchant(null);
+            }
+        } else {
+            $hasMerchant = $directionMerchants->isNotEmpty() || $currencyMerchants->isNotEmpty();
+            if (!$hasMerchant) {
+                return null; // передаём управление следующему источнику
+            }
         }
 
         // Если в БД уже есть MTD — используем его (без повторных обращений)

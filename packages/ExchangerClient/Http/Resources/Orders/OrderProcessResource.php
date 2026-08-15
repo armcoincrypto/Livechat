@@ -325,6 +325,26 @@ class OrderProcessResource extends JsonResource
 
         $response['attributes']['payment_destination_ready'] = $invoiceHasDest;
 
+        $routingOwner = \App\Services\Orders\PaymentDestinationRouter::classifyDirection($task->direction_exchange);
+        $response['attributes']['payment_routing_owner'] = $routingOwner;
+        $response['attributes']['verification_required'] = false;
+        $response['attributes']['verification_url'] = null;
+        $response['attributes']['payment_destination_unavailable_reason'] = $invoiceHasDest
+            ? null
+            : \App\Services\Orders\InboundPaymentDestinationGuard::ERROR_PAYMENT_DESTINATION_UNAVAILABLE;
+
+        if ($routingOwner === \App\Services\Orders\PaymentDestinationRouter::OWNER_ZELLE_VERIFICATION) {
+            $zelleUser = $this->userInfo ?? null;
+            $zelleVerified = $zelleUser !== null && (int) ($zelleUser->is_verify_account ?? 0) === 1;
+            if (! $zelleVerified) {
+                $response['attributes']['verification_required'] = true;
+                $response['attributes']['verification_url'] = \App\Services\Orders\PaymentDestinationRouter::verificationUrl(
+                    app()->getLocale()
+                );
+                $response['attributes']['payment_destination_unavailable_reason'] = 'VERIFICATION_REQUIRED';
+            }
+        }
+
         $response['attributes']['payment_field'] = [
             'name'         => ($in_currency->account_number_field ?? null),
             'comment'      => ($in_currency->account_number_field_text ?? null),

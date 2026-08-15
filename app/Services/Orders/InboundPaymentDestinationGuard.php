@@ -25,30 +25,23 @@ final class InboundPaymentDestinationGuard
             'direction_requisites',
         ]);
 
-        $in = $direction->currency1;
-        if ($in === null) {
+        $owner = PaymentDestinationRouter::classifyDirection($direction);
+
+        if ($owner === PaymentDestinationRouter::OWNER_KOBBOPAY) {
+            return PaymentDestinationRouter::hasActiveKobbopayMerchant($direction);
+        }
+
+        if ($owner === PaymentDestinationRouter::OWNER_UNSUPPORTED) {
             return false;
         }
 
-        if ((int) ($direction->method_request_payment ?? 0) === 1) {
-            return true;
-        }
-        if ((int) ($in->method_request_payment ?? 0) === 1) {
-            return true;
+        if ($owner === PaymentDestinationRouter::OWNER_ZELLE_VERIFICATION) {
+            return PaymentDestinationRouter::hasCanonicalRequisiteSource($direction);
         }
 
-        if ($direction->merchants->where('status', 1)->isNotEmpty()) {
-            return true;
-        }
-        if ($in->merchants->where('status', 1)->isNotEmpty()) {
-            return true;
-        }
-
-        if ($direction->direction_requisites->where('status', 1)->isNotEmpty()) {
-            return true;
-        }
-
-        return Requisites::activeWallet()->where('id_currency', $in->id)->exists();
+        return PaymentDestinationRouter::hasCanonicalRequisiteSource($direction)
+            || $direction->merchants->where('status', 1)->isNotEmpty()
+            || ($direction->currency1?->merchants?->where('status', 1)->isNotEmpty() ?? false);
     }
 
     /**
