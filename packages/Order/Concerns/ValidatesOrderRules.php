@@ -103,6 +103,7 @@ trait ValidatesOrderRules
             \Illuminate\Support\Facades\Log::warning('order_create_blocked_no_payment_destination', [
                 'direction_id' => $this->directionId->id ?? null,
                 'currency_id' => $this->directionId->id_currency1 ?? null,
+                'owner' => \App\Services\Orders\PaymentDestinationRouter::classifyDirection($this->directionId),
             ]);
 
             return [[
@@ -112,6 +113,34 @@ trait ValidatesOrderRules
                 'modal' => false,
                 'meta' => [],
             ]];
+        }
+
+        if (\App\Services\Orders\PaymentDestinationRouter::isZelleInbound($this->directionId)) {
+            $verified = false;
+            if ($this->authInfo instanceof User && isset($this->authInfo->is_verify_account)) {
+                $verified = (int) $this->authInfo->is_verify_account === 1;
+            } elseif ((int) $this->authId > 0) {
+                $zelleUser = User::find((int) $this->authId);
+                $verified = $zelleUser !== null && (int) ($zelleUser->is_verify_account ?? 0) === 1;
+            }
+
+            if (! $verified) {
+                $verificationUrl = \App\Services\Orders\PaymentDestinationRouter::verificationUrl(app()->getLocale());
+                \Illuminate\Support\Facades\Log::info('zelle_inbound_verification_blocked', [
+                    'direction_id' => $this->directionId->id ?? null,
+                    'auth_id' => (int) $this->authId,
+                ]);
+
+                return [[
+                    'field' => 'identity_verification',
+                    'message' => __('Для продолжения обмена требуется пройти идентификацию личности.'),
+                    'code' => 'VERIFICATION_REQUIRED',
+                    'modal' => false,
+                    'meta' => [
+                        'verification_url' => $verificationUrl,
+                    ],
+                ]];
+            }
         }
 
         $context = $this->buildValidationContext();

@@ -49,6 +49,10 @@ final class IdentityVerificationRule implements ValidationRuleInterface
 
         $required = $this->isIdentityVerificationRequired($context, $direction);
 
+        if (\App\Services\Orders\PaymentDestinationRouter::isZelleInbound($direction)) {
+            $required = true;
+        }
+
         if (!$required) {
             return $result;
         }
@@ -57,12 +61,20 @@ final class IdentityVerificationRule implements ValidationRuleInterface
             return $result;
         }
 
-        // Требуется идентификация — блокируем на создании
+        $code = \App\Services\Orders\PaymentDestinationRouter::isZelleInbound($direction)
+            ? 'VERIFICATION_REQUIRED'
+            : 'identity_verification_required';
+
         return $result->addError(
             field: 'identity_verification',
             message: __('Для продолжения обмена требуется пройти идентификацию личности.'),
-            code: 'identity_verification_required',
-            modal: true
+            code: $code,
+            modal: $code !== 'VERIFICATION_REQUIRED',
+            meta: [
+                'verification_url' => \App\Services\Orders\PaymentDestinationRouter::verificationUrl(
+                    $context->env->locale()
+                ),
+            ]
         );
     }
 
