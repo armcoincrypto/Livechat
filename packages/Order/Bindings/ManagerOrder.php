@@ -98,6 +98,11 @@ trait ManagerOrder
 
         $this->applyValidationEffects($order);
 
+        $abandoned = $this->abandonIfPaymentDestinationMissing($order);
+        if ($abandoned !== null) {
+            return $abandoned;
+        }
+
         try {
             $this->rememberRecentCreateDedupKey($order);
         } catch (\Throwable) {
@@ -145,7 +150,6 @@ trait ManagerOrder
         $this->saveAdditionalDirectionFields($newOrder->id);
         $this->saveAdditionalUserOrderFields($newOrder->id);
 
-
         $user = $newOrder->user; // или получи через id_user
 
         // Подготавливаем и сохраняем дополнительные поля валюты
@@ -186,6 +190,75 @@ trait ManagerOrder
         $this->additionInfo($newOrder, $is_new_user);
 
         return $newOrder;
+    }
+
+    /**
+     * Fail closed: do not leave a payable Awaiting Payment order without instructions.
+     *
+     * @return array<int, array<string, mixed>>|null
+     */
+    private function abandonIfPaymentDestinationMissing(Task $order): ?array
+    {
+        $order->loadMissing(['direction_exchange.currency1']);
+        $direction = $order->direction_exchange;
+        if ($direction === null) {
+            return null;
+        }
+
+        $owner = \App\Services\Orders\PaymentDestinationRouter::classifyDirection($direction);
+
+        try {
+            $ctx = app(\iEXPackages\Order\Services\InvoiceContextService::class)->resolve($order);
+        } catch (\Throwable $e) {
+            Log::error('payment_destination_issue_failed', [
+                'task_id' => $order->id,
+                'owner' => $owner,
+                'message' => $e->getMessage(),
+            ]);
+            $ctx = ['mode' => 'none'];
+        }
+
+        $mode = (string) ($ctx['mode'] ?? 'none');
+        $ready = $mode === 'checkout'
+            || ($mode === 'requisites' && trim((string) ($ctx['account'] ?? '')) !== '');
+
+        if ($ready) {
+            if ($owner === \App\Services\Orders\PaymentDestinationRouter::OWNER_KOBBOPAY) {
+                Log::info('kobbopay_destination_request_success', [
+                    'task_id' => $order->id,
+                    'direction_id' => $direction->id ?? null,
+                    'letter_cod' => (string) ($direction->currency1?->designation_xml ?? ''),
+                ]);
+            }
+
+            return null;
+        }
+
+        Log::warning('payment_destination_unavailable', [
+            'task_id' => $order->id,
+            'public_id' => $order->public_id,
+            'owner' => $owner,
+            'letter_cod' => (string) ($direction->currency1?->designation_xml ?? ''),
+        ]);
+
+        try {
+            if ((int) $order->status === TaskStatusEnum::PENDING_PAYMENT->value) {
+                $order->forceFill(['status' => TaskStatusEnum::REJECTED->value])->save();
+            }
+        } catch (\Throwable $e) {
+            Log::error('order_abandon_status_failed', [
+                'task_id' => $order->id,
+                'message' => $e->getMessage(),
+            ]);
+        }
+
+        return [[
+            'field' => 'direction',
+            'message' => __('Приём средств по этому направлению временно недоступен'),
+            'code' => \App\Services\Orders\InboundPaymentDestinationGuard::ERROR_PAYMENT_DESTINATION_UNAVAILABLE,
+            'modal' => false,
+            'meta' => [],
+        ]];
     }
 
     private function buildGeoData(?string $ip): ?array
