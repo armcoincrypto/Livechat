@@ -16,7 +16,7 @@ final class PaymentDestinationRouterTest extends TestCase
 {
     public function test_production_usdt_letter_cods_map_to_kobbopay(): void
     {
-        foreach (['USDTTRC20', 'USDTBEP20', 'USDTERC20'] as $xml) {
+        foreach (['USDTTRC20', 'USDTBEP20', 'USDTERC20', 'USDTPOLYGON'] as $xml) {
             $currency = Currency::query()->where('designation_xml', $xml)->first();
             $this->assertNotNull($currency, $xml);
             $this->assertSame(
@@ -29,12 +29,22 @@ final class PaymentDestinationRouterTest extends TestCase
         $this->assertSame('USDTTRC', PaymentDestinationRouter::KOBBOPAY_NETWORK_BY_LETTER_COD['USDTTRC20']);
         $this->assertSame('USDTBSC', PaymentDestinationRouter::KOBBOPAY_NETWORK_BY_LETTER_COD['USDTBEP20']);
         $this->assertSame('USDTERC', PaymentDestinationRouter::KOBBOPAY_NETWORK_BY_LETTER_COD['USDTERC20']);
+        $this->assertSame('USDTPOLYGON', PaymentDestinationRouter::KOBBOPAY_NETWORK_BY_LETTER_COD['USDTPOLYGON']);
     }
 
-    public function test_usdt_polygon_rail_is_absent_not_invented(): void
+    public function test_usdt_polygon_rail_is_live_kobbopay_only(): void
     {
+        $currency = Currency::query()->where('designation_xml', 'USDTPOLYGON')->first();
+        $this->assertNotNull($currency);
+        $this->assertSame('USDTPOLYGON', strtoupper((string) $currency->network_code));
+        $this->assertSame(
+            'USDTPOLYGON',
+            PaymentDestinationRouter::expectedKobbopayNetworkCode($currency)
+        );
+        $this->assertSame(0, (int) ($currency->visible_receiving ?? 0));
         $this->assertFalse(
-            Currency::query()->whereIn('designation_xml', ['USDTPOLYGON', 'USDTMATIC'])->exists()
+            Currency::query()->where('designation_xml', 'USDTMATIC')->exists(),
+            'USDTMATIC must not be invented; provider token is USDTPOLYGON'
         );
     }
 
@@ -90,6 +100,11 @@ final class PaymentDestinationRouterTest extends TestCase
         $this->assertFalse(KobbopayDepositAddressValidator::accept($evm, 'USDTERC', 'USDTBSC'));
         $this->assertTrue(KobbopayDepositAddressValidator::accept($evm, 'USDTERC', 'USDTERC'));
         $this->assertTrue(KobbopayDepositAddressValidator::accept($evm, 'USDTBSC', 'USDTBSC'));
+        // Polygon must not accept ERC/BSC provider tokens even with an EVM address.
+        $this->assertTrue(KobbopayDepositAddressValidator::accept($evm, 'USDTPOLYGON', 'USDTPOLYGON'));
+        $this->assertFalse(KobbopayDepositAddressValidator::accept($evm, 'USDTPOLYGON', 'USDTERC'));
+        $this->assertFalse(KobbopayDepositAddressValidator::accept($evm, 'USDTPOLYGON', 'USDTBSC'));
+        $this->assertFalse(KobbopayDepositAddressValidator::accept($evm, 'USDTPOLYGON', 'USDTTRC'));
     }
 
     public function test_zelle_gate_and_create_invariant_are_wired(): void

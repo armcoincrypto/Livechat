@@ -189,6 +189,14 @@
             "price_ref": 1,
             "note": "usd_sized"
         },
+        "USDTPOLYGON": {
+            "min": "400",
+            "max": "3000",
+            "usd_min": 400,
+            "usd_max": 3000,
+            "price_ref": 1,
+            "note": "usd_sized"
+        },
         "USDTTON": {
             "min": "400",
             "max": "3000",

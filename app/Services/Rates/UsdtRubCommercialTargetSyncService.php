@@ -49,6 +49,7 @@ final class UsdtRubCommercialTargetSyncService
         'USDTTRC20',
         'USDTERC20',
         'USDTBEP20',
+        'USDTPOLYGON',
         'USDTTON',
         'USDTSOL',
     ];

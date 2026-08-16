@@ -28,7 +28,7 @@ final class PaymentDestinationRouter
 
     /**
      * Production letter_cod values proven from currencies.designation_xml.
-     * Polygon is reserved for a future currency; it is not invented here.
+     * USDTPOLYGON is live when the currency row exists; provider token is USDTPOLYGON.
      *
      * @var list<string>
      */
