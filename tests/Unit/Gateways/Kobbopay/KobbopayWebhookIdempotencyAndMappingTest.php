@@ -56,7 +56,7 @@ final class KobbopayWebhookIdempotencyAndMappingTest extends TestCase
         ], JSON_UNESCAPED_SLASHES);
 
         $req1 = $this->signedRequest($body, 'payment:' . $paymentId . ':transaction.created');
-        $res1 = $service->handleHttp($req1);
+        $res1 = $this->dispatch($service, $req1);
         $this->assertSame(200, $res1->getStatusCode());
         $json1 = json_decode($res1->getContent(), true);
         $this->assertTrue($json1['accepted'] ?? false);
@@ -68,7 +68,7 @@ final class KobbopayWebhookIdempotencyAndMappingTest extends TestCase
         $this->assertSame(1, $count);
 
         $req2 = $this->signedRequest($body, 'payment:' . $paymentId . ':transaction.created');
-        $res2 = $service->handleHttp($req2);
+        $res2 = $this->dispatch($service, $req2);
         $this->assertSame(200, $res2->getStatusCode());
         $json2 = json_decode($res2->getContent(), true);
         $this->assertTrue($json2['accepted'] ?? false);
@@ -88,10 +88,10 @@ final class KobbopayWebhookIdempotencyAndMappingTest extends TestCase
         $body1 = '{"event":"payment.confirmed","paymentId":"a"}';
         $body2 = '{"event":"payment.confirmed","paymentId":"b"}';
 
-        $res1 = $service->handleHttp($this->signedRequest($body1, $eventId));
+        $res1 = $this->dispatch($service, $this->signedRequest($body1, $eventId));
         $this->assertSame(200, $res1->getStatusCode());
 
-        $res2 = $service->handleHttp($this->signedRequest($body2, $eventId));
+        $res2 = $this->dispatch($service, $this->signedRequest($body2, $eventId));
         $this->assertSame(409, $res2->getStatusCode());
         $json = json_decode($res2->getContent(), true);
         $this->assertSame('event_payload_conflict', $json['error'] ?? null);
@@ -115,12 +115,12 @@ final class KobbopayWebhookIdempotencyAndMappingTest extends TestCase
             '{"event":"payment.confirmed"}'
         );
 
-        $res = $service->handleHttp($request);
+        $res = $this->dispatch($service, $request);
         $this->assertSame(401, $res->getStatusCode());
         $this->assertStringContainsString('application/json', (string) $res->headers->get('Content-Type'));
         $json = json_decode($res->getContent(), true);
         $this->assertFalse($json['accepted'] ?? true);
-        $this->assertSame('invalid_signature', $json['error'] ?? null);
+        $this->assertSame('signature_invalid', $json['error'] ?? null);
     }
 
     public function test_tracker_correlation_and_unknown_event_no_status_change(): void
@@ -147,7 +147,7 @@ final class KobbopayWebhookIdempotencyAndMappingTest extends TestCase
         ], JSON_UNESCAPED_SLASHES);
 
         $service = $this->makeService();
-        $res = $service->handleHttp($this->signedRequest($body, $eventId));
+        $res = $this->dispatch($service, $this->signedRequest($body, $eventId));
         $this->assertSame(200, $res->getStatusCode());
 
         $task->refresh();
@@ -183,7 +183,7 @@ final class KobbopayWebhookIdempotencyAndMappingTest extends TestCase
         ], JSON_UNESCAPED_SLASHES);
 
         $service = $this->makeService();
-        $res = $service->handleHttp($this->signedRequest($body, $eventId));
+        $res = $this->dispatch($service, $this->signedRequest($body, $eventId));
         $this->assertSame(200, $res->getStatusCode());
 
         $completed->refresh();
@@ -194,7 +194,8 @@ final class KobbopayWebhookIdempotencyAndMappingTest extends TestCase
     {
         $service = $this->makeService();
         $body = '{"event":"transaction.created","paymentId":"json-check-' . uniqid() . '"}';
-        $res = $service->handleHttp(
+        $res = $this->dispatch(
+            $service,
             $this->signedRequest($body, 'payment:json-check:transaction.created')
         );
 
@@ -205,10 +206,12 @@ final class KobbopayWebhookIdempotencyAndMappingTest extends TestCase
     private function makeService(): KobbopayInboundWebhookService
     {
         $tolerance = (int) env('KOBBOPAY_WEBHOOK_TOLERANCE_SECONDS', 300);
+        $resolver = Mockery::mock(KobbopayWebhookSecretResolver::class);
+        $resolver->shouldReceive('resolve')->andReturn($this->secret);
 
         return new KobbopayInboundWebhookService(
             verifier: new KobbopayWebhookSignatureVerifier($tolerance > 0 ? $tolerance : 300),
-            secretResolver: new KobbopayWebhookSecretResolver(),
+            secretResolver: $resolver,
             flowLogger: app(MerchantFlowLogger::class),
         );
     }
@@ -234,5 +237,13 @@ final class KobbopayWebhookIdempotencyAndMappingTest extends TestCase
             ],
             $body
         );
+    }
+
+    private function dispatch(KobbopayInboundWebhookService $service, Request $request)
+    {
+        $merchant = GatewayMerchant::query()->where('alias', 'kobbopay')->first();
+        $hash = $merchant ? trim((string) ($merchant->security_hash ?? '')) : '';
+
+        return $service->handleHttp($request, $hash);
     }
 }

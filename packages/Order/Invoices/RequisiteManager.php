@@ -92,6 +92,44 @@ class RequisiteManager
         return $r->data ?? __('Не определен');
     }
 
+    /**
+     * Read already-snapshotted payment instructions only.
+     * Does not call merchants or pick a new admin requisite.
+     */
+    public function snapshot(): mixed
+    {
+        $direction = $this->task->direction_exchange;
+        if ($direction) {
+            $this->currencyIn = $direction->currency1;
+        }
+
+        $mtd = MerchantTransactionData::where('id_task', $this->task->id)->first();
+        if ($mtd) {
+            return $this->formatMerchantRequisites($mtd) ?? __('Не определен');
+        }
+
+        $assigned = trim((string) ($this->task->transfer_to_account ?? ''));
+        if ($assigned !== '') {
+            return $this->normalizeManualRequisites($assigned);
+        }
+
+        $requisiteId = (int) ($this->task->id_payment_requisites ?? 0);
+        if ($requisiteId > 0) {
+            $locked = \App\Models\Requisites::query()->find($requisiteId);
+            $account = trim((string) ($locked->account_number ?? $locked->account ?? ''));
+            if ($account !== '') {
+                return $this->normalizeManualRequisites($account);
+            }
+        }
+
+        Log::info('payment_destination_snapshot_empty', [
+            'task_id' => $this->task->id,
+            'public_id' => $this->task->public_id ?? null,
+        ]);
+
+        return __('Не определен');
+    }
+
 
     /**
      * Источник №1 — мерчант (приоритет: направление → валюта).

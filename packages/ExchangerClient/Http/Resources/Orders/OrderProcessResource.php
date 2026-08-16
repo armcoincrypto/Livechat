@@ -88,7 +88,7 @@ class OrderProcessResource extends JsonResource
         $payment_field_fields = [];
 
         // Контекст реквизитов/checkout
-        $invoiceCtx = app(InvoiceContextService::class)->resolve($task);
+        $invoiceCtx = app(InvoiceContextService::class)->resolve($task, false);
 
         $invoiceMode = (string) ($invoiceCtx['mode'] ?? 'none');
 

@@ -87,7 +87,7 @@ class OrderCreatedMail extends SmartMailable
 
     protected function getWalletInfoAccount(): string
     {
-        $result = OrderInvoiceFacade::make($this->order)->get();
+        $result = OrderInvoiceFacade::make($this->order)->snapshot();
 
         if (is_array($result)) {
             return $result['wallet_number']

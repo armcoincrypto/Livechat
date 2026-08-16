@@ -17,9 +17,10 @@ use iEXPackages\Order\Facades\OrderInvoiceFacade;
  */
 final class InvoiceContextService
 {
-    public function resolve(Task $task): array
+    public function resolve(Task $task, bool $allowIssue = true): array
     {
-        $raw = OrderInvoiceFacade::make($task)->get();
+        $manager = OrderInvoiceFacade::make($task);
+        $raw = $allowIssue ? $manager->get() : $manager->snapshot();
 
         $ctx = [
             'mode' => 'none',

@@ -56,7 +56,41 @@ final class InboundPaymentDestinationGuardTest extends TestCase
         $src = (string) file_get_contents(dirname(__DIR__, 3).'/packages/ExchangerClient/Http/Resources/Orders/OrderProcessResource.php');
         $this->assertStringContainsString('payment_destination_ready', $src);
         $this->assertStringContainsString('$invoiceHasDest', $src);
-        $this->assertStringContainsString('$invoiceHasDest', $src);
+        $this->assertStringContainsString('resolve($task, false)', $src);
         $this->assertStringContainsString("update(['is_wallet_issued' => 1])", $src);
+    }
+
+    public function test_process_and_mail_use_snapshot_not_lazy_issue(): void
+    {
+        $manager = (string) file_get_contents(dirname(__DIR__, 3).'/packages/Order/Invoices/RequisiteManager.php');
+        $invoice = (string) file_get_contents(dirname(__DIR__, 3).'/packages/Order/Services/InvoiceContextService.php');
+        $mail = (string) file_get_contents(dirname(__DIR__, 3).'/packages/SmartMailer/Dispatches/Orders/OrderCreatedMail.php');
+        $create = (string) file_get_contents(dirname(__DIR__, 3).'/packages/Order/Bindings/ManagerOrder.php');
+
+        $this->assertStringContainsString('function snapshot()', $manager);
+        $this->assertStringContainsString('payment_destination_snapshot_empty', $manager);
+        $this->assertStringContainsString('bool $allowIssue = true', $invoice);
+        $this->assertStringContainsString('$manager->snapshot()', $invoice);
+        $this->assertStringContainsString('->snapshot()', $mail);
+        $this->assertStringContainsString('->resolve($order)', $create);
+        $this->assertStringNotContainsString('resolve($order, false)', $create);
+    }
+
+    public function test_incident_order_snapshot_does_not_assign_destination(): void
+    {
+        $task = Task::query()->where('public_id', 1786828013012)->first();
+        $this->assertNotNull($task);
+        $beforeAccount = (string) ($task->transfer_to_account ?? '');
+        $beforeIssued = (int) ($task->is_wallet_issued ?? 0);
+        $beforeReq = (int) ($task->id_payment_requisites ?? 0);
+
+        $ctx = app(\iEXPackages\Order\Services\InvoiceContextService::class)->resolve($task, false);
+        $task->refresh();
+
+        $this->assertSame($beforeAccount, (string) ($task->transfer_to_account ?? ''));
+        $this->assertSame($beforeIssued, (int) ($task->is_wallet_issued ?? 0));
+        $this->assertSame($beforeReq, (int) ($task->id_payment_requisites ?? 0));
+        $this->assertSame('none', (string) ($ctx['mode'] ?? ''));
+        $this->assertTrue(empty($ctx['account']));
     }
 }
