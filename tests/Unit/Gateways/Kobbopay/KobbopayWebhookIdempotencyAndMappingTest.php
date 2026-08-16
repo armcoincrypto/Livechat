@@ -15,7 +15,6 @@ use App\Models\Task;
 use iEXPackages\Payments\Logging\Services\MerchantFlowLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
-use Mockery;
 use Tests\TestCase;
 
 /**
@@ -37,12 +36,6 @@ final class KobbopayWebhookIdempotencyAndMappingTest extends TestCase
         putenv('KOBBOPAY_WEBHOOK_SECRET=' . $this->secret);
         $_ENV['KOBBOPAY_WEBHOOK_SECRET'] = $this->secret;
         $_SERVER['KOBBOPAY_WEBHOOK_SECRET'] = $this->secret;
-    }
-
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
     }
 
     public function test_duplicate_event_is_acknowledged_without_second_row(): void
@@ -206,12 +199,10 @@ final class KobbopayWebhookIdempotencyAndMappingTest extends TestCase
     private function makeService(): KobbopayInboundWebhookService
     {
         $tolerance = (int) env('KOBBOPAY_WEBHOOK_TOLERANCE_SECONDS', 300);
-        $resolver = Mockery::mock(KobbopayWebhookSecretResolver::class);
-        $resolver->shouldReceive('resolve')->andReturn($this->secret);
 
         return new KobbopayInboundWebhookService(
             verifier: new KobbopayWebhookSignatureVerifier($tolerance > 0 ? $tolerance : 300),
-            secretResolver: $resolver,
+            secretResolver: new KobbopayWebhookSecretResolver($this->secret),
             flowLogger: app(MerchantFlowLogger::class),
         );
     }

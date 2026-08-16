@@ -19,8 +19,17 @@ use Throwable;
  */
 final class KobbopayWebhookSecretResolver
 {
+    public function __construct(private readonly ?string $explicitSecret = null)
+    {
+    }
+
     public function resolve(?GatewayMerchant $merchant = null): ?string
     {
+        $explicit = is_string($this->explicitSecret) ? trim($this->explicitSecret) : '';
+        if ($explicit !== '') {
+            return $explicit;
+        }
+
         $fromVault = $this->fromMerchantVault($merchant);
         if (is_string($fromVault) && $fromVault !== '') {
             return $fromVault;
