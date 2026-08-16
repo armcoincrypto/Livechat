@@ -38035,6 +38035,288 @@
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "from": "USDTTRC20",
             "to": "TCSBRUB"
+        },
+        "3207": {
+            "from": "USDTPOLYGON",
+            "to": "BRBKZT",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDKZT",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = 1 * USDKZT * haircut",
+            "haircut": "0.999",
+            "haircut_note": "one-shot 0.1% spread; direction profit field is not applied again by this authority",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "3193": {
+            "from": "USDTPOLYGON",
+            "to": "CARDRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "all-coins-all-cards coverage; profit field not double-applied",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "3214": {
+            "from": "USDTPOLYGON",
+            "to": "CARDTHB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDTHB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "haircut_note": "all-coins-all-cards coverage; profit field not double-applied",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "3190": {
+            "from": "USDTPOLYGON",
+            "to": "CASHAMD",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDTAMD_BC",
+                "orientation": "fiat_per_usd",
+                "source": "direction_course",
+                "direction_id": 1277,
+                "max_age_seconds": 21600
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "fiat_leg_note": "BestChange USDT→CASHAMD commercial AMD peg (not floatrates mid FX)"
+        },
+        "3163": {
+            "from": "USDTPOLYGON",
+            "to": "GRAM",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "TONUSDT",
+                "orientation": "inverse_usdt"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": true,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "3220": {
+            "from": "USDTPOLYGON",
+            "to": "MTSBRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "3196": {
+            "from": "USDTPOLYGON",
+            "to": "PREUR",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDEUR",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "3194": {
+            "from": "USDTPOLYGON",
+            "to": "PRRUB",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDRUB",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "3195": {
+            "from": "USDTPOLYGON",
+            "to": "PRUSD",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "3221": {
+            "from": "USDTPOLYGON",
+            "to": "REVBEUR",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDEUR",
+                "orientation": "fiat_per_usd"
+            },
+            "formula": "course = asset_leg * fiat_leg * haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+        },
+        "3203": {
+            "from": "USDTPOLYGON",
+            "to": "REVBUSD",
+            "public_aliases": [],
+            "asset_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "fiat_leg": {
+                "symbol": "USDT_PEG",
+                "orientation": "unity"
+            },
+            "formula": "course=asset*fiat*haircut",
+            "haircut": "0.999",
+            "freshness": {
+                "crypto_max_age_seconds": 900,
+                "fiat_max_age_seconds": 21600
+            },
+            "ownership": {
+                "parser_source_name": "DERIVED_MARKET_BASELINE",
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0
+            },
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         }
     },
     "note": "Admin-safe: never force-disable BestChange; prefer BC when link active. Removed dirs with live BC rates. | 20260808: removed ZELLEUSD outgoing ownership; ZelleUsdUsdtBenchmarkAuthority is sole ZELLE writer. | 2026-08-09: remove direction_course:11 peer; GRAM priced from Binance TONUSDT; block BestChange overwrite on GRAM/USDT and crypto<->GRAM dependents | 2026-08-09 global integrity: USDCERC20→GRAM(706) + USDCERC20→USDTERC20(704) moved from poisoned/mispriced BestChange to derived TONUSDT/USDT peg",
