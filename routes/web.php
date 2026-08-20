@@ -52,6 +52,10 @@ Route::prefix('callbacks/v1')->group(function () {
 
     Route::match(['GET','POST'], '/webhook/{payment_system}/{security_hash?}', [MerchantCallbackController::class, 'webhook'])
         ->name('merchant.webhook');
+
+    Route::post('/telegram-operator', [\App\Http\Controllers\Callbacks\TelegramOperatorWebhookController::class, 'handle'])
+        ->middleware([\App\Http\Middleware\VerifyTelegramOperatorWebhookSecret::class])
+        ->name('telegram.operator.webhook');
 });
 
 // Didit KYC provider webhook (CSRF-exempt via bootstrap validateCsrfTokens except)

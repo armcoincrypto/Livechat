@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Task;
+use App\Services\TelegramOperator\TelegramOrderOperatorWorkflowService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -54,6 +55,21 @@ class TelegramNewOrder extends Notification implements ShouldQueue, ShouldBeUniq
         $telegram->content(view('telegram.message', [
             'detail' => $this->order,
         ])->render());
+
+        if (filter_var(config('telegram_operator.actions_enabled', false), FILTER_VALIDATE_BOOLEAN)
+            && $this->order instanceof Task
+        ) {
+            $taskId = (int) $this->order->id;
+            foreach (TelegramOrderOperatorWorkflowService::notificationKeyboard($taskId) as $row) {
+                foreach ($row as $button) {
+                    if (isset($button['callback_data'])) {
+                        $telegram->buttonWithCallback($button['text'], $button['callback_data'], 1);
+                    } elseif (isset($button['url'])) {
+                        $telegram->button($button['text'], $button['url'], 1);
+                    }
+                }
+            }
+        }
 
         return $telegram->options([
             'parse_mode' => 'HTML',

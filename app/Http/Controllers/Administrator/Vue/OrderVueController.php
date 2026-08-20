@@ -246,40 +246,44 @@ class OrderVueController extends Controller
             ->values()
             ->toArray();
 
-        $transaction = TransactionFacade::find($id, [
-            'preview' => false,
-            'commission' => ($request->manual_fee ?? 0),
-            'type' => ($request->type ?? 'default'),
-            'actions' => ($request->action ?? null),
-            'message' => ($request->message_success ?? null),
-            'otherFieldsForSuccess' => $otherFieldsForSuccess,
-            'rejection_status' => ($request->rejection_status ?? 0),
-            'pin_code' => $request->has('pin_code') ? $request->get('pin_code') : null,
-            'settlement_reference' => $request->input('settlement_reference'),
-            'completion_source' => ManualCompletionGuard::SOURCE_MANUAL,
-        ]);
-
-
         $response = [];
         $response['status'] = 0;
         try {
-            if ($transaction->hasAction() == 'success') {
-                $transaction->success([
-                    'skip_auto_payment' => true,
-                    'completion_source' => ManualCompletionGuard::SOURCE_MANUAL,
-                    'settlement_reference' => $request->input('settlement_reference'),
+            if ($action === 'success') {
+                $user = Auth::user();
+                if (! $user instanceof \App\Models\User) {
+                    return ManualCompletionException::unauthenticated()->toJsonResponse();
+                }
+                $result = app(\App\Services\Orders\ManualCompletion\ManualOrderCompletionService::class)
+                    ->complete($id, $user, [
+                        'settlement_reference' => $request->input('settlement_reference'),
+                        'otherFieldsForSuccess' => $otherFieldsForSuccess,
+                        'message' => $request->input('message_success'),
+                    ], false);
+                $response['message'] = $result['message'];
+                $response['code'] = $result['code'];
+            } else {
+                $transaction = TransactionFacade::find($id, [
+                    'preview' => false,
+                    'commission' => ($request->manual_fee ?? 0),
+                    'type' => ($request->type ?? 'default'),
+                    'actions' => ($request->action ?? null),
+                    'message' => ($request->message_success ?? null),
                     'otherFieldsForSuccess' => $otherFieldsForSuccess,
-                    'message' => $request->input('message_success'),
+                    'rejection_status' => ($request->rejection_status ?? 0),
+                    'pin_code' => $request->has('pin_code') ? $request->get('pin_code') : null,
+                    'settlement_reference' => $request->input('settlement_reference'),
+                    'completion_source' => ManualCompletionGuard::SOURCE_MANUAL,
                 ]);
-                $response['message'] = 'Заявка выполнена';
-                $response['code'] = 'completed';
-            } elseif ($transaction->hasAction() == 'failed') {
-                $transaction->reject();
-                $response['message'] = 'Заявка отклонена';
-            } elseif ($transaction->hasAction() == 'defer') {
-                $transaction->setDeferType($request->defer_type);
-                $transaction->defer();
-                $response['message'] = 'Заявка отложена';
+
+                if ($transaction->hasAction() == 'failed') {
+                    $transaction->reject();
+                    $response['message'] = 'Заявка отклонена';
+                } elseif ($transaction->hasAction() == 'defer') {
+                    $transaction->setDeferType($request->defer_type);
+                    $transaction->defer();
+                    $response['message'] = 'Заявка отложена';
+                }
             }
 
         } catch (ManualCompletionException $exception) {
