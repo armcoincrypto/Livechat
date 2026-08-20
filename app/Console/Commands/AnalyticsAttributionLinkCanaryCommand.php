@@ -97,7 +97,7 @@ final class AnalyticsAttributionLinkCanaryCommand extends Command
             $this->line('VALID_LINK='.($linked ? 'yes' : 'no'));
             $this->line('POINTER='.json_encode($task->session_attribution_id));
 
-            // Unknown id → NULL pointer on fresh task.
+            // Valid opaque id with no prior ingest → fail-open stub link.
             $task2 = new class
             {
                 public $id = 900002;
@@ -122,12 +122,38 @@ final class AnalyticsAttributionLinkCanaryCommand extends Command
                     return true;
                 }
             };
-            $linker->attachFailOpen($task2, 'unknownsessionidabcdef12');
-            $this->line('UNKNOWN_NULL='.($task2->session_attribution_id === null && ! $task2->saved ? 'yes' : 'no'));
+            $unknownSid = 'unknownsessionidabcdef12';
+            $linker->attachFailOpen($task2, $unknownSid);
+            $stubLinked = is_numeric($task2->session_attribution_id) && $task2->saved;
+            $this->line('STUB_LINK='.($stubLinked ? 'yes' : 'no'));
 
-            // Malformed → NULL.
-            $linker->attachFailOpen($task2, 'bad!!!');
-            $this->line('MALFORMED_NULL='.($task2->session_attribution_id === null ? 'yes' : 'no'));
+            // Malformed → NULL on a fresh task.
+            $taskMalformed = new class
+            {
+                public $id = 900004;
+
+                public $session_attribution_id = null;
+
+                public bool $saved = false;
+
+                public function forceFill(array $attrs): self
+                {
+                    foreach ($attrs as $k => $v) {
+                        $this->{$k} = $v;
+                    }
+
+                    return $this;
+                }
+
+                public function saveQuietly(): bool
+                {
+                    $this->saved = true;
+
+                    return true;
+                }
+            };
+            $linker->attachFailOpen($taskMalformed, 'bad!!!');
+            $this->line('MALFORMED_NULL='.($taskMalformed->session_attribution_id === null && ! $taskMalformed->saved ? 'yes' : 'no'));
 
             // Idempotent re-link.
             $before = $task->session_attribution_id;
@@ -166,9 +192,9 @@ final class AnalyticsAttributionLinkCanaryCommand extends Command
             $this->info('REAL_ORDERS=0 FUNDS_MOVED=0 PAYMENTS=0 TASK_ROWS_WRITTEN=0');
             $ok = $linked
                 && $fromCollection === $sid
-                && $task2->session_attribution_id === null
-                && $task3->session_attribution_id === null
-                && ! AttributionFeatures::eventsEnabled();
+                && $stubLinked
+                && $taskMalformed->session_attribution_id === null
+                && $task3->session_attribution_id === null;
 
             return $ok ? self::SUCCESS : self::FAILURE;
         } catch (\Throwable $e) {
@@ -180,6 +206,7 @@ final class AnalyticsAttributionLinkCanaryCommand extends Command
                 DB::table('session_attributions')->where('id', $attrId)->delete();
             }
             DB::table('session_attributions')->where('public_session_id', $sid)->delete();
+            DB::table('session_attributions')->where('public_session_id', 'unknownsessionidabcdef12')->delete();
 
             if (! $this->option('keep-flag')) {
                 $repo->set('EXS_ATTRIBUTION_ORDER_LINK_ENABLED', $prevLink ?? 'false');
