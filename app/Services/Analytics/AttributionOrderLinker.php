@@ -45,6 +45,21 @@ final class AttributionOrderLinker
                 ->where('public_session_id', $sessionId)
                 ->value('id');
             if (! $attrId) {
+                // Fail-open stub: order may arrive before async ingest (or after
+                // consent grant without a prior navigation). Opaque id only.
+                try {
+                    $attrId = SessionAttribution::query()->create([
+                        'public_session_id' => $sessionId,
+                        'first_seen_at' => now(),
+                        'last_seen_at' => now(),
+                    ])->id;
+                } catch (\Throwable) {
+                    $attrId = SessionAttribution::query()
+                        ->where('public_session_id', $sessionId)
+                        ->value('id');
+                }
+            }
+            if (! $attrId) {
                 return;
             }
 

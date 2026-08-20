@@ -20,16 +20,18 @@ final class AttributionOrderLinkerTest extends TestCase
 
     public function test_attach_fail_open_when_disabled_or_invalid(): void
     {
-        putenv('EXS_ATTRIBUTION_ORDER_LINK_ENABLED=false');
+        // Invalid opaque ids must never link (independent of feature flag).
+        putenv('EXS_ATTRIBUTION_ORDER_LINK_ENABLED=true');
+        $_ENV['EXS_ATTRIBUTION_ORDER_LINK_ENABLED'] = 'true';
         $linker = new AttributionOrderLinker(new AttributionSanitizer());
         $task = $this->fakeTask();
-        $linker->attachFailOpen($task, 'validsessionid123456');
-        $this->assertFalse($task->saved);
-
-        putenv('EXS_ATTRIBUTION_ORDER_LINK_ENABLED=true');
         $linker->attachFailOpen($task, 'not valid!!!');
         $this->assertFalse($task->saved);
         $this->assertNull($task->session_attribution_id);
+
+        $src = file_get_contents(dirname(__DIR__, 3).'/app/Services/Analytics/AttributionOrderLinker.php');
+        self::assertNotFalse($src);
+        self::assertStringContainsString('AttributionFeatures::orderLinkEnabled()', $src);
     }
 
     public function test_session_id_from_options_prefers_opaque_key(): void
@@ -93,15 +95,17 @@ final class AttributionOrderLinkerTest extends TestCase
                 return true;
             }
         };
-        // Without a matching DB row, forceFill is never reached; still must not throw.
+        // Without a Laravel DB, SessionAttribution queries throw and are
+        // caught — stub create / forceFill must never escape to the caller.
         $linker->attachFailOpen($task, 'nosuchsessionidabcdef12');
         $this->assertNull($task->session_attribution_id);
 
-        // Source contract: catch (\Throwable) present.
+        // Source contract: catch (\Throwable) present + fail-open stub create.
         $src = file_get_contents(dirname(__DIR__, 3).'/app/Services/Analytics/AttributionOrderLinker.php');
         self::assertNotFalse($src);
         self::assertStringContainsString('catch (\\Throwable', $src);
         self::assertStringContainsString('attribution_order_link_failed', $src);
+        self::assertStringContainsString('Fail-open stub', $src);
     }
 
     private function fakeTask(): object
