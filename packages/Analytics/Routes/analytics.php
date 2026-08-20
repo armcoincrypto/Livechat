@@ -1,5 +1,6 @@
 <?php
 
+use iEXPackages\Analytics\Http\Controllers\Exchanges\ConversionAnalyticsController;
 use iEXPackages\Analytics\Http\Controllers\Exchanges\CurrencyAnalyticsTotalsController;
 use iEXPackages\Analytics\Http\Controllers\Exchanges\DirectionsAnalyticsController;
 use iEXPackages\Analytics\Http\Controllers\Exchanges\OrderExchangeTotalsController;
@@ -82,6 +83,10 @@ Route::prefix('orders')
 
     Route::get('/dashboard', [OrdersAnalyticsController::class, 'dashboard'])
         ->name('dashboard');
+
+    // Wave3: read-only conversion funnel (cohorts + attribution join)
+    Route::get('/conversion', [ConversionAnalyticsController::class, 'funnel'])
+        ->name('conversion');
 });
 
 // Аналитика сумм обменов (order_exchange_totals)
