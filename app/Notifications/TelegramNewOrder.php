@@ -24,9 +24,15 @@ class TelegramNewOrder extends Notification implements ShouldQueue, ShouldBeUniq
 
     public int $uniqueFor = 86400;
 
+    /**
+     * @param  mixed  $tokens  TelegramNotification (token + default channel)
+     * @param  mixed  $order  Task
+     * @param  string|null  $chatIdOverride  Optional destination (channel or operator DM)
+     */
     public function __construct(
         public mixed $tokens,
-        public mixed $order
+        public mixed $order,
+        public ?string $chatIdOverride = null,
     ) {
         $this->onQueue('high');
     }
@@ -34,13 +40,26 @@ class TelegramNewOrder extends Notification implements ShouldQueue, ShouldBeUniq
     public function uniqueId(): string
     {
         $orderId = $this->order instanceof Task ? (string) $this->order->id : 'unknown';
+        $dest = $this->resolvedChatId() ?: 'default';
 
-        return 'telegram-new-order:'.$orderId;
+        return 'telegram-new-order:'.$orderId.':'.$dest;
     }
 
     public function via()
     {
         return [TelegramChannel::class];
+    }
+
+    /**
+     * Destination chat: override (DM / alternate) or configured channel.
+     */
+    public function resolvedChatId(): string
+    {
+        if ($this->chatIdOverride !== null && $this->chatIdOverride !== '') {
+            return (string) $this->chatIdOverride;
+        }
+
+        return (string) ($this->tokens->id_channel ?? '');
     }
 
     /**
@@ -50,7 +69,7 @@ class TelegramNewOrder extends Notification implements ShouldQueue, ShouldBeUniq
     {
         $telegram = TelegramMessage::create()
             ->token($this->tokens->token_access)
-            ->to($this->tokens->id_channel);
+            ->to($this->resolvedChatId());
 
         $telegram->content(view('telegram.message', [
             'detail' => $this->order,

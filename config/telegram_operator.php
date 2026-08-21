@@ -44,4 +44,11 @@ return [
     'admin_order_path' => env('TELEGRAM_OPERATOR_ADMIN_ORDER_PATH', '/iexadmin/#/orders/'),
 
     'pending_ttl_minutes' => 30,
+
+    /*
+    | Wave 3: also send the canonical TelegramNewOrder (same keyboard) to
+    | authorized linked operator private chats (TELEGRAM_OPERATOR_LINKS).
+    | Channel delivery via telegram_notifications is unchanged.
+    */
+    'notify_operator_dms' => filter_var(env('TELEGRAM_OPERATOR_NOTIFY_DMS', '1'), FILTER_VALIDATE_BOOLEAN),
 ];

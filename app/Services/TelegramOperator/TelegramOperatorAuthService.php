@@ -87,6 +87,29 @@ final class TelegramOperatorAuthService
         return $user;
     }
 
+    /**
+     * Telegram user IDs allowed to receive actionable order DMs.
+     * Fail closed: must be linked and hold the given permission.
+     *
+     * @return list<int>
+     */
+    public function authorizedActionTelegramUserIds(?string $permission = null): array
+    {
+        $permission = $permission ?: (string) config(
+            'telegram_operator.complete_permission',
+            'admin_orders_execute'
+        );
+
+        $ids = [];
+        foreach (array_keys($this->links()) as $telegramUserId) {
+            if ($this->authorize((int) $telegramUserId, $permission) !== null) {
+                $ids[] = (int) $telegramUserId;
+            }
+        }
+
+        return $ids;
+    }
+
     public function displayName(User $user): string
     {
         $name = trim((string) ($user->name ?? ''));
