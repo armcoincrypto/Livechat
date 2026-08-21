@@ -14,12 +14,15 @@ final class OrdersPaymentRoutingHealthCommand extends Command
 {
     protected $signature = 'orders:payment-routing-health {--format=json : json|table}';
 
-    protected $description = 'Classify order-enabled inbound rails by payment-destination owner.';
+    protected $description = 'Classify quoteable (customer-payable) inbound rails by payment-destination owner.';
 
     public function handle(): int
     {
+        // Expected payable inventory = quoteable(), not every status=1 direction.
+        // Hidden/removed currencies (e.g. retired USDCERC20) must not appear as
+        // requisite_rails_missing defects.
         $dirs = DirectionExchange::query()
-            ->where('status', 1)
+            ->quoteable()
             ->with(['currency1.merchants', 'merchants', 'direction_requisites'])
             ->get();
 

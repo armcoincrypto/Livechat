@@ -30,6 +30,31 @@ final class PaymentDestinationRouterTest extends TestCase
         $this->assertSame('USDTBSC', PaymentDestinationRouter::KOBBOPAY_NETWORK_BY_LETTER_COD['USDTBEP20']);
         $this->assertSame('USDTERC', PaymentDestinationRouter::KOBBOPAY_NETWORK_BY_LETTER_COD['USDTERC20']);
         $this->assertSame('USDTPOLYGON', PaymentDestinationRouter::KOBBOPAY_NETWORK_BY_LETTER_COD['USDTPOLYGON']);
+        $this->assertFalse(
+            in_array('USDCERC20', PaymentDestinationRouter::KOBBOPAY_USDT_LETTER_CODS, true),
+            'USDCERC20 is not a Kobbopay inbound rail'
+        );
+    }
+
+    public function test_usdcerc20_is_not_kobbopay_and_not_in_quoteable_inventory_when_hidden(): void
+    {
+        $currency = Currency::query()->where('designation_xml', 'USDCERC20')->first();
+        $this->assertNotNull($currency);
+        $this->assertFalse(PaymentDestinationRouter::isKobbopayInboundCurrency($currency));
+        $this->assertSame(
+            PaymentDestinationRouter::OWNER_EXSWAPING_REQUISITE,
+            PaymentDestinationRouter::classifyCurrency($currency)
+        );
+
+        $src = (string) file_get_contents(base_path('app/Console/Commands/OrdersPaymentRoutingHealthCommand.php'));
+        $this->assertStringContainsString('->quoteable()', $src);
+
+        if ((int) $currency->status !== 0) {
+            $this->assertFalse(
+                DirectionExchange::query()->quoteable()->where('id_currency1', $currency->id)->exists(),
+                'Hidden/removed USDCERC20 must not sit in quoteable payable inventory'
+            );
+        }
     }
 
     public function test_usdt_polygon_rail_is_live_kobbopay_only(): void

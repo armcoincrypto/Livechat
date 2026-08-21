@@ -16,6 +16,9 @@ use App\Services\Rates\ZelleUsdBenchmarkResolver;
  * Kobbopay: USDT TRC20 / BEP20 / ERC20 / Polygon (when the rail exists).
  * Zelle SEND: existing account verification (is_verify_account).
  * Everything else: admin Requisites / RequisiteManager.
+ *
+ * USDCERC20 is retired for new inbound (provider does not support it).
+ * Do not add it to KOBBOPAY_USDT_LETTER_CODS. Hide via currencies.status.
  */
 final class PaymentDestinationRouter
 {
