@@ -152,11 +152,16 @@ final class TelegramOrderOperatorWorkflowService
             }
 
             if (! in_array((int) $task->status, ManualCompletionGuard::MANUAL_FROM_STATUSES, true)) {
-                $this->bot->answerCallback($callbackId, 'Статус не позволяет завершить', true);
+                $status = (int) $task->status;
+                $this->bot->answerCallback(
+                    $callbackId,
+                    $this->completeBlockedByStatusMessage($status),
+                    true
+                );
                 $this->audit->log('ORDER_TELEGRAM_COMPLETE_REJECTED', $taskId, $operator, $telegramUserId, [
                     'result' => 'rejected',
                     'reason' => 'invalid_status',
-                    'old_status' => (int) $task->status,
+                    'old_status' => $status,
                 ]);
 
                 return;
@@ -450,6 +455,21 @@ final class TelegramOrderOperatorWorkflowService
         }
 
         return null;
+    }
+
+    /**
+     * Operator-facing Complete rejection when status is outside MANUAL_FROM_STATUSES.
+     * Does not change eligibility — only clarifies the toast.
+     */
+    private function completeBlockedByStatusMessage(int $status): string
+    {
+        return match ($status) {
+            2 => "Заявка ещё ожидает оплату.\nЗавершить можно после подтверждения оплаты.",
+            5 => 'Заявка отменена — завершение недоступно.',
+            6 => 'Заявка отклонена — завершение недоступно.',
+            15, 16 => "Заявка в процессе выплаты.\nДождитесь завершения автовыплаты или ошибки.",
+            default => 'Статус не позволяет завершить.',
+        };
     }
 
     private function orderLabel(Task $task): string

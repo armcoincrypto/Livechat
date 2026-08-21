@@ -111,6 +111,7 @@ final class TelegramOperatorNotificationUnificationTest extends TestCase
         $this->assertStringContainsString('ORDER_NOTIFICATIONS_ENABLED', $cfgSrc);
         $this->assertStringContainsString('order_notifications_enabled', $mainSrc);
         $this->assertStringContainsString('ORDER_NOTIFICATIONS_ENABLED=false', $mainSrc);
+        $this->assertStringContainsString('default=False', $cfgSrc);
         $exnode = (string) file_get_contents('/root/exswaping_notify_bot/exnode_watcher.py');
         $this->assertStringContainsString('send_order_notification', $exnode);
     }
