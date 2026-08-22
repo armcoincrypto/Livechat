@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\TelegramNotification;
+use App\Services\TelegramOperator\TelegramBotTokenResolver;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
@@ -26,10 +27,10 @@ final class TelegramOperatorDiagCommand extends Command
             return self::FAILURE;
         }
 
-        $token = trim((string) $row->token_access);
+        $token = app(TelegramBotTokenResolver::class)->resolve((string) $row->token_access);
         $chatId = trim((string) $row->id_channel);
-        if ($token === '' || $chatId === '') {
-            $this->error('MISSING_TOKEN_OR_CHAT');
+        if ($token === '') {
+            $this->error('MISSING_TOKEN');
 
             return self::FAILURE;
         }
@@ -42,6 +43,7 @@ final class TelegramOperatorDiagCommand extends Command
         $this->line('getMe_http='.(string) ($getMe['http'] ?? ''));
         $this->line('getMe_error='.(string) ($getMe['error'] ?? ''));
         $this->line('bot_username='.(string) ($getMe['username'] ?? ''));
+        $this->line('ACTIVE_OPERATOR_BOT='.(string) ($getMe['username'] ?? ''));
 
         $getChat = $this->telegramCall($token, 'getChat', ['chat_id' => $chatId], $timeout, $connect);
         $this->line('getChat_ok='.($getChat['ok'] ? '1' : '0'));
@@ -51,7 +53,7 @@ final class TelegramOperatorDiagCommand extends Command
         $this->line('chat_title_present='.(! empty($getChat['title']) ? '1' : '0'));
 
         if (! $this->option('send')) {
-            return ($getMe['ok'] && $getChat['ok']) ? self::SUCCESS : self::FAILURE;
+            return $getMe['ok'] ? self::SUCCESS : self::FAILURE;
         }
 
         $text = 'Exswaping operator diagnostic '.gmdate('Y-m-d\TH:i:s\Z').' (ignore)';

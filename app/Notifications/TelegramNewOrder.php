@@ -4,7 +4,10 @@ namespace App\Notifications;
 
 use App\Models\Task;
 use App\Services\TelegramOperator\TelegramBotTokenResolver;
+use App\Services\TelegramOperator\TelegramOrderMessagePresenter;
 use App\Services\TelegramOperator\TelegramOrderOperatorWorkflowService;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -75,8 +78,9 @@ class TelegramNewOrder extends Notification implements ShouldQueue, ShouldBeUniq
             ->token($token)
             ->to($this->resolvedChatId());
 
+        $text = $this->renderBody();
         $telegram->content(view('telegram.message', [
-            'detail' => $this->order,
+            'text' => $text,
         ])->render());
 
         if (filter_var(config('telegram_operator.actions_enabled', false), FILTER_VALIDATE_BOOLEAN)
@@ -97,5 +101,26 @@ class TelegramNewOrder extends Notification implements ShouldQueue, ShouldBeUniq
         return $telegram->options([
             'parse_mode' => 'HTML',
         ]);
+    }
+
+    private function renderBody(): string
+    {
+        try {
+            if ($this->order instanceof Task) {
+                $presenter = app(TelegramOrderMessagePresenter::class);
+                $payload = $presenter->present($this->order);
+
+                return $presenter->renderText($payload);
+            }
+        } catch (Throwable $e) {
+            Log::warning('telegram_order_message_render_failed', [
+                'order_id' => $this->order->id ?? null,
+                'exception_class' => $e::class,
+            ]);
+        }
+
+        $id = $this->order->public_id ?? $this->order->id ?? '';
+
+        return '📋 Заявка №: '.$id;
     }
 }
