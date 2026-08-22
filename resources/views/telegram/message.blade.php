@@ -1,6 +1,12 @@
 {{ __('telegram-default.messages.order_id') }}: {{ iEXSetting('client_id_type_for_order') == 1 ? $detail->public_id : $detail->id }}
-{{ __('telegram-default.messages.course') }}: {{ $detail->course_display  }}
 {{ __('telegram-default.messages.created_at') }}: {{ $detail->created_at->format('d M Y, H:i') }}
+{{ __('telegram-default.messages.course') }}: {{ $detail->course_display  }}
+@if(isset($detail->status))
+{{ __('telegram-default.messages.status') }}: {{ $detail->status }}
+@endif
+@if(isset($detail->manager) && $detail->manager)
+{{ __('telegram-default.messages.operator') }}: {{ $detail->manager->name ?? $detail->manager->email }}
+@endif
 @if($detail->payment_requisites != null)
 {{ __('telegram-default.messages.wallet') }}: {{ $detail->payment_requisites->account_number }}
 @endif

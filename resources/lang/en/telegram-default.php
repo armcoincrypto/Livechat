@@ -18,5 +18,7 @@ return [
         'to_shot' => 'To shot',
         'user_info' => 'User information',
         'name' => 'Name',
+        'status' => 'Status',
+        'operator' => 'Operator',
     ],
 ];

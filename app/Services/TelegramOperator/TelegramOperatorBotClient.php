@@ -12,16 +12,12 @@ final class TelegramOperatorBotClient
 {
     public function botToken(): string
     {
-        $env = trim((string) config('telegram_operator.bot_token', ''));
-        if ($env !== '') {
-            return $env;
-        }
-
         $row = app(\App\Services\Orders\TelegramNotificationSelector::class)
             ->enabledForEvent('process_created_order')
             ->first();
+        $fromNotification = $row ? (string) $row->token_access : '';
 
-        return $row ? trim((string) $row->token_access) : '';
+        return app(TelegramBotTokenResolver::class)->resolve($fromNotification);
     }
 
     /**

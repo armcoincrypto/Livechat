@@ -20,7 +20,9 @@ return [
     'webhook_secret' => env('TELEGRAM_OPERATOR_WEBHOOK_SECRET', ''),
 
     /*
-    | Optional explicit bot token. Empty → resolve from telegram_notifications.
+    | Optional explicit bot token for the canonical operational bot.
+    | Empty → telegram_notifications.token_access (legacy/secondary notifier).
+    | Set this to @exswapingnotyfbot so new-order + callbacks share one identity.
     */
     'bot_token' => env('TELEGRAM_OPERATOR_BOT_TOKEN', ''),
 

@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Task;
+use App\Services\TelegramOperator\TelegramBotTokenResolver;
 use App\Services\TelegramOperator\TelegramOrderOperatorWorkflowService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -67,8 +68,11 @@ class TelegramNewOrder extends Notification implements ShouldQueue, ShouldBeUniq
      */
     public function toTelegram()
     {
+        $token = app(TelegramBotTokenResolver::class)->resolve(
+            $this->tokens->token_access ?? null
+        );
         $telegram = TelegramMessage::create()
-            ->token($this->tokens->token_access)
+            ->token($token)
             ->to($this->resolvedChatId());
 
         $telegram->content(view('telegram.message', [
