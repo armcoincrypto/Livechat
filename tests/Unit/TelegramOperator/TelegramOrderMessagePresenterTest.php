@@ -210,6 +210,21 @@ final class TelegramOrderMessagePresenterTest extends TestCase
         $this->assertStringNotContainsString('Текущий курс:', $text);
     }
 
+    public function test_telegram_username_gets_at_prefix_but_email_does_not(): void
+    {
+        $task = $this->baseTask();
+        $task->setRelation('tasks_fields_currency_in', collect([
+            $this->field('Ваш Телеграмм', 'dscsdc', 'income_outcome_income_vas_telegramm_whatsapp_1', 'in'),
+        ]));
+        $task->setRelation('direction_exchange', $this->direction('Tether TRC20', 'USDT', 'USDTTRC20', 'SBER', 'RUB', 'SBERRUB', null));
+
+        $text = (new TelegramOrderMessagePresenter())->renderText(
+            (new TelegramOrderMessagePresenter())->present($task)
+        );
+        $this->assertStringContainsString('Telegram: @dscsdc', $text);
+        $this->assertStringNotContainsString('Telegram: dscsdc', $text);
+    }
+
     public function test_telegram_new_order_uses_presenter_and_fail_open_fallback(): void
     {
         $src = (string) file_get_contents(base_path('app/Notifications/TelegramNewOrder.php'));

@@ -313,6 +313,9 @@ final class TelegramOrderMessagePresenter
                     continue;
                 }
                 $label = $this->canonicalLabel($label, $key, $side);
+                if ($label === 'Telegram') {
+                    $value = $this->normalizeTelegramHandle($value) ?? $value;
+                }
                 $out[] = ['label' => $label, 'value' => $value];
             } catch (Throwable) {
                 continue;
@@ -349,6 +352,26 @@ final class TelegramOrderMessagePresenter
         }
 
         return $label;
+    }
+
+    private function normalizeTelegramHandle(string $value): ?string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+        // Emails in the Telegram field stay emails.
+        if (str_contains($value, '@') && preg_match('/^[^@\s]+@[^@\s]+\.[^@\s]+$/', $value) === 1) {
+            return $value;
+        }
+        $value = preg_replace('#^(https?://)?(t\.me|telegram\.me)/#i', '', $value) ?? $value;
+        $value = ltrim($value, '@');
+        $value = ltrim($value);
+        if ($value === '' || str_contains($value, ' ')) {
+            return null;
+        }
+
+        return '@'.$value;
     }
 
     private function looksLikeWalletLabel(string $lk): bool
