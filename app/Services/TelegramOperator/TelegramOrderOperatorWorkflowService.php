@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Services\Orders\ManualCompletion\ManualCompletionException;
 use App\Services\Orders\ManualCompletion\ManualCompletionGuard;
 use App\Services\Orders\ManualCompletion\ManualOrderCompletionService;
-use App\Services\Orders\ManualCompletion\SettlementEvidence;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -168,7 +167,7 @@ final class TelegramOrderOperatorWorkflowService
             }
 
             $this->pending->put($telegramUserId, [
-                'stage' => 'awaiting_evidence',
+                'stage' => 'awaiting_confirm',
                 'task_id' => $taskId,
                 'chat_id' => $chatId ?? $telegramUserId,
                 'message_id' => $messageId,
@@ -176,17 +175,21 @@ final class TelegramOrderOperatorWorkflowService
             ]);
 
             $this->audit->log('ORDER_TELEGRAM_COMPLETE_STARTED', $taskId, $operator, $telegramUserId, [
-                'result' => 'awaiting_evidence',
+                'result' => 'awaiting_confirm',
                 'old_status' => (int) $task->status,
             ]);
 
-            $this->bot->answerCallback($callbackId, 'Укажите подтверждение выплаты', false);
-            $promptChat = $telegramUserId; // prefer private DM
-            $publicId = $this->orderLabel($task);
-            $this->bot->sendMessage(
-                $promptChat,
-                "Для завершения заявки №{$publicId}\nукажите подтверждение выплаты.\n\nОтправьте:\nTX hash / ID транзакции / reference платежа"
-            );
+            $this->bot->answerCallback($callbackId, 'Подтвердите завершение', false);
+            $promptChat = $telegramUserId;
+            $prompt = $this->completionPrompt($task);
+            $this->bot->sendMessage($promptChat, $prompt, [
+                [
+                    ['text' => '✅ Да, завершить', 'callback_data' => self::CB_CONFIRM.$taskId],
+                ],
+                [
+                    ['text' => '❌ Отмена', 'callback_data' => self::CB_CANCEL.$taskId],
+                ],
+            ]);
 
             return;
         }
@@ -227,67 +230,10 @@ final class TelegramOrderOperatorWorkflowService
         }
 
         $flow = $this->pending->get($telegramUserId);
-        if ($flow === null || ($flow['stage'] ?? '') !== 'awaiting_evidence') {
+        if ($flow === null || ! in_array(($flow['stage'] ?? ''), ['awaiting_evidence', 'awaiting_confirm'], true)) {
             return;
         }
-
-        $operator = $this->auth->authorize(
-            $telegramUserId,
-            (string) config('telegram_operator.complete_permission', 'admin_orders_execute')
-        );
-        if ($operator === null) {
-            $this->pending->clear($telegramUserId);
-            $this->bot->sendMessage($chatId, 'Нет доступа');
-
-            return;
-        }
-
-        $taskId = (int) ($flow['task_id'] ?? 0);
-        try {
-            $evidence = SettlementEvidence::fromOptions(['settlement_reference' => $text]);
-        } catch (ManualCompletionException $e) {
-            $this->bot->sendMessage($chatId, '⚠️ '.$e->getMessage()."\nОтправьте reference ещё раз.");
-
-            return;
-        }
-
-        $task = Task::query()->find($taskId);
-        if ($task === null) {
-            $this->pending->clear($telegramUserId);
-            $this->bot->sendMessage($chatId, 'Заявка не найдена');
-
-            return;
-        }
-
-        $flow['stage'] = 'awaiting_confirm';
-        $flow['settlement_reference'] = $evidence->reference;
-        $this->pending->put($telegramUserId, $flow);
-
-        $wallet = $this->abbreviate((string) ($task->to_shot ?: $task->payment_address ?: '—'));
-        $currencyName = '';
-        try {
-            $currencyName = (string) ($task->direction_exchange->currency2->code_currency->name ?? '');
-        } catch (Throwable) {
-            $currencyName = '';
-        }
-        $amount = trim((string) $task->receiving_price).($currencyName !== '' ? ' '.$currencyName : '');
-        $publicId = $this->orderLabel($task);
-        $refShort = $this->abbreviate($evidence->reference);
-
-        $confirmText = "✅ Подтвердить выполнение?\n\n"
-            ."Заявка:\n{$publicId}\n\n"
-            ."Клиент получает:\n{$amount}\n\n"
-            ."Кошелек:\n{$wallet}\n\n"
-            ."Settlement reference:\n{$refShort}";
-
-        $this->bot->sendMessage($chatId, $confirmText, [
-            [
-                ['text' => '✅ Да, завершить', 'callback_data' => self::CB_CONFIRM.$taskId],
-            ],
-            [
-                ['text' => '❌ Отмена', 'callback_data' => self::CB_CANCEL.$taskId],
-            ],
-        ]);
+        $this->bot->sendMessage($chatId, 'Для завершения используйте кнопки подтверждения в сообщении бота.');
     }
 
     private function handleConfirm(
@@ -315,7 +261,6 @@ final class TelegramOrderOperatorWorkflowService
         if ($flow === null
             || ($flow['stage'] ?? '') !== 'awaiting_confirm'
             || (int) ($flow['task_id'] ?? 0) !== $taskId
-            || empty($flow['settlement_reference'])
         ) {
             $this->bot->answerCallback($callbackId, 'Сессия подтверждения устарела', true);
             $this->audit->log('ORDER_TELEGRAM_COMPLETE_REJECTED', $taskId, $operator, $telegramUserId, [
@@ -326,15 +271,15 @@ final class TelegramOrderOperatorWorkflowService
             return;
         }
 
-        $reference = (string) $flow['settlement_reference'];
         $dryRun = $this->dryRun();
+        $taskBefore = Task::query()->find($taskId);
+        $note = 'Telegram operator confirmed payout for order '.$this->orderLabel($taskBefore ?? new Task());
 
         try {
-            $taskBefore = Task::query()->find($taskId);
             $oldStatus = $taskBefore ? (int) $taskBefore->status : null;
 
             $result = $this->completion->complete($taskId, $operator, [
-                'settlement_reference' => $reference,
+                'message' => $note,
             ], $dryRun);
 
             $this->pending->clear($telegramUserId);
@@ -360,15 +305,13 @@ final class TelegramOrderOperatorWorkflowService
                 'old_status' => $oldStatus,
                 'new_status' => $newStatus,
                 'dry_run' => $dryRun,
-                'settlement_reference_len' => mb_strlen($reference),
+                'settlement_reference_len' => mb_strlen($note),
             ]);
 
             $publicId = $taskAfter ? $this->orderLabel($taskAfter) : (string) $taskId;
             $doneText = ($dryRun ? "🧪 DRY-RUN (без изменения статуса)\n\n" : "✅ Заявка выполнена\n\n")
-                ."📋 №{$publicId}\n\n"
-                .'👤 Оператор:'."\n".$this->auth->displayName($operator)."\n\n"
-                .'🕐 Выполнено:'."\n".now()->format('d M Y H:i')."\n\n"
-                .'Settlement:'."\n".$this->abbreviate($reference);
+                ."📋 №{$publicId}\n"
+                .'👤 '.$this->auth->displayName($operator).' · 🕐 '.now()->format('H:i');
 
             $adminUrl = $this->adminUrl($taskId);
             $keyboard = $adminUrl !== null
@@ -415,13 +358,18 @@ final class TelegramOrderOperatorWorkflowService
         int $messageId,
         string $originalText
     ): void {
-        $assignment = $this->claims->activeAssignment($taskId);
-        $claimedAt = $assignment?->claimed_at?->format('H:i') ?? now()->format('H:i');
-        $extra = "\n\n👤 Оператор:\n".$this->auth->displayName($operator)
-            ."\n🕐 Принято: {$claimedAt}"
-            ."\n🟡 Статус:\nВ работе";
-
-        $text = trim($originalText) !== '' ? $originalText.$extra : '📋 Заявка #'.$taskId.$extra;
+        $text = '📋 Заявка #'.$taskId;
+        try {
+            $task = Task::query()->find($taskId);
+            if ($task !== null) {
+                $presenter = app(TelegramOrderMessagePresenter::class);
+                $text = $presenter->renderText($presenter->present($task));
+            } elseif (trim($originalText) !== '') {
+                $text = trim($originalText);
+            }
+        } catch (Throwable) {
+            $text = trim($originalText) !== '' ? trim($originalText) : $text;
+        }
         $adminUrl = $this->adminUrl($taskId);
         $keyboard = [
             [['text' => '✅ Выполнить', 'callback_data' => self::CB_COMPLETE.$taskId]],
@@ -470,6 +418,17 @@ final class TelegramOrderOperatorWorkflowService
             15, 16 => "Заявка в процессе выплаты.\nДождитесь завершения автовыплаты или ошибки.",
             default => 'Статус не позволяет завершить.',
         };
+    }
+
+    private function completionPrompt(Task $task): string
+    {
+        try {
+            $presenter = app(TelegramOrderMessagePresenter::class);
+
+            return $presenter->renderCompletionPrompt($presenter->present($task));
+        } catch (Throwable) {
+            return 'Подтвердить завершение заявки №'.$this->orderLabel($task).'?';
+        }
     }
 
     private function orderLabel(Task $task): string

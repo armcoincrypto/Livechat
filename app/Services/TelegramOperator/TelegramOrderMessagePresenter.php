@@ -91,6 +91,10 @@ final class TelegramOrderMessagePresenter
 
         $statusLabel = $this->statusLabel($task);
         $operator = $this->operatorLabel($task);
+        $rateMode = $this->rateMode($task);
+        if ($rateMode === 'fixed') {
+            $currentRate = null;
+        }
 
         try {
             return $this->payload(
@@ -104,7 +108,8 @@ final class TelegramOrderMessagePresenter
                 $giveFields,
                 $recvFields,
                 $statusLabel,
-                $operator
+                $operator,
+                $rateMode
             );
         } catch (Throwable) {
             return [
@@ -123,6 +128,8 @@ final class TelegramOrderMessagePresenter
                 'name' => null,
                 'operator' => null,
                 'status_label' => null,
+                'rate_mode' => 'floating',
+                'claimed_at' => null,
             ];
         }
     }
@@ -139,6 +146,7 @@ final class TelegramOrderMessagePresenter
         array $recvFields,
         ?string $statusLabel,
         ?string $operator,
+        string $rateMode,
     ): array {
         return [
             'public_id' => (string) (($task->public_id ?: $task->id) ?? ''),
@@ -156,6 +164,8 @@ final class TelegramOrderMessagePresenter
             'name' => $this->nonEmpty((string) ($task->user?->name ?? '')),
             'operator' => $operator,
             'status_label' => $statusLabel,
+            'rate_mode' => $rateMode,
+            'claimed_at' => $this->claimedAt($task),
         ];
     }
 
@@ -179,41 +189,109 @@ final class TelegramOrderMessagePresenter
             $lines[] = ' — '.$row['label'].': '.$row['value'];
         }
         $lines[] = '';
-        $lines[] = 'Переводит сервис:';
+        $lines[] = 'Получает клиент:';
         if (! empty($payload['receive_ps'])) {
             $lines[] = ' — ПС: '.$payload['receive_ps'];
         }
         if (! empty($payload['receive_amount'])) {
             $lines[] = ' — Сумма: '.$payload['receive_amount'];
         }
+        $mode = (string) ($payload['rate_mode'] ?? 'floating');
+        $lines[] = ' — Тип курса: '.($mode === 'fixed' ? 'Фиксированный' : 'Плавающий');
         if (! empty($payload['order_rate'])) {
-            $lines[] = ' — Курс обмена: '.$payload['order_rate'];
+            $lines[] = ' — Курс заявки: '.$payload['order_rate'];
         }
-        if (! empty($payload['current_rate'])) {
-            $lines[] = ' — Актуальный: '.$payload['current_rate'];
+        if ($mode === 'floating' && ! empty($payload['current_rate'])) {
+            $lines[] = ' — Текущий курс: '.$payload['current_rate'];
         }
         foreach ($payload['receive_fields'] ?? [] as $row) {
             $lines[] = ' — '.$row['label'].': '.$row['value'];
         }
-        $lines[] = '--------------------------';
-        $lines[] = 'Информация о пользователе';
-        if (! empty($payload['user_id'])) {
-            $lines[] = ' — ID: '.$payload['user_id'];
-        }
         if (! empty($payload['email'])) {
             $lines[] = ' — E-mail: '.$payload['email'];
         }
-        if (! empty($payload['name'])) {
-            $lines[] = ' — Имя: '.$payload['name'];
-        }
         $lines[] = '';
-        $lines[] = '👤 Оператор:';
-        $lines[] = $payload['operator'] ?: '—';
-        $lines[] = '';
-        $lines[] = '🟡 Статус:';
-        $lines[] = $payload['status_label'] ?: '—';
+        $lines[] = $this->stateLine($payload);
 
         return implode("\n", $lines);
+    }
+
+    public function renderCompletionPrompt(array $payload): string
+    {
+        $id = (string) ($payload['public_id'] ?? '');
+        $lines = [
+            'Подтвердить завершение заявки №'.$id.'?',
+            '',
+        ];
+        if (! empty($payload['receive_amount'])) {
+            $ps = (string) ($payload['receive_ps'] ?? '');
+            $lines[] = trim($payload['receive_amount'].($ps !== '' ? ' → '.$ps : ''));
+        }
+        foreach ($payload['receive_fields'] ?? [] as $row) {
+            $label = mb_strtolower($row['label'] ?? '');
+            if (str_contains($label, 'фио') || str_contains($label, 'карт') || str_contains($label, 'card') || str_contains($label, 'кошел') || str_contains($label, 'телефон') || str_contains($label, 'phone')) {
+                $lines[] = ($row['label'] ?? '').': '.$row['value'];
+            }
+        }
+
+        return implode("\n", $lines);
+    }
+
+    private function stateLine(array $payload): string
+    {
+        $status = trim((string) ($payload['status_label'] ?? ''));
+        $operator = $this->nonEmpty((string) ($payload['operator'] ?? ''));
+        $claimed = $this->nonEmpty((string) ($payload['claimed_at'] ?? ''));
+        if ($operator !== null) {
+            $bits = ['👤 '.$operator];
+            if ($claimed !== null) {
+                $bits[] = '🕐 '.$claimed;
+            }
+            if ($status !== '') {
+                $bits[] = '🟡 '.$status;
+            }
+
+            return implode(' · ', $bits);
+        }
+
+        return $status !== '' ? '🟡 '.$status : '🟡 —';
+    }
+
+    private function rateMode(Task $task): string
+    {
+        try {
+            $dirEnables = (int) ($task->direction_exchange?->is_type_rate ?? $task->is_type_rate ?? 0) === 1;
+            if (! $dirEnables) {
+                return 'fixed';
+            }
+            $orderMode = $task->type_rate ?? null;
+            if ($orderMode === null || $orderMode === '') {
+                return 'floating';
+            }
+
+            return (int) $orderMode === 1 ? 'floating' : 'fixed';
+        } catch (Throwable) {
+            return 'floating';
+        }
+    }
+
+    private function claimedAt(Task $task): ?string
+    {
+        try {
+            $asg = OrderOperatorAssignment::query()
+                ->where('task_id', $task->id)
+                ->whereNull('released_at')
+                ->latest('id')
+                ->first();
+            $at = $asg?->claimed_at;
+            if ($at === null) {
+                return null;
+            }
+
+            return $at->format('H:i');
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     /**
@@ -250,8 +328,20 @@ final class TelegramOrderMessagePresenter
         if (str_contains($lk, 'telegram')) {
             return 'Telegram';
         }
-        if (str_contains($lk, 'iban') || str_contains($lk, 'карт') || str_contains($lk, 'card') || str_contains($lk, 'phone') || str_contains($lk, 'телефон')) {
+        if (str_contains($lk, 'email') || str_contains($lk, 'e-mail') || str_contains($lk, 'почт')) {
+            return 'E-mail';
+        }
+        if (str_contains($lk, 'iban')) {
             return $label;
+        }
+        if (str_contains($lk, 'карт') || str_contains($lk, 'card')) {
+            return 'Карта';
+        }
+        if (str_contains($lk, 'phone') || str_contains($lk, 'телефон')) {
+            return 'Телефон';
+        }
+        if (str_contains($lk, 'фио') || str_contains($lk, 'recipient') || str_contains($lk, 'fullname') || str_contains($lk, 'full name')) {
+            return 'ФИО';
         }
         // Customer payout wallet on the receive leg. Form CMS often labels this "Адрес для депозита".
         if ($side === 'out' && $this->looksLikeWalletLabel($lk)) {

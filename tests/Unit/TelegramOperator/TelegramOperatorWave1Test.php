@@ -195,19 +195,32 @@ final class TelegramOperatorWave1Test extends TestCase
         }
     }
 
-    public function test_pending_flow_evidence_then_cancel_clears(): void
+    public function test_pending_flow_confirm_then_cancel_clears(): void
     {
         $flow = new TelegramOperatorPendingFlow();
         $flow->put(777, [
-            'stage' => 'awaiting_evidence',
+            'stage' => 'awaiting_confirm',
             'task_id' => 1,
             'chat_id' => 777,
             'message_id' => 1,
             'operator_user_id' => 1,
         ]);
-        $this->assertSame('awaiting_evidence', $flow->get(777)['stage'] ?? null);
+        $this->assertSame('awaiting_confirm', $flow->get(777)['stage'] ?? null);
         $flow->clear(777);
         $this->assertNull($flow->get(777));
+    }
+
+    public function test_telegram_complete_does_not_ask_for_typed_tx_or_reference(): void
+    {
+        $src = (string) file_get_contents(dirname(__DIR__, 3).'/app/Services/TelegramOperator/TelegramOrderOperatorWorkflowService.php');
+        $this->assertStringNotContainsString('TX hash / ID транзакции', $src);
+        $this->assertStringNotContainsString('Укажите подтверждение выплаты', $src);
+        $this->assertStringContainsString("stage' => 'awaiting_confirm'", $src);
+        $this->assertStringContainsString('Да, завершить', $src);
+        $this->assertStringContainsString("'message' => \$note", $src);
+        $this->assertStringNotContainsString("'settlement_reference' => \$reference", $src);
+        $guard = (string) file_get_contents(dirname(__DIR__, 3).'/app/Services/Orders/ManualCompletion/ManualCompletionGuard.php');
+        $this->assertStringContainsString('SettlementEvidence::fromOptions', $guard);
     }
 
     public function test_webhook_middleware_fail_closed(): void

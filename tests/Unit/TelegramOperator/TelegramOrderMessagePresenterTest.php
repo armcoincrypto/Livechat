@@ -38,15 +38,20 @@ final class TelegramOrderMessagePresenterTest extends TestCase
         $this->assertStringContainsString('ПС: Tether TRC20 USDT', $text);
         $this->assertStringContainsString('Сумма: 441 USDT', $text);
         $this->assertStringContainsString('Telegram: @victor_mo_official', $text);
-        $this->assertStringContainsString('Переводит сервис:', $text);
+        $this->assertStringContainsString('Получает клиент:', $text);
         $this->assertStringContainsString('ПС: ЮMoney RUB', $text);
         $this->assertStringContainsString('Сумма: 39722.9427 RUB', $text);
-        $this->assertStringContainsString('Курс обмена: 1 USDT = 90.0747 RUB', $text);
-        $this->assertStringContainsString('Актуальный: 1 USDT = 90.1000 RUB', $text);
-        $this->assertStringContainsString('Card number: 410011506091695', $text);
-        $this->assertStringContainsString('Recipient: Виктор Кузнецов', $text);
-        $this->assertStringContainsString('Phone: +79179971077', $text);
-        $this->assertStringContainsString('Ожидается оплата', $text);
+        $this->assertStringContainsString('Тип курса: Плавающий', $text);
+        $this->assertStringContainsString('Курс заявки: 1 USDT = 90.0747 RUB', $text);
+        $this->assertStringContainsString('Текущий курс: 1 USDT = 90.1000 RUB', $text);
+        $this->assertStringContainsString('Карта: 410011506091695', $text);
+        $this->assertStringContainsString('ФИО: Виктор Кузнецов', $text);
+        $this->assertStringContainsString('Телефон: +79179971077', $text);
+        $this->assertStringContainsString('E-mail: a@b.c', $text);
+        $this->assertStringContainsString('🟡 Ожидается оплата', $text);
+        $this->assertStringNotContainsString(' — ID:', $text);
+        $this->assertStringNotContainsString('Имя: User', $text);
+        $this->assertStringNotContainsString('👤 Оператор:', $text);
         $this->assertStringNotContainsString('webhook', strtolower($text));
         $this->assertStringNotContainsString('token', strtolower($text));
 
@@ -85,8 +90,9 @@ final class TelegramOrderMessagePresenterTest extends TestCase
 
         $this->assertStringContainsString('Адрес для депозита: XhgePhzRE6a3pSPyKnuCUEBBMBA9o8nqNg', $text);
         $this->assertStringContainsString('Кошелек: 0xa03c3699E40F0b7893a1Fb80Ac6B570f0E3b75', $text);
-        $this->assertStringContainsString('Курс обмена: 1 DASH = 41.09535467 USDT', $text);
-        $this->assertStringContainsString('Актуальный: 1 DASH = 40.76327959 USDT', $text);
+        $this->assertStringContainsString('Курс заявки: 1 DASH = 41.09535467 USDT', $text);
+        $this->assertStringContainsString('Текущий курс: 1 DASH = 40.76327959 USDT', $text);
+        $this->assertStringContainsString('Тип курса: Плавающий', $text);
         $this->assertStringContainsString('Tether BEP20 USDT', $text);
         $this->assertStringNotContainsString('Phone:', $text);
         $this->assertStringNotContainsString('Card number:', $text);
@@ -124,7 +130,7 @@ final class TelegramOrderMessagePresenterTest extends TestCase
             (new TelegramOrderMessagePresenter())->present($task)
         );
         $this->assertStringNotContainsString('abc', $text);
-        $this->assertStringContainsString('Card number: 4100', $text);
+        $this->assertStringContainsString('Карта: 4100', $text);
     }
 
     public function test_usdt_to_xmr_payout_wallet_and_inverse_rate(): void
@@ -152,8 +158,9 @@ final class TelegramOrderMessagePresenterTest extends TestCase
         $this->assertStringContainsString('Telegram: Spec.dima01@proton.me', $text);
         $this->assertStringContainsString('ПС: Monero XMR', $text);
         $this->assertStringContainsString('Сумма: 0.98684385 XMR', $text);
-        $this->assertStringContainsString('Курс обмена: 405.33261688 USDT = 1 XMR', $text);
+        $this->assertStringContainsString('Курс заявки: 405.33261688 USDT = 1 XMR', $text);
         $this->assertStringContainsString('Кошелек: 4DSQMNzzq46N1z2pZWAVdeA6JvUL9TCB2bnBiA3ZzoqEdYJnMydt5akCa3vtmapeDsbVKGPFdNkzqTcJS8M8oyK7WGjAEoLzf56Tu78MdS', $text);
+        $this->assertStringNotContainsString('Текущий курс:', $text);
         $this->assertStringNotContainsString('Актуальный:', $text);
     }
 
@@ -180,12 +187,13 @@ final class TelegramOrderMessagePresenterTest extends TestCase
 
         $this->assertStringContainsString('Telegram: @kikoeer8', $text);
         $this->assertStringContainsString('ПС: KASPI KZT', $text);
-        $this->assertStringContainsString('Курс обмена: 1 USDT = 465.14 KZT', $text);
-        $this->assertStringContainsString('Номер карты: 4400430051522917', $text);
-        $this->assertStringContainsString('ФИО получателя: MAXIM KHAKIMOV', $text);
-        $this->assertStringContainsString('Номер телефона: 87780633922', $text);
+        $this->assertStringContainsString('Курс заявки: 1 USDT = 465.14 KZT', $text);
+        $this->assertStringContainsString('Карта: 4400430051522917', $text);
+        $this->assertStringContainsString('ФИО: MAXIM KHAKIMOV', $text);
+        $this->assertStringContainsString('Телефон: 87780633922', $text);
         $this->assertStringContainsString('E-mail: a@b.c', $text);
         $this->assertStringNotContainsString('Актуальный:', $text);
+        $this->assertStringNotContainsString(' — ID:', $text);
     }
 
     public function test_current_rate_omitted_when_direction_rate_missing(): void
@@ -197,8 +205,9 @@ final class TelegramOrderMessagePresenterTest extends TestCase
         $text = (new TelegramOrderMessagePresenter())->renderText(
             (new TelegramOrderMessagePresenter())->present($task)
         );
-        $this->assertStringContainsString('Курс обмена: 1 USDT = 90 RUB', $text);
+        $this->assertStringContainsString('Курс заявки: 1 USDT = 90 RUB', $text);
         $this->assertStringNotContainsString('Актуальный:', $text);
+        $this->assertStringNotContainsString('Текущий курс:', $text);
     }
 
     public function test_telegram_new_order_uses_presenter_and_fail_open_fallback(): void
@@ -211,6 +220,61 @@ final class TelegramOrderMessagePresenterTest extends TestCase
         $this->assertStringContainsString('ACTIVE_OPERATOR_BOT', $diag);
     }
 
+    public function test_fixed_rate_mode_hides_live_rate(): void
+    {
+        $task = $this->baseTask();
+        $task->is_type_rate = 1;
+        $task->type_rate = 0;
+        $task->course_display = '1 USDT = 86.789 RUB';
+        $dir = $this->direction('Tether TRC20', 'USDT', 'USDTTRC20', 'SBER', 'RUB', 'SBERRUB', '1 USDT = 87.6656 RUB');
+        $dir->is_type_rate = 1;
+        $task->setRelation('direction_exchange', $dir);
+
+        $text = (new TelegramOrderMessagePresenter())->renderText(
+            (new TelegramOrderMessagePresenter())->present($task)
+        );
+        $this->assertStringContainsString('Тип курса: Фиксированный', $text);
+        $this->assertStringContainsString('Курс заявки: 1 USDT = 86.789 RUB', $text);
+        $this->assertStringNotContainsString('Текущий курс:', $text);
+        $this->assertStringNotContainsString('Актуальный:', $text);
+    }
+
+    public function test_floating_rate_mode_and_completion_prompt(): void
+    {
+        $task = $this->baseTask();
+        $task->public_id = '1787508853032';
+        $task->is_type_rate = 1;
+        $task->type_rate = 1;
+        $task->give_price = '400';
+        $task->receiving_price = '34715.5963';
+        $task->course_display = '1 USDT = 86.789 RUB';
+        $task->setRelation('tasks_fields_currency_out', collect([
+            $this->field('Recipient’s full name', 'csdcsdc', 'sender_fullname', 'out'),
+            $this->field('Card number', '32432423', 'outcome_nomer_karty', 'out'),
+            $this->field('Phone Number', '2342343', 'outcome_nomer_telefona', 'out'),
+        ]));
+        $dir = $this->direction('Tether TRC20', 'USDT', 'USDTTRC20', 'SBER', 'RUB', 'SBERRUB', '1 USDT = 87.6656 RUB');
+        $dir->is_type_rate = 1;
+        $task->setRelation('direction_exchange', $dir);
+
+        $presenter = new TelegramOrderMessagePresenter();
+        $payload = $presenter->present($task);
+        $text = $presenter->renderText($payload);
+        $this->assertStringContainsString('Тип курса: Плавающий', $text);
+        $this->assertStringContainsString('Курс заявки: 1 USDT = 86.789 RUB', $text);
+        $this->assertStringContainsString('Текущий курс: 1 USDT = 87.6656 RUB', $text);
+        $this->assertStringContainsString('ФИО: csdcsdc', $text);
+        $this->assertStringContainsString('Карта: 32432423', $text);
+        $this->assertStringContainsString('Телефон: 2342343', $text);
+        $prompt = $presenter->renderCompletionPrompt($payload);
+        $this->assertStringContainsString('1787508853032', $prompt);
+        $this->assertStringContainsString('34715.5963 RUB', $text);
+        $this->assertStringContainsString('SBER', $prompt);
+        $this->assertStringContainsString('ФИО: csdcsdc', $prompt);
+        $this->assertStringContainsString('Карта: 32432423', $prompt);
+        $this->assertStringNotContainsString('TX hash', $prompt);
+    }
+
     private function baseTask(): Task
     {
         $task = new Task();
@@ -220,6 +284,8 @@ final class TelegramOrderMessagePresenterTest extends TestCase
         $task->give_price = '400';
         $task->receiving_price = '36000';
         $task->course_display = '1 USDT = 90 RUB';
+        $task->is_type_rate = 1;
+        $task->type_rate = 1;
         $task->exists = true;
         $task->setRelation('user', (object) ['id' => 12, 'email' => 'a@b.c', 'name' => 'User']);
         $task->setRelation('task_status', (object) ['name' => ['ru' => 'Ожидается оплата']]);
@@ -266,6 +332,7 @@ final class TelegramOrderMessagePresenterTest extends TestCase
             'currency1' => $c1,
             'currency2' => $c2,
             'exchange_rate' => $liveRate,
+            'is_type_rate' => 1,
         ];
     }
 }
