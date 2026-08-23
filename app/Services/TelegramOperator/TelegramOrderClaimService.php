@@ -6,6 +6,8 @@ namespace App\Services\TelegramOperator;
 
 use App\Models\OrderOperatorAssignment;
 use App\Models\Task;
+use App\Models\TaskOperator;
+use App\Models\TasksOperatorLog;
 use App\Models\User;
 use App\Services\Orders\ManualCompletion\ManualCompletionGuard;
 use Illuminate\Support\Facades\DB;
@@ -60,6 +62,8 @@ final class TelegramOrderClaimService
                             'reason' => 'already_claimed_by_self',
                         ]);
 
+                        $this->persistCanonicalAdminAssignment($task, $operator);
+
                         return [
                             'ok' => true,
                             'code' => 'already_yours',
@@ -90,6 +94,8 @@ final class TelegramOrderClaimService
                     'claimed_at' => now(),
                 ]);
 
+                $this->persistCanonicalAdminAssignment($task, $operator);
+
                 $this->audit->log('ORDER_TELEGRAM_TAKE', $taskId, $operator, $telegramUserId, [
                     'result' => 'ok',
                     'old_status' => (int) $task->status,
@@ -115,11 +121,42 @@ final class TelegramOrderClaimService
         }
     }
 
+
     public function activeAssignment(int $taskId): ?OrderOperatorAssignment
     {
         return OrderOperatorAssignment::query()
             ->where('task_id', $taskId)
             ->whereNull('released_at')
             ->first();
+    }
+
+    private function persistCanonicalAdminAssignment(Task $task, User $operator): void
+    {
+        try {
+            if (! TaskOperator::query()->where('id_task', $task->id)->where('id_user', $operator->id)->exists()) {
+                TaskOperator::query()->create([
+                    'id_task' => (int) $task->id,
+                    'id_user' => (int) $operator->id,
+                ]);
+            }
+            if (! TasksOperatorLog::query()->where('id_task', $task->id)->where('id_operator', $operator->id)->exists()) {
+                TasksOperatorLog::query()->create([
+                    'id_task' => (int) $task->id,
+                    'id_operator' => (int) $operator->id,
+                    'id_old_operator' => 0,
+                    'message' => 'telegram',
+                ]);
+            }
+            if ((int) ($task->id_edit_data_manager ?? 0) !== (int) $operator->id) {
+                $task->id_edit_data_manager = (int) $operator->id;
+                $task->save();
+            }
+        } catch (Throwable $e) {
+            Log::warning('telegram_operator_canonical_assignment_failed', [
+                'task_id' => (int) $task->id,
+                'operator_id' => (int) $operator->id,
+                'exception' => $e::class,
+            ]);
+        }
     }
 }

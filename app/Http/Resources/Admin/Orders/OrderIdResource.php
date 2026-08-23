@@ -2,6 +2,10 @@
 
 namespace App\Http\Resources\Admin\Orders;
 
+use App\Models\OrderOperatorAssignment;
+use App\Models\User;
+use App\Services\TelegramOperator\TelegramOrderMessagePresenter;
+
 use App\Enums\TaskStatusEnum;
 use App\Models\OrderStep;
 use App\Presenters\SelectedFeesPresenter;
@@ -45,6 +49,31 @@ class OrderIdResource extends JsonResource
         $sfFlat     = SelectedFeesPresenter::flatten($sfSnapshot);
         $isPreview = (bool) ($this->resource['isPreview'] ?? false);
         $taskInfo = $this->resource['detail']->task_info;
+        $detail = $this->resource['detail'];
+        $revealOps = (! $isPreview) || (int) ($detail->status ?? 0) === 4;
+        try {
+            $operational = app(TelegramOrderMessagePresenter::class)->operationalRequisites($detail);
+        } catch (\Throwable) {
+            $operational = ['rows' => [], 'deposit_address' => null, 'payout_wallet' => null, 'operator' => null, 'claimed_at' => null];
+        }
+        $assignedName = $operational['operator'] ?? null;
+        $completedBy = null;
+        try {
+            $completedBy = $detail->completedByUser?->name;
+            if (! $completedBy && (int) ($detail->id_who_completed ?? 0) > 0) {
+                $completedBy = User::query()->whereKey((int) $detail->id_who_completed)->value('name');
+            }
+        } catch (\Throwable) {
+            $completedBy = null;
+        }
+        $claimedAt = $operational['claimed_at'] ?? null;
+        try {
+            $asg = OrderOperatorAssignment::query()->where('task_id', $detail->id)->whereNull('released_at')->latest('id')->first();
+            if ($asg && $claimedAt === null && $asg->claimed_at) {
+                $claimedAt = $asg->claimed_at->format('H:i');
+            }
+        } catch (\Throwable) {
+        }
 
         return [
             'status' => $this->resource['detail']->status,
@@ -79,7 +108,7 @@ class OrderIdResource extends JsonResource
                 ],
 
                 'card_details' => $isPreview ? null : $this->resource['cardInfoIn'],
-                'fields' => $isPreview ? [] : get_order_fields_tx($this->resource['detail'], 'currency_in'),
+                'fields' => $revealOps ? get_order_fields_tx($this->resource['detail'], 'currency_in') : [],
                 'wallet_info_in' => $isPreview ? null : $this->resource['walletInfo'],
                 'is_enabled_check_pay' => !$this->resource['isPreview'] and
                     empty($this->resource['walletInfo']) and
@@ -108,7 +137,7 @@ class OrderIdResource extends JsonResource
                     ? ['link' => $__outExplorerLink]
                     : [],
                 'card_details' => $isPreview ? null : $this->resource['cardInfoOut'],
-                'fields' => $isPreview ? [] : get_order_fields_tx($this->resource['detail'], 'currency_out'),
+                'fields' => $revealOps ? get_order_fields_tx($this->resource['detail'], 'currency_out') : [],
                 'status_pay_api' => $this->resource['detail']->status_pay_api,
             ],
 
@@ -188,9 +217,9 @@ class OrderIdResource extends JsonResource
                 'name' => $this->resource['detail']->pending_order_status->name,
             ] : [],
 
-            'from_shot' => $isPreview ? null : $this->resource['detail']->from_shot,
+            'from_shot' => $revealOps ? $this->resource['detail']->from_shot : null,
             'from_shot_verify' => is_verified_order_card_collect($this->resource['detail']),
-            'to_shot' => $isPreview ? null : $this->resource['detail']->to_shot,
+            'to_shot' => $revealOps ? $this->resource['detail']->to_shot : null,
             'is_city_value' => !empty($taskInfo?->country_name) and !empty($taskInfo?->city_name),
 
             'city_data' => [
@@ -220,6 +249,11 @@ class OrderIdResource extends JsonResource
 
             'is_bot' => $this->resource['detail']->is_bot,
             'id_who_completed' => $this->resource['detail']->id_who_completed ?? 0,
+            'operational_requisites' => $operational,
+            'assigned_operator' => $assignedName,
+            'completed_by' => $completedBy,
+            'claimed_at' => $claimedAt,
+
 
             'edit_data_manager' => (isset($this->resource['detail']->edit_data_manager)) ? [
                 'id' => $this->resource['detail']->edit_data_manager->id,

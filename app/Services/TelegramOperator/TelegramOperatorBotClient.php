@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-final class TelegramOperatorBotClient
+class TelegramOperatorBotClient
 {
     public function botToken(): string
     {
@@ -103,5 +103,15 @@ final class TelegramOperatorBotClient
         }
 
         $this->call('sendMessage', $payload);
+    }
+
+    public function deleteMessage(int|string $chatId, int $messageId): bool
+    {
+        $result = $this->call('deleteMessage', [
+            'chat_id' => $chatId,
+            'message_id' => $messageId,
+        ]);
+
+        return (bool) ($result['ok'] ?? false);
     }
 }

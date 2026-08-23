@@ -350,4 +350,27 @@ final class TelegramOrderMessagePresenterTest extends TestCase
             'is_type_rate' => 1,
         ];
     }
+
+    public function test_operational_requisites_keeps_deposit_distinct_from_payout_and_filters_secrets(): void
+    {
+        $task = $this->baseTask();
+        $task->from_shot = 'TXdeposit111';
+        $task->to_shot = 'TXpayout222';
+        $task->setRelation('tasks_fields_currency_in', collect([
+            $this->field('Ваш Телеграмм', 'alice', 'income_telegram', 'in'),
+        ]));
+        $task->setRelation('tasks_fields_currency_out', collect([
+            $this->field('Card number', '410011506091695', 'outcome_nomer_karty', 'out'),
+            $this->field('Recipient', 'Иван Иванов', 'sender_fullname', 'out'),
+            $this->field('API token', 'bot-secret-token', 'api_token', 'out'),
+        ]));
+        $task->setRelation('direction_exchange', $this->direction('Tether TRC20', 'USDT', 'USDTTRC20', 'SBER', 'RUB', 'SBERRUB', null));
+        $ops = (new TelegramOrderMessagePresenter())->operationalRequisites($task);
+        $joined = json_encode($ops, JSON_UNESCAPED_UNICODE);
+        $this->assertStringContainsString('410011506091695', $joined);
+        $this->assertStringContainsString('Иван Иванов', $joined);
+        $this->assertStringContainsString('@alice', $joined);
+        $this->assertStringNotContainsString('bot-secret-token', $joined);
+        $this->assertStringNotContainsString('@alice@', $joined);
+    }
 }

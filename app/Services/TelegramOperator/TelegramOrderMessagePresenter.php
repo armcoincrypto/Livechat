@@ -169,6 +169,71 @@ final class TelegramOrderMessagePresenter
         ];
     }
 
+
+    /**
+     * Canonical populated operational rows for admin + Telegram.
+     *
+     * @return array{
+     *   rows: list<array{label: string, value: string, group: string}>,
+     *   deposit_address: ?string,
+     *   payout_wallet: ?string,
+     *   operator: ?string,
+     *   claimed_at: ?string
+     * }
+     */
+    public function operationalRequisites(Task $task): array
+    {
+        $payload = $this->present($task);
+        $rows = [];
+        $seen = [];
+        $deposit = null;
+        $payout = null;
+
+        $push = static function (string $label, ?string $value, string $group) use (&$rows, &$seen): void {
+            $value = trim((string) $value);
+            if ($value === '') {
+                return;
+            }
+            $key = mb_strtolower($label.'|'.$value);
+            if (isset($seen[$key])) {
+                return;
+            }
+            $seen[$key] = true;
+            $rows[] = ['label' => $label, 'value' => $value, 'group' => $group];
+        };
+
+        foreach ($payload['give_fields'] ?? [] as $row) {
+            $label = (string) ($row['label'] ?? '');
+            $value = (string) ($row['value'] ?? '');
+            $push($label, $value, 'give');
+            if ($deposit === null && (str_contains(mb_strtolower($label), 'депозит') || str_contains(mb_strtolower($label), 'deposit'))) {
+                $deposit = $value;
+            }
+        }
+        foreach ($payload['receive_fields'] ?? [] as $row) {
+            $label = (string) ($row['label'] ?? '');
+            $value = (string) ($row['value'] ?? '');
+            $push($label, $value, 'receive');
+            $lk = mb_strtolower($label);
+            if ($payout === null && (str_contains($lk, 'кошел') || str_contains($lk, 'wallet') || $label === 'На счет')) {
+                $payout = $value;
+            }
+        }
+        $push('E-mail', $payload['email'] ?? null, 'contact');
+        $name = trim((string) ($payload['name'] ?? ''));
+        if ($name !== '' && strcasecmp($name, 'User') !== 0 && strcasecmp($name, 'Пользователь') !== 0) {
+            $push('Имя', $name, 'contact');
+        }
+
+        return [
+            'rows' => $rows,
+            'deposit_address' => $deposit,
+            'payout_wallet' => $payout,
+            'operator' => $payload['operator'] ?? null,
+            'claimed_at' => $payload['claimed_at'] ?? null,
+        ];
+    }
+
     public function renderText(array $payload): string
     {
         $lines = [];

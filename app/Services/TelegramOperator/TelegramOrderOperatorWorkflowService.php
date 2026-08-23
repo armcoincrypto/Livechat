@@ -29,6 +29,7 @@ final class TelegramOrderOperatorWorkflowService
         private readonly TelegramOperatorPendingFlow $pending,
         private readonly TelegramOperatorBotClient $bot,
         private readonly TelegramOperatorAuditLogger $audit,
+        private readonly TelegramCompletionNoticePublisher $completionNotice,
     ) {
     }
 
@@ -318,18 +319,15 @@ final class TelegramOrderOperatorWorkflowService
                 ? [[['text' => '🔗 Открыть в админке', 'url' => $adminUrl]]]
                 : null;
 
-            if ($chatId !== null && $messageId !== null) {
-                $this->bot->editMessage($chatId, $messageId, $doneText, $keyboard);
-            } else {
-                $this->bot->sendMessage($telegramUserId, $doneText, $keyboard);
-            }
-
-            // Also update original order notification if different
-            $origChat = $flow['chat_id'] ?? null;
-            $origMsg = isset($flow['message_id']) ? (int) $flow['message_id'] : null;
-            if ($origChat !== null && $origMsg !== null && ((string) $origChat !== (string) $chatId || $origMsg !== $messageId)) {
-                $this->bot->editMessage($origChat, $origMsg, $doneText, $keyboard);
-            }
+            $this->completionNotice->publish(
+                $taskId,
+                $telegramUserId,
+                $chatId,
+                $messageId,
+                $flow,
+                $doneText,
+                $keyboard
+            );
         } catch (ManualCompletionException $e) {
             $this->bot->answerCallback($callbackId, $e->getMessage(), true);
             $this->audit->log('ORDER_TELEGRAM_COMPLETE_REJECTED', $taskId, $operator, $telegramUserId, [
