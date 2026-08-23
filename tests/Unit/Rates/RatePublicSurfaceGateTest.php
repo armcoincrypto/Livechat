@@ -87,6 +87,21 @@ final class RatePublicSurfaceGateTest extends TestCase
         );
     }
 
+    public function testRubFamilyCreateGatePrefersWebsiteFloatingPremium(): void
+    {
+        $this->assertSame(
+            4.6925,
+            RateDirectionEligibility::premiumRawForRubFamily(4.6925, 5.7500)
+        );
+        $this->assertSame(
+            5.7500,
+            RateDirectionEligibility::premiumRawForRubFamily(null, 5.7500)
+        );
+        $eval = $this->approvedPolicy()->evaluateCoinRub('SBERRUB', 4.6925, 1.0);
+        $this->assertTrue($eval['order_allowed']);
+        $this->assertNotSame('REVIEW', $eval['classification']);
+    }
+
     public function testUnknownRubSourceCannotBypassCanonicalEligibility(): void
     {
         $result = $this->eligibility(

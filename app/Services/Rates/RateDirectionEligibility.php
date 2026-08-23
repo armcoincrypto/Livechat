@@ -281,9 +281,10 @@ final class RateDirectionEligibility
                 }
             }
 
-            $useCommercial = $policy->familyUsesIntentionalAbsoluteTarget($to)
-                || (string) ($direction->parser_source_name ?? '') === 'DERIVED_MARKET_BASELINE';
-            $raw = ($useCommercial && $commercialRaw !== null) ? $commercialRaw : $courseRaw;
+            // Always score coin→RUB against the website floating rate the customer
+            // is quoted. MANUAL_PROFIT SBER was using stored course_value (pre-fee),
+            // so quotes stayed 200 while create returned DIRECTION_TEMPORARILY_UNAVAILABLE.
+            $raw = self::premiumRawForRubFamily($commercialRaw, $courseRaw);
 
             $eval = $policy->evaluateCoinRub(
                 $to,
@@ -416,6 +417,16 @@ final class RateDirectionEligibility
             'rate_quarantine' => $payload['rate_quarantine'],
             'provider_status' => $payload['provider_status'],
         ];
+    }
+
+    /**
+     * Coin→RUB public gate must use the website floating premium when known.
+     * Stored course_value is pre-fee and can REVIEW-block a pair the customer
+     * was just quoted (USDTTRC20→SBERRUB 2026-08-23).
+     */
+    public static function premiumRawForRubFamily(?float $commercialWebsitePercent, ?float $storedCoursePercent): ?float
+    {
+        return $commercialWebsitePercent !== null ? $commercialWebsitePercent : $storedCoursePercent;
     }
 
     /**
