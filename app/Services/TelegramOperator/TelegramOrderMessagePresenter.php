@@ -443,6 +443,9 @@ final class TelegramOrderMessagePresenter
                 $label = $this->canonicalLabel($label, $key, $side);
                 if ($label === 'Telegram') {
                     $value = $this->normalizeTelegramHandle($value) ?? $value;
+                    if ($this->looksLikePhone($value)) {
+                        $label = 'Телефон';
+                    }
                 }
                 $out[] = ['label' => $label, 'value' => $value];
             } catch (Throwable) {
@@ -492,6 +495,9 @@ final class TelegramOrderMessagePresenter
         if (str_contains($value, '@') && preg_match('/^[^@\s]+@[^@\s]+\.[^@\s]+$/', $value) === 1) {
             return $value;
         }
+        if ($this->looksLikePhone($value)) {
+            return $value;
+        }
         $value = preg_replace('#^(https?://)?(t\.me|telegram\.me)/#i', '', $value) ?? $value;
         $value = ltrim($value, '@');
         $value = ltrim($value);
@@ -500,6 +506,13 @@ final class TelegramOrderMessagePresenter
         }
 
         return '@'.$value;
+    }
+
+    private function looksLikePhone(string $value): bool
+    {
+        $compact = preg_replace('/[\s\-()]/', '', $value) ?? $value;
+
+        return preg_match('/^\+?[0-9]{6,15}$/', $compact) === 1;
     }
 
     private function looksLikeWalletLabel(string $lk): bool

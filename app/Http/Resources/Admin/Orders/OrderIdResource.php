@@ -50,7 +50,7 @@ class OrderIdResource extends JsonResource
         $isPreview = (bool) ($this->resource['isPreview'] ?? false);
         $taskInfo = $this->resource['detail']->task_info;
         $detail = $this->resource['detail'];
-        $revealOps = (! $isPreview) || (int) ($detail->status ?? 0) === 4;
+        $revealOps = true;
         try {
             $operational = app(TelegramOrderMessagePresenter::class)->operationalRequisites($detail);
         } catch (\Throwable) {

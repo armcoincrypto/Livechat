@@ -52,6 +52,16 @@ final class TelegramCompletionNoticePublisherTest extends TestCase
         $this->assertStringContainsString('telegram_complete_notice:', (string) file_get_contents(base_path('app/Services/TelegramOperator/TelegramCompletionNoticePublisher.php')));
     }
 
+    public function test_admin_order_detail_does_not_hide_requisites_from_execute_admins(): void
+    {
+        $src = (string) file_get_contents(base_path('app/Http/Controllers/Administrator/Orders/OrdersController.php'));
+        $this->assertStringContainsString("admin_orders_execute", $src);
+        $this->assertStringContainsString('appendTelegramOperators', $src);
+        $res = (string) file_get_contents(base_path('app/Http/Resources/Admin/Orders/OrderIdResource.php'));
+        $this->assertStringContainsString('$revealOps = true', $res);
+        $this->assertStringContainsString('operational_requisites', $res);
+    }
+
     public function test_workflow_edits_full_card_not_compact_notice(): void
     {
         $src = (string) file_get_contents(base_path('app/Services/TelegramOperator/TelegramOrderOperatorWorkflowService.php'));

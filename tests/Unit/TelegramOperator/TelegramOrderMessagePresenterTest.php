@@ -225,6 +225,20 @@ final class TelegramOrderMessagePresenterTest extends TestCase
         $this->assertStringNotContainsString('Telegram: dscsdc', $text);
     }
 
+    public function test_phone_in_telegram_field_is_not_prefixed_with_at(): void
+    {
+        $task = $this->baseTask();
+        $task->setRelation('tasks_fields_currency_in', collect([
+            $this->field('Ваш Телеграмм', '+34642044849', 'income_outcome_income_vas_telegramm_whatsapp_1', 'in'),
+        ]));
+        $task->setRelation('direction_exchange', $this->direction('Tether TRC20', 'USDT', 'USDTTRC20', 'SBER', 'RUB', 'SBERRUB', null));
+        $ops = (new TelegramOrderMessagePresenter())->operationalRequisites($task);
+        $joined = json_encode($ops, JSON_UNESCAPED_UNICODE);
+        $this->assertStringContainsString('+34642044849', $joined);
+        $this->assertStringNotContainsString('@+34642044849', $joined);
+        $this->assertStringContainsString('Телефон', $joined);
+    }
+
     public function test_telegram_new_order_uses_presenter_and_fail_open_fallback(): void
     {
         $src = (string) file_get_contents(base_path('app/Notifications/TelegramNewOrder.php'));

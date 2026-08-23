@@ -15,6 +15,7 @@ use App\Models\FilterCurrency;
 use App\Models\Payment;
 use App\Models\PendingOrderStatus;
 use App\Models\ReserveLedger;
+use App\Models\OrderOperatorAssignment;
 use App\Models\Task;
 use App\Models\TaskOperator;
 use App\Models\TaskRejectionStatus;
@@ -463,9 +464,10 @@ class OrdersController extends Controller
                 'created_at' => (!is_null($item->created_at)) ? Carbon::parse($item->created_at)->diffForHumans() : ''
             ];
         });
+        $operators = $this->appendTelegramOperators($operators, (int) $id);
 
         $hasOperator = $operators->where('id_user', Auth::id())->isEmpty();
-        if ($hasOperator) {
+        if ($hasOperator && ! $user->can('admin_orders_execute')) {
             $isPreview = true;
         }
 
@@ -894,9 +896,10 @@ class OrdersController extends Controller
                 'created_at' => (!is_null($item->created_at)) ? Carbon::parse($item->created_at)->diffForHumans() : ''
             ];
         });
+        $operators = $this->appendTelegramOperators($operators, (int) $id);
 
         $hasOperator = $operators->where('id_user', Auth::id())->isEmpty();
-        if ($hasOperator) {
+        if ($hasOperator && ! $user->can('admin_orders_execute')) {
             $isPreview = true;
         }
 
@@ -922,5 +925,41 @@ class OrdersController extends Controller
             ],
             'operators' => $operators->toArray() ?? [],
         ]);
+    }
+
+    private function appendTelegramOperators($operators, int $taskId)
+    {
+        try {
+            $assignments = OrderOperatorAssignment::query()
+                ->with(['operator' => static function ($q) {
+                    $q->select('id', 'name', 'email');
+                }])
+                ->where('task_id', $taskId)
+                ->whereNull('released_at')
+                ->get();
+            foreach ($assignments as $asg) {
+                $opUser = $asg->operator;
+                if ($opUser === null) {
+                    continue;
+                }
+                if ($operators->contains(static fn ($row) => (int) $row['id_user'] === (int) $opUser->id)) {
+                    continue;
+                }
+                $operators->push([
+                    'id' => 'tg-'.$asg->id,
+                    'id_user' => (int) $opUser->id,
+                    'user' => [
+                        'id' => $opUser->id,
+                        'name' => $opUser->name,
+                        'email' => $opUser->email,
+                        'avatar' => Str::upper(Str::substr((string) $opUser->name, 0, 1)),
+                    ],
+                    'created_at' => $asg->claimed_at ? Carbon::parse($asg->claimed_at)->diffForHumans() : '',
+                ]);
+            }
+        } catch (\Throwable) {
+        }
+
+        return $operators;
     }
 }
