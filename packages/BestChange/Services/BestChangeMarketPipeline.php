@@ -61,13 +61,24 @@ final class BestChangeMarketPipeline
 
         $selected = $this->selector->select($direction, $sorted, $policy, $defaultPosition);
 
+        $skipReason = null;
+        $requestedPosition = null;
+        $selectedRow = $selected?->row;
+        if ($selected !== null && $selected->method === 'position_insufficient_depth') {
+            $skipReason = 'position_insufficient_depth';
+            $requestedPosition = $selected->position;
+            $selectedRow = null;
+        }
+
         return new PreparedMarket(
             rawRows: array_values($rawRows),
             filteredRows: array_values($filtered),
             sortedRows: array_values($sorted),
             rejectCounters: $rejectCounters,
             presence: $presence,
-            selectedRow: $selected?->row,
+            selectedRow: $selectedRow,
+            skipReason: $skipReason,
+            requestedPosition: $requestedPosition,
         );
     }
 }

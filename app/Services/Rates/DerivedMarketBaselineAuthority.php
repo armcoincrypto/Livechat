@@ -302,8 +302,47 @@ final class DerivedMarketBaselineAuthority
             }
         }
 
+        $oldBase = (string) ($row->course_value ?? '');
+        $newBase = isset($action['write']['course_value'])
+            ? (string) $action['write']['course_value']
+            : $oldBase;
+        $from = (string) ($cfg['from'] ?? ($cfg['in'] ?? ''));
+        $to = (string) ($cfg['to'] ?? ($cfg['out'] ?? ''));
+        $action['pair'] = trim($from . '->' . $to, '->');
+        $action['old_base'] = $oldBase;
+        $action['new_base'] = $newBase;
+        $action['legs'] = $eval['components'] ?? null;
+        $deltaPct = null;
+        if (is_numeric($oldBase) && (float) $oldBase > 0 && is_numeric($newBase)) {
+            $deltaPct = ((float) $newBase - (float) $oldBase) / (float) $oldBase * 100.0;
+        }
+        $action['delta_pct'] = $deltaPct;
+
+        // Protect last-good BASE from a broken leg (CBR/crypto spike or stale zero).
+        $capPct = 25.0;
+        if (
+            $deltaPct !== null
+            && abs($deltaPct) > $capPct
+            && isset($action['write']['course_value'])
+        ) {
+            Log::warning('derived_baseline.delta_exceeds_safety_cap', [
+                'direction_id' => $directionId,
+                'pair' => $action['pair'],
+                'old_base' => $oldBase,
+                'new_base' => $newBase,
+                'delta_pct' => $deltaPct,
+                'cap_pct' => $capPct,
+                'dry_run' => $dryRun,
+            ]);
+            unset($action['write']['course_value'], $action['write']['manual_rate_value']);
+            $action['write']['error_rate_text'] = 'derived_baseline_delta_cap:' . round($deltaPct, 4);
+            $action['skipped'] = 'delta_exceeds_safety_cap';
+            $action['skipped_delta_cap'] = true;
+            $action['new_base'] = $oldBase;
+        }
+
         if (!$dryRun) {
-            $oldBase = (string) ($row->course_value ?? '');
+            $oldBase = (string) ($action['old_base'] ?? $oldBase);
             $newBase = isset($action['write']['course_value'])
                 ? (string) $action['write']['course_value']
                 : $oldBase;

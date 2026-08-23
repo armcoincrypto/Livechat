@@ -113,6 +113,12 @@ final class RatesUpdateService
                     continue;
                 }
 
+                if (($computed['skip'] ?? null) === 'position_insufficient_depth') {
+                    $updates[] = $this->retainLastGoodParserWarning($direction, $computed);
+                    $updatedDirections++;
+                    continue;
+                }
+
                 $newRate   = (string) $computed['computed']->rateValue;
                 $newRateWs = (string) $computed['computed']->rateValueWithoutStep;
                 $newSource = (string) $computed['computed']->sourceName;
@@ -252,6 +258,16 @@ final class RatesUpdateService
             $explain->setPresence(null);
             $explain->setMarketStats(count($market->rawRows), count($market->filteredRows));
             $explain->setRejectedCounters($market->rejectCounters);
+
+            if (($market->skipReason ?? null) === 'position_insufficient_depth') {
+                $explain->setRejectedCounters($market->rejectCounters);
+                return [
+                    'skip' => 'position_insufficient_depth',
+                    'requested_position' => $market->requestedPosition,
+                    'available_offers' => count($market->sortedRows),
+                    'explain_json' => $explain->toJson(),
+                ];
+            }
 
             if ($market->filteredRows === []) {
                 throw new \RuntimeException('после фильтрации 0 строк');
@@ -495,6 +511,40 @@ final class RatesUpdateService
             'source_name' => 'None',
             'is_error_parser' => 1,
             'explain_payload' => null,
+        ];
+    }
+
+    /**
+     * Keep last-good BestChange rate_value when the configured position is deeper
+     * than the live book. DirectionExchangeRecalculateService skips course_value
+     * while is_error_parser=1, so the customer rate is retained.
+     *
+     * @param array<string,mixed> $computed
+     * @return array<string,mixed>
+     */
+    private function retainLastGoodParserWarning(BestChangeDirection $direction, array $computed): array
+    {
+        $explain = json_encode([
+            'reason' => 'position_insufficient_depth',
+            'requested_position' => $computed['requested_position'] ?? null,
+            'available_offers' => $computed['available_offers'] ?? null,
+        ], JSON_UNESCAPED_UNICODE);
+
+        Log::warning('bestchange.insufficient_market_depth', [
+            'bestchange_direction_id' => $direction->id,
+            'direction_exchange_id' => $direction->id_direction_exchange ?? null,
+            'requested_position' => $computed['requested_position'] ?? null,
+            'available_offers' => $computed['available_offers'] ?? null,
+            'retained_rate_value' => $direction->rate_value,
+        ]);
+
+        return [
+            'id' => (int) $direction->id,
+            'rate_value' => (string) ($direction->rate_value ?? '0'),
+            'rate_value_without_step' => (string) ($direction->rate_value_without_step ?? '0'),
+            'source_name' => (string) ($direction->source_name ?? ''),
+            'is_error_parser' => 1,
+            'explain_payload' => $explain,
         ];
     }
 

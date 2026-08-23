@@ -34,5 +34,7 @@ final readonly class PreparedMarket
         public array $rejectCounters,
         public ?array $presence,
         public ?array $selectedRow,
+        public ?string $skipReason = null,
+        public ?int $requestedPosition = null,
     ) {}
 }

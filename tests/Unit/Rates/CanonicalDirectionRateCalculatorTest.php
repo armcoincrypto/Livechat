@@ -124,6 +124,40 @@ final class CanonicalDirectionRateCalculatorTest extends TestCase
         $this->assertSame(0, bccomp($exportUp->finalRate, '105', 18));
     }
 
+    public function test_bestchange_profit_is_not_reapplied_by_canonical(): void
+    {
+        $direction = new DirectionExchange();
+        $direction->id = 3219;
+        $direction->is_type_rate = 1;
+        $direction->parser_source_name = 'BestChange';
+        $direction->floating_fee = '0';
+        $direction->fix_fee = '0';
+        $direction->profit = '1';
+        $direction->course_value = '98.73214659753115979';
+
+        $calc = CanonicalDirectionRateCalculator::make();
+        $this->assertSame(0, bccomp($calc->resolveFloatingFeePercent($direction), '0', 8));
+
+        $export = $calc->calculateForExport($direction, '98.73214659753115979');
+        $this->assertSame(0, bccomp($export->finalRate, '98.73214659753115979', 18));
+    }
+
+    public function test_derived_applies_admin_profit_exactly_once_on_raw_base(): void
+    {
+        $direction = new DirectionExchange();
+        $direction->id = 419;
+        $direction->is_type_rate = 1;
+        $direction->parser_source_name = 'DERIVED_MARKET_BASELINE';
+        $direction->floating_fee = '0';
+        $direction->fix_fee = '0';
+        $direction->profit = '1';
+
+        $calc = CanonicalDirectionRateCalculator::make();
+        $this->assertSame(0, bccomp($calc->resolveFloatingFeePercent($direction), '-1', 8));
+        $export = $calc->calculateForExport($direction, '100');
+        $this->assertSame(0, bccomp($export->finalRate, '99', 18));
+    }
+
     public function test_derived_profit_zero_falls_back_to_floating_fee(): void
     {
         $direction = new DirectionExchange();

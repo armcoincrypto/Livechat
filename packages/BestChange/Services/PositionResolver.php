@@ -16,10 +16,11 @@ use App\Models\BestChangeDirection;
  */
 final class PositionResolver
 {
-    public function resolve(BestChangeDirection $direction, int $count, int $defaultPos, int $windowSeconds): int
+    /**
+     * Configured 1-based position before clamping to book depth.
+     */
+    public function requestedPosition(BestChangeDirection $direction, int $defaultPos, int $windowSeconds): int
     {
-        if ($count <= 0) return 1;
-
         $raw = trim((string) $direction->position_num);
         $position = null;
 
@@ -28,7 +29,9 @@ final class PositionResolver
             if (is_numeric($a) && is_numeric($b)) {
                 $min = max(1, (int)$a);
                 $max = max(1, (int)$b);
-                if ($min > $max) [$min, $max] = [$max, $min];
+                if ($min > $max) {
+                    [$min, $max] = [$max, $min];
+                }
 
                 $position = $this->stableRandom((int)$direction->id, $min, $max, $windowSeconds);
             }
@@ -36,15 +39,27 @@ final class PositionResolver
 
         if ($position === null && $raw !== '' && is_numeric($raw)) {
             $p = (int)$raw;
-            if ($p >= 1) $position = $p;
+            if ($p >= 1) {
+                $position = $p;
+            }
         }
 
         if ($position === null) {
             $position = max(1, $defaultPos);
         }
 
-        $position = max(1, min($count, $position));
-        return $position;
+        return max(1, $position);
+    }
+
+    public function resolve(BestChangeDirection $direction, int $count, int $defaultPos, int $windowSeconds): int
+    {
+        if ($count <= 0) {
+            return 1;
+        }
+
+        $position = $this->requestedPosition($direction, $defaultPos, $windowSeconds);
+
+        return max(1, min($count, $position));
     }
 
     private function stableRandom(int $id, int $min, int $max, int $windowSeconds): int

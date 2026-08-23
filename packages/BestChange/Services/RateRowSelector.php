@@ -58,7 +58,22 @@ final class RateRowSelector
         RateSelectionPolicy $policy,
         int $defaultPosition
     ): SelectedRateRow {
-        $pos = $this->positions->resolve($direction, count($rows), $defaultPosition, $policy->positionWindowSeconds);
+        $requested = $this->positions->requestedPosition(
+            $direction,
+            $defaultPosition,
+            $policy->positionWindowSeconds
+        );
+        $available = count($rows);
+
+        if ($requested > $available) {
+            return new SelectedRateRow(
+                row: [],
+                method: 'position_insufficient_depth',
+                position: $requested,
+            );
+        }
+
+        $pos = $this->positions->resolve($direction, $available, $defaultPosition, $policy->positionWindowSeconds);
 
         return new SelectedRateRow(
             row: $rows[$pos - 1] ?? $rows[array_key_last($rows)],

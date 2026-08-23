@@ -238,6 +238,16 @@ class ExchangeSchedule
             ->appendOutputTo(storage_path('logs/zelle_usdt_benchmark.log'));
         self::applyMinuteCadence($zelle, $ratesMinutes);
 
+        // DERIVED_MARKET_BASELINE BASE refresh. Crypto legs ≈ 10m; CBR ≈ 30m.
+        // First wave: scheduled DRY-RUN only. Live 2026-08-24 dry-run showed 1368 BASE
+        // deltas (110 >= 5%, 0 >= 25%). Do not attach --apply until that set is reviewed.
+        // Safety cap still lives in DerivedMarketBaselineAuthority for when --apply is enabled.
+        $schedule->command('directions:derived-baseline-refresh')
+            ->everyTenMinutes()
+            ->onOneServer()
+            ->withoutOverlapping(9)
+            ->appendOutputTo(storage_path('logs/derived_baseline_refresh.log'));
+
         // Проверка и обновление файлов курсов / public XML exports
         $scheme = $schedule->exec("{$compilerWrapper} scheme:files")
             ->onOneServer()
