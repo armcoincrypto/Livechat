@@ -16,6 +16,12 @@ use Throwable;
  */
 final class TelegramOrderMessagePresenter
 {
+    public const LIFECYCLE_NEW = 'new';
+
+    public const LIFECYCLE_CLAIMED = 'claimed';
+
+    public const LIFECYCLE_COMPLETED = 'completed';
+
     /** @var list<string> */
     private const SECRET_NEEDLES = [
         'token', 'secret', 'password', 'private', 'webhook', 'api_key',
@@ -41,7 +47,7 @@ final class TelegramOrderMessagePresenter
      *   status_label: ?string
      * }
      */
-    public function present(Task $task): array
+    public function present(Task $task, ?string $lifecycle = null): array
     {
         try {
             $task->loadMissing([
@@ -97,7 +103,7 @@ final class TelegramOrderMessagePresenter
         }
 
         try {
-            return $this->payload(
+            $payload = $this->payload(
                 $task,
                 $givePs,
                 $giveCode,
@@ -111,6 +117,10 @@ final class TelegramOrderMessagePresenter
                 $operator,
                 $rateMode
             );
+            $payload['lifecycle'] = $this->normalizeLifecycle($lifecycle, $task, $operator);
+            $payload['completed_at'] = $this->completedAt($task, $payload['lifecycle']);
+
+            return $payload;
         } catch (Throwable) {
             return [
                 'public_id' => (string) (($task->public_id ?: $task->id) ?? ''),
@@ -130,6 +140,8 @@ final class TelegramOrderMessagePresenter
                 'status_label' => null,
                 'rate_mode' => 'floating',
                 'claimed_at' => null,
+                'lifecycle' => self::LIFECYCLE_NEW,
+                'completed_at' => null,
             ];
         }
     }
@@ -266,7 +278,8 @@ final class TelegramOrderMessagePresenter
         if (! empty($payload['order_rate'])) {
             $lines[] = ' — Курс заявки: '.$payload['order_rate'];
         }
-        if ($mode === 'floating' && ! empty($payload['current_rate'])) {
+        $life = (string) ($payload['lifecycle'] ?? self::LIFECYCLE_NEW);
+        if ($mode === 'floating' && ! empty($payload['current_rate']) && $life !== self::LIFECYCLE_COMPLETED) {
             $lines[] = ' — Текущий курс: '.$payload['current_rate'];
         }
         foreach ($payload['receive_fields'] ?? [] as $row) {
@@ -304,22 +317,72 @@ final class TelegramOrderMessagePresenter
 
     private function stateLine(array $payload): string
     {
-        $status = trim((string) ($payload['status_label'] ?? ''));
+        $life = $this->normalizeLifecycle($payload['lifecycle'] ?? null, null, $payload['operator'] ?? null);
         $operator = $this->nonEmpty((string) ($payload['operator'] ?? ''));
         $claimed = $this->nonEmpty((string) ($payload['claimed_at'] ?? ''));
-        if ($operator !== null) {
+        $completed = $this->nonEmpty((string) ($payload['completed_at'] ?? ''));
+        $clock = $completed ?? $claimed;
+
+        if ($life === self::LIFECYCLE_COMPLETED) {
+            $lines = ['✅ Выполнено'];
+            if ($operator !== null) {
+                $bits = ['👤 '.$operator];
+                if ($clock !== null) {
+                    $bits[] = '🕐 '.$clock;
+                }
+                $lines[] = implode(' · ', $bits);
+            }
+
+            return implode("\n", $lines);
+        }
+
+        if ($life === self::LIFECYCLE_CLAIMED && $operator !== null) {
             $bits = ['👤 '.$operator];
             if ($claimed !== null) {
                 $bits[] = '🕐 '.$claimed;
             }
-            if ($status !== '') {
-                $bits[] = '🟡 '.$status;
-            }
+            $bits[] = '🟡 В работе';
 
             return implode(' · ', $bits);
         }
 
-        return $status !== '' ? '🟡 '.$status : '🟡 —';
+        $status = trim((string) ($payload['status_label'] ?? ''));
+
+        return $status !== '' ? '🟡 '.$status : '🟡 Ожидается оплата';
+    }
+
+    private function normalizeLifecycle(mixed $lifecycle, ?Task $task, mixed $operator): string
+    {
+        $life = is_string($lifecycle) ? $lifecycle : '';
+        if (in_array($life, [self::LIFECYCLE_NEW, self::LIFECYCLE_CLAIMED, self::LIFECYCLE_COMPLETED], true)) {
+            return $life;
+        }
+        try {
+            if ($task !== null && (int) ($task->status ?? 0) === 4) {
+                return self::LIFECYCLE_COMPLETED;
+            }
+        } catch (Throwable) {
+        }
+        $op = $this->nonEmpty((string) $operator);
+
+        return $op !== null ? self::LIFECYCLE_CLAIMED : self::LIFECYCLE_NEW;
+    }
+
+    private function completedAt(Task $task, string $lifecycle): ?string
+    {
+        if ($lifecycle !== self::LIFECYCLE_COMPLETED) {
+            return null;
+        }
+        try {
+            $at = $task->updated_at ?? $task->created_at ?? null;
+            if ($at === null) {
+                return now()->format('H:i');
+            }
+
+            return $at->format('H:i');
+        } catch (Throwable) {
+            return now()->format('H:i');
+        }
     }
 
     private function rateMode(Task $task): string

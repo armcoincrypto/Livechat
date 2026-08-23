@@ -51,4 +51,14 @@ final class TelegramCompletionNoticePublisherTest extends TestCase
         $this->assertStringNotContainsString('editMessage($origChat', $src);
         $this->assertStringContainsString('telegram_complete_notice:', (string) file_get_contents(base_path('app/Services/TelegramOperator/TelegramCompletionNoticePublisher.php')));
     }
+
+    public function test_workflow_edits_full_card_not_compact_notice(): void
+    {
+        $src = (string) file_get_contents(base_path('app/Services/TelegramOperator/TelegramOrderOperatorWorkflowService.php'));
+        $this->assertStringContainsString('LIFECYCLE_COMPLETED', $src);
+        $this->assertStringContainsString('renderText', $src);
+        $this->assertStringNotContainsString('"✅ Заявка выполнена', $src);
+        $this->assertStringContainsString('completedKeyboard', $src);
+        $this->assertStringContainsString('LIFECYCLE_CLAIMED', $src);
+    }
 }

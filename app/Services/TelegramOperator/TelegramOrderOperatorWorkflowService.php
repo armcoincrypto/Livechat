@@ -309,15 +309,14 @@ final class TelegramOrderOperatorWorkflowService
                 'settlement_reference_len' => mb_strlen($note),
             ]);
 
-            $publicId = $taskAfter ? $this->orderLabel($taskAfter) : (string) $taskId;
-            $doneText = ($dryRun ? "🧪 DRY-RUN (без изменения статуса)\n\n" : "✅ Заявка выполнена\n\n")
-                ."📋 №{$publicId}\n"
-                .'👤 '.$this->auth->displayName($operator).' · 🕐 '.now()->format('H:i');
-
-            $adminUrl = $this->adminUrl($taskId);
-            $keyboard = $adminUrl !== null
-                ? [[['text' => '🔗 Открыть в админке', 'url' => $adminUrl]]]
-                : null;
+            $presenter = app(TelegramOrderMessagePresenter::class);
+            $cardTask = $taskAfter ?? $taskBefore ?? new Task();
+            $cardText = $presenter->renderText(
+                $presenter->present($cardTask, TelegramOrderMessagePresenter::LIFECYCLE_COMPLETED)
+            );
+            if ($dryRun) {
+                $cardText = "🧪 DRY-RUN (без изменения статуса)\n\n".$cardText;
+            }
 
             $this->completionNotice->publish(
                 $taskId,
@@ -325,8 +324,8 @@ final class TelegramOrderOperatorWorkflowService
                 $chatId,
                 $messageId,
                 $flow,
-                $doneText,
-                $keyboard
+                $cardText,
+                self::completedKeyboard($taskId)
             );
         } catch (ManualCompletionException $e) {
             $this->bot->answerCallback($callbackId, $e->getMessage(), true);
@@ -361,22 +360,14 @@ final class TelegramOrderOperatorWorkflowService
             $task = Task::query()->find($taskId);
             if ($task !== null) {
                 $presenter = app(TelegramOrderMessagePresenter::class);
-                $text = $presenter->renderText($presenter->present($task));
+                $text = $presenter->renderText($presenter->present($task, TelegramOrderMessagePresenter::LIFECYCLE_CLAIMED));
             } elseif (trim($originalText) !== '') {
                 $text = trim($originalText);
             }
         } catch (Throwable) {
             $text = trim($originalText) !== '' ? trim($originalText) : $text;
         }
-        $adminUrl = $this->adminUrl($taskId);
-        $keyboard = [
-            [['text' => '✅ Выполнить', 'callback_data' => self::CB_COMPLETE.$taskId]],
-        ];
-        if ($adminUrl !== null) {
-            $keyboard[] = [['text' => '🔗 Открыть в админке', 'url' => $adminUrl]];
-        }
-
-        $this->bot->editMessage($chatId, $messageId, $text, $keyboard);
+        $this->bot->editMessage($chatId, $messageId, $text, self::claimedKeyboard($taskId));
     }
 
     /**
@@ -476,5 +467,48 @@ final class TelegramOrderOperatorWorkflowService
         }
 
         return $rows;
+    }
+
+    /**
+     * @return list<list<array{text: string, callback_data?: string, url?: string}>>
+     */
+    public static function claimedKeyboard(int $taskId): array
+    {
+        $rows = [
+            [['text' => '✅ Выполнить', 'callback_data' => self::CB_COMPLETE.$taskId]],
+        ];
+        $admin = self::adminLink($taskId);
+        if ($admin !== null) {
+            $rows[] = [$admin];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return list<list<array{text: string, callback_data?: string, url?: string}>>
+     */
+    public static function completedKeyboard(int $taskId): array
+    {
+        $admin = self::adminLink($taskId);
+        if ($admin === null) {
+            return [];
+        }
+
+        return [[$admin]];
+    }
+
+    /**
+     * @return array{text: string, url: string}|null
+     */
+    private static function adminLink(int $taskId): ?array
+    {
+        $base = rtrim((string) config('app.url', ''), '/');
+        $path = (string) config('telegram_operator.admin_order_path', '/iexadmin/#/orders/');
+        if ($base === '') {
+            return null;
+        }
+
+        return ['text' => '🔗 Открыть в админке', 'url' => $base.$path.$taskId];
     }
 }

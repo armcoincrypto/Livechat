@@ -373,4 +373,75 @@ final class TelegramOrderMessagePresenterTest extends TestCase
         $this->assertStringNotContainsString('bot-secret-token', $joined);
         $this->assertStringNotContainsString('@alice@', $joined);
     }
+
+    public function test_lifecycle_states_keep_full_card_and_swap_status_only(): void
+    {
+        $task = $this->baseTask();
+        $task->setRelation('tasks_fields_currency_in', collect([
+            $this->field('Ваш Телеграмм', 'alice', 'income_telegram', 'in'),
+        ]));
+        $task->setRelation('tasks_fields_currency_out', collect([
+            $this->field('Card number', '410011506091695', 'outcome_nomer_karty', 'out'),
+            $this->field('Recipient', 'Иван Иванов', 'sender_fullname', 'out'),
+            $this->field('Phone Number', '+79990001122', 'outcome_nomer_telefona', 'out'),
+        ]));
+        $task->setRelation('direction_exchange', $this->direction('Tether TRC20', 'USDT', 'USDTTRC20', 'SBER', 'RUB', 'SBERRUB', '1 USDT = 87.6656 RUB'));
+
+        $presenter = new TelegramOrderMessagePresenter();
+        $fresh = $presenter->renderText($presenter->present($task, TelegramOrderMessagePresenter::LIFECYCLE_NEW));
+        $this->assertStringContainsString('📋 Заявка №: 1787225842559', $fresh);
+        $this->assertStringContainsString('Отдает клиент:', $fresh);
+        $this->assertStringContainsString('Получает клиент:', $fresh);
+        $this->assertStringContainsString('Telegram: @alice', $fresh);
+        $this->assertStringContainsString('Карта: 410011506091695', $fresh);
+        $this->assertStringContainsString('ФИО: Иван Иванов', $fresh);
+        $this->assertStringContainsString('🟡 Ожидается оплата', $fresh);
+        $this->assertStringNotContainsString('✅ Выполнено', $fresh);
+        $this->assertStringNotContainsString('В работе', $fresh);
+
+        $claimedPayload = $presenter->present($task, TelegramOrderMessagePresenter::LIFECYCLE_CLAIMED);
+        $claimedPayload['operator'] = 'admin';
+        $claimedPayload['claimed_at'] = '00:30';
+        $claimed = $presenter->renderText($claimedPayload);
+        $this->assertStringContainsString('Карта: 410011506091695', $claimed);
+        $this->assertStringContainsString('Telegram: @alice', $claimed);
+        $this->assertStringContainsString('👤 admin', $claimed);
+        $this->assertStringContainsString('🕐 00:30', $claimed);
+        $this->assertStringContainsString('🟡 В работе', $claimed);
+        $this->assertStringNotContainsString('Ожидается оплата', $claimed);
+        $this->assertStringNotContainsString('✅ Выполнено', $claimed);
+
+        $donePayload = $presenter->present($task, TelegramOrderMessagePresenter::LIFECYCLE_COMPLETED);
+        $donePayload['operator'] = 'admin';
+        $donePayload['completed_at'] = '00:31';
+        $done = $presenter->renderText($donePayload);
+        $this->assertStringContainsString('📋 Заявка №: 1787225842559', $done);
+        $this->assertStringContainsString('Отдает клиент:', $done);
+        $this->assertStringContainsString('Получает клиент:', $done);
+        $this->assertStringContainsString('Карта: 410011506091695', $done);
+        $this->assertStringContainsString('Тип курса: Плавающий', $done);
+        $this->assertStringContainsString('Курс заявки:', $done);
+        $this->assertStringContainsString('E-mail: a@b.c', $done);
+        $this->assertStringContainsString('✅ Выполнено', $done);
+        $this->assertStringContainsString('👤 admin', $done);
+        $this->assertStringContainsString('🕐 00:31', $done);
+        $this->assertStringNotContainsString('Ожидается оплата', $done);
+        $this->assertStringNotContainsString('В работе', $done);
+        $this->assertStringNotContainsString('✅ Заявка выполнена', $done);
+        $this->assertStringNotContainsString('Текущий курс:', $done);
+    }
+
+    public function test_completed_keyboard_drops_mutating_actions(): void
+    {
+        Config::set('app.url', 'https://exswaping.com');
+        $claimed = TelegramOrderOperatorWorkflowService::claimedKeyboard(42);
+        $claimedFlat = json_encode($claimed, JSON_UNESCAPED_UNICODE);
+        $this->assertStringContainsString('Выполнить', $claimedFlat);
+        $this->assertStringNotContainsString('Принять', $claimedFlat);
+        $done = TelegramOrderOperatorWorkflowService::completedKeyboard(42);
+        $doneFlat = json_encode($done, JSON_UNESCAPED_UNICODE);
+        $this->assertStringNotContainsString('callback_data', $doneFlat);
+        $this->assertStringNotContainsString('Выполнить', $doneFlat);
+        $this->assertStringContainsString('админке', mb_strtolower($doneFlat));
+    }
 }
