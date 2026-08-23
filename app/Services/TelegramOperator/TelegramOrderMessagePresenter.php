@@ -77,12 +77,12 @@ final class TelegramOrderMessagePresenter
             $currentRate = $liveRate;
         }
 
-        $giveFields = $this->fieldsFrom($task->tasks_fields_currency_in ?? collect());
+        $giveFields = $this->fieldsFrom($task->tasks_fields_currency_in ?? collect(), 'in');
         $giveFields = $this->prependIfMissing($giveFields, 'Сеть', $this->networkHint((string) ($c1?->designation_xml ?? ''), $givePs));
-        $inboundWallet = $this->inboundWallet($task);
-        $giveFields = $this->prependIfMissing($giveFields, 'Кошелек', $inboundWallet);
+        // Service inbound destination (customer pays TO this). Not the customer payout wallet.
+        $giveFields = $this->prependIfMissing($giveFields, 'Адрес для депозита', $this->inboundWallet($task));
 
-        $recvFields = $this->fieldsFrom($task->tasks_fields_currency_out ?? collect());
+        $recvFields = $this->fieldsFrom($task->tasks_fields_currency_out ?? collect(), 'out');
         $recvFields = $this->prependIfMissing($recvFields, 'Сеть', $this->networkHint((string) ($c2?->designation_xml ?? ''), $recvPs));
         $toShot = $this->plain((string) ($task->to_shot ?? ''));
         if ($toShot !== null && ! $this->valuesContain($recvFields, $toShot)) {
@@ -220,7 +220,7 @@ final class TelegramOrderMessagePresenter
      * @param  Collection<int, TaskField>|iterable<TaskField>  $fields
      * @return list<array{label: string, value: string}>
      */
-    private function fieldsFrom(iterable $fields): array
+    private function fieldsFrom(iterable $fields, string $side = 'out'): array
     {
         $out = [];
         foreach ($fields as $field) {
@@ -234,9 +234,7 @@ final class TelegramOrderMessagePresenter
                 if ($this->looksSecret($label) || $this->looksSecret($key)) {
                     continue;
                 }
-                if (str_contains(mb_strtolower($label), 'telegram') || str_contains($key, 'telegram')) {
-                    $label = 'Telegram';
-                }
+                $label = $this->canonicalLabel($label, $key, $side);
                 $out[] = ['label' => $label, 'value' => $value];
             } catch (Throwable) {
                 continue;
@@ -244,6 +242,34 @@ final class TelegramOrderMessagePresenter
         }
 
         return $out;
+    }
+
+    private function canonicalLabel(string $label, string $key, string $side): string
+    {
+        $lk = mb_strtolower($label.' '.$key);
+        if (str_contains($lk, 'telegram')) {
+            return 'Telegram';
+        }
+        if (str_contains($lk, 'iban') || str_contains($lk, 'карт') || str_contains($lk, 'card') || str_contains($lk, 'phone') || str_contains($lk, 'телефон')) {
+            return $label;
+        }
+        // Customer payout wallet on the receive leg. Form CMS often labels this "Адрес для депозита".
+        if ($side === 'out' && $this->looksLikeWalletLabel($lk)) {
+            return 'Кошелек';
+        }
+
+        return $label;
+    }
+
+    private function looksLikeWalletLabel(string $lk): bool
+    {
+        foreach (['депозит', 'кошел', 'wallet', 'address', 'adress', 'адрес'] as $needle) {
+            if (str_contains($lk, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -285,7 +311,9 @@ final class TelegramOrderMessagePresenter
 
     private function inboundWallet(Task $task): ?string
     {
-        $fromReq = $this->plain((string) ($task->payment_requisites?->account_number ?? ''));
+        $fromReq = $this->plain((string) ($task->payment_requisites?->account_number
+            ?? $task->payment_requisites?->account_number
+            ?? ''));
         if ($fromReq !== null) {
             return $fromReq;
         }

@@ -83,8 +83,8 @@ final class TelegramOrderMessagePresenterTest extends TestCase
             (new TelegramOrderMessagePresenter())->present($task)
         );
 
-        $this->assertStringContainsString('Кошелек: XhgePhzRE6a3pSPyKnuCUEBBMBA9o8nqNg', $text);
-        $this->assertStringContainsString('Адрес для депозита: 0xa03c3699E40F0b7893a1Fb80Ac6B570f0E3b75', $text);
+        $this->assertStringContainsString('Адрес для депозита: XhgePhzRE6a3pSPyKnuCUEBBMBA9o8nqNg', $text);
+        $this->assertStringContainsString('Кошелек: 0xa03c3699E40F0b7893a1Fb80Ac6B570f0E3b75', $text);
         $this->assertStringContainsString('Курс обмена: 1 DASH = 41.09535467 USDT', $text);
         $this->assertStringContainsString('Актуальный: 1 DASH = 40.76327959 USDT', $text);
         $this->assertStringContainsString('Tether BEP20 USDT', $text);
@@ -125,6 +125,80 @@ final class TelegramOrderMessagePresenterTest extends TestCase
         );
         $this->assertStringNotContainsString('abc', $text);
         $this->assertStringContainsString('Card number: 4100', $text);
+    }
+
+    public function test_usdt_to_xmr_payout_wallet_and_inverse_rate(): void
+    {
+        $task = $this->baseTask();
+        $task->public_id = '1786612898135';
+        $task->give_price = '400';
+        $task->receiving_price = '0.98684385';
+        $task->course_display = '405.33261688 USDT = 1 XMR';
+        $task->setRelation('tasks_fields_currency_in', collect([
+            $this->field('Ваш Телеграмм', 'Spec.dima01@proton.me', 'income_outcome_income_vas_telegramm_whatsapp_1', 'in'),
+        ]));
+        $task->setRelation('tasks_fields_currency_out', collect([
+            $this->field('Адрес для депозита', '4DSQMNzzq46N1z2pZWAVdeA6JvUL9TCB2bnBiA3ZzoqEdYJnMydt5akCa3vtmapeDsbVKGPFdNkzqTcJS8M8oyK7WGjAEoLzf56Tu78MdS', 'outcome_deposit_adress', 'out'),
+        ]));
+        $task->setRelation('payment_requisites', null);
+        $task->setRelation('direction_exchange', $this->direction('Tether TRC20', 'USDT', 'USDTTRC20', 'Monero', 'XMR', 'XMR', '405.33261688 USDT = 1 XMR'));
+
+        $text = (new TelegramOrderMessagePresenter())->renderText(
+            (new TelegramOrderMessagePresenter())->present($task)
+        );
+
+        $this->assertStringContainsString('ПС: Tether TRC20 USDT', $text);
+        $this->assertStringContainsString('Сумма: 400 USDT', $text);
+        $this->assertStringContainsString('Telegram: Spec.dima01@proton.me', $text);
+        $this->assertStringContainsString('ПС: Monero XMR', $text);
+        $this->assertStringContainsString('Сумма: 0.98684385 XMR', $text);
+        $this->assertStringContainsString('Курс обмена: 405.33261688 USDT = 1 XMR', $text);
+        $this->assertStringContainsString('Кошелек: 4DSQMNzzq46N1z2pZWAVdeA6JvUL9TCB2bnBiA3ZzoqEdYJnMydt5akCa3vtmapeDsbVKGPFdNkzqTcJS8M8oyK7WGjAEoLzf56Tu78MdS', $text);
+        $this->assertStringNotContainsString('Актуальный:', $text);
+    }
+
+    public function test_usdt_to_kaspi_card_recipient_phone(): void
+    {
+        $task = $this->baseTask();
+        $task->public_id = '1786554546236';
+        $task->give_price = '620';
+        $task->receiving_price = '288388.48';
+        $task->course_display = '1 USDT = 465.14 KZT';
+        $task->setRelation('tasks_fields_currency_in', collect([
+            $this->field('Ваш Телеграмм', '@kikoeer8', 'income_outcome_income_vas_telegramm_whatsapp_1', 'in'),
+        ]));
+        $task->setRelation('tasks_fields_currency_out', collect([
+            $this->field('Номер карты', '4400430051522917', 'outcome_nomer_karty', 'out'),
+            $this->field('ФИО получателя', 'MAXIM KHAKIMOV', 'sender_fullname', 'out'),
+            $this->field('Номер телефона', '87780633922', 'outcome_nomer_telefona', 'out'),
+        ]));
+        $task->setRelation('direction_exchange', $this->direction('Tether TRC20', 'USDT', 'USDTTRC20', 'KASPI', 'KZT', 'KASPIKZT', '1 USDT = 465.14 KZT'));
+
+        $text = (new TelegramOrderMessagePresenter())->renderText(
+            (new TelegramOrderMessagePresenter())->present($task)
+        );
+
+        $this->assertStringContainsString('Telegram: @kikoeer8', $text);
+        $this->assertStringContainsString('ПС: KASPI KZT', $text);
+        $this->assertStringContainsString('Курс обмена: 1 USDT = 465.14 KZT', $text);
+        $this->assertStringContainsString('Номер карты: 4400430051522917', $text);
+        $this->assertStringContainsString('ФИО получателя: MAXIM KHAKIMOV', $text);
+        $this->assertStringContainsString('Номер телефона: 87780633922', $text);
+        $this->assertStringContainsString('E-mail: a@b.c', $text);
+        $this->assertStringNotContainsString('Актуальный:', $text);
+    }
+
+    public function test_current_rate_omitted_when_direction_rate_missing(): void
+    {
+        $task = $this->baseTask();
+        $task->course_display = '1 USDT = 90 RUB';
+        $task->setRelation('direction_exchange', $this->direction('Tether TRC20', 'USDT', 'USDTTRC20', 'ЮMoney', 'RUB', 'YAMRUB', null));
+
+        $text = (new TelegramOrderMessagePresenter())->renderText(
+            (new TelegramOrderMessagePresenter())->present($task)
+        );
+        $this->assertStringContainsString('Курс обмена: 1 USDT = 90 RUB', $text);
+        $this->assertStringNotContainsString('Актуальный:', $text);
     }
 
     public function test_telegram_new_order_uses_presenter_and_fail_open_fallback(): void

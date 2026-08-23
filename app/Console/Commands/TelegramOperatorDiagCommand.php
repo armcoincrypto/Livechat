@@ -42,8 +42,11 @@ final class TelegramOperatorDiagCommand extends Command
         $this->line('getMe_ok='.($getMe['ok'] ? '1' : '0'));
         $this->line('getMe_http='.(string) ($getMe['http'] ?? ''));
         $this->line('getMe_error='.(string) ($getMe['error'] ?? ''));
-        $this->line('bot_username='.(string) ($getMe['username'] ?? ''));
-        $this->line('ACTIVE_OPERATOR_BOT='.(string) ($getMe['username'] ?? ''));
+        $username = (string) ($getMe['username'] ?? '');
+        $this->line('bot_username='.$username);
+        $active = $username === '' ? '' : (str_starts_with($username, '@') ? $username : '@'.$username);
+        $this->line('ACTIVE_OPERATOR_BOT='.$active);
+        $this->line('ACTIVE_OPERATOR_BOT='.$active);
 
         $getChat = $this->telegramCall($token, 'getChat', ['chat_id' => $chatId], $timeout, $connect);
         $this->line('getChat_ok='.($getChat['ok'] ? '1' : '0'));
