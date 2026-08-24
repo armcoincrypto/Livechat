@@ -68,7 +68,7 @@ final class DerivedMarketBaselineBcActiveOwnershipTest extends TestCase
     {
         $schedule = (string) file_get_contents(dirname(__DIR__, 3) . '/app/Console/Schedule/ExchangeSchedule.php');
         $this->assertStringContainsString("directions:derived-baseline-refresh", $schedule);
-        $this->assertStringNotContainsString("directions:derived-baseline-refresh --apply", $schedule);
+        $this->assertStringContainsString("directions:derived-baseline-refresh --apply", $schedule);
     }
 
     private function extractMethod(string $src, string $name): string

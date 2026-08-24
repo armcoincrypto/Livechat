@@ -239,10 +239,10 @@ class ExchangeSchedule
         self::applyMinuteCadence($zelle, $ratesMinutes);
 
         // DERIVED_MARKET_BASELINE BASE refresh. Crypto legs ≈ 10m; CBR ≈ 30m.
-        // First wave: scheduled DRY-RUN only. Live 2026-08-24 dry-run showed 1368 BASE
-        // deltas (110 >= 5%, 0 >= 25%). Do not attach --apply until that set is reviewed.
-        // Safety cap still lives in DerivedMarketBaselineAuthority for when --apply is enabled.
-        $schedule->command('directions:derived-baseline-refresh')
+        // After 2026-08-24 ownership-guard + staged first-sync: scheduled --apply.
+        // Hard skip: bestchange_directions.status=1 (health cannot steal ownership),
+        // Zelle outgoing, and |Δ|>25% safety cap.
+        $schedule->command('directions:derived-baseline-refresh --apply')
             ->everyTenMinutes()
             ->onOneServer()
             ->withoutOverlapping(9)
