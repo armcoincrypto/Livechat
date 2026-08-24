@@ -16,7 +16,10 @@ final class DerivedMarketBaselineBlockBestchangeTest extends TestCase
 {
     public function test_config_blocks_bestchange_on_gram_usdt_and_trx_gram(): void
     {
-        $cfg = DerivedMarketBaselineAuthority::fromStorageApp()->config()['directions'] ?? [];
+        $path = dirname(__DIR__, 3) . '/resources/rates/derived-market-baseline-directions.json';
+        $json = json_decode((string) file_get_contents($path), true);
+        $this->assertIsArray($json);
+        $cfg = $json['directions'] ?? [];
 
         foreach ([11, 2977, 421] as $id) {
             $this->assertArrayHasKey((string) $id, $cfg, "direction {$id} must be derived-owned");
@@ -43,6 +46,10 @@ final class DerivedMarketBaselineBlockBestchangeTest extends TestCase
 
     public function test_apply_writes_despite_active_bestchange_when_blocked(): void
     {
+        if (getenv('EXSWAPING_ALLOW_LIVE_DB_TESTS') !== '1') {
+            $this->markTestSkipped('refuses production DB writes; set EXSWAPING_ALLOW_LIVE_DB_TESTS=1 only on isolated sqlite');
+        }
+
         $auth = DerivedMarketBaselineAuthority::fromStorageApp();
         if (!$auth->owns(2977)) {
             $this->markTestSkipped('direction 2977 not in derived config');
@@ -97,6 +104,10 @@ final class DerivedMarketBaselineBlockBestchangeTest extends TestCase
 
     public function test_bestchange_recalculate_skips_protected_even_with_active_link(): void
     {
+        if (getenv('EXSWAPING_ALLOW_LIVE_DB_TESTS') !== '1') {
+            $this->markTestSkipped('refuses production DB writes; set EXSWAPING_ALLOW_LIVE_DB_TESTS=1 only on isolated sqlite');
+        }
+
         ProtectedMarketBaselineWriteGuard::clearCache();
         $this->assertTrue(ProtectedMarketBaselineWriteGuard::blocksBestchangeOverwrite(11));
 

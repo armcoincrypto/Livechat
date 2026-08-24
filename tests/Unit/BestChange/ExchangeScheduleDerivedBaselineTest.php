@@ -31,5 +31,6 @@ final class ExchangeScheduleDerivedBaselineTest extends TestCase
         $this->assertStringContainsString('--apply', $sig);
         $this->assertStringContainsString('--full', $sig);
         $this->assertStringContainsString('--dry-run', $sig);
+        $this->assertStringContainsString('--ids=', $sig);
     }
 }

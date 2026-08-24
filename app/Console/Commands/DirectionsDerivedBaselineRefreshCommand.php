@@ -12,7 +12,8 @@ final class DirectionsDerivedBaselineRefreshCommand extends Command
     protected $signature = 'directions:derived-baseline-refresh
         {--dry-run : show actions without writing}
         {--apply : apply derived baseline ownership}
-        {--full : dump full JSON results}';
+        {--full : dump full JSON results}
+        {--ids= : comma-separated owned direction IDs to refresh}';
 
     protected $description = 'Refresh DERIVED_MARKET_BASELINE owned directions (e.g. 1249 GRAM→CARDKZT).';
 
@@ -20,7 +21,8 @@ final class DirectionsDerivedBaselineRefreshCommand extends Command
     {
         $apply = (bool) $this->option('apply');
         $auth = DerivedMarketBaselineAuthority::fromStorageApp();
-        $results = $auth->refreshAll(dryRun: !$apply);
+        $onlyIds = $this->parseIds((string) $this->option('ids'));
+        $results = $auth->refreshAll(dryRun: !$apply, onlyIds: $onlyIds);
 
         $summary = $this->summarize($results, $apply);
         $this->line(json_encode($summary, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
@@ -99,5 +101,26 @@ final class DirectionsDerivedBaselineRefreshCommand extends Command
             'skipped_rows' => $skipped,
             'sample_writes' => array_slice($wouldWrite, 0, 25),
         ];
+    }
+
+    /**
+     * @return list<int>|null  null = all owned IDs
+     */
+    private function parseIds(string $raw): ?array
+    {
+        $raw = trim($raw);
+        if ($raw === '') {
+            return null;
+        }
+        $ids = [];
+        foreach (explode(',', $raw) as $part) {
+            $part = trim($part);
+            if ($part === '' || !ctype_digit($part)) {
+                continue;
+            }
+            $ids[] = (int) $part;
+        }
+
+        return $ids;
     }
 }

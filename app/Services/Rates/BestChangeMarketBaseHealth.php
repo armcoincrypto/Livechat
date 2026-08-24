@@ -124,6 +124,28 @@ final class BestChangeMarketBaseHealth
         return self::evaluate($directionId, $maxAgeSeconds)['healthy'] === true;
     }
 
+    /**
+     * Active BestChange mapping is a hard ownership boundary.
+     * Health (stale/error/outlier) must not transfer write rights to derived.
+     */
+    public static function isActiveStatus(mixed $status): bool
+    {
+        return (int) ($status ?? 0) === 1;
+    }
+
+    public static function hasActiveLink(int $directionId): bool
+    {
+        if ($directionId <= 0) {
+            return false;
+        }
+
+        $status = DB::table('bestchange_directions')
+            ->where('id_direction_exchange', $directionId)
+            ->value('status');
+
+        return self::isActiveStatus($status);
+    }
+
     private static function ageSeconds(mixed $updatedAt): ?int
     {
         if ($updatedAt === null || $updatedAt === '') {

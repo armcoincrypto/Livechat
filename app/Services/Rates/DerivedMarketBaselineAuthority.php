@@ -236,9 +236,12 @@ final class DerivedMarketBaselineAuthority
             ];
         }
 
-        // Prefer healthy BestChange; stale/outlier must not suppress DERIVED fallback.
+        // Active BestChange (status=1) is a hard ownership boundary.
+        // Stale/failed/outlier health must NOT let derived steal the row.
+        // block_bestchange_overwrite still blocks the BC compiler from writing
+        // derived-owned rows; it does not authorize derived to overwrite BC-active rows.
         $blockBc = !empty($cfg['ownership']['block_bestchange_overwrite']);
-        if (!$blockBc && BestChangeMarketBaseHealth::isHealthy($directionId)) {
+        if (BestChangeMarketBaseHealth::hasActiveLink($directionId)) {
             return [
                 'ok' => true,
                 'skipped' => 'bestchange_active',
@@ -488,17 +491,29 @@ final class DerivedMarketBaselineAuthority
     }
 
     /**
-     * Refresh all configured owned directions.
+     * Refresh owned directions. When $onlyIds is null, refresh the full owned set.
      *
+     * @param  list<int>|null  $onlyIds
      * @return list<array<string,mixed>>
      */
-    public function refreshAll(bool $dryRun = true): array
+    public function refreshAll(bool $dryRun = true, ?array $onlyIds = null): array
     {
         ProtectedMarketBaselineWriteGuard::clearCache();
 
         $out = [];
+        $allow = null;
+        if ($onlyIds !== null) {
+            $allow = [];
+            foreach ($onlyIds as $id) {
+                $allow[(int) $id] = true;
+            }
+        }
         foreach (array_keys($this->config()['directions'] ?? []) as $id) {
-            $out[] = $this->apply((int) $id, $dryRun);
+            $dirId = (int) $id;
+            if ($allow !== null && !isset($allow[$dirId])) {
+                continue;
+            }
+            $out[] = $this->apply($dirId, $dryRun);
         }
 
         return $out;
