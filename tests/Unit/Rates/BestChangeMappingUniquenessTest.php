@@ -40,6 +40,14 @@ final class BestChangeMappingUniquenessTest extends TestCase
         $this->assertCount(6, $ids);
     }
 
+    public function test_cardthb_maps_exactly_to_catalog_id_98(): void
+    {
+        $v = BestChangeMappingVerifier::fromStorageApp(self::STORAGE_APP);
+        $row = $v->verifyCode('CARDTHB');
+        $this->assertSame('VERIFIED', strtoupper((string) ($row['status'] ?? '')));
+        $this->assertSame(98, (int) ($row['bestchange_currency_id'] ?? 0));
+    }
+
     public function test_payeer_has_no_bestchange_market(): void
     {
         $catalog = json_decode((string) file_get_contents(self::STORAGE_APP . '/bestchange/currencies.json'), true);
