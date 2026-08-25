@@ -32,6 +32,7 @@ use App\Models\GroupParserExchange;
 use App\Models\ParserExchange;
 use App\Models\ParserFormulaRates;
 use App\Models\TaskStatus;
+use App\Services\Rates\AdminRateSourcePresenter;
 use App\Services\Rates\ExchangeRatesCacheInvalidator;
 use App\Settings\DirectionConfig;
 use Carbon\Carbon;
@@ -511,6 +512,7 @@ class DirectionExchangeController extends Controller
             },
             'merchants',
             'gateway_payments',
+            'bestchange_directions:id,id_direction_exchange,status,position_num',
         ])->withCount('tasks')->filter($request->all());
 
         if(!$request->has('sorting_order')) {
@@ -654,6 +656,7 @@ class DirectionExchangeController extends Controller
             'direction_exchange_cities.profile',
             'direction_forbidden_countries',
             'direction_allowed_countries',
+            'bestchange_directions:id,id_direction_exchange,status,position_num',
         ])->findOrFail($id);
 
 
@@ -1092,22 +1095,23 @@ class DirectionExchangeController extends Controller
         if ($pageName === 'courses') {
             $parser = (string) ($item->parser_source_name ?? '');
             $automatic = $parser !== '' && ! preg_match('/ручн|manual/iu', $parser);
+            $sourceLabel = AdminRateSourcePresenter::label($item);
             $responseData['options'] = array_merge($responseData['options'] ?? [], [
                 'rateAuthority' => [
                     'source' => $automatic ? 'automatic' : 'manual',
-                    'source_label' => $automatic ? 'Автоматический' : 'Ручной',
+                    'source_label' => $sourceLabel,
                     'parser_source_name' => $parser,
                     'automatic_base_rate' => (string) ($item->course_value ?? '0'),
                     'manual_rate_is_authority' => ! $automatic,
                     'percent_tab' => 'others/recount',
                     'help' => $automatic
-                        ? 'Источник курса: Автоматический. Рыночный BASE в course_value. Коммерческий % — на вкладке «Пересчёт» (floating_fee/fix_fee). Поле manual_rate_value не является авторитетом цены.'
+                        ? 'Источник курса: '.$sourceLabel.'. Рыночный BASE в course_value. Коммерческий % — вкладка «Прибыль».'
                         : 'Источник курса: Ручной. manual_rate_value может быть авторитетом.',
                 ],
             ]);
             $responseData['attributes']['parser_source_name'] = $parser;
             $responseData['attributes']['automatic_base_rate'] = (string) ($item->course_value ?? '0');
-            $responseData['attributes']['rate_source_label'] = $automatic ? 'Автоматический' : 'Ручной';
+            $responseData['attributes']['rate_source_label'] = $sourceLabel;
         }
 
         return response()->json(array_merge($responseData, [

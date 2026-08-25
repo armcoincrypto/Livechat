@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Resources\Admin\Basic;
 
+use App\Services\Rates\AdminRateSourcePresenter;
 use iEXPackages\Calculator\Calculator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -41,17 +42,7 @@ class DirectionExchangeResources extends ResourceCollection
                         'error_rate_text' => $item->error_rate_text,
                         'exchange_rate' => $item->exchange_rate,
                         'parser_source_name' => $item->parser_source_name,
-                        'rate_source_label' => (static function () use ($item) {
-                            $src = trim((string) ($item->parser_source_name ?? ''));
-                            if ($src === '') {
-                                return 'Не задан';
-                            }
-                            if (preg_match('/ручн|manual/iu', $src)) {
-                                return 'Ручной';
-                            }
-
-                            return 'Автоматический ('.$src.')';
-                        })(),
+                        'rate_source_label' => AdminRateSourcePresenter::label($item),
                         'oth_comm_percent' => $item->oth_comm_percent ?? 0,
                         'oth_comm_currency' => $item->oth_comm_currency ?? 0,
                         'oth_comm2_percent' => $item->oth_comm2_percent ?? 0,

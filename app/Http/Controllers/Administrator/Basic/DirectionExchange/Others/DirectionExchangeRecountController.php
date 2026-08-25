@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Administrator\Basic\DirectionExchange\Others;
 
 use App\Models\DirectionExchange;
 use App\Models\TaskStatus;
+use App\Services\Rates\AdminRateSourcePresenter;
 use App\Services\Rates\CanonicalDirectionRateCalculator;
 use App\Services\Rates\RateChannel;
 use App\Services\Rates\RateMode;
@@ -36,7 +37,9 @@ final class DirectionExchangeRecountController
      */
     public function edit(int $id): JsonResponse
     {
-        $item = DirectionExchange::query()->findOrFail($id);
+        $item = DirectionExchange::query()
+            ->with('bestchange_directions:id,id_direction_exchange,status,position_num')
+            ->findOrFail($id);
 
         $statusOrders = TaskStatus::query()
             ->whereNotIn('id', [4])
@@ -49,13 +52,14 @@ final class DirectionExchangeRecountController
         $fixed = $calc->calculate($item, RateMode::Fixed, RateChannel::Website);
         $parser = (string) ($item->parser_source_name ?? '');
         $automatic = $parser !== '' && ! preg_match('/ручн|manual/iu', $parser);
+        $sourceLabel = AdminRateSourcePresenter::label($item);
 
         return response()->json([
             'options' => [
                 'orderStatus' => $statusOrders,
                 'rateAuthority' => [
                     'source' => $automatic ? 'automatic' : 'manual',
-                    'source_label' => $automatic ? 'Автоматический' : 'Ручной',
+                    'source_label' => $sourceLabel,
                     'parser_source_name' => $parser,
                     'automatic_base_rate' => (string) ($item->course_value ?? '0'),
                     'calculated_floating' => $float->finalRate,
