@@ -171,6 +171,11 @@ final class RatesUpdateService
         return BestChangeDirection::query()
             ->where('status', 1)
             ->whereHas('direction_exchange', static fn ($q) => $q->where('status', 1))
+            ->with([
+                'direction_exchange:id,id_currency1,id_currency2',
+                'direction_exchange.currency1:id,designation_xml',
+                'direction_exchange.currency2:id,designation_xml',
+            ])
             ->orderBy('id')
             ->get();
     }
@@ -374,20 +379,22 @@ final class RatesUpdateService
      */
     private function assertBestChangeCurrencyMapping(BestChangeDirection $direction): void
     {
-        $guard = BestChangeCurrencyCatalogGuard::fromStorageApp();
-        $name = (string) ($direction->name ?? '');
-        $expectedOut = null;
-        if (preg_match('/->\s*\[([A-Za-z0-9]+)\]/', $name, $m) === 1) {
-            $expectedOut = strtoupper($m[1]);
-        }
-        $expectedIn = null;
-        if (preg_match('/^\s*\[([A-Za-z0-9]+)\]/', $name, $m) === 1) {
-            $expectedIn = strtoupper($m[1]);
-        }
+        $codesPath = function_exists('storage_path')
+            ? storage_path('app/bestchange-codes.json')
+            : '/var/www/app_exswapin_usr/data/www/app.exswaping.com/storage/app/bestchange-codes.json';
+        $guard = BestChangeCurrencyCatalogGuard::fromCatalogRows(
+            $this->catalog->currencies(false),
+            $codesPath,
+        );
+        $expected = BestChangeCurrencyCatalogGuard::mergeExpectedCodes(
+            BestChangeCurrencyCatalogGuard::expectedCodesFromName((string) ($direction->name ?? '')),
+            $direction->direction_exchange?->currency1?->designation_xml,
+            $direction->direction_exchange?->currency2?->designation_xml,
+        );
 
         $checks = [
-            'id_currency_in' => $expectedIn,
-            'id_currency_out' => $expectedOut,
+            'id_currency_in' => $expected['in'],
+            'id_currency_out' => $expected['out'],
         ];
         foreach ($checks as $field => $expectedCode) {
             $id = (int) ($direction->{$field} ?? 0);

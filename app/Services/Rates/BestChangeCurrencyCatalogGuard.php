@@ -12,9 +12,16 @@ namespace App\Services\Rates;
  */
 final class BestChangeCurrencyCatalogGuard
 {
+    /**
+     * @param list<array{id:int|string,name?:string}>|null $catalogOverride
+     * @param array<int|string, array<string,mixed>>|null $codesOverride
+     */
     public function __construct(
         private readonly string $catalogPath,
         private readonly string $codesPath,
+        private readonly ?array $catalogOverride = null,
+        private readonly ?array $codesOverride = null,
+        private readonly bool $useVersionedOverrides = true,
     ) {
     }
 
@@ -28,6 +35,77 @@ final class BestChangeCurrencyCatalogGuard
             catalogPath: $base . '/bestchange/currencies.json',
             codesPath: $base . '/bestchange-codes.json',
         );
+    }
+
+    /**
+     * Build a guard from an already-warmed BestChange currency catalog
+     * (API / CatalogRepository), not the daily on-disk currencies.json.
+     *
+     * @param list<array{id:int|string,name?:string}>|array<int, array{id?:int,name?:string}> $catalogRows
+     */
+    public static function fromCatalogRows(array $catalogRows, string $codesPath): self
+    {
+        $normalized = [];
+        foreach ($catalogRows as $id => $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $cid = (int) ($row['id'] ?? $id);
+            if ($cid <= 0) {
+                continue;
+            }
+            $normalized[] = [
+                'id' => $cid,
+                'name' => (string) ($row['name'] ?? ''),
+            ];
+        }
+
+        return new self(
+            catalogPath: '',
+            codesPath: $codesPath,
+            catalogOverride: $normalized,
+            codesOverride: null,
+            useVersionedOverrides: false,
+        );
+    }
+
+    /**
+     * @return array{in: ?string, out: ?string}
+     */
+    public static function expectedCodesFromName(string $name): array
+    {
+        $out = null;
+        if (preg_match('/->\s*\[([A-Za-z0-9]+)\]/', $name, $m) === 1) {
+            $out = strtoupper($m[1]);
+        }
+        $in = null;
+        if (preg_match('/^\s*\[([A-Za-z0-9]+)\]/', $name, $m) === 1) {
+            $in = strtoupper($m[1]);
+        }
+
+        return ['in' => $in, 'out' => $out];
+    }
+
+    /**
+     * Name-bracket codes win when present; otherwise use Exswaping designation_xml.
+     *
+     * @param array{in:?string,out:?string} $fromName
+     * @return array{in:?string,out:?string}
+     */
+    public static function mergeExpectedCodes(array $fromName, ?string $fromXml, ?string $toXml): array
+    {
+        $in = $fromName['in'] ?? null;
+        $out = $fromName['out'] ?? null;
+        if ($in === null || $in === '') {
+            $xml = strtoupper(trim((string) $fromXml));
+            $in = $xml !== '' ? $xml : null;
+        }
+        if ($out === null || $out === '') {
+            $xml = strtoupper(trim((string) $toXml));
+            $out = $xml !== '' ? $xml : null;
+        }
+
+        return ['in' => $in, 'out' => $out];
     }
 
     /**
@@ -92,7 +170,22 @@ final class BestChangeCurrencyCatalogGuard
      */
     private function loadCatalog(): array
     {
-        if (!is_file($this->catalogPath)) {
+        if ($this->catalogOverride !== null) {
+            $out = [];
+            foreach ($this->catalogOverride as $row) {
+                if (!is_array($row) || !isset($row['id'])) {
+                    continue;
+                }
+                $out[(int) $row['id']] = [
+                    'id' => (int) $row['id'],
+                    'name' => (string) ($row['name'] ?? ''),
+                ];
+            }
+
+            return $out;
+        }
+
+        if ($this->catalogPath === '' || !is_file($this->catalogPath)) {
             return [];
         }
         $raw = json_decode((string) file_get_contents($this->catalogPath), true);
@@ -118,10 +211,31 @@ final class BestChangeCurrencyCatalogGuard
      */
     private function loadCodes(): array
     {
+        if ($this->codesOverride !== null) {
+            $out = [];
+            foreach ($this->codesOverride as $key => $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+                $id = (int) ($row['id'] ?? $key);
+                $out[$id] = [
+                    'id' => (string) $id,
+                    'code' => (string) ($row['code'] ?? ''),
+                    'name' => (string) ($row['name'] ?? ''),
+                ];
+            }
+
+            return $out;
+        }
+
         // Prefer versioned overrides so drifted storage codes cannot silently win.
-        if (function_exists('base_path')) {
-            $overrides = base_path('resources/rates/bestchange-codes.overrides.json');
-            if (is_file($overrides)) {
+        if ($this->useVersionedOverrides && function_exists('base_path')) {
+            try {
+                $overrides = base_path('resources/rates/bestchange-codes.overrides.json');
+            } catch (\Throwable) {
+                $overrides = '';
+            }
+            if ($overrides !== '' && is_file($overrides)) {
                 return (new BestChangeMappingRegistry($this->codesPath, $overrides))->loadEffectiveCodes();
             }
         }
