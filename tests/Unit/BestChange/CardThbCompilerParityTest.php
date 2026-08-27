@@ -57,6 +57,41 @@ final class CardThbCompilerParityTest extends TestCase
         $this->assertTrue($liveCheck['ok'] ?? false, json_encode($liveCheck));
     }
 
+    public function test_api_shaped_live_catalog_without_name_brackets_accepts_cardthb(): void
+    {
+        $live = BestChangeCurrencyCatalogGuard::fromCatalogRows(
+            [[
+                'id' => 98,
+                'name' => 'Банковская карта THB',
+                'code' => 'CARDTHB',
+                'default_code' => 'THB',
+            ]],
+            $this->writeCodes([
+                '98' => ['id' => '98', 'code' => 'CARDTHB', 'name' => 'Банковская карта THB'],
+            ]),
+        );
+        $r = $live->validateId(98, 'CARDTHB');
+        $this->assertTrue($r['ok'] ?? false, json_encode($r));
+    }
+
+    public function test_api_shaped_catalog_does_not_treat_default_code_as_bestchange_code(): void
+    {
+        $live = BestChangeCurrencyCatalogGuard::fromCatalogRows(
+            [[
+                'id' => 98,
+                'name' => 'Банковская карта THB',
+                'code' => 'CARDTHB',
+                'default_code' => 'THB',
+            ]],
+            $this->writeCodes([
+                '98' => ['id' => '98', 'code' => 'CARDTHB', 'name' => 'Банковская карта THB'],
+            ]),
+        );
+        $r = $live->validateId(98, 'THB');
+        $this->assertFalse($r['ok']);
+        $this->assertSame('currency_mapping_mismatch', $r['reason']);
+    }
+
     public function test_cardthb_fixture_pipeline_rate_equals_compiler_calculator_rate(): void
     {
         $direction = new BestChangeDirection([
@@ -96,13 +131,21 @@ final class CardThbCompilerParityTest extends TestCase
 
     public function test_prusd_cardvnd_collision_still_fails_closed_on_live_catalog(): void
     {
-        $live = BestChangeCurrencyCatalogGuard::fromCatalogRows(
+        $bracket = BestChangeCurrencyCatalogGuard::fromCatalogRows(
             [['id' => 108, 'name' => '[CARDVND] - Банковская карта VND']],
             $this->writeCodes(['108' => ['id' => '108', 'code' => 'PRUSD', 'name' => 'Payeer USD']]),
         );
-        $r = $live->validateId(108, 'PRUSD');
+        $r = $bracket->validateId(108, 'PRUSD');
         $this->assertFalse($r['ok']);
         $this->assertSame('currency_mapping_mismatch', $r['reason']);
+
+        $apiShaped = BestChangeCurrencyCatalogGuard::fromCatalogRows(
+            [['id' => 108, 'name' => 'Банковская карта VND', 'code' => 'CARDVND']],
+            $this->writeCodes(['108' => ['id' => '108', 'code' => 'PRUSD', 'name' => 'Payeer USD']]),
+        );
+        $r2 = $apiShaped->validateId(108, 'PRUSD');
+        $this->assertFalse($r2['ok']);
+        $this->assertSame('currency_mapping_mismatch', $r2['reason']);
     }
 
     public function test_expected_codes_prefer_designation_when_name_has_no_brackets(): void

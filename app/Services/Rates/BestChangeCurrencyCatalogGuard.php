@@ -57,6 +57,7 @@ final class BestChangeCurrencyCatalogGuard
             $normalized[] = [
                 'id' => $cid,
                 'name' => (string) ($row['name'] ?? ''),
+                'code' => strtoupper(trim((string) ($row['code'] ?? ''))),
             ];
         }
 
@@ -134,8 +135,7 @@ final class BestChangeCurrencyCatalogGuard
         $codeName = is_array($codeMeta) ? (string) ($codeMeta['name'] ?? '') : '';
 
         if ($expectedCode !== null && $expectedCode !== '') {
-            // Catalog entries look like "[CARDVND] - ..."
-            if (!str_contains(strtoupper($catalogName), '[' . strtoupper($expectedCode) . ']')) {
+            if (!$this->catalogMatchesCode($cat, $expectedCode)) {
                 return [
                     'ok' => false,
                     'reason' => 'currency_mapping_mismatch',
@@ -146,7 +146,7 @@ final class BestChangeCurrencyCatalogGuard
             }
         }
 
-        if ($code !== '' && !str_contains(strtoupper($catalogName), '[' . strtoupper($code) . ']')) {
+        if ($code !== '' && !$this->catalogMatchesCode($cat, $code)) {
             return [
                 'ok' => false,
                 'reason' => 'currency_mapping_mismatch',
@@ -161,12 +161,34 @@ final class BestChangeCurrencyCatalogGuard
             'reason' => null,
             'catalog_name' => $catalogName,
             'code_name' => $codeName,
-            'code' => $code,
+            'code' => $code !== '' ? $code : (string) ($cat['code'] ?? ''),
         ];
     }
 
     /**
-     * @return array<int, array{id:int,name:string}>
+     * Live BestChange API names are "Банковская карта THB" with a separate
+     * `code` field (CARDTHB). On-disk currencies.json uses "[CARDTHB] - ...".
+     * Match either form. Never use default_code (THB ≠ CARDTHB).
+     *
+     * @param array{id?:int,name?:string,code?:string} $cat
+     */
+    private function catalogMatchesCode(array $cat, string $expectedCode): bool
+    {
+        $expected = strtoupper(trim($expectedCode));
+        if ($expected === '') {
+            return false;
+        }
+        $catalogCode = strtoupper(trim((string) ($cat['code'] ?? '')));
+        if ($catalogCode !== '' && $catalogCode === $expected) {
+            return true;
+        }
+        $catalogName = strtoupper((string) ($cat['name'] ?? ''));
+
+        return str_contains($catalogName, '[' . $expected . ']');
+    }
+
+    /**
+     * @return array<int, array{id:int,name:string,code?:string}>
      */
     private function loadCatalog(): array
     {
@@ -179,6 +201,7 @@ final class BestChangeCurrencyCatalogGuard
                 $out[(int) $row['id']] = [
                     'id' => (int) $row['id'],
                     'name' => (string) ($row['name'] ?? ''),
+                    'code' => strtoupper(trim((string) ($row['code'] ?? ''))),
                 ];
             }
 
@@ -200,6 +223,7 @@ final class BestChangeCurrencyCatalogGuard
             $out[(int) $row['id']] = [
                 'id' => (int) $row['id'],
                 'name' => (string) ($row['name'] ?? ''),
+                'code' => strtoupper(trim((string) ($row['code'] ?? ''))),
             ];
         }
 
