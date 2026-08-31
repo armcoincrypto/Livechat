@@ -491,7 +491,7 @@ class DirectionExchangeController extends Controller
         $exchanges = DirectionExchange::select(
             'id',
             'id_currency1', 'id_currency2', 'tech_name',
-            'status', 'is_main', 'is_error_rate', 'error_rate_text', 'exchange_rate',
+            'status', 'is_main', 'is_error_rate', 'error_rate_text', 'exchange_rate', 'course_value',
             'parser_source_name', 'oth_comm_percent',
             'oth_comm_currency', 'oth_comm2_percent', 'oth_comm2_currency', 'profit', 'profit_s', 'min_price1',
             'min_price2', 'max_price1', 'max_price2', 'is_manual_min_price1', 'is_manual_min_price2', 'is_manual_max_price1',
@@ -1100,7 +1100,9 @@ class DirectionExchangeController extends Controller
                 'rateAuthority' => [
                     'source' => $automatic ? 'automatic' : 'manual',
                     'source_label' => $sourceLabel,
+                    // Keep raw key for ownership logic; never use as operator-visible text.
                     'parser_source_name' => $parser,
+                    'parser_source_label' => $sourceLabel,
                     'automatic_base_rate' => (string) ($item->course_value ?? '0'),
                     'manual_rate_is_authority' => ! $automatic,
                     'percent_tab' => 'others/recount',
@@ -1109,7 +1111,7 @@ class DirectionExchangeController extends Controller
                         : 'Источник курса: Ручной. manual_rate_value может быть авторитетом.',
                 ],
             ]);
-            $responseData['attributes']['parser_source_name'] = $parser;
+            $responseData['attributes']['parser_source_name'] = $sourceLabel;
             $responseData['attributes']['automatic_base_rate'] = (string) ($item->course_value ?? '0');
             $responseData['attributes']['rate_source_label'] = $sourceLabel;
         }
@@ -1185,7 +1187,14 @@ class DirectionExchangeController extends Controller
                             'admin_enabled_intent' => true,
                             'operational_state' => 'unavailable',
                             'status_label' => 'Disabled',
-                            'rate_source' => $src !== '' ? $src : null,
+                            'rate_source' => AdminRateSourcePresenter::displayParserName(
+                                $item->loadMissing('bestchange_directions')
+                            ),
+                            'rate_source_label' => AdminRateSourcePresenter::label(
+                                $item->relationLoaded('bestchange_directions')
+                                    ? $item
+                                    : $item->loadMissing('bestchange_directions')
+                            ),
                             'course_value' => $item->course_value,
                             'provider_link_enabled' => $bc ? ((int) $bc->status === 1) : null,
                             'raw_provider_rate' => $bc->rate_value ?? null,
@@ -1204,7 +1213,10 @@ class DirectionExchangeController extends Controller
                     'status' => 0,
                     'message' => 'Статусы обновлены',
                     'status_label' => $next === 1 ? 'Active' : 'Disabled',
-                    'rate_source' => $item->parser_source_name,
+                    'rate_source' => AdminRateSourcePresenter::displayParserName(
+                        $item->loadMissing('bestchange_directions')
+                    ),
+                    'rate_source_label' => AdminRateSourcePresenter::label($item),
                 ]);
             }
 
@@ -1606,6 +1618,16 @@ class DirectionExchangeController extends Controller
             }
 
             if(!empty($responseData)) {
+                // Courses page: BASE field is labeled AUTO/reference for automatic owners.
+                // Do not let an accidental edit of manual_rate_value become authoritative.
+                if ($pageName === 'courses') {
+                    $parser = trim((string) ($item->parser_source_name ?? ''));
+                    $isManual = $parser === '' || preg_match('/ручн|manual/iu', $parser) === 1;
+                    if (!$isManual && array_key_exists('manual_rate_value', $responseData)) {
+                        unset($responseData['manual_rate_value']);
+                    }
+                }
+
                 $item->update($responseData);
             }
 
@@ -1627,11 +1649,25 @@ class DirectionExchangeController extends Controller
 
         app(ExchangeRatesCacheInvalidator::class)->afterCommit('admin.direction.update');
 
+        $message = sprintf('%s успешно обновлен', $item->tech_name);
+        if ($pageName === 'courses') {
+            $parser = trim((string) ($item->parser_source_name ?? ''));
+            $isManual = $parser === '' || preg_match('/ручн|manual/iu', $parser) === 1;
+            if (!$isManual) {
+                $message .= '. Базовый курс для этой пары задаётся источником «'
+                    . AdminRateSourcePresenter::label($item->loadMissing('bestchange_directions'))
+                    . '»; поле BASE справочное. Прибыль % — вкладка «Прибыль».';
+            }
+        }
+
         return response()->json([
             'status' => 0,
-            'message' => sprintf('%s успешно обновлен', $item->tech_name),
+            'message' => $message,
             'status_label' => ((int) $item->status === 1) ? 'Active' : 'Disabled',
-            'rate_source' => $item->parser_source_name,
+            'rate_source' => AdminRateSourcePresenter::displayParserName(
+                $item->loadMissing('bestchange_directions')
+            ),
+            'rate_source_label' => AdminRateSourcePresenter::label($item),
         ]);
     }
 

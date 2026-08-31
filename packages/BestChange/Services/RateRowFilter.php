@@ -105,6 +105,14 @@ final class RateRowFilter
 
             $changerIdInt = is_numeric($changerIdStr) ? (int)$changerIdStr : 0;
 
+            // Global safety invariant: never price from our own BestChange listing
+            // (XML → BC API → compiler feedback loop). Distinct from operator blacklist.
+            $ownExchangerId = $this->settings->ownExchangerId();
+            if ($ownExchangerId > 0 && $changerIdInt === $ownExchangerId) {
+                $this->inc($rejectCounters, 'own_exchanger');
+                continue;
+            }
+
             // Auto-blacklist cooldown
             if ($changerIdInt > 0 && $this->autoBlacklist->isBlocked($changerIdInt)) {
                 $this->inc($rejectCounters, 'auto_blacklist');

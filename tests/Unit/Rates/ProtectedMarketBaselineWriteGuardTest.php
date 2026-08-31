@@ -34,4 +34,12 @@ final class ProtectedMarketBaselineWriteGuardTest extends TestCase
         $deny = ProtectedMarketBaselineWriteGuard::denyBestchangeWrite(999999991, 'unit-test');
         $this->assertFalse($deny['blocked']);
     }
+
+    public function test_1419_btc_yamrub_is_not_blocked_after_owner_canary(): void
+    {
+        $this->assertFalse(
+            ProtectedMarketBaselineWriteGuard::blocksBestchangeOverwrite(1419),
+            '1419 BTC→YAMRUB was owner-authorized onto BestChange position 5'
+        );
+    }
 }

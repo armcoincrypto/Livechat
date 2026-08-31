@@ -40,9 +40,14 @@ class DirectionExchangeResources extends ResourceCollection
                         'is_main' => $item->is_main,
                         'is_error_rate' => $item->is_error_rate,
                         'error_rate_text' => $item->error_rate_text,
-                        'exchange_rate' => $item->exchange_rate,
-                        'parser_source_name' => $item->parser_source_name,
+                        // Live customer rate (Canonical floating final). Stored exchange_rate may be market BASE.
+                        'exchange_rate' => AdminRateSourcePresenter::liveExchangeRateLabel($item),
+                        'market_base_rate' => (string) ($item->course_value ?? ''),
+                        // Display-safe only: never emit DERIVED_MARKET_BASELINE to admin UI/API.
+                        // Runtime ownership remains on the model / DB column.
+                        'parser_source_name' => AdminRateSourcePresenter::displayParserName($item),
                         'rate_source_label' => AdminRateSourcePresenter::label($item),
+                        'bc_position_authoritative' => AdminRateSourcePresenter::isBestChangePositionAuthoritative($item),
                         'oth_comm_percent' => $item->oth_comm_percent ?? 0,
                         'oth_comm_currency' => $item->oth_comm_currency ?? 0,
                         'oth_comm2_percent' => $item->oth_comm2_percent ?? 0,

@@ -33,6 +33,10 @@ final class CommercialAdjustmentResolver
     public function family(DirectionExchange $direction): string
     {
         $parser = (string) ($direction->parser_source_name ?? '');
+        // BestChange parser wins even on ZELLEUSD outgoing (intentional BC ownership).
+        if ($parser === 'BestChange') {
+            return 'BESTCHANGE';
+        }
         if ($parser === 'DERIVED_MARKET_BASELINE') {
             return 'DERIVED';
         }
@@ -40,9 +44,6 @@ final class CommercialAdjustmentResolver
             || (int) ($direction->id_currency1 ?? 0) === ZelleUsdBenchmarkResolver::ZELLE_CURRENCY_ID
         ) {
             return 'ZELLE';
-        }
-        if ($parser === 'BestChange') {
-            return 'BESTCHANGE';
         }
 
         return 'OTHER';
@@ -107,8 +108,8 @@ final class CommercialAdjustmentResolver
     {
         return match ($this->family($direction)) {
             'ZELLE' => 'Автоматический BASE (USDTTRC20-бенчмарк). «Прибыль»: +6 = клиент получает на 6% меньше (сейчас эквивалент floating_fee=-6). Фиксированный режим дополнительно применяет поле fix_fee (−3).',
-            'DERIVED' => 'Автоматический BASE. «Прибыль»: +5 = больше маржа (хуже клиенту), −5 = конкурентнее. Рынок обновляется сам.',
-            'BESTCHANGE' => 'BASE из BestChange. «Прибыль»: +5 = больше маржа (хуже клиенту). Не смешивается с floating_fee.',
+            'DERIVED' => 'Текущий источник: Внутренний рынок · AUTO. «Прибыль» влияет на курс сейчас. Позиция BestChange начнёт влиять на курс только после активации BestChange для этой пары. «Прибыль»: +5 = больше маржа (хуже клиенту), −5 = конкурентнее.',
+            'BESTCHANGE' => 'Текущий источник: BestChange. Позиция BestChange + «Прибыль» оба влияют на живой курс. «Прибыль»: +5 = больше маржа (хуже клиенту). Не смешивается с floating_fee.',
             default => '«Прибыль» %: + = маржа (хуже клиенту), − = конкурентнее.',
         };
     }

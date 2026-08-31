@@ -53,9 +53,35 @@ final class BestChangeMappingUniquenessTest extends TestCase
         $catalog = json_decode((string) file_get_contents(self::STORAGE_APP . '/bestchange/currencies.json'), true);
         $this->assertIsArray($catalog);
         $haystack = strtoupper(json_encode($catalog, JSON_UNESCAPED_UNICODE) ?: '');
-        foreach (['[PRUSD]', '[PREUR]', '[PRRUB]'] as $code) {
-            $this->assertStringNotContainsString($code, $haystack, $code . ' must not exist in live catalog');
+        foreach (['[PRUSD]', '[PREUR]', '[PRRUB]', 'PAYEER'] as $needle) {
+            $this->assertStringNotContainsString($needle, $haystack, $needle . ' must not exist in live catalog');
         }
+    }
+
+    public function test_owner_example_rails_map_exactly_and_reject_payeer_drift_ids(): void
+    {
+        $v = BestChangeMappingVerifier::fromStorageApp(self::STORAGE_APP);
+        $exact = [
+            'UPIINR' => 327,
+            'WIRECNY' => 166,
+            'CARDINR' => 288,
+            'BRBKZT' => 114,
+        ];
+        foreach ($exact as $code => $id) {
+            $row = $v->verifyCode($code);
+            $this->assertSame('VERIFIED', strtoupper((string) ($row['status'] ?? '')), $code);
+            $this->assertSame($id, (int) ($row['bestchange_currency_id'] ?? 0), $code);
+        }
+
+        // Historical Payeer IDs 108/117/122 now belong to other assets — never alias PR* onto them.
+        foreach (['PRUSD', 'PREUR', 'PRRUB'] as $code) {
+            $row = $v->verifyCode($code);
+            $this->assertSame('ABSENT', strtoupper((string) ($row['status'] ?? '')), $code);
+            $this->assertNull($row['bestchange_currency_id'] ?? null, $code);
+        }
+        $this->assertSame(108, (int) ($v->verifyCode('CARDVND')['bestchange_currency_id'] ?? 0));
+        $this->assertSame(117, (int) ($v->verifyCode('CARDARS')['bestchange_currency_id'] ?? 0));
+        $this->assertSame(122, (int) ($v->verifyCode('ZENEUR')['bestchange_currency_id'] ?? 0));
     }
 
     public function test_admin_store_uses_single_row_per_direction(): void

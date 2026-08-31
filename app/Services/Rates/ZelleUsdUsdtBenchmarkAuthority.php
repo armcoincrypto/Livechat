@@ -36,6 +36,17 @@ final class ZelleUsdUsdtBenchmarkAuthority
      */
     public function apply(DirectionExchange $direction, bool $dryRun = true): array
     {
+        // Owner policy: when BestChange is the intentional runtime owner, do not compete.
+        if (ZelleOutgoingRateWriteGuard::yieldsToBestChange((int) $direction->id)) {
+            return [
+                'ok' => true,
+                'written' => false,
+                'course' => null,
+                'reason' => 'bestchange_active_owner',
+                'benchmark' => null,
+            ];
+        }
+
         $result = $this->resolver->resolve($direction);
         $bench = $result->toArray();
 

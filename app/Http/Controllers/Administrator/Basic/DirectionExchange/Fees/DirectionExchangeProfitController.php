@@ -7,6 +7,7 @@ use App\Models\DirectionExchange;
 use App\Models\GroupCommission;
 use App\Models\ProfitProfile;
 use App\Services\Rates\BestChangeMarketBaseHealth;
+use App\Services\Rates\AdminRateSourcePresenter;
 use App\Services\Rates\CanonicalDirectionRateCalculator;
 use App\Services\Rates\CommercialAdjustmentResolver;
 use App\Services\Rates\CommercialAdjustmentWriteGate;
@@ -86,6 +87,7 @@ class DirectionExchangeProfitController extends Controller
                 'profitProfiles' => $profitProfiles,
                 'rateAuthority'  => [
                     'parser_source_name' => (string) ($item->parser_source_name ?? ''),
+                    'rate_source_label' => AdminRateSourcePresenter::label($item),
                     'family' => $family,
                     'commercial_field' => 'profit',
                     'storage_field' => $resolver->storageField($item),

@@ -29,15 +29,18 @@ final class DirectionExchangeRecalculateService
      */
     public function run(?callable $onError = null): void
     {
+        $zelleId = \App\Services\Rates\ZelleOutgoingRateWriteGuard::zelleCurrencyId();
         $baseQuery = DirectionExchange::query()
             ->where('status', 1)
-            // ZELLEUSD outgoing owned exclusively by ZelleUsdUsdtBenchmarkAuthority.
-            // Never recalculate from BestChange ZELLE market offers (circularity / wrong family).
-            ->where(
-                'id_currency1',
-                '!=',
-                \App\Services\Rates\ZelleOutgoingRateWriteGuard::zelleCurrencyId()
-            )
+            // ZELLEUSD outgoing: include only when BestChange is intentional runtime owner.
+            // Legacy Zelle-benchmark rows remain excluded (prevents dual-owner / circularity).
+            ->where(static function ($q) use ($zelleId): void {
+                $q->where('id_currency1', '!=', $zelleId)
+                    ->orWhere(static function ($q2) use ($zelleId): void {
+                        $q2->where('id_currency1', $zelleId)
+                            ->where('parser_source_name', 'BestChange');
+                    });
+            })
             ->whereHas('bestchange_directions', static fn ($q) => $q->where('status', 1))
             ->with([
 
@@ -109,20 +112,11 @@ final class DirectionExchangeRecalculateService
                         $courseValue = (string) ($health['rate_value'] ?? '0');
                         $exchangeRateLabel = $courseValue;
                         try {
-                            $tmp = clone $exchange;
-                            $tmp->course_value = $courseValue;
-                            $tmp->manual_rate_value = $courseValue;
-                            $tmp->parser_source_name = 'BestChange';
-                            $commercial = \App\Services\Rates\CanonicalDirectionRateCalculator::make()
-                                ->calculateForExport($tmp, $courseValue);
-                            if ($commercial->eligible && bccomp($commercial->finalRate, '0', 18) === 1) {
-                                $tmp->course_value = $commercial->finalRate;
-                                $tmp->profit = 0;
-                                $exchangeRateLabel = (string) CalculatorFacade::setDirectionExchange($tmp)
-                                    ->withoutOptions()
-                                    ->calculate()
-                                    ->getFullRate();
-                            }
+                            $labelDir = clone $exchange;
+                            $labelDir->course_value = $courseValue;
+                            $labelDir->manual_rate_value = $courseValue;
+                            $labelDir->parser_source_name = 'BestChange';
+                            $exchangeRateLabel = \App\Services\Rates\AdminRateSourcePresenter::liveExchangeRateLabel($labelDir);
                         } catch (\Throwable) {
                             $exchangeRateLabel = $courseValue;
                         }

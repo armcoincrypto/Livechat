@@ -15,6 +15,10 @@ final class BestChangeMarketBaseHealth
 {
     public const DEFAULT_MAX_AGE_SECONDS = 1800;
 
+    /**
+     * Informational only: large BC↔derived delta must NOT block BestChange ownership.
+     * Owner policy: usable configured BC position → BESTCHANGE owns the pair.
+     */
     public const DEFAULT_OUTLIER_MAX_PERCENT = 12.0;
 
     /**
@@ -28,7 +32,9 @@ final class BestChangeMarketBaseHealth
      *   updated_at: ?string,
      *   age_seconds: ?int,
      *   link_status: ?int,
-     *   derived_reference: ?string
+     *   derived_reference: ?string,
+     *   outlier_vs_derived: bool,
+     *   outlier_delta_percent: ?float
      * }
      */
     public static function evaluate(int $directionId, ?int $maxAgeSeconds = null): array
@@ -45,6 +51,8 @@ final class BestChangeMarketBaseHealth
             'age_seconds' => null,
             'link_status' => null,
             'derived_reference' => null,
+            'outlier_vs_derived' => false,
+            'outlier_delta_percent' => null,
         ];
 
         if ($directionId <= 0) {
@@ -100,15 +108,16 @@ final class BestChangeMarketBaseHealth
             return $base;
         }
 
+        // Outlier vs derived is a commercial/warning signal only.
+        // Under NEW OWNER POLICY it must not deny BestChange ownership when the
+        // link is active, the rate is positive, and the quote is fresh.
         $derivedRef = self::derivedReferenceRate($directionId);
         $base['derived_reference'] = $derivedRef;
         if ($derivedRef !== null && is_numeric($derivedRef) && bccomp($derivedRef, '0', 12) > 0) {
             $diff = self::absRelativePercent($rate, $derivedRef);
+            $base['outlier_delta_percent'] = $diff;
             if ($diff !== null && $diff > self::DEFAULT_OUTLIER_MAX_PERCENT) {
-                $base['reason'] = 'outlier_vs_derived';
-                $base['status'] = 'outlier';
-
-                return $base;
+                $base['outlier_vs_derived'] = true;
             }
         }
 

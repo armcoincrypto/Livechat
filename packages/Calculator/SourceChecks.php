@@ -38,8 +38,13 @@ final class SourceChecks
      */
     public static function bestchange(object $dir): bool
     {
+        $bcActive = isset($dir->bestchange_directions)
+            && (int) ($dir->bestchange_directions->status ?? 0) === 1;
+        $parser = (string) ($dir->parser_source_name ?? '');
+
+        // ZELLEUSD→*: allow BestChange only when it is the intentional runtime owner.
         if (self::isZelleOutgoing($dir)) {
-            return false;
+            return $bcActive && $parser === 'BestChange';
         }
 
         // Derived-owned rails may use healthy BestChange as primary BASE.
@@ -47,16 +52,22 @@ final class SourceChecks
             return self::isHealthyBestChangeBase($dir);
         }
 
-        return isset($dir->bestchange_directions)
-            && (int) ($dir->bestchange_directions->status ?? 0) === 1;
+        return $bcActive;
     }
 
     /**
-     * Exclusive ZELLEUSD→* ownership — must win before derived/manual inside courses.
+     * Exclusive ZELLEUSD→* ownership — must win before derived/manual inside courses,
+     * unless BestChange is the intentional runtime owner for that direction.
      */
     public static function zelle(object $dir): bool
     {
         if (!self::isZelleOutgoing($dir)) {
+            return false;
+        }
+
+        $bcActive = isset($dir->bestchange_directions)
+            && (int) ($dir->bestchange_directions->status ?? 0) === 1;
+        if ($bcActive && (string) ($dir->parser_source_name ?? '') === 'BestChange') {
             return false;
         }
 

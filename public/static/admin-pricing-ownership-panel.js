@@ -43,21 +43,38 @@
     var a = (data && data.attributes) || {};
     var ra = (data && data.options && data.options.rateAuthority) || {};
     var p = ra.pricing || {};
+    var parser = String(ra.parser_source_name || p.parser_source_name || a.parser_source_name || '');
+    var label = String(ra.rate_source_label || a.rate_source_label || '');
+    var baseSrc = String(a.base_source || p.base_source || '');
+    var isDerived = parser === 'DERIVED_MARKET_BASELINE' || label.indexOf('Внутренний рынок') === 0 || baseSrc.indexOf('DERIVED') === 0;
+    var isBc = parser === 'BestChange' || label.indexOf('BestChange') === 0 || baseSrc === 'BestChange';
+    var isZelle = parser === 'ZELLE_USDTTRC20_BENCHMARK' || label.indexOf('Zelle') === 0;
+    var isManual = /ручн|manual/i.test(parser) || label.indexOf('Ручной') === 0;
+    var sourceLabel = label || (isDerived ? 'Внутренний рынок · AUTO' : (isBc ? 'BestChange' : (isZelle ? 'Zelle · свой курс' : (isManual ? 'Ручной курс' : (baseSrc || parser || '—')))));
+    var notice = isDerived
+      ? 'Текущий источник: Внутренний рынок · AUTO. Прибыль % влияет на курс сейчас. Позиция BestChange начнёт влиять только после активации BestChange для этой пары.'
+      : (isBc
+        ? 'Текущий источник: ' + sourceLabel + '. Позиция BestChange + Прибыль % оба влияют на живой курс после обновления компилятора.'
+        : (isZelle
+          ? 'Текущий источник: Zelle · свой курс.'
+          : 'Прибыль is manual and must survive BASE refresh.'));
     var el = panelEl();
     el.style.display = 'block';
     el.innerHTML =
       '<div style="font-weight:700;margin-bottom:6px">Pricing ownership</div>' +
       row('Ownership', ra.ownership || a.ownership || 'MANUAL_PROFIT') +
-      row('BASE source', a.base_source || p.base_source) +
+      row('Источник', sourceLabel) +
+      row('BASE source', baseSrc) +
       row('Status', a.source_status || p.source_status) +
       row('BC position', a.bestchange_position || p.bestchange_position) +
+      row('BC affects rate?', isBc ? 'YES' : 'NO (config only)') +
       row('BASE', a.base_rate || p.base || a.course_value) +
       row('Прибыль', (a.profit != null ? a.profit : p.profit) + '%') +
       row('Floating', a.final_floating_rate || p.final_floating) +
       row('Fixed', a.final_fixed_rate || p.final_fixed) +
       row('fix_fee', a.fix_fee || p.fix_fee) +
       row('Updated', a.source_updated_at || p.source_updated_at) +
-      '<div style="margin-top:8px;color:#475569;font-size:11px">Прибыль is manual and must survive BASE refresh.</div>';
+      '<div style="margin-top:8px;color:#475569;font-size:11px">' + notice + '</div>';
   }
 
   function fetchProfit(id) {

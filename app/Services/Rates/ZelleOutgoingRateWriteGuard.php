@@ -10,13 +10,17 @@ use Illuminate\Support\Facades\Log;
 /**
  * Single ownership gate for public/outgoing ZELLEUSD direction rate rows.
  *
- * Invariant: only {@see ZelleUsdUsdtBenchmarkAuthority} may write
+ * Default invariant: only {@see ZelleUsdUsdtBenchmarkAuthority} may write
  * course_value / manual_rate_value / parser_source_name / related rate metadata
  * on directions where id_currency1 = ZELLEUSD.
  *
- * Generic compilers (DerivedMarketBaseline, crypto baseline retune, BestChange
- * recalculate, etc.) must call {@see blocksGenericWrite()} / {@see assertNotZelleOutgoing()}
- * and skip. They may still READ upstream market data used by the ZELLE resolver.
+ * Intentional override (2026-08-28 owner policy): when BestChange is the active
+ * runtime owner (bestchange_directions.status=1 AND parser_source_name=BestChange),
+ * BestChange may write and the Zelle benchmark must yield — one owner only.
+ *
+ * Generic compilers (DerivedMarketBaseline, crypto baseline retune, etc.) must
+ * call {@see blocksGenericWrite()} / {@see denyGenericWrite()} and skip unless
+ * {@see yieldsToBestChange()} is true for that direction.
  */
 final class ZelleOutgoingRateWriteGuard
 {
@@ -29,6 +33,11 @@ final class ZelleOutgoingRateWriteGuard
      */
     private static ?array $zelleOutgoingIdCache = null;
 
+    /**
+     * @var array<int, bool>|null
+     */
+    private static ?array $bestChangeOwnedCache = null;
+
     public static function zelleCurrencyId(): int
     {
         return self::ZELLE_CURRENCY_ID;
@@ -37,6 +46,7 @@ final class ZelleOutgoingRateWriteGuard
     public static function clearCache(): void
     {
         self::$zelleOutgoingIdCache = null;
+        self::$bestChangeOwnedCache = null;
     }
 
     public static function isZelleOutgoingId(?int $directionId): bool
@@ -65,11 +75,42 @@ final class ZelleOutgoingRateWriteGuard
     }
 
     /**
-     * Generic/derived/compiler writers must not mutate ZELLE outgoing rate fields.
+     * True when BestChange is the intentional runtime owner for this Zelle-out direction.
+     */
+    public static function yieldsToBestChange(?int $directionId): bool
+    {
+        if ($directionId === null || $directionId <= 0 || !self::isZelleOutgoingId($directionId)) {
+            return false;
+        }
+
+        if (self::$bestChangeOwnedCache !== null && array_key_exists($directionId, self::$bestChangeOwnedCache)) {
+            return self::$bestChangeOwnedCache[$directionId];
+        }
+
+        $parser = (string) (DB::table('direction_exchange')->where('id', $directionId)->value('parser_source_name') ?? '');
+        $bcActive = DB::table('bestchange_directions')
+            ->where('id_direction_exchange', $directionId)
+            ->where('status', 1)
+            ->exists();
+
+        $yields = $bcActive && $parser === 'BestChange';
+        self::$bestChangeOwnedCache ??= [];
+        self::$bestChangeOwnedCache[$directionId] = $yields;
+
+        return $yields;
+    }
+
+    /**
+     * Generic/derived writers must not mutate ZELLE outgoing rate fields,
+     * unless BestChange is the active runtime owner (then BC/compiler may write).
      */
     public static function blocksGenericWrite(?int $directionId): bool
     {
-        return self::isZelleOutgoingId($directionId);
+        if (!self::isZelleOutgoingId($directionId)) {
+            return false;
+        }
+
+        return !self::yieldsToBestChange($directionId);
     }
 
     /**

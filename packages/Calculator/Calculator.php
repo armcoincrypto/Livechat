@@ -333,6 +333,18 @@ class Calculator implements Arrayable
                 return false;
             }
 
+            // Owner policy: BestChange is the intentional runtime owner — do not short-circuit
+            // to the USDTTRC20 Zelle benchmark (would dual-own / ignore BC position).
+            $dirId = (int) ($this->directionExchange->id ?? 0);
+            if ($dirId > 0 && \App\Services\Rates\ZelleOutgoingRateWriteGuard::yieldsToBestChange($dirId)) {
+                return false;
+            }
+            $parser = (string) ($this->directionExchange->parser_source_name ?? '');
+            $bc = $this->directionExchange->bestchange_directions ?? null;
+            if ($parser === 'BestChange' && $bc && (int) ($bc->status ?? 0) === 1) {
+                return false;
+            }
+
             $bench = $resolver->resolve($this->directionExchange);
             if (!$bench->eligible || $bench->benchmarkRate === null
                 || !is_numeric($bench->benchmarkRate)

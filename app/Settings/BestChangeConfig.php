@@ -78,6 +78,8 @@ final class BestChangeConfig extends DynamicConfigModel
             'currencies',
             'cities',
             'blacklist',
+            // Mandatory self-exclusion: never use our own BC listing as a market source.
+            'own_exchanger_id',
 
             'anti_fake_enabled',
             'anti_fake_min_score',
@@ -222,6 +224,17 @@ final class BestChangeConfig extends DynamicConfigModel
     public function blacklist(): array
     {
         return $this->getArray('blacklist', []);
+    }
+
+    /**
+     * BestChange changer_id of this installation (Exswaping = 1522).
+     *
+     * Always excluded from market discovery before operator blacklist/pool filters.
+     * Set 0 only in tests to disable the invariant.
+     */
+    public function ownExchangerId(): int
+    {
+        return max(0, $this->getInt('own_exchanger_id', 1522));
     }
 
 
@@ -454,6 +467,7 @@ final class BestChangeConfig extends DynamicConfigModel
             'currencies'     => $this->currencies(),
             'cities'         => $this->cities(),
             'blacklist'      => $this->blacklist(),
+            'own_exchanger_id' => $this->ownExchangerId(),
 
             // anti-fake
             'anti_fake_enabled'   => $this->antiFakeEnabled(),

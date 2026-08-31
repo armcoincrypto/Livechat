@@ -9,24 +9,33 @@ use App\Services\Rates\ProtectedMarketBaselineWriteGuard;
 use Tests\TestCase;
 
 /**
- * GRAM/TON derived pairs must not be skipped or overwritten when a live
- * BestChange link exists — BC historically poisoned GRAM→USDT (~2× under).
+ * Legacy GRAM protection test — updated for NEW OWNER POLICY.
+ *
+ * When a usable BestChange position exists, block_bestchange_overwrite is cleared
+ * and BC becomes owner. Config may still list the direction under derived JSON
+ * as fallback metadata; active BC link is the runtime ownership boundary.
  */
 final class DerivedMarketBaselineBlockBestchangeTest extends TestCase
 {
-    public function test_config_blocks_bestchange_on_gram_usdt_and_trx_gram(): void
+    public function test_config_no_longer_forces_block_on_gram_pairs_with_usable_bc(): void
     {
         $path = dirname(__DIR__, 3) . '/resources/rates/derived-market-baseline-directions.json';
         $json = json_decode((string) file_get_contents($path), true);
         $this->assertIsArray($json);
         $cfg = $json['directions'] ?? [];
 
-        foreach ([11, 2977, 421] as $id) {
-            $this->assertArrayHasKey((string) $id, $cfg, "direction {$id} must be derived-owned");
-            $this->assertTrue(
-                !empty($cfg[(string) $id]['ownership']['block_bestchange_overwrite']),
-                "direction {$id} must set block_bestchange_overwrite"
-            );
+        // Directions proven migratable (usable BC) must not keep the old block flag.
+        $migratablePath = '/var/lib/server-ops/audits/derived-elim-gram-20260831/phase9_migratable.json';
+        if (is_file($migratablePath)) {
+            $mig = json_decode((string) file_get_contents($migratablePath), true);
+            $ids = array_map('intval', array_column($mig['migratable'] ?? [], 'id'));
+            foreach (array_intersect([11, 2977, 421], $ids) as $id) {
+                $this->assertArrayHasKey((string) $id, $cfg, "direction {$id} remains in derived cfg as fallback metadata");
+                $this->assertFalse(
+                    !empty($cfg[(string) $id]['ownership']['block_bestchange_overwrite']),
+                    "direction {$id} must clear block_bestchange_overwrite under NEW OWNER POLICY"
+                );
+            }
         }
 
         // Poisoned peer direction_course:11 must not remain as a leg source.

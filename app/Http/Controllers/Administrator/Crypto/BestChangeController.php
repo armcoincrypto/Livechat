@@ -183,6 +183,31 @@ final class BestChangeController extends Controller
             ->filter(static fn ($group) => $group['rates']->isNotEmpty())
             ->values();
 
+        $directionId = (int) ($item->id_direction_exchange ?? 0);
+        $directionParser = $directionId > 0
+            ? (string) (DirectionExchange::query()->whereKey($directionId)->value('parser_source_name') ?? '')
+            : '';
+        $bcActive = (int) ($item->status ?? 0) === 1;
+        $operatorNotice = null;
+        if ($directionParser === 'DERIVED_MARKET_BASELINE' && !$bcActive) {
+            $operatorNotice = 'Сейчас курс этой пары рассчитывается из внутреннего рынка. '
+                .'Позиция BestChange начнёт влиять на курс только после активации BestChange для этой пары. '
+                .'Текущий источник: Внутренний рынок · AUTO';
+        } elseif ($bcActive && $directionParser === 'BestChange') {
+            $operatorNotice = 'Текущий источник: BestChange · позиция '
+                .trim((string) ($item->position_num ?: '—'))
+                .'. Позиция и Прибыль % влияют на живой курс после обновления компилятора.';
+        }
+
+        $direction = $directionId > 0
+            ? DirectionExchange::query()
+                ->with('bestchange_directions:id,id_direction_exchange,status,position_num')
+                ->find($directionId)
+            : null;
+        $rateSourceLabel = $direction
+            ? \App\Services\Rates\AdminRateSourcePresenter::label($direction)
+            : ($directionParser !== '' ? $directionParser : 'Не задан');
+
         return response()->json([
             'id' => (int) $item->id,
             'attributes' => [
@@ -229,6 +254,9 @@ final class BestChangeController extends Controller
                     'top_n' => $config->topN(),
                 ],
             ],
+            'operator_notice' => $operatorNotice,
+            'rate_source_label' => $rateSourceLabel,
+            'position_currently_authoritative' => $bcActive && $directionParser === 'BestChange',
         ]);
     }
 
@@ -257,9 +285,19 @@ final class BestChangeController extends Controller
                     'position_num' => ValueNormalizer::normalizePosition($request->input('position_num', '0')),
                 ]);
 
+                $dirParser = (string) (DirectionExchange::query()
+                    ->whereKey((int) $item->id_direction_exchange)
+                    ->value('parser_source_name') ?? '');
+                $affectsRate = (int) $item->status === 1 && $dirParser === 'BestChange';
+                $message = 'Позиция ' . (string) $item->position_num . ' установлена';
+                if (!$affectsRate) {
+                    $message .= '. Сейчас курс пары не из BestChange — позиция сохранена как настройка и начнёт влиять только после активации BestChange.';
+                }
+
                 return response()->json([
                     'status'  => 0,
-                    'message' => 'Позиция ' . (string) $item->position_num . ' установлена',
+                    'message' => $message,
+                    'position_currently_authoritative' => $affectsRate,
                 ]);
             }
 
@@ -484,9 +522,21 @@ final class BestChangeController extends Controller
             'top_n' => $topN,
         ]);
 
+        $dirParser = (string) (DirectionExchange::query()
+            ->whereKey((int) $item->id_direction_exchange)
+            ->value('parser_source_name') ?? '');
+        $affectsRate = (int) $item->status === 1 && $dirParser === 'BestChange';
+        $message = "Пара {$item->name} успешно обновлена";
+        if ($affectsRate) {
+            $message .= '. Позиция/стратегия начнут влиять на курс после следующего обновления BestChange.';
+        } else {
+            $message .= '. Сейчас живой курс не из BestChange — настройки сохранены и начнут влиять только после активации BestChange.';
+        }
+
         return response()->json([
             'status'  => 0,
-            'message' => "Пара {$item->name} успешно обновлена",
+            'message' => $message,
+            'position_currently_authoritative' => $affectsRate,
         ]);
     }
 
@@ -787,20 +837,45 @@ final class BestChangeController extends Controller
             'ids'    => ['required', 'array', 'min:1'],
             'ids.*'  => ['integer', 'exists:bestchange_directions,id'],
             'status' => ['required', 'integer', 'in:0,1'],
+            'confirm' => ['nullable', 'boolean'],
         ]);
 
         if ($validator->fails()) {
             return response()->json(['status' => 1, 'message' => $validator->messages()->first()]);
         }
 
-        $ids = (array) $request->input('ids', []);
+        $ids = array_values(array_unique(array_map('intval', (array) $request->input('ids', []))));
         $status = (int) $request->input('status');
+        $count = count($ids);
+
+        // Operator safety: bulk status flips BestChange mappings (rate ownership),
+        // not direction_exchange.status. Require explicit confirm for any batch.
+        if (!$request->boolean('confirm')) {
+            $action = $status === 1 ? 'включить' : 'выключить';
+            return response()->json([
+                'status' => 1,
+                'code' => 'BULK_STATUS_CONFIRM_REQUIRED',
+                'requires_confirm' => true,
+                'count' => $count,
+                'scope' => 'bestchange_directions_ids_only',
+                'message' => sprintf(
+                    'Подтвердите: будет изменён статус BestChange у %d пар(ы) из текущего списка '
+                    .'(не статус направления обмена). Передайте confirm=1, чтобы %s.',
+                    $count,
+                    $action
+                ),
+            ]);
+        }
 
         BestChangeDirection::query()->whereIn('id', $ids)->update(['status' => $status]);
 
         return response()->json([
             'status'  => 0,
-            'message' => $status === 1 ? 'Курсы успешно включены' : 'Курсы успешно отключены',
+            'count' => $count,
+            'scope' => 'bestchange_directions_ids_only',
+            'message' => $status === 1
+                ? sprintf('BestChange включён для %d пар(ы) из списка (маппинги BestChange, не направление обмена).', $count)
+                : sprintf('BestChange выключен для %d пар(ы) из списка (маппинги BestChange, не направление обмена).', $count),
         ]);
     }
 

@@ -80,6 +80,14 @@ final class BestchangeSettingsController extends Controller
             'countries'  => $countries,
             'groups'     => $groups,
             'exchangers' => $exchangers,
+
+            'operator_warning' => 'Глобальные значения (позиция / режим / top_n / blacklist / пул). '
+                .'Позиция и режим применяются только к направлениям без индивидуального значения '
+                .'(пустое/0 в position_num или пустой rate_mode). '
+                .'Индивидуальная позиция пары: Направление → BestChange API или строка в этом списке. '
+                .'Не меняйте глобальные настройки, если нужно настроить одну пару.',
+            'position_scope' => 'global_default_only',
+            'per_direction_override_field' => 'bestchange_directions.position_num',
         ]);
     }
 
@@ -181,7 +189,10 @@ final class BestchangeSettingsController extends Controller
 
         return response()->json([
             'status'  => 0,
-            'message' => __('Настройки успешно сохранены'),
+            'message' => __('Настройки успешно сохранены')
+                .' '.__('Глобальные значения. Индивидуальная позиция пары задаётся в карточке направления / строке списка.'),
+            'operator_warning' => 'Глобальные значения применяются как fallback для пар без индивидуального position_num / rate_mode.',
+            'position_scope' => 'global_default_only',
         ]);
     }
 

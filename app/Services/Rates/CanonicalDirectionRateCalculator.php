@@ -332,19 +332,37 @@ final class CanonicalDirectionRateCalculator
 
     private function resolveBaseRate(DirectionExchange $direction): string
     {
-        // ZELLEUSD outgoing: base is exact USDTTRC20→destination benchmark (never BC ZELLE offers).
+        // ZELLEUSD outgoing: default base = USDTTRC20→destination benchmark.
+        // Exception: intentional BestChange ownership uses BC/course path (one owner).
         try {
             $zelleResolver = ZelleUsdBenchmarkResolver::make();
             if ($zelleResolver->isZelleOutgoing($direction)) {
-                $bench = $zelleResolver->resolve($direction);
-                if ($bench->eligible && $bench->benchmarkRate !== null
-                    && is_numeric($bench->benchmarkRate)
-                    && bccomp($bench->benchmarkRate, '0', self::ROUNDING_SCALE) > 0
+                $dirId = (int) ($direction->id ?? 0);
+                $parser = (string) ($direction->parser_source_name ?? '');
+                $bc = $direction->relationLoaded('bestchange_directions')
+                    ? $direction->bestchange_directions
+                    : null;
+                $bcActive = $bc && (int) ($bc->status ?? 0) === 1;
+                if (
+                    ($dirId > 0 && ZelleOutgoingRateWriteGuard::yieldsToBestChange($dirId))
+                    || ($parser === 'BestChange' && $bcActive)
                 ) {
-                    return $bench->benchmarkRate;
-                }
+                    $course = (string) ($direction->course_value ?? '0');
+                    if (is_numeric($course) && bccomp($course, '0', self::ROUNDING_SCALE) > 0) {
+                        return $course;
+                    }
+                    // Fall through to Calculator BestChange strategy below.
+                } else {
+                    $bench = $zelleResolver->resolve($direction);
+                    if ($bench->eligible && $bench->benchmarkRate !== null
+                        && is_numeric($bench->benchmarkRate)
+                        && bccomp($bench->benchmarkRate, '0', self::ROUNDING_SCALE) > 0
+                    ) {
+                        return $bench->benchmarkRate;
+                    }
 
-                return '0';
+                    return '0';
+                }
             }
         } catch (Throwable $e) {
             Log::error('zelle_benchmark_base_resolve_failed', [
@@ -352,7 +370,10 @@ final class CanonicalDirectionRateCalculator
                 'message' => $e->getMessage(),
             ]);
             if ((int) ($direction->id_currency1 ?? 0) === ZelleUsdBenchmarkResolver::ZELLE_CURRENCY_ID) {
-                return '0';
+                $parser = (string) ($direction->parser_source_name ?? '');
+                if ($parser !== 'BestChange') {
+                    return '0';
+                }
             }
         }
 

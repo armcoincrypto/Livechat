@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace iEXPackages\BestChange\Console;
 
 use App\Models\HistoryUpdatedData;
+use App\Services\Rates\BestChangeRateGenerationMarker;
 use App\Settings\BestChangeConfig;
 use iEXPackages\BestChange\Facades\BestChangeFacade;
 use Illuminate\Console\Command;
@@ -16,7 +17,10 @@ use Illuminate\Support\Facades\Log;
  * Полное обновление курсов BestChange:
  * 1) BestChangeFacade::rates()->updateRates() — обновляет bestchange_directions
  * 2) ->withUpdateDirections() — пересчитывает direction_exchange через калькулятор
- * 3) пишет статистику выполнения в HistoryUpdatedData
+ * 3) пишет generation marker (после обоих шагов) + HistoryUpdatedData
+ *
+ * Note: RatesConnection is ionCube — BC and DE writes are still separate commits.
+ * The marker defines RATE_GENERATION_ID for completed coherent generations only.
  */
 final class BestchangeUpdateRatesConsole extends Command
 {
@@ -67,6 +71,13 @@ final class BestchangeUpdateRatesConsole extends Command
             // 2) пересчитываем direction_exchange
             $ratesConnection->withUpdateDirections();
             Cache::put('iex:compiler:bestchange:last_full_at', time(), 86400);
+
+            $gen = BestChangeRateGenerationMarker::markCommitted([
+                'changed' => $changed,
+                'total' => (int) $ratesConnection->getCountTotalUpdate(),
+                'writer' => 'BestchangeUpdateRatesConsole',
+            ]);
+            $this->line('RATE_GENERATION_ID=' . $gen['id']);
 
             $elapsed = round(microtime(true) - $start, 4);
 

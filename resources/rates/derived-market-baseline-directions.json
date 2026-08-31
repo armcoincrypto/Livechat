@@ -20185,8 +20185,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -20435,8 +20437,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -20635,8 +20639,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -20660,10 +20666,11 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
+                "block_bestchange_overwrite": false,
                 "keep_bestchange_link_status": 0
             },
-            "on_stale_or_missing": "mark_unavailable_retain_last_valid"
+            "on_stale_or_missing": "mark_unavailable_retain_last_valid",
+            "note": "owner_authorized_bc_position_5_20260830; block_bestchange_overwrite cleared for BC ownership"
         },
         "605": {
             "from": "ADA",
@@ -20885,8 +20892,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -21389,8 +21398,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -21439,8 +21450,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -21764,8 +21777,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -22268,8 +22283,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -22318,8 +22335,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -22643,8 +22662,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -22718,8 +22739,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "RECONCILE_NEWLY_BC_ELIGIBLE_20260831",
+                "unprotected_at": "2026-08-31T10:53:24+00:00"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -23343,8 +23366,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -23843,8 +23868,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -24468,8 +24495,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -24972,8 +25001,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -25022,8 +25053,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -25347,8 +25380,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -25851,8 +25886,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -26026,8 +26063,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -26226,8 +26265,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -26680,8 +26721,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -26705,8 +26748,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -27005,8 +27050,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -28234,8 +28281,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -28359,8 +28408,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -28384,8 +28435,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -28988,8 +29041,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -29238,8 +29293,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -29263,8 +29320,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "RECONCILE_NEWLY_BC_ELIGIBLE_20260831",
+                "unprotected_at": "2026-08-31T10:53:24+00:00"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -29288,8 +29347,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -29313,8 +29374,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -29417,8 +29480,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -29442,8 +29507,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -29492,8 +29559,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -29542,8 +29611,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -29592,8 +29663,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "RECONCILE_NEWLY_BC_ELIGIBLE_20260831",
+                "unprotected_at": "2026-08-31T10:53:24+00:00"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -29867,8 +29940,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -30346,8 +30421,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -30496,8 +30573,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -30746,8 +30825,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -31225,8 +31306,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -31275,8 +31358,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -31625,8 +31710,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -32104,8 +32191,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -32154,8 +32243,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -32504,8 +32595,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -32983,8 +33076,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -33383,8 +33478,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -33912,8 +34009,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -34262,8 +34361,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -34741,8 +34842,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -35141,8 +35244,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -35620,8 +35725,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36020,8 +36127,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36499,8 +36608,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36549,8 +36660,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36674,8 +36787,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36699,8 +36812,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36724,8 +36837,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36749,8 +36862,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36774,8 +36887,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36799,8 +36912,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36824,8 +36937,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36849,8 +36962,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36874,8 +36987,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36924,8 +37037,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36949,8 +37062,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36974,8 +37087,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -36999,8 +37112,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -37024,8 +37137,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -37049,8 +37162,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -37074,8 +37187,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -37099,8 +37212,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -37124,8 +37237,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -37149,8 +37262,8 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 1
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -37174,8 +37287,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "note": "align with USDTTRC20->GRAM TONUSDT inverse"
@@ -37200,8 +37315,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid",
             "note": "align with USDTTRC20->GRAM TONUSDT inverse"
@@ -37226,8 +37343,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -38163,8 +38282,10 @@
             },
             "ownership": {
                 "parser_source_name": "DERIVED_MARKET_BASELINE",
-                "block_bestchange_overwrite": true,
-                "keep_bestchange_link_status": 0
+                "block_bestchange_overwrite": false,
+                "keep_bestchange_link_status": 0,
+                "unprotected_reason": "NEW_OWNER_POLICY_usable_BC_position_20260831",
+                "unprotected_at": "2026-08-30T23:02:30Z"
             },
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         },
@@ -38319,7 +38440,7 @@
             "on_stale_or_missing": "mark_unavailable_retain_last_valid"
         }
     },
-    "note": "Admin-safe: never force-disable BestChange; prefer BC when link active. Removed dirs with live BC rates. | 20260808: removed ZELLEUSD outgoing ownership; ZelleUsdUsdtBenchmarkAuthority is sole ZELLE writer. | 2026-08-09: remove direction_course:11 peer; GRAM priced from Binance TONUSDT; block BestChange overwrite on GRAM/USDT and crypto<->GRAM dependents | 2026-08-09 global integrity: USDCERC20→GRAM(706) + USDCERC20→USDTERC20(704) moved from poisoned/mispriced BestChange to derived TONUSDT/USDT peg",
+    "note": "Admin-safe: never force-disable BestChange; prefer BC when link active. Removed dirs with live BC rates. | 20260808: removed ZELLEUSD outgoing ownership; ZelleUsdUsdtBenchmarkAuthority is sole ZELLE writer. | 2026-08-09: remove direction_course:11 peer; GRAM priced from Binance TONUSDT; block BestChange overwrite on GRAM\/USDT and crypto<->GRAM dependents | 2026-08-09 global integrity: USDCERC20→GRAM(706) + USDCERC20→USDTERC20(704) moved from poisoned\/mispriced BestChange to derived TONUSDT\/USDT peg",
     "zelle_ownership_removed": {
         "at": "20260808T110622Z",
         "ids": [
@@ -38335,19 +38456,19 @@
             1904
         ],
         "pairs": [
-            "ZELLEUSD/CARDUAH",
-            "ZELLEUSD/KSPBKZT",
-            "ZELLEUSD/HLKBKZT",
-            "ZELLEUSD/CARDBYN",
-            "ZELLEUSD/BLRBBYN",
-            "ZELLEUSD/CARDAED",
-            "ZELLEUSD/CARDCNY",
-            "ZELLEUSD/CARDINR",
-            "ZELLEUSD/CARDIDR",
-            "ZELLEUSD/CARDIDR"
+            "ZELLEUSD\/CARDUAH",
+            "ZELLEUSD\/KSPBKZT",
+            "ZELLEUSD\/HLKBKZT",
+            "ZELLEUSD\/CARDBYN",
+            "ZELLEUSD\/BLRBBYN",
+            "ZELLEUSD\/CARDAED",
+            "ZELLEUSD\/CARDCNY",
+            "ZELLEUSD\/CARDINR",
+            "ZELLEUSD\/CARDIDR",
+            "ZELLEUSD\/CARDIDR"
         ],
-        "reason": "ZELLE_SINGLE_RATE_AUTHORITY — derived must not write ZELLE course/parser_source_name"
+        "reason": "ZELLE_SINGLE_RATE_AUTHORITY — derived must not write ZELLE course\/parser_source_name"
     },
     "updated_at": "2026-08-13T14:34:15Z",
-    "update_note": "USDT classic RUB DERIVED BASE; use --sync-commercial for policy Прибыль"
+    "update_note": "USDT classic RUB DERIVED BASE; use --sync-commercial for policy Прибыль | 20260828 clear block on 1575 for Zelle BC pos1 canary | 20260829 clear block_bestchange_overwrite for COIN→ZELLE BC pos1 migrate (1536,1545,1549,1553,1570,1578,1579,1580,3134,3135,3136,3137,3139,3140,3141,3142,3143,3144)"
 }
