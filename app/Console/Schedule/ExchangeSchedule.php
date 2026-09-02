@@ -260,6 +260,13 @@ class ExchangeSchedule
             ->withoutOverlapping(5)
             ->appendOutputTo(storage_path('logs/rates_health.log'));
 
+        // Ownership drift detector (read-only alerts; never auto-repairs rates).
+        $schedule->command('rates:ownership-drift-health --format=json')
+            ->everyFiveMinutes()
+            ->onOneServer()
+            ->withoutOverlapping(5)
+            ->appendOutputTo(storage_path('logs/rates_ownership_drift.log'));
+
         $schedule->command('orders:waiting-deposit-health --format=json')
             ->everyFiveMinutes()
             ->onOneServer()

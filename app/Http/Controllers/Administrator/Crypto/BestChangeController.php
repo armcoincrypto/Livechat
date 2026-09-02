@@ -11,11 +11,14 @@ use App\Models\BestchangeParserError;
 use App\Models\DirectionExchange;
 use App\Models\GroupParserExchange;
 use App\Models\ParserFormulaRates;
+use App\Services\Rates\AdminBulkActionAuditLogger;
+use App\Services\Rates\BestChangeBulkStatusGuard;
 use App\Settings\BestChangeConfig;
 use iEXPackages\BestChange\Facades\BestChangeFacade;
 use iEXPackages\BestChange\Support\ValueNormalizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -90,7 +93,25 @@ final class BestChangeController extends Controller
                 return response()->json(['status' => 1, 'message' => __('Запись не найдена')]);
             }
 
+            $before = (int) $item->status;
             $item->update(['status' => $status]);
+
+            AdminBulkActionAuditLogger::record([
+                'event' => 'bestchange_status_single',
+                'action' => $status === 1 ? 'enable' : 'disable',
+                'result' => 'applied',
+                'admin_user_id' => Auth::id(),
+                'admin_email' => Auth::user()->email ?? null,
+                'ip' => $request->ip(),
+                'session_id' => $request->hasSession() ? $request->session()->getId() : null,
+                'request_id' => $request->headers->get('X-Request-Id'),
+                'route' => 'admin.crypto.bestchange.store.status',
+                'row_count' => 1,
+                'ids' => [$id],
+                'before_status' => $before,
+                'after_status' => $status,
+                'user_agent' => (string) $request->userAgent(),
+            ]);
 
             return response()->json(['status' => 0]);
         }
@@ -834,45 +855,73 @@ final class BestChangeController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'ids'    => ['required', 'array', 'min:1'],
-            'ids.*'  => ['integer', 'exists:bestchange_directions,id'],
+            'ids' => ['present', 'array'],
+            'ids.*' => ['integer'],
             'status' => ['required', 'integer', 'in:0,1'],
             'confirm' => ['nullable', 'boolean'],
+            'expected_count' => ['nullable', 'integer', 'min:1'],
+            'typed_confirmation' => ['nullable', 'string'],
+            'emergency_override' => ['nullable', 'boolean'],
         ]);
 
         if ($validator->fails()) {
+            AdminBulkActionAuditLogger::record([
+                'event' => 'bestchange_status_bulk',
+                'action' => 'reject',
+                'result' => 'validation_failed',
+                'admin_user_id' => Auth::id(),
+                'admin_email' => Auth::user()->email ?? null,
+                'ip' => $request->ip(),
+                'route' => 'admin.crypto.bestchange.status.bulk',
+                'message' => $validator->messages()->first(),
+                'code' => 'VALIDATION_FAILED',
+            ]);
+
             return response()->json(['status' => 1, 'message' => $validator->messages()->first()]);
         }
 
-        $ids = array_values(array_unique(array_map('intval', (array) $request->input('ids', []))));
+        // Never interpret missing/empty IDs as "all".
+        $ids = BestChangeBulkStatusGuard::normalizeIds($request->input('ids', []));
         $status = (int) $request->input('status');
-        $count = count($ids);
 
-        // Operator safety: bulk status flips BestChange mappings (rate ownership),
-        // not direction_exchange.status. Require explicit confirm for any batch.
-        if (!$request->boolean('confirm')) {
-            $action = $status === 1 ? 'включить' : 'выключить';
-            return response()->json([
-                'status' => 1,
-                'code' => 'BULK_STATUS_CONFIRM_REQUIRED',
-                'requires_confirm' => true,
-                'count' => $count,
-                'scope' => 'bestchange_directions_ids_only',
-                'message' => sprintf(
-                    'Подтвердите: будет изменён статус BestChange у %d пар(ы) из текущего списка '
-                    .'(не статус направления обмена). Передайте confirm=1, чтобы %s.',
-                    $count,
-                    $action
-                ),
-            ]);
+        $decision = BestChangeBulkStatusGuard::evaluate($request, $ids, $status);
+
+        AdminBulkActionAuditLogger::record([
+            'event' => 'bestchange_status_bulk',
+            'action' => $status === 1 ? 'enable' : 'disable',
+            'result' => $decision['ok'] ? 'applied' : 'rejected',
+            'admin_user_id' => Auth::id(),
+            'admin_email' => Auth::user()->email ?? null,
+            'ip' => $request->ip(),
+            'session_id' => $request->hasSession() ? $request->session()->getId() : null,
+            'request_id' => $request->headers->get('X-Request-Id'),
+            'route' => 'admin.crypto.bestchange.status.bulk',
+            'row_count' => count($ids),
+            'ids' => $ids,
+            'before_status' => $status === 1 ? 0 : 1,
+            'after_status' => $status,
+            'expected_count' => $request->input('expected_count'),
+            'active_bc_before' => $decision['payload']['active_bc_before'] ?? BestChangeBulkStatusGuard::activeMappingCount(),
+            'code' => $decision['code'],
+            'message' => $decision['payload']['message'] ?? null,
+            'user_agent' => (string) $request->userAgent(),
+        ]);
+
+        if (!$decision['ok']) {
+            return response()->json($decision['payload'], $decision['http']);
         }
 
+        $count = (int) $decision['payload']['count'];
         BestChangeDirection::query()->whereIn('id', $ids)->update(['status' => $status]);
 
         return response()->json([
-            'status'  => 0,
+            'status' => 0,
             'count' => $count,
             'scope' => 'bestchange_directions_ids_only',
+            'scope_label' => sprintf(
+                'Изменён статус BestChange у %d направлений (маппинги bestchange_directions).',
+                $count
+            ),
             'message' => $status === 1
                 ? sprintf('BestChange включён для %d пар(ы) из списка (маппинги BestChange, не направление обмена).', $count)
                 : sprintf('BestChange выключен для %d пар(ы) из списка (маппинги BestChange, не направление обмена).', $count),
