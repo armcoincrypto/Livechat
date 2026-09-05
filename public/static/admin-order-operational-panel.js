@@ -103,6 +103,16 @@
       return;
     }
     var html = '<div style="font-weight:700;margin-bottom:8px">Данные заявки / Реквизиты</div>';
+    var statusInt = attrs.status != null ? Number(attrs.status) : (attrs.status_int != null ? Number(attrs.status_int) : null);
+    if (statusInt === 7) {
+      html +=
+        '<div style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:#fff7ed;border:1px solid #fdba74;color:#9a3412">' +
+        "<strong>PAID — settlement required.</strong> Ordinary Reject/Cancel is blocked. " +
+        "Use Complete with settlement reference, or Needs review / Freeze.</div>";
+      if (attrs.paid_age_human) {
+        html += row("Paid age", attrs.paid_age_human);
+      }
+    }
     if (attrs.assigned_operator) html += row("Оператор", attrs.assigned_operator);
     if (attrs.claimed_at) html += row("Принято", attrs.claimed_at);
     if (attrs.completed_by) html += row("Завершил", attrs.completed_by);

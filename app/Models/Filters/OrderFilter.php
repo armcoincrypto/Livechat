@@ -109,6 +109,42 @@ class OrderFilter extends ModelFilter
     }
 
     /**
+     * PAID operator queue age buckets (Wave A).
+     * Values: paid | gt1h | gt6h | gt24h
+     * Uses COALESCE(started_at, updated_at) as payment-confirmed anchor.
+     */
+    public function paidAge($bucket): self
+    {
+        $bucket = is_string($bucket) ? trim($bucket) : '';
+        if (! \App\Services\Orders\PaidOrderAge::isValidBucket($bucket)) {
+            return $this;
+        }
+
+        $this->where('status', \App\Enums\TaskStatusEnum::PAID->value);
+        $this->where('is_bot', 0);
+
+        $hours = \App\Services\Orders\PaidOrderAge::bucketMinHours($bucket);
+        if ($hours === null) {
+            return $this;
+        }
+
+        $cutoff = \Illuminate\Support\Carbon::now()->subHours($hours)->toDateTimeString();
+
+        return $this->whereRaw(
+            'COALESCE(started_at, updated_at) <= ?',
+            [$cutoff]
+        );
+    }
+
+    /**
+     * Alias for clients that send paid_age.
+     */
+    public function paid_age($bucket): self
+    {
+        return $this->paidAge($bucket);
+    }
+
+    /**
      * Фильтр по статусам платежей через мерчант
      *
      * @return OrderFilter

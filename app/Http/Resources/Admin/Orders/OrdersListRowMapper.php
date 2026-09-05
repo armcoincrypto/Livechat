@@ -90,15 +90,41 @@ final class OrdersListRowMapper
                 ],
                 'selected_fees' => $sfFlat,
                 'status' => $item->status,
-                'status_name' => $item->task_status?->name ?? null,
+                'status_name' => \App\Services\Orders\OperatorStatusVocabulary::adminLabel(
+                    (int) $item->status,
+                    is_string($item->task_status?->name ?? null) ? $item->task_status->name : null
+                ),
+                'status_name_legacy' => $item->task_status?->name ?? null,
                 'is_trashed' => method_exists($item, 'trashed') ? $item->trashed() : false,
                 'queue_status' => $item->queue_status ?? null,
                 'created_at' => $item->created_at?->format('c'),
                 'created_at_human' => $item->created_at?->diffForHumans(),
                 'updated_at' => $item->updated_at?->translatedFormat('d M Y H:i'),
                 'updated_at_human' => $item->updated_at?->diffForHumans(),
+                'paid_age_human' => ((int) $item->status === 7)
+                    ? \App\Services\Orders\PaidOrderAge::human($item)
+                    : null,
+                'paid_aging_level' => ((int) $item->status === 7)
+                    ? \App\Services\Orders\PaidOrderAge::agingLevel($item)
+                    : null,
+                'payment_evidence_present' => self::paymentEvidencePresent($item),
             ],
         ];
+    }
+
+    private static function paymentEvidencePresent(object $item): bool
+    {
+        try {
+            if (isset($item->wallet_txid) && is_string($item->wallet_txid) && trim($item->wallet_txid) !== '') {
+                return true;
+            }
+            if (method_exists($item, 'relationLoaded') && $item->relationLoaded('wallet_transactions')) {
+                return $item->wallet_transactions->count() > 0;
+            }
+        } catch (\Throwable) {
+        }
+
+        return false;
     }
 
     private static function safeDisplayId(object $item): string|int|null

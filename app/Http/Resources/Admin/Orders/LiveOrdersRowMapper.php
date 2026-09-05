@@ -67,6 +67,13 @@ final class LiveOrdersRowMapper
             'is_freeze_scam' => (isset($value->task_info) && (int) $value->task_info->is_freeze_scam === 1),
             'payment_in_name' => $paymentInName,
             'operators' => $operators,
+            'paid_age_human' => ((int) $value->status === 7)
+                ? \App\Services\Orders\PaidOrderAge::human($value)
+                : null,
+            'paid_aging_level' => ((int) $value->status === 7)
+                ? \App\Services\Orders\PaidOrderAge::agingLevel($value)
+                : null,
+            'status_label' => \App\Services\Orders\OperatorStatusVocabulary::adminLabel((int) $value->status),
         ];
     }
 

@@ -225,12 +225,13 @@ enum TaskStatusEnum: int
                 self::PENDING_PAYMENT
             ),
 
-            // Оплата подтверждена -> либо дальше в обработку, либо ждём мерчанта, либо ставим в очередь на выплату
+            // Оплата подтверждена -> выплата / завершение / review-freeze (не ordinary reject)
             self::PAID => $to->in(
                 self::WAITING_HANDLE,
                 self::MERCHANT_CONFIRMATION,
                 self::PAYOUT_QUEUE,
-                self::COMPLETED
+                self::COMPLETED,
+                self::FROZEN
             ),
 
             self::MERCHANT_CONFIRMATION => $to->in(

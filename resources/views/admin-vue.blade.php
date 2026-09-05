@@ -61,6 +61,7 @@
 <script src="/static/admin-pricing-ownership-panel.js?v=20260831" defer></script>
 <script src="/static/admin-rate-source-scrubber.js?v=20260831" defer></script>
 <script src="/static/admin-order-operational-panel.js?v=20260824c" defer></script>
+<script src="/static/admin-paid-queue-panel.js?v=20260905a" defer></script>
 
 </body>
 </html>

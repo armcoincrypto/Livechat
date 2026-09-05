@@ -136,7 +136,10 @@ class OrderVueController extends Controller
             $orders[$key] = [
                 'id' => $key,
                 'class' => $orderStatuses[$key]['class'],
-                'name' => $orderStatuses[$key]['name'],
+                'name' => \App\Services\Orders\OperatorStatusVocabulary::adminLabel(
+                    (int) $key,
+                    is_string($orderStatuses[$key]['name'] ?? null) ? $orderStatuses[$key]['name'] : null
+                ),
                 'sort' => $orderStatuses[$key]['sorting'],
                 'count' => count($orderGroup),
                 'items' => [],
@@ -161,6 +164,7 @@ class OrderVueController extends Controller
         $array['status_site'] = work_is_online();
         $array['counts'] = $counts;
         $array['last_id'] = isset($lastId) ? $lastId['id'] : 0;
+        $array['paid_queue'] = $this->paidQueueSummary();
         $array['settings'] = [
             'auto_update_page' => (int) iEXSetting('iex_order_live_auto_update_page', 0),
             'auto_update_timeout' => (int) iEXSetting('iex_order_live_auto_update_timeout', 10),
@@ -171,6 +175,35 @@ class OrderVueController extends Controller
 
 
         return response()->json($array);
+    }
+
+    /**
+     * Human PAID backlog buckets for operator queue (Wave A). Read-only counts.
+     *
+     * @return array{total:int, gt1h:int, gt6h:int, gt24h:int, filter_params:array<string,string>}
+     */
+    private function paidQueueSummary(): array
+    {
+        $now = now();
+        $base = Task::query()
+            ->where('status', \App\Enums\TaskStatusEnum::PAID->value)
+            ->where('is_bot', 0)
+            ->where('is_archive', 0);
+
+        $anchor = 'COALESCE(started_at, updated_at)';
+
+        return [
+            'total' => (clone $base)->count(),
+            'gt1h' => (clone $base)->whereRaw($anchor.' <= ?', [$now->copy()->subHour()->toDateTimeString()])->count(),
+            'gt6h' => (clone $base)->whereRaw($anchor.' <= ?', [$now->copy()->subHours(6)->toDateTimeString()])->count(),
+            'gt24h' => (clone $base)->whereRaw($anchor.' <= ?', [$now->copy()->subHours(24)->toDateTimeString()])->count(),
+            'filter_params' => [
+                'paid' => 'paidAge=paid',
+                'gt1h' => 'paidAge=gt1h',
+                'gt6h' => 'paidAge=gt6h',
+                'gt24h' => 'paidAge=gt24h',
+            ],
+        ];
     }
 
     /**
@@ -277,8 +310,15 @@ class OrderVueController extends Controller
                 ]);
 
                 if ($transaction->hasAction() == 'failed') {
-                    $transaction->reject();
-                    $response['message'] = 'Заявка отклонена';
+                    try {
+                        $transaction->reject();
+                        $response['message'] = 'Заявка отклонена';
+                    } catch (\App\Services\Orders\Transitions\OrderTransitionException $e) {
+                        $response['status'] = 1;
+                        $response['code'] = $e->errorCode;
+                        $response['message'] = $e->getMessage();
+                        return Response::json($response, 422);
+                    }
                 } elseif ($transaction->hasAction() == 'defer') {
                     $transaction->setDeferType($request->defer_type);
                     $transaction->defer();

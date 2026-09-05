@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Orders\ManualCompletion\ManualCompletionException;
 use App\Services\Orders\ManualCompletion\ManualCompletionGuard;
 use App\Services\Orders\ManualCompletion\ManualOrderCompletionService;
+use App\Services\Orders\ManualCompletion\SettlementEvidence;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -168,7 +169,7 @@ final class TelegramOrderOperatorWorkflowService
             }
 
             $this->pending->put($telegramUserId, [
-                'stage' => 'awaiting_confirm',
+                'stage' => 'awaiting_evidence',
                 'task_id' => $taskId,
                 'chat_id' => $chatId ?? $telegramUserId,
                 'message_id' => $messageId,
@@ -176,21 +177,14 @@ final class TelegramOrderOperatorWorkflowService
             ]);
 
             $this->audit->log('ORDER_TELEGRAM_COMPLETE_STARTED', $taskId, $operator, $telegramUserId, [
-                'result' => 'awaiting_confirm',
+                'result' => 'awaiting_evidence',
                 'old_status' => (int) $task->status,
             ]);
 
-            $this->bot->answerCallback($callbackId, 'Подтвердите завершение', false);
+            $this->bot->answerCallback($callbackId, 'Укажите reference выплаты', false);
             $promptChat = $telegramUserId;
-            $prompt = $this->completionPrompt($task);
-            $this->bot->sendMessage($promptChat, $prompt, [
-                [
-                    ['text' => '✅ Да, завершить', 'callback_data' => self::CB_CONFIRM.$taskId],
-                ],
-                [
-                    ['text' => '❌ Отмена', 'callback_data' => self::CB_CANCEL.$taskId],
-                ],
-            ]);
+            $prompt = $this->evidencePrompt($task);
+            $this->bot->sendMessage($promptChat, $prompt);
 
             return;
         }
@@ -234,6 +228,38 @@ final class TelegramOrderOperatorWorkflowService
         if ($flow === null || ! in_array(($flow['stage'] ?? ''), ['awaiting_evidence', 'awaiting_confirm'], true)) {
             return;
         }
+
+        if (($flow['stage'] ?? '') === 'awaiting_evidence') {
+            $taskId = (int) ($flow['task_id'] ?? 0);
+            try {
+                $evidence = SettlementEvidence::fromOptions(['settlement_reference' => $text]);
+            } catch (ManualCompletionException $e) {
+                $this->bot->sendMessage($chatId, '❌ '.$e->getMessage()."\nПришлите txid / bank ref / provider id (мин. 3 символа).");
+
+                return;
+            }
+
+            $flow['stage'] = 'awaiting_confirm';
+            $flow['settlement_reference'] = $evidence->reference;
+            $this->pending->put($telegramUserId, $flow);
+
+            $task = Task::query()->find($taskId);
+            $prompt = $task
+                ? $this->completionPrompt($task)."\n\nReference: ".$evidence->reference
+                : 'Подтвердить завершение с reference: '.$evidence->reference.'?';
+
+            $this->bot->sendMessage($chatId, $prompt, [
+                [
+                    ['text' => '✅ Да, завершить', 'callback_data' => self::CB_CONFIRM.$taskId],
+                ],
+                [
+                    ['text' => '❌ Отмена', 'callback_data' => self::CB_CANCEL.$taskId],
+                ],
+            ]);
+
+            return;
+        }
+
         $this->bot->sendMessage($chatId, 'Для завершения используйте кнопки подтверждения в сообщении бота.');
     }
 
@@ -274,13 +300,22 @@ final class TelegramOrderOperatorWorkflowService
 
         $dryRun = $this->dryRun();
         $taskBefore = Task::query()->find($taskId);
-        $note = 'Telegram operator confirmed payout for order '.$this->orderLabel($taskBefore ?? new Task());
+        $settlementReference = trim((string) ($flow['settlement_reference'] ?? ''));
+        if ($settlementReference === '' || SettlementEvidence::isCannedTelegramNote($settlementReference)) {
+            $this->bot->answerCallback($callbackId, 'Нужен settlement reference', true);
+            $this->audit->log('ORDER_TELEGRAM_COMPLETE_REJECTED', $taskId, $operator, $telegramUserId, [
+                'result' => 'rejected',
+                'reason' => 'settlement_evidence_required',
+            ]);
+
+            return;
+        }
 
         try {
             $oldStatus = $taskBefore ? (int) $taskBefore->status : null;
 
             $result = $this->completion->complete($taskId, $operator, [
-                'message' => $note,
+                'settlement_reference' => $settlementReference,
             ], $dryRun);
 
             $this->pending->clear($telegramUserId);
@@ -306,7 +341,8 @@ final class TelegramOrderOperatorWorkflowService
                 'old_status' => $oldStatus,
                 'new_status' => $newStatus,
                 'dry_run' => $dryRun,
-                'settlement_reference_len' => mb_strlen($note),
+                'settlement_reference_len' => mb_strlen($settlementReference),
+                'settlement_source' => 'settlement_reference',
             ]);
 
             $presenter = app(TelegramOrderMessagePresenter::class);
@@ -402,11 +438,25 @@ final class TelegramOrderOperatorWorkflowService
     {
         return match ($status) {
             2 => "Заявка ещё ожидает оплату.\nЗавершить можно после подтверждения оплаты.",
-            5 => 'Заявка отменена — завершение недоступно.',
-            6 => 'Заявка отклонена — завершение недоступно.',
+            // Enum: 5=REJECTED, 6=CANCELED_BY_USER
+            5 => 'Заявка отклонена — завершение недоступно.',
+            6 => 'Заявка отменена клиентом — завершение недоступно.',
+            8 => 'Заявка на проверке (заморожена). Сначала снимите review в админке.',
             15, 16 => "Заявка в процессе выплаты.\nДождитесь завершения автовыплаты или ошибки.",
             default => 'Статус не позволяет завершить.',
         };
+    }
+
+    private function evidencePrompt(Task $task): string
+    {
+        $label = $this->orderLabel($task);
+
+        return "Заявка №{$label}\n"
+            ."Пришлите settlement reference текстом:\n"
+            ."• blockchain txid, или\n"
+            ."• bank / SBP / Zelle reference, или\n"
+            ."• provider payout id\n\n"
+            .'После этого подтвердите кнопкой. Обычная заметка «подтверждаю» не принимается.';
     }
 
     private function completionPrompt(Task $task): string

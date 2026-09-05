@@ -822,7 +822,15 @@ class OrdersController extends Controller
             // разрешаем восстановить заявку
             if($user->can('admin_orders_restore'))
             {
-                $transaction->setStatus(5);
+                try {
+                    $transaction->setStatus(5);
+                } catch (\App\Services\Orders\Transitions\OrderTransitionException $e) {
+                    return response()->json([
+                        'status' => 1,
+                        'code' => $e->errorCode,
+                        'message' => $e->getMessage(),
+                    ], 422);
+                }
 
                 return response()->json([
                     'status' => 0,

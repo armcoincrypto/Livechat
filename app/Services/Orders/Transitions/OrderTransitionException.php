@@ -35,4 +35,24 @@ final class OrderTransitionException extends RuntimeException
     {
         return new self('paid_transition_failed', $reason);
     }
+
+    public static function fundedRejectForbidden(int $from, int $to): self
+    {
+        return new self(
+            'funded_reject_forbidden',
+            sprintf(
+                'Funded order (status %d) cannot be moved to %d. Use Needs review / Freeze, then reconcile with refund proof outside ordinary reject.',
+                $from,
+                $to
+            ),
+        );
+    }
+
+    public static function finalStatusLocked(int $from, int $to): self
+    {
+        return new self(
+            'final_status_locked',
+            sprintf('Completed order (status %d) cannot transition to %d.', $from, $to),
+        );
+    }
 }

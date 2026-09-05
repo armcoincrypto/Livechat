@@ -101,8 +101,21 @@ final class SettlementEvidence
         if (mb_strlen($trimmed) > self::MAX_LENGTH) {
             throw ManualCompletionException::evidenceInvalid('Settlement evidence exceeds '.self::MAX_LENGTH.' characters');
         }
+        if (self::isCannedTelegramNote($trimmed)) {
+            throw ManualCompletionException::evidenceInvalid(
+                'Settlement evidence must be a real payout reference (txid / bank ref / provider id), not a canned confirmation note'
+            );
+        }
 
         return $trimmed;
+    }
+
+    public static function isCannedTelegramNote(string $value): bool
+    {
+        $v = mb_strtolower(trim($value));
+
+        return str_starts_with($v, 'telegram operator confirmed payout')
+            || str_starts_with($v, 'telegram operator confirmed');
     }
 
     /**

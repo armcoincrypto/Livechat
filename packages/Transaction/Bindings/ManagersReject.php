@@ -88,6 +88,12 @@ trait ManagersReject
         if ($this->getStatus() === self::STATUS_REJECTED) {
             throw new \Exception('Транзакция уже была отклонена.');
         }
+
+        // Funded / completed orders cannot use ordinary reject.
+        \App\Services\Orders\Transitions\OrderTransitionService::assertRejectAllowed(
+            (int) $this->getStatus(),
+            is_array($this->parameters) ? $this->parameters : []
+        );
     }
 
     /**

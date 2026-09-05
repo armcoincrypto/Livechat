@@ -601,21 +601,22 @@ final class TelegramOrderMessagePresenter
 
     private function statusLabel(Task $task): ?string
     {
+        $id = (int) ($task->status ?? 0);
+        $legacy = null;
         try {
             $name = $task->task_status?->name ?? null;
             if (is_array($name)) {
                 $name = $name['ru'] ?? $name['en'] ?? reset($name);
             }
-            $name = $this->nonEmpty((string) $name);
-            if ($name !== null) {
-                return $name;
-            }
+            $legacy = $this->nonEmpty((string) $name);
         } catch (Throwable) {
         }
 
-        $id = (int) ($task->status ?? 0);
+        if ($id > 0) {
+            return \App\Services\Orders\OperatorStatusVocabulary::telegramLabel($id, $legacy);
+        }
 
-        return $id > 0 ? (string) $id : null;
+        return $legacy;
     }
 
     private function operatorLabel(Task $task): ?string
