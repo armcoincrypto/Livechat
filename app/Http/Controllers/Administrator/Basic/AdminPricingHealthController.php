@@ -26,6 +26,7 @@ final class AdminPricingHealthController extends Controller
                 'ownership_counts' => $snap['ownership_counts'],
                 'zero_profit' => $snap['zero_profit'],
                 'stale_critical_count' => $snap['stale_critical_count'],
+                'aging_count' => $snap['aging_count'] ?? 0,
                 'last_bestchange_update_at' => $snap['last_bestchange_update_at'],
                 'last_bestchange_update_age_seconds' => $snap['last_bestchange_update_age_seconds'],
                 'last_bestchange_update_human' => $snap['last_bestchange_update_human'],

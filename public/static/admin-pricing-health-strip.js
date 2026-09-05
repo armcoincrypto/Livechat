@@ -90,6 +90,7 @@
         '<span>Zelle: <b>' + esc(o.ZELLE) + '</b></span>' +
         '<span>Manual: <b>' + esc(o.MANUAL) + '</b></span>' +
         '<span>Unknown: <b>' + esc(o.UNKNOWN) + '</b></span>' +
+        '<span>Устаревают: <b>' + esc(snap.aging_count || 0) + '</b></span>' +
         '<span>Устаревшие критичные: <b>' + esc(snap.stale_critical_count) + '</b></span>' +
         '<span>Последнее обновление BestChange: <b>' + esc(snap.last_bestchange_update_human || '—') + '</b></span>' +
         '<span>Глобальная позиция: <b>' + esc(snap.global_bestchange_position) + '</b></span>' +

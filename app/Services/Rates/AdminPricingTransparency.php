@@ -191,6 +191,7 @@ final class AdminPricingTransparency
             ->whereRaw('CAST(rate_value AS DECIMAL(36,18)) > 0')
             ->max('updated_at');
 
+        // Critical = parser error or severely lagged (>2h). Mild aging (>30m) is reported separately.
         $staleCritical = (int) DB::table('bestchange_directions as bc')
             ->join('direction_exchange as de', 'de.id', '=', 'bc.id_direction_exchange')
             ->where('de.status', 1)->whereNull('de.deleted_at')
@@ -199,8 +200,19 @@ final class AdminPricingTransparency
             ->where(function ($q) {
                 $q->where('bc.is_error_parser', 1)
                     ->orWhereRaw('CAST(bc.rate_value AS DECIMAL(36,18)) <= 0')
-                    ->orWhereRaw('bc.updated_at < DATE_SUB(NOW(), INTERVAL ? SECOND)', [self::BC_AGING_SECONDS]);
+                    ->orWhereRaw('bc.updated_at < DATE_SUB(NOW(), INTERVAL ? SECOND)', [self::BC_AGING_SECONDS * 4]);
             })
+            ->count();
+
+        $agingCount = (int) DB::table('bestchange_directions as bc')
+            ->join('direction_exchange as de', 'de.id', '=', 'bc.id_direction_exchange')
+            ->where('de.status', 1)->whereNull('de.deleted_at')
+            ->where('de.parser_source_name', 'BestChange')
+            ->where('bc.status', 1)
+            ->where('bc.is_error_parser', 0)
+            ->whereRaw('CAST(bc.rate_value AS DECIMAL(36,18)) > 0')
+            ->whereRaw('bc.updated_at < DATE_SUB(NOW(), INTERVAL ? SECOND)', [self::BC_HEALTHY_SECONDS])
+            ->whereRaw('bc.updated_at >= DATE_SUB(NOW(), INTERVAL ? SECOND)', [self::BC_AGING_SECONDS * 4])
             ->count();
 
         $dupGroups = (int) DB::table('bestchange_directions')
@@ -241,6 +253,7 @@ final class AdminPricingTransparency
             ],
             'zero_profit' => $zeroProfit,
             'stale_critical_count' => $staleCritical,
+            'aging_count' => $agingCount,
             'last_bestchange_update_at' => $lastBc,
             'last_bestchange_update_age_seconds' => $lastBcAge,
             'last_bestchange_update_human' => $lastBcHuman,
