@@ -60,6 +60,9 @@ final class UpdateSitemapCommandTest extends TestCase
         self::assertContains('uk/guides', $routes);
         self::assertContains('ka/guides', $routes);
         self::assertContains('zh/guides', $routes);
+        self::assertContains('zh/blog', $routes);
+        self::assertNotContains('uk/blog', $routes);
+        self::assertNotContains('ka/blog', $routes);
         self::assertNotContains('ru/news', $routes);
     }
 
@@ -159,14 +162,19 @@ final class UpdateSitemapCommandTest extends TestCase
         self::assertGreaterThan(0, count($tierIds));
     }
 
-    public function test_direction_exchange_query_requires_enabled_status(): void
+    public function test_direction_exchange_query_requires_quoteable_scope(): void
     {
         $src = file_get_contents(__DIR__ . '/../../app/Console/Commands/UpdateSitemapCommand.php');
         self::assertNotFalse($src);
-        self::assertMatchesRegularExpression(
-            "/->where\\('status',\\s*'=',\\s*1\\)/",
+        self::assertStringContainsString(
+            '->quoteable()',
             $src,
-            'Exchange sitemap emission must require status=1'
+            'Exchange sitemap emission must require quoteable() (direction + visible currencies)'
+        );
+        self::assertStringNotContainsString(
+            "->where('status', '=', 1)",
+            $src,
+            'status=1 alone is insufficient — hidden currencies would leak into sitemap'
         );
         self::assertStringContainsString('strtoupper(trim((string) ($item->currency1?->designation_xml', $src);
         self::assertStringContainsString('strtoupper(trim((string) ($item->currency2?->designation_xml', $src);

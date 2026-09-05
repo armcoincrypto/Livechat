@@ -21,7 +21,7 @@ final class PruneRatesHistoryLogsCommandTest extends TestCase
         $sig = (string) $prop->getValue($cmd);
 
         self::assertStringContainsString('rates-history:prune', $sig);
-        self::assertStringContainsString('--days=90', $sig);
+        self::assertStringContainsString('--days=30', $sig);
         self::assertStringContainsString('--batch=5000', $sig);
         self::assertStringContainsString('--max-rows=50000', $sig);
         self::assertStringContainsString('--skip-count', $sig);
@@ -39,7 +39,7 @@ final class PruneRatesHistoryLogsCommandTest extends TestCase
     {
         $schedule = file_get_contents(__DIR__ . '/../../app/Console/Schedule/ExchangeSchedule.php');
         self::assertNotFalse($schedule);
-        self::assertStringContainsString("rates-history:prune --days=90 --batch=5000 --max-rows=50000", $schedule);
+        self::assertStringContainsString("rates-history:prune --days=30 --batch=5000 --max-rows=50000", $schedule);
         self::assertStringContainsString('withoutOverlapping(50)', $schedule);
     }
 }

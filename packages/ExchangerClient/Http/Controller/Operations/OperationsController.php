@@ -43,16 +43,17 @@ class OperationsController
 
         $item = null;
 
-        // Возвращаем направление только если оба параметра валидны
+        // Wave 6: resolve explicit pair codes via CanonicalDirectionResolver so
+        // multi-edge designations (e.g. ZELLEUSD→CARDAMD banks) are deterministic.
         if ($from && $to) {
-            $item = DirectionExchange::activeDirection($from, $to)->first();
+            $item = $this->findActiveDirection($from, $to);
         }
 
         if (!$item) {
             if ((int)iEXSetting('default_exchange_direction_mode', 0)) {
-                $item = DirectionExchange::activeDirection()->where('is_main', 1)->first();
+                $item = DirectionExchange::activeDirection()->where('is_main', 1)->orderBy('id')->first();
             } else {
-                $item = DirectionExchange::activeDirection()->inRandomOrder()->first();
+                $item = DirectionExchange::activeDirection()->orderBy('id')->first();
             }
         }
 

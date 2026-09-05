@@ -412,9 +412,9 @@ final class UpdateSitemapCommand extends Command
     private function addGuideDirectoryUrls(Sitemap $sitemap, string $frontendUrl, bool $silent): void
     {
         $added = 0;
+        // Guides + topical hubs: EN stem expands to UK/KA/ZH (indexable shells).
         $pairs = [
             ['en' => 'en/guides', 'ru' => 'ru/guides'],
-            ['en' => 'en/blog', 'ru' => 'ru/blog'],
             ['en' => 'en/usdt', 'ru' => 'ru/usdt'],
             ['en' => 'en/methods/sber', 'ru' => 'ru/methods/sber'],
             ['en' => 'en/methods/sbp', 'ru' => 'ru/methods/sbp'],
@@ -432,6 +432,22 @@ final class UpdateSitemapCommand extends Command
             }
         }
 
+        // Blog hubs: only locales that Next marks indexable when the hub has
+        // native posts (EN/RU always; ZH has corpus; UK/KA empty → noindex).
+        // Do not expand EN blog to UK/KA — that put noindex URLs in the sitemap.
+        $blogByLocale = [];
+        foreach (['en', 'ru', 'zh'] as $locale) {
+            $blogByLocale[$locale] = $this->joinLocalizedUrl($frontendUrl, $locale, 'blog');
+        }
+        foreach ($blogByLocale as $url) {
+            $tag = Url::create($url)
+                ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
+                ->setPriority(0.6);
+            $this->attachOwnedAlternates($tag, $blogByLocale);
+            $sitemap->add($tag);
+            $added++;
+        }
+
         if (!$silent) {
             $this->line('Guide/blog directories: добавлено ' . $added . ' URL.');
         }
@@ -447,6 +463,10 @@ final class UpdateSitemapCommand extends Command
         $hubs = [];
         foreach (self::OWNED_SITEMAP_LOCALES as $locale) {
             $hubs[] = $locale . '/guides';
+        }
+        // Blog hubs match Next isBlogHubIndexableLocale: EN/RU always, ZH when
+        // native corpus exists; UK/KA empty hubs stay off the sitemap.
+        foreach (['en', 'ru', 'zh'] as $locale) {
             $hubs[] = $locale . '/blog';
         }
 
@@ -625,9 +645,11 @@ final class UpdateSitemapCommand extends Command
 
         DirectionExchange::query()
             // Fail-closed: INDEX-tier membership alone is not enough — direction
-            // must be enabled/public (status=1). Disabled rows remaining in the
-            // tier file must never be emitted.
-            ->where('status', '=', 1)
+            // must be quoteable (status=1 AND both currencies visible/status=0),
+            // matching OperationsController / CanonicalDirectionResolver. Hidden
+            // currencies (e.g. USDCERC20 status=1) must never be sitemap-listed
+            // even when the direction row remains enabled.
+            ->quoteable()
             ->whereIn('id', $indexTierIds)
             ->with([
                 'currency1:id,designation_xml',

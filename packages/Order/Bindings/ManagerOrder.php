@@ -130,7 +130,9 @@ trait ManagerOrder
             ->withOptions($this->getCalculationOptions())
             ->run();
 
-        $newOrder = Task::create($this->prepareOrderData($responseFee));
+        $newOrder = \App\Services\Orders\TaskPublicIdGenerator::createTaskWithRetry(
+            $this->prepareOrderData($responseFee)
+        );
 
         $this->logReferralCaptureForTask($newOrder);
 

@@ -12,8 +12,8 @@ use Throwable;
 /**
  * Batched, bounded prune for rates_history_logs.
  *
- * Retention default is 90 days: analytics consumers only need ~24h, admin charts
- * default to 1 day, and indexed created_at makes time-based deletion safe.
+ * Retention default is 30 days: analytics consumers only need ~24h, admin charts
+ * default to 1 day, safety floor refuses <30, and indexed created_at makes time-based deletion safe.
  *
  * Never issues one giant DELETE. Deletes by primary-key batches with optional
  * sleep, max-rows ceiling, and dry-run mode. Scheduler-safe via withoutOverlapping.
@@ -21,7 +21,7 @@ use Throwable;
 final class PruneRatesHistoryLogsCommand extends Command
 {
     protected $signature = 'rates-history:prune
-        {--days=90 : Retain rows newer than N days}
+        {--days=30 : Retain rows newer than N days}
         {--batch=5000 : Rows deleted per batch}
         {--max-rows=50000 : Maximum rows deleted in this invocation}
         {--sleep-ms=50 : Sleep between batches in milliseconds}

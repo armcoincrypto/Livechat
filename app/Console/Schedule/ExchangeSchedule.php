@@ -50,10 +50,12 @@ class ExchangeSchedule
 
         // Пересчёт заявок по cron (OrderRecount)
         // Команда сама проверяет настройку type_recalculation_order и ничего не сделает, если cron-режим выключен.
+        // Wave3: background so schedule:run is not pinned by recount duration.
         $schedule->command('order-recount:run --details')
             ->everyMinute()
             ->onOneServer()
             ->withoutOverlapping(50)
+            ->runInBackground()
             ->appendOutputTo(storage_path('logs/order_recount_run.log'));
 
 
@@ -79,6 +81,7 @@ class ExchangeSchedule
             ->everyMinute()
             ->onOneServer()
             ->withoutOverlapping(3)
+            ->runInBackground()
             ->appendOutputTo(storage_path('logs/autopay_queue.log'));
 
         // 2) Запускаем авто-выплаты по заявкам из очереди (16)
@@ -86,6 +89,7 @@ class ExchangeSchedule
             ->everyMinute()
             ->onOneServer()
             ->withoutOverlapping(10)
+            ->runInBackground()
             ->appendOutputTo(storage_path('logs/autopay_run.log'));
 
         // Обновление кеша BestChange
@@ -95,7 +99,10 @@ class ExchangeSchedule
         //$schedule->command('callback:receive_hash')->everyMinute();
 
         // Обработка ожидающих выплат
-        $schedule->command('pay:pending-withdrawal')->everyMinute();
+        $schedule->command('pay:pending-withdrawal')
+            ->everyMinute()
+            ->withoutOverlapping(55)
+            ->runInBackground();
 
         $schedule->command('orders:funded-health --alert')
             ->everyFiveMinutes()
@@ -123,7 +130,10 @@ class ExchangeSchedule
 
 
             // 1 COUNT / minute — безопасно и предсказуемо
-        $schedule->command('presence:snapshot')->everyMinute();
+        $schedule->command('presence:snapshot')
+            ->everyMinute()
+            ->withoutOverlapping(55)
+            ->runInBackground();
 
         // daily rollup за вчера — лучше ночью
         $schedule->command('presence:rollup-daily')->dailyAt('00:10');
@@ -219,15 +229,20 @@ class ExchangeSchedule
         $exportMinutes = (int) iEXSetting('grates_cron_timer', 1);
         $compilerWrapper = '/opt/exswaping-owned-frontend/scripts/ops/run_backend_compiler.sh';
 
+        // Wave3: heavy compilers MUST runInBackground. Observed BC runtime ~220–250s;
+        // foreground execution pinned schedule:run across cron minutes (overlap pile-up).
+        // Self-overlap still prevented by withoutOverlapping + run_backend_compiler flock.
         $courses = $schedule->exec("{$compilerWrapper} compiler:courses --isUpdate=0")
             ->onOneServer()
             ->withoutOverlapping(120)
+            ->runInBackground()
             ->appendOutputTo(storage_path('logs/compiler_courses.log'));
         self::applyMinuteCadence($courses, $ratesMinutes);
 
         $bestchange = $schedule->exec("{$compilerWrapper} compiler:bestchange")
             ->onOneServer()
-            ->withoutOverlapping(180)
+            ->withoutOverlapping(300)
+            ->runInBackground()
             ->appendOutputTo(storage_path('logs/compiler_bestchange.log'));
         self::applyMinuteCadence($bestchange, $ratesMinutes);
 
@@ -235,6 +250,7 @@ class ExchangeSchedule
         $zelle = $schedule->command('rates:zelleusd-usdt-preview --all --apply')
             ->onOneServer()
             ->withoutOverlapping(120)
+            ->runInBackground()
             ->appendOutputTo(storage_path('logs/zelle_usdt_benchmark.log'));
         self::applyMinuteCadence($zelle, $ratesMinutes);
 
@@ -246,12 +262,14 @@ class ExchangeSchedule
             ->everyTenMinutes()
             ->onOneServer()
             ->withoutOverlapping(9)
+            ->runInBackground()
             ->appendOutputTo(storage_path('logs/derived_baseline_refresh.log'));
 
         // Проверка и обновление файлов курсов / public XML exports
         $scheme = $schedule->exec("{$compilerWrapper} scheme:files")
             ->onOneServer()
-            ->withoutOverlapping(10);
+            ->withoutOverlapping(10)
+            ->runInBackground();
         self::applyMinuteCadence($scheme, $exportMinutes);
         // Read-only rate pipeline health (non-zero exit on critical conditions).
         $schedule->command('rates:health --format=json')
@@ -283,7 +301,8 @@ class ExchangeSchedule
         $schedule->exec("{$compilerWrapper} compiler:generate_prices")
             ->everyFiveMinutes()
             ->onOneServer()
-            ->withoutOverlapping(10);
+            ->withoutOverlapping(10)
+            ->runInBackground();
 
         // Обновление файлов BestChange (полный набор), раз в день
         $schedule->exec("{$compilerWrapper} bestchange:files")
@@ -308,8 +327,9 @@ class ExchangeSchedule
 
         $schedule->command('proxy:prune-health-logs --days=30')->dailyAt('03:15');
 
-        // Bounded rates_history_logs retention (90d). Multiple daily runs drain backlog safely.
-        $schedule->command('rates-history:prune --days=90 --batch=5000 --max-rows=50000 --sleep-ms=50')
+        // Bounded rates_history_logs retention (30d). Analytics uses ~24h; admin charts default 1d;
+        // command safety floor is 30d. Live quotes do not read this table. Hourly runs drain safely.
+        $schedule->command('rates-history:prune --days=30 --batch=5000 --max-rows=50000 --sleep-ms=50')
             ->hourlyAt(20)
             ->onOneServer()
             ->withoutOverlapping(50);

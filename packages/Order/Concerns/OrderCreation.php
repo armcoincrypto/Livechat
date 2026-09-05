@@ -2,6 +2,7 @@
 
 namespace iEXPackages\Order\Concerns;
 
+use App\Services\Orders\TaskPublicIdGenerator;
 use Illuminate\Support\Facades\Log;
 
 trait OrderCreation
@@ -32,7 +33,7 @@ trait OrderCreation
         return [
             'type_rate' => $this->resolveOrderType(),
             'is_type_rate' => $this->directionId->is_type_rate,
-            'public_id' => generateUniqueNumericId(),
+            'public_id' => TaskPublicIdGenerator::allocate(),
             'id_user' => $this->authInfo->id,
             'id_direction_exchange' => $this->directionId->id,
             'is_new_user' => isset($this->options['email']) ? 1 : 0,
