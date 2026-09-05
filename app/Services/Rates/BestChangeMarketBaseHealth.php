@@ -61,8 +61,13 @@ final class BestChangeMarketBaseHealth
             return $base;
         }
 
+        // Prefer the active mapping when historical duplicate rows exist.
+        // Duplicate groups currently have at most one active row; this removes
+        // accidental first()-row ambiguity without deleting history.
         $bc = DB::table('bestchange_directions')
             ->where('id_direction_exchange', $directionId)
+            ->orderByDesc('status')
+            ->orderBy('id')
             ->first();
 
         if ($bc === null) {
@@ -150,6 +155,8 @@ final class BestChangeMarketBaseHealth
 
         $status = DB::table('bestchange_directions')
             ->where('id_direction_exchange', $directionId)
+            ->orderByDesc('status')
+            ->orderBy('id')
             ->value('status');
 
         return self::isActiveStatus($status);

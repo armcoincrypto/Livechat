@@ -79,4 +79,62 @@ class DirectionExchangeFilter extends ModelFilter
     {
         return $this->orderBy($value, request()->get('sorting_type') ?? 'asc');
     }
+
+    /**
+     * Pricing family: bestchange|derived|zelle|manual
+     */
+    public function pricingOwner($value): DirectionExchangeFilter
+    {
+        $v = strtolower(trim((string) $value));
+        return match ($v) {
+            'bestchange' => $this->where('parser_source_name', 'BestChange'),
+            'derived' => $this->where('parser_source_name', 'DERIVED_MARKET_BASELINE'),
+            'zelle' => $this->where('parser_source_name', 'ZELLE_USDTTRC20_BENCHMARK'),
+            'manual' => $this->whereIn('parser_source_name', ['Ручной курс', 'Manual']),
+            default => $this,
+        };
+    }
+
+    /**
+     * Explicit profit = 0 (family-aware). Not "no margin".
+     */
+    public function zeroProfit($value): DirectionExchangeFilter
+    {
+        if (!(int) $value) {
+            return $this;
+        }
+
+        return $this->where(function ($w) {
+            $w->where(function ($b) {
+                $b->where('parser_source_name', 'BestChange')
+                    ->whereRaw('CAST(COALESCE(profit,0) AS DECIMAL(20,8)) = 0');
+            })->orWhere(function ($b) {
+                $b->where('parser_source_name', 'DERIVED_MARKET_BASELINE')
+                    ->whereRaw('CAST(COALESCE(profit,0) AS DECIMAL(20,8)) = 0');
+            })->orWhere(function ($b) {
+                $b->where('parser_source_name', 'ZELLE_USDTTRC20_BENCHMARK')
+                    ->whereRaw('CAST(COALESCE(floating_fee,0) AS DECIMAL(20,8)) = 0');
+            })->orWhere(function ($b) {
+                $b->whereIn('parser_source_name', ['Ручной курс', 'Manual'])
+                    ->whereRaw('CAST(COALESCE(profit,0) AS DECIMAL(20,8)) = 0');
+            });
+        });
+    }
+
+    /**
+     * BestChange pairs whose position differs from global setting.
+     */
+    public function positionOverride($value): DirectionExchangeFilter
+    {
+        if (!(int) $value) {
+            return $this;
+        }
+        $global = (int) (new \App\Settings\BestChangeConfig())->position();
+
+        return $this->where('parser_source_name', 'BestChange')
+            ->whereHas('bestchange_directions', function ($b) use ($global) {
+                $b->where('status', 1)
+                    ->whereRaw('CAST(position_num AS UNSIGNED) <> ?', [$global]);
+            });
+    }
 }

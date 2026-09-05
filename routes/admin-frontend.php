@@ -33,6 +33,7 @@ use App\Http\Controllers\Administrator\Basic\CurrencyLabelsController;
 use App\Http\Controllers\Administrator\Basic\CurrencyNotificationController;
 use App\Http\Controllers\Administrator\Basic\CurrencyTemplateController;
 use App\Http\Controllers\Administrator\Basic\DirectionCityProfilesController;
+use App\Http\Controllers\Administrator\Basic\AdminPricingHealthController;
 use App\Http\Controllers\Administrator\Basic\DirectionExchange\Fees\DirectionExchangeProfitController;
 use App\Http\Controllers\Administrator\Basic\DirectionExchange\Others\DirectionExchangeRecountController;
 use App\Http\Controllers\Administrator\Basic\DirectionExchange\Verifications\DirectionExchangeCardController;
@@ -356,6 +357,10 @@ Route::prefix('frontend-api')->middleware(['frontend', 'force-json'])->group(fun
                 Route::get('direction_exchange/{id}/verifications/identity', [DirectionExchangeIdentityController::class, 'edit']);
                 Route::put('direction_exchange/{id}/verifications/identity', [DirectionExchangeIdentityController::class, 'update']);
 
+
+                Route::get('pricing/health', [AdminPricingHealthController::class, 'show']);
+                Route::get('pricing/inventory', [AdminPricingHealthController::class, 'inventory']);
+                Route::get('direction_exchange/{id}/pricing/explain', [AdminPricingHealthController::class, 'explain']);
 
                 Route::get('direction_exchange/{id}/fees/profit', [DirectionExchangeProfitController::class, 'edit']);
                 Route::put('direction_exchange/{id}/fees/profit', [DirectionExchangeProfitController::class, 'update']);

@@ -2,6 +2,8 @@
 namespace App\Http\Resources\Admin\Basic;
 
 use App\Services\Rates\AdminRateSourcePresenter;
+use App\Services\Rates\CommercialAdjustmentResolver;
+use App\Settings\BestChangeConfig;
 use iEXPackages\Calculator\Calculator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -9,6 +11,10 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 class DirectionExchangeResources extends ResourceCollection
 {
     private $pagination;
+
+    private static ?CommercialAdjustmentResolver $resolver = null;
+
+    private static ?int $globalBcPosition = null;
 
 
     public function __construct($resource)
@@ -29,9 +35,27 @@ class DirectionExchangeResources extends ResourceCollection
 
     public function toArray(Request $request): array
     {
+        $resolver = self::$resolver ??= new CommercialAdjustmentResolver();
+        $globalPos = self::$globalBcPosition ??= (int) (new BestChangeConfig())->position();
+
         return [
-            'data' => $this->collection->map(function ($item)
+            'data' => $this->collection->map(function ($item) use ($resolver, $globalPos)
             {
+                $family = $resolver->family($item);
+                $displayProfit = $resolver->displayProfitPercent($item);
+                $bc = $item->relationLoaded('bestchange_directions') ? $item->bestchange_directions : null;
+                $pairPos = $bc && trim((string) ($bc->position_num ?? '')) !== ''
+                    ? (string) $bc->position_num
+                    : null;
+                $hasOverride = $pairPos !== null && (string) $pairPos !== (string) $globalPos
+                    && $family === 'BESTCHANGE';
+                $fixFee = (string) ($item->fix_fee ?? '0');
+                $floatingFee = (string) ($item->floating_fee ?? '0');
+                $explicitZero = abs((float) $displayProfit) < 0.0000001;
+                $otherAdj = abs((float) $fixFee) > 0.0000001
+                    || ($family === 'BESTCHANGE')
+                    || ($family === 'ZELLE' && abs((float) $floatingFee) > 0.0000001);
+
                 return [
                     'id' => $item->id,
                     'attributes' => [
@@ -48,6 +72,21 @@ class DirectionExchangeResources extends ResourceCollection
                         'parser_source_name' => AdminRateSourcePresenter::displayParserName($item),
                         'rate_source_label' => AdminRateSourcePresenter::label($item),
                         'bc_position_authoritative' => AdminRateSourcePresenter::isBestChangePositionAuthoritative($item),
+                        'pricing_family' => $family,
+                        'display_profit' => $displayProfit,
+                        'floating_fee' => $floatingFee,
+                        'fix_fee' => $fixFee,
+                        'global_bestchange_position' => $globalPos,
+                        'pair_bestchange_position' => $pairPos,
+                        'effective_bestchange_position' => $pairPos !== null ? (int) $pairPos : $globalPos,
+                        'has_position_override' => $hasOverride,
+                        'explicit_profit_zero' => $explicitZero,
+                        'other_adjustments_active' => $otherAdj,
+                        'zero_profit_note' => $explicitZero
+                            ? ($otherAdj
+                                ? 'Явная прибыль: 0%. Другие корректировки: активны'
+                                : 'Явная прибыль: 0%. Доп. процентные корректировки: нет')
+                            : null,
                         'oth_comm_percent' => $item->oth_comm_percent ?? 0,
                         'oth_comm_currency' => $item->oth_comm_currency ?? 0,
                         'oth_comm2_percent' => $item->oth_comm2_percent ?? 0,

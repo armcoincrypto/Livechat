@@ -493,7 +493,8 @@ class DirectionExchangeController extends Controller
             'id_currency1', 'id_currency2', 'tech_name',
             'status', 'is_main', 'is_error_rate', 'error_rate_text', 'exchange_rate', 'course_value',
             'parser_source_name', 'oth_comm_percent',
-            'oth_comm_currency', 'oth_comm2_percent', 'oth_comm2_currency', 'profit', 'profit_s', 'min_price1',
+            'oth_comm_currency', 'oth_comm2_percent', 'oth_comm2_currency', 'profit', 'profit_s',
+            'floating_fee', 'fix_fee', 'min_price1',
             'min_price2', 'max_price1', 'max_price2', 'is_manual_min_price1', 'is_manual_min_price2', 'is_manual_max_price1',
             'is_manual_max_price2', 'updated_at',  'created_at'
         )
@@ -512,7 +513,7 @@ class DirectionExchangeController extends Controller
             },
             'merchants',
             'gateway_payments',
-            'bestchange_directions:id,id_direction_exchange,status,position_num',
+            'bestchange_directions:id,id_direction_exchange,status,position_num,updated_at,rate_value,is_error_parser',
         ])->withCount('tasks')->filter($request->all());
 
         if(!$request->has('sorting_order')) {

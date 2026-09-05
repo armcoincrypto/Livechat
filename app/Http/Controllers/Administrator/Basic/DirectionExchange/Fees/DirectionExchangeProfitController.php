@@ -6,16 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\DirectionExchange;
 use App\Models\GroupCommission;
 use App\Models\ProfitProfile;
-use App\Services\Rates\BestChangeMarketBaseHealth;
+use App\Services\Rates\AdminPricingTransparency;
 use App\Services\Rates\AdminRateSourcePresenter;
-use App\Services\Rates\CanonicalDirectionRateCalculator;
 use App\Services\Rates\CommercialAdjustmentResolver;
 use App\Services\Rates\CommercialAdjustmentWriteGate;
-use App\Services\Rates\DerivedMarketBaselineAuthority;
-use App\Services\Rates\RateChannel;
-use App\Services\Rates\RateMode;
 use App\Services\Rates\RateWriteAuditLogger;
-use App\Services\Rates\RubFamilyPremiumPolicy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -49,9 +44,18 @@ class DirectionExchangeProfitController extends Controller
             'final_fixed_rate' => $pricing['final_fixed'],
             'base_source' => $pricing['base_source'],
             'source_status' => $pricing['source_status'],
-            'bestchange_position' => $pricing['bestchange_position'],
-            'source_updated_at' => $pricing['source_updated_at'],
+            'bestchange_position' => $pricing['bestchange_position'] ?? ($pricing['position']['effective'] ?? null),
+            'source_updated_at' => $pricing['source_updated_at'] ?? ($pricing['freshness']['updated_at'] ?? null),
             'ownership' => 'MANUAL_PROFIT',
+            'pricing_explanation' => $pricing,
+            'global_bestchange_position' => $pricing['position']['global'] ?? null,
+            'pair_bestchange_position' => $pricing['position']['pair_override'] ?? null,
+            'effective_bestchange_position' => $pricing['position']['effective'] ?? null,
+            'freshness_state' => $pricing['freshness']['state'] ?? null,
+            'freshness_label' => $pricing['freshness']['state_label'] ?? null,
+            'freshness_human' => $pricing['freshness']['human'] ?? null,
+            'zero_profit_wording' => $pricing['commercial']['zero_profit_wording'] ?? null,
+            'profit_survives_hint' => $pricing['ownership']['profit_survives_hint'] ?? null,
         ];
 
         $group_commission = GroupCommission::orderByDesc('id')->get()->map(function ($item) {
@@ -91,7 +95,7 @@ class DirectionExchangeProfitController extends Controller
                     'family' => $family,
                     'commercial_field' => 'profit',
                     'storage_field' => $resolver->storageField($item),
-                    'help' => $resolver->helpText($item).' Прибыль — MANUAL (survives BASE refresh). BASE='.$pricing['base'].' source='.$pricing['base_source'].' ('.$pricing['source_status'].') → floating='.$pricing['final_floating'].'.',
+                    'help' => $resolver->helpText($item).' '.($pricing['ownership']['profit_survives_hint'] ?? 'Коммерческая настройка сохраняется при автообновлении курса.').' Источник: '.$pricing['base_source'].' ('.$pricing['source_status'].'). Курс источника='.$pricing['base'].' → плавающий клиенту='.$pricing['final_floating'].'.',
                     'pricing' => $pricing,
                     'ownership' => 'MANUAL_PROFIT',
                 ],
@@ -288,46 +292,20 @@ class DirectionExchangeProfitController extends Controller
 
     private function pricingContext(DirectionExchange $item, CommercialAdjustmentResolver $resolver): array
     {
-        $id = (int) $item->id;
-        $health = BestChangeMarketBaseHealth::evaluate($id);
-        $parser = (string) ($item->parser_source_name ?? '');
-        $base = (string) ($item->course_value ?? '0');
-        $calc = CanonicalDirectionRateCalculator::make();
-        $floating = $calc->calculate($item, RateMode::Floating, RateChannel::Website, $base);
-        $fixed = $calc->calculate($item, RateMode::Fixed, RateChannel::Website, $base);
-        $baseSource = 'OTHER';
-        if ($health['healthy']) {
-            $baseSource = 'BestChange';
-        } elseif ($parser === 'DERIVED_MARKET_BASELINE' || DerivedMarketBaselineAuthority::fromStorageApp()->owns($id)) {
-            $baseSource = in_array((string) $health['status'], ['stale', 'inactive', 'outlier', 'error'], true)
-                ? 'DERIVED_FALLBACK'
-                : 'DERIVED';
-        } elseif ($parser === 'BestChange') {
-            $baseSource = 'BestChange';
-        }
+        $explain = AdminPricingTransparency::explain($item);
         $band = null;
         try {
             $item->loadMissing('currency2');
             $to = (string) ($item->currency2?->designation_xml ?? '');
-            $band = RubFamilyPremiumPolicy::fromStorageApp()->preferredCustomerFloatingBand($to);
+            $band = \App\Services\Rates\RubFamilyPremiumPolicy::fromStorageApp()->preferredCustomerFloatingBand($to);
         } catch (\Throwable) {
             $band = null;
         }
-        return [
-            'base' => $base,
-            'profit' => $resolver->displayProfitPercent($item),
-            'final_floating' => $floating->finalRate,
-            'final_fixed' => $fixed->finalRate,
-            'fix_fee' => (string) ($item->fix_fee ?? '0'),
-            'base_source' => $baseSource,
-            'source_status' => $health['healthy'] ? 'Healthy' : ($baseSource === 'DERIVED_FALLBACK' ? 'Fallback' : ucfirst((string) $health['status'])),
-            'bestchange_position' => $health['position_num'],
-            'bestchange_rate' => $health['rate_value'],
-            'source_updated_at' => $health['updated_at'],
-            'preferred_band' => $band,
-            'parser_source_name' => $parser,
-            'ownership' => 'MANUAL_PROFIT',
-        ];
+        $explain['preferred_band'] = $band;
+        // Back-compat: legacy panel key for profit control durability.
+        $explain['commercial_control'] = 'MANUAL_PROFIT';
+
+        return $explain;
     }
 
     /**
