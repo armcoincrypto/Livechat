@@ -58,11 +58,12 @@
 </script>
 
 {{-- Pricing ownership panel: hydrate from fees/profit API (Vue source tree not present on this host). --}}
-<script src="/static/admin-pricing-ownership-panel.js?v=20260906c" defer></script>
+<script src="/static/admin-pricing-ownership-panel.js?v=20260906e" defer></script>
 <script src="/static/admin-pricing-health-strip.js?v=20260906c" defer></script>
 <script src="/static/admin-rate-source-scrubber.js?v=20260831" defer></script>
 <script src="/static/admin-order-operational-panel.js?v=20260824c" defer></script>
-<script src="/static/admin-paid-queue-panel.js?v=20260905a" defer></script>
+<script src="/static/admin-paid-queue-panel.js?v=20260906e" defer></script>
+<script src="/static/admin-user-lifecycle-strip.js?v=20260906e" defer></script>
 
 </body>
 </html>

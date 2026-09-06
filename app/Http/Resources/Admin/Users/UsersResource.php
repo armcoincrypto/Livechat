@@ -86,6 +86,14 @@ class UsersResource extends ResourceCollection
                         'created_at' => $item->created_at->translatedFormat('d M Y'),
                         'created_at_human' => $item->created_at->diffForHumans(),
                         'updated_at' => $item->updated_at,
+                        // Wave E — read-only lifecycle clarity for operators (no PII beyond existing email).
+                        'last_login_at' => $item->last_login_at
+                            ? \Illuminate\Support\Carbon::parse($item->last_login_at)->translatedFormat('d M Y H:i')
+                            : null,
+                        'last_login_at_human' => $item->last_login_at
+                            ? \Illuminate\Support\Carbon::parse($item->last_login_at)->diffForHumans()
+                            : null,
+                        'has_order_history' => ((int) ($item->exchanges_count ?? 0)) > 0,
 
                         'is_guest' => $item->is_guest,
                     ],
