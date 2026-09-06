@@ -60,6 +60,7 @@ class LoginController extends Controller
         if ($user->deactivation == 1) {
             return response()->json([
                 'status' => 1,
+                'code' => 'ACCOUNT_DEACTIVATED',
                 'error' => __('Ваша учетная запись была деактивирована. Обратитесь в поддержку для получения дополнительной информации.'),
             ], 403);
         }
@@ -67,6 +68,7 @@ class LoginController extends Controller
         if ($user->isBanned()) {
             return response()->json([
                 'status' => 1,
+                'code' => 'ACCOUNT_BANNED',
                 'error' => __('Ваша учетная запись заблокирована до :date. Обратитесь в поддержку для получения дополнительной информации.', ['date' => $user->banned_at])
             ], 403);
         }

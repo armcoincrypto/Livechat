@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\Auth\UserAccountLifecycleService;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Foundation\Auth\ResetsPasswords;
 use Illuminate\Support\Str;
@@ -52,6 +54,13 @@ class ResetPasswordController extends Controller
         $this->setUserPassword($user, $password);
         $user->setRememberToken(Str::random(60));
         $user->save();
+
+        // Mailbox control proven by reset token — recover stale deactivation and
+        // email_verified_at without touching KYC identity fields.
+        if ($user instanceof User) {
+            app(UserAccountLifecycleService::class)
+                ->recoverAfterSuccessfulPasswordReset($user);
+        }
 
         event(new PasswordReset($user));
 
