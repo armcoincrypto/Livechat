@@ -11,6 +11,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 final class NewDeviceJob implements ShouldQueue
 {
@@ -28,6 +30,10 @@ final class NewDeviceJob implements ShouldQueue
 
     public function handle(): void
     {
-        $this->user->notify(new NewDeviceNotification($this->authContext));
+        try {
+            $this->user->notify(new NewDeviceNotification($this->authContext));
+        } catch (Throwable $e) {
+            Log::warning('NewDeviceJob mail failed', ['error' => $e->getMessage()]);
+        }
     }
 }

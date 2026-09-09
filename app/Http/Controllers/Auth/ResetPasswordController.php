@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Services\Auth\UserAccountLifecycleService;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Foundation\Auth\ResetsPasswords;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 
@@ -81,5 +83,25 @@ class ResetPasswordController extends Controller
         }
 
         return $validate;
+    }
+
+    /**
+     * Owned BFF expects `{ status: 0 }` on auth success (same contract as
+     * login/verify). Laravel ui defaults to `{ message: ... }` only.
+     *
+     * @param  string  $response
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     */
+    protected function sendResetResponse(Request $request, $response)
+    {
+        if ($request->wantsJson()) {
+            return new JsonResponse([
+                'status' => 0,
+                'message' => trans($response),
+            ], 200);
+        }
+
+        return redirect($this->redirectPath())
+            ->with('status', trans($response));
     }
 }

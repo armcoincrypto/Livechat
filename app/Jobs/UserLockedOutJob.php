@@ -6,11 +6,14 @@ use App\Mail\Auth\LockoutAuthMail;
 use App\Models\User;
 use iEXPackages\GeoIp\Facades\GeoIP;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
-class UserLockedOutJob
+class UserLockedOutJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -54,7 +57,14 @@ class UserLockedOutJob
         }
 
 
-        \Mail::to($this->user->email)
-            ->send(new LockoutAuthMail($this->user, $data));
+        try {
+            \Mail::to($this->user->email)
+                ->send(new LockoutAuthMail($this->user, $data));
+        } catch (Throwable $e) {
+            Log::warning('UserLockedOutJob mail failed', [
+                'user_id' => $this->user->id ?? null,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

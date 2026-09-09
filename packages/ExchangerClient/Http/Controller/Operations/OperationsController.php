@@ -164,9 +164,18 @@ class OperationsController
         // to the public calculator — rebuild the snapshot on miss.
         if (!is_array($response) || $response === [] || empty($response['paymentSystems'] ?? null)) {
             try {
-                app(\App\Services\Rates\ExchangeRatesCacheInvalidator::class)
-                    ->rebuildPublicRatesSnapshots('rates.update.cache_miss');
-                $response = Cache::store('redis')->get($cacheKey);
+                // One rebuild owner under stampede; others wait briefly then read cache.
+                $lock = Cache::lock('rates.update.rebuild', 30);
+                $lock->block(5, function () use ($cacheKey, &$response): void {
+                    $fresh = Cache::store('redis')->get($cacheKey);
+                    if (is_array($fresh) && $fresh !== [] && !empty($fresh['paymentSystems'] ?? null)) {
+                        $response = $fresh;
+                        return;
+                    }
+                    app(\App\Services\Rates\ExchangeRatesCacheInvalidator::class)
+                        ->rebuildPublicRatesSnapshots('rates.update.cache_miss');
+                    $response = Cache::store('redis')->get($cacheKey);
+                });
             } catch (\Throwable $e) {
                 Log::error('rates_update_cache_miss_rebuild_failed', [
                     'locale' => $locale,

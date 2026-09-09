@@ -2,13 +2,14 @@
 
 namespace iEXPackages\Order\Concerns;
 
-use App\Jobs\User\RegisterClientJob;
+use App\Jobs\Notifications\EmailSetPasswordJob;
 use App\Models\User;
 use iEXPackages\ReferralSystem\Models\ReferralLink;
 use iEXPackages\ReferralSystem\ReferralSystemFacade;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Faker\Factory as FakerFactory;
 
@@ -100,12 +101,14 @@ trait ManagesUserRegistration
 
     protected function registerClient(): User
     {
-        $password = Str::random(10);
+        // Unusable internal secret — never emailed. Customer sets a password
+        // via the one-time set-password link (Laravel password broker).
+        $password = Str::password(32);
         $user = $this->createNewUser($password);
 
         $this->assignUniqueUsername($user);
         $this->registerReferral($user);
-        $this->sendRegistrationNotifications($user, $password);
+        $this->sendRegistrationNotifications($user);
         $this->authenticateNewUser($user);
 
         return $user;
@@ -184,19 +187,24 @@ trait ManagesUserRegistration
         }
     }
 
-    protected function sendRegistrationNotifications(User $user, string $password): void
+    /**
+     * First-order auto-account: queue a set-password invite (broker token).
+     * Do not email plaintext credentials. Do not block order create on SMTP.
+     * Mailbox proof happens when the customer completes set-password
+     * (UserAccountLifecycleService::recoverAfterSuccessfulPasswordReset).
+     */
+    protected function sendRegistrationNotifications(User $user): void
     {
         try {
-            if ((bool)iEXSetting('is_email_auto_user')) {
-                dispatch(new RegisterClientJob($user, $password))
-                    ->delay(now()->addSeconds(5))
-                    ->onQueue('low');
+            if (!(bool) iEXSetting('is_email_auto_user')) {
+                return;
             }
 
-            // Письмо верификации — только если почта ещё не подтверждена
-            if (is_null($user->email_verified_at)) {
-                $user->sendEmailVerificationNotification();
-            }
+            // Idempotent for this create: broker replaces prior unused token.
+            $token = Password::broker()->createToken($user);
+            dispatch(new EmailSetPasswordJob($user, $token))
+                ->delay(now()->addSeconds(5))
+                ->onQueue('low');
         } catch (\Throwable $e) {
             Log::error('Ошибка отправки уведомления при регистрации: ' . $e->getMessage());
         }

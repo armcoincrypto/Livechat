@@ -9,6 +9,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class RegisterClientJob implements ShouldQueue
 {
@@ -38,6 +40,10 @@ class RegisterClientJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $this->user->notify(new RegisterUserNotification($this->password, $this->user?->language));
+        try {
+            $this->user->notify(new RegisterUserNotification($this->password, $this->user?->language));
+        } catch (Throwable $e) {
+            Log::warning('RegisterClientJob mail failed', ['error' => $e->getMessage()]);
+        }
     }
 }

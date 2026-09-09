@@ -11,6 +11,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Queue password-reset mail so delivery is retryable and visible in worker logs.
@@ -29,6 +31,10 @@ final class EmailResetPasswordJob implements ShouldQueue
 
     public function handle(): void
     {
-        $this->user->notify(new ResetPasswordNotification($this->token));
+        try {
+            $this->user->notify(new ResetPasswordNotification($this->token));
+        } catch (Throwable $e) {
+            Log::warning('EmailResetPasswordJob mail failed', ['error' => $e->getMessage()]);
+        }
     }
 }

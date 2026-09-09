@@ -10,6 +10,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class EmailLoginSuccessfulJob implements ShouldQueue
 {
@@ -44,6 +46,10 @@ class EmailLoginSuccessfulJob implements ShouldQueue
         }
 
         // Here the email verification will be sent to the user
-        $this->user->notify(new LoginSuccessfulNotification($geo_string));
+        try {
+            $this->user->notify(new LoginSuccessfulNotification($geo_string));
+        } catch (Throwable $e) {
+            Log::warning('EmailLoginSuccessfulJob mail failed', ['error' => $e->getMessage()]);
+        }
     }
 }

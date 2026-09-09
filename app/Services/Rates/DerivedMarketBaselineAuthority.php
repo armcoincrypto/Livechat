@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Log;
  */
 final class DerivedMarketBaselineAuthority
 {
+    /** @var array<string, array<string,mixed>> path => decoded config */
+    private static array $configMemo = [];
+
     public function __construct(
         private readonly IndependentMarketBaseline $baseline = new IndependentMarketBaseline(),
         private readonly ?string $configPath = null,
@@ -38,12 +41,14 @@ final class DerivedMarketBaselineAuthority
     public function config(): array
     {
         $path = $this->configPath ?? base_path('resources/rates/derived-market-baseline-directions.json');
+        if (array_key_exists($path, self::$configMemo)) {
+            return self::$configMemo[$path];
+        }
         if (!is_file($path)) {
-            return [];
+            return self::$configMemo[$path] = [];
         }
         $json = json_decode((string) file_get_contents($path), true);
-
-        return is_array($json) ? $json : [];
+        return self::$configMemo[$path] = is_array($json) ? $json : [];
     }
 
     public function owns(int $directionId): bool
