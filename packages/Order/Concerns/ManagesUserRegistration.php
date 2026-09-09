@@ -2,19 +2,22 @@
 
 namespace iEXPackages\Order\Concerns;
 
-use App\Jobs\Notifications\EmailSetPasswordJob;
 use App\Models\User;
 use iEXPackages\ReferralSystem\Models\ReferralLink;
 use iEXPackages\ReferralSystem\ReferralSystemFacade;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Faker\Factory as FakerFactory;
 
 trait ManagesUserRegistration
 {
+    /**
+     * True when this order-create path just auto-registered the customer.
+     * Used for first-order email set-password CTA (not a separate mail).
+     */
+    protected bool $justAutoRegistered = false;
 
     /**
      * Нормализует e-mail: trim + нижний регистр.
@@ -102,10 +105,12 @@ trait ManagesUserRegistration
     protected function registerClient(): User
     {
         // Unusable internal secret — never emailed. Customer sets a password
-        // via the one-time set-password link (Laravel password broker).
+        // via the one-time set-password link embedded in the order-created email
+        // (Laravel password broker). Do not send a separate set-password mail.
         $password = Str::password(32);
         $user = $this->createNewUser($password);
 
+        $this->justAutoRegistered = true;
         $this->assignUniqueUsername($user);
         $this->registerReferral($user);
         $this->sendRegistrationNotifications($user);
@@ -188,26 +193,17 @@ trait ManagesUserRegistration
     }
 
     /**
-     * First-order auto-account: queue a set-password invite (broker token).
-     * Do not email plaintext credentials. Do not block order create on SMTP.
-     * Mailbox proof happens when the customer completes set-password
-     * (UserAccountLifecycleService::recoverAfterSuccessfulPasswordReset).
+     * First-order auto-account: set-password CTA is embedded in OrderCreatedMail.
+     * Do not queue a separate set-password email (quota + delivery reliability).
+     * Do not email plaintext credentials. Token is created when the order mail
+     * is composed (broker semantics). Mailbox proof happens when the customer
+     * completes set-password (UserAccountLifecycleService::recoverAfterSuccessfulPasswordReset).
      */
     protected function sendRegistrationNotifications(User $user): void
     {
-        try {
-            if (!(bool) iEXSetting('is_email_auto_user')) {
-                return;
-            }
-
-            // Idempotent for this create: broker replaces prior unused token.
-            $token = Password::broker()->createToken($user);
-            dispatch(new EmailSetPasswordJob($user, $token))
-                ->delay(now()->addSeconds(5))
-                ->onQueue('low');
-        } catch (\Throwable $e) {
-            Log::error('Ошибка отправки уведомления при регистрации: ' . $e->getMessage());
-        }
+        // Intentionally no separate EmailSetPasswordJob.
+        // OrderCreatedMail owns the single first-order transactional message.
+        unset($user);
     }
 
     protected function authenticateNewUser(User $user): void

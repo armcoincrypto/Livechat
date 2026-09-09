@@ -185,8 +185,10 @@ trait ManagerOrder
             $this->storeOrderDataToFile($newOrder);
         }
 
-        // Проверяем, является ли пользователь новым
-        $is_new_user = $this->isIdentifyNewbie();
+        // Newbie = first-order auto-account (or legacy identify helper).
+        // Drives first-order email set-password CTA; must stay false for later orders.
+        $is_new_user = $this->justAutoRegistered
+            || (method_exists($this, 'isIdentifyNewbie') && $this->isIdentifyNewbie());
 
         // Добавляем дополнительную информацию к заявке
         $this->additionInfo($newOrder, $is_new_user);

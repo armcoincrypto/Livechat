@@ -1,13 +1,18 @@
 <?php
 namespace iEXPackages\SmartMailer\Dispatches\Orders;
 
+use App\Enums\TaskStatusEnum;
 use App\Models\Task;
+use App\Models\User;
 use iEXPackages\Order\Facades\OrderInvoiceFacade;
 use iEXPackages\SmartMailer\SmartMailable;
 use iEXPackages\Transaction\Facades\TransactionFacade;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
 use iEXPackages\TagProcessors\TagProcessors;
+use Throwable;
 
 class OrderCreatedMail extends SmartMailable
 {
@@ -30,6 +35,8 @@ class OrderCreatedMail extends SmartMailable
         $transaction = TransactionFacade::init($this->order);
         $item = $transaction->getTransaction();
 
+        $setPasswordUrl = $this->resolveSetPasswordUrl();
+
         $this->setSubject( __('smart-mailer::messages.order_created_subject', ['id' => current_order_id($this->order)]))
             ->markdown('smart-mailer::orders.order_created', [
                 'subject'              => $this->subject,
@@ -40,7 +47,88 @@ class OrderCreatedMail extends SmartMailable
                 'transaction'          => $transaction,
                 'walletInfoAccount'    => $this->getWalletInfoAccount(),
                 'tasks_fields'         => $transaction->getTasksFields(),
+                'localizedStatus'      => $this->localizedStatusName(),
+                'showSetPasswordCta'   => $setPasswordUrl !== null,
+                'setPasswordUrl'       => $setPasswordUrl,
+                'openOrderUrl'         => rtrim((string) config('app.frontend_url'), '/') . '/order/' . $this->order->public_id,
             ]);
+    }
+
+    /**
+     * Status label matching the email locale (never mix EN body with RU DB default).
+     */
+    protected function localizedStatusName(): string
+    {
+        $statusId = (int) ($this->order->status ?? 0);
+        $key = 'smart-mailer::messages.status_' . $statusId;
+        $translated = __($key);
+
+        if (is_string($translated) && $translated !== $key) {
+            return $translated;
+        }
+
+        $status = $this->order->task_status;
+        if ($status === null) {
+            return (string) ($this->order->status ?? '');
+        }
+
+        $locale = $this->locale ?: app()->getLocale();
+        $fromDb = $status->getTranslation('name', $locale, false);
+
+        if (is_string($fromDb) && $fromDb !== '') {
+            return $fromDb;
+        }
+
+        // Last resort: Spatie fallback (often RU-only in production). Prefer EN key for PENDING.
+        if ($statusId === TaskStatusEnum::PENDING_PAYMENT->value) {
+            return __('smart-mailer::messages.status_2');
+        }
+
+        return (string) $status->name;
+    }
+
+    /**
+     * First-order auto-account only: newbie snapshot + mailbox not yet proven via set-password.
+     * Retries regenerate a broker token (framework-safe; prior unused token replaced).
+     */
+    protected function resolveSetPasswordUrl(): ?string
+    {
+        try {
+            if (!(bool) iEXSetting('is_email_auto_user')) {
+                return null;
+            }
+
+            $this->order->loadMissing(['task_info', 'user']);
+            $taskInfo = $this->order->task_info;
+            if ($taskInfo === null || (int) ($taskInfo->newbie ?? 0) !== 1) {
+                return null;
+            }
+
+            $user = $this->order->user;
+            if (! $user instanceof User) {
+                return null;
+            }
+
+            // Password setup proves mailbox ownership and clears this gate.
+            if ($user->hasVerifiedEmail()) {
+                return null;
+            }
+
+            $token = Password::broker()->createToken($user);
+
+            return rtrim((string) config('app.frontend_url'), '/')
+                . '/auth/reset-credentials/'
+                . $token
+                . '/?email='
+                . urlencode($user->getEmailForPasswordReset());
+        } catch (Throwable $e) {
+            Log::warning('OrderCreatedMail set-password URL skipped', [
+                'order_id' => $this->order->id ?? null,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     protected function generateInstructionText($item): string

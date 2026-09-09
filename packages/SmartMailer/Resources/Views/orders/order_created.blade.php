@@ -1,200 +1,118 @@
 @component('mail::message')
 
-{{-- Заголовок --}}
-<h1 class="order-title">{{ $subject }}</h1>
+{{-- Hierarchy: order summary first, account setup secondary, exchange details last --}}
+# {{ __('smart-mailer::messages.order_created_heading', ['id' => current_order_id($order)]) }}
 
+**{{ __('smart-mailer::messages.order_status') }}:** {{ $localizedStatus }}
 
-<p>{{ __('smart-mailer::messages.greeting') }}</p>
-<p>{{ __('smart-mailer::messages.order_created_notice') }}</p>
+---
 
-<hr>
+## {{ __('smart-mailer::messages.you_send') }}
+**{{ $order->give_price }} {{ $order->direction_exchange->currency1->code_currency->name }}**  
+{{ $order->direction_exchange->currency1->payment->name }}
 
-{{-- Статус заявки --}}
-<div class="order-block-list__wrapper">
-<div class="order-block-list__subtitle">{{ __('smart-mailer::messages.order_status') }}</div>
-<div class="order-block-list__value-2">{{ $order->task_status->name }}</div>
-</div>
+## {{ __('smart-mailer::messages.you_receive') }}
+**{{ $order->receiving_price }} {{ $order->direction_exchange->currency2->code_currency->name }}**  
+{{ $order->direction_exchange->currency2->payment->name }}
 
-{{-- Курс обмена --}}
 @if(isset($order->course_display))
-<div class="order-block-list__wrapper">
-<div class="order-block-list__subtitle">{{ __('smart-mailer::messages.exchange_rate') }}</div>
-<div class="order-block-list__value-2">{{ $order->course_display }}</div>
-</div>
+**{{ __('smart-mailer::messages.exchange_rate') }}:** {{ $order->course_display }}
 @endif
 
+@if(empty($order->task_info->country_name))
+**{{ __('smart-mailer::messages.payment_time') }}:** {{ ((int) iEXSetting('max_time_task')) / 60 }} {{ __('smart-mailer::messages.minutes') }}
+@endif
 
-{{-- Информация о кошельке --}}
+<x-mail::button :url="$openOrderUrl" color="primary">
+{{ __('smart-mailer::messages.open_order') }}
+</x-mail::button>
+
+@if(!empty($showSetPasswordCta) && !empty($setPasswordUrl))
+---
+
+## {{ __('smart-mailer::messages.account_section_title') }}
+
+{{ __('smart-mailer::messages.account_section_intro') }}
+
+{{ __('smart-mailer::messages.account_section_set_password_hint') }}
+
+<x-mail::button :url="$setPasswordUrl" color="success">
+{{ __('smart-mailer::messages.set_password') }}
+</x-mail::button>
+
+{{ __('smart-mailer::messages.account_section_continue_without') }}
+
+{{ __('smart-mailer::messages.account_section_security') }}
+@endif
+
+---
+
+## {{ __('smart-mailer::messages.exchange_details') }}
+
+**{{ __('smart-mailer::messages.exchange_direction') }}:** {{ direction_name($order->direction_exchange) }}
+
 @if(!empty($walletInfoAccount))
 @if(is_array($walletInfoAccount) && !isset($walletInfoAccount['checkout_url']))
-<div class="order-block-list__wrapper">
 @if(isset($walletInfoAccount['wallet_number']))
-<div class="order-block-list__subtitle">{!! $account_number_field !!}</div>
-<div class="order-block-list__value-2">{{ $walletInfoAccount['wallet_number'] }}</div>
+**{!! $account_number_field !!}:** {{ $walletInfoAccount['wallet_number'] }}
 @endif
 @if(isset($walletInfoAccount['memo_id']))
-<div class="order-block-list__subtitle">{{ __('MEMO ID') }}</div>
-<div class="order-block-list__value-2">{{ $walletInfoAccount['memo_id'] }}</div>
+**{{ __('MEMO ID') }}:** {{ $walletInfoAccount['memo_id'] }}
 @endif
-</div>
 @elseif(is_string($walletInfoAccount))
-<div class="order-block-list__wrapper">
-<div class="order-block-list__subtitle">{!! $account_number_field !!}</div>
-<div class="order-block-list__value-2">{{ $walletInfoAccount }}</div>
-</div>
+**{!! $account_number_field !!}:** {{ $walletInfoAccount }}
 @endif
 @endif
-
-
-{{-- Реквизиты заявки --}}
-@if(count($tasks_fields['requisites_info_field']) > 0)
-<div class="order-block-list__wrapper">
-@foreach($tasks_fields['requisites_info_field'] as $value)
-<div class="order-block-list__subtitle">{{ $value['key_name'] }}</div>
-<div class="order-block-list__value-2">{{ $value['value_name'] }}</div>
-@endforeach
-</div>
-@endif
-
-{{-- Дополнительные поля заявки --}}
-@if(count($tasks_fields['many']) > 0)
-<div class="order-block-list__wrapper">
-@foreach($tasks_fields['many'] as $value)
-<div class="order-block-list__subtitle">{{ $value['field_name'] }}</div>
-<div class="order-block-list__value-2">{{ $value['field_value'] }}</div>
-@endforeach
-</div>
-@endif
-
-
-{{-- Информация "Отдаете" --}}
-<div class="order-block-list__wrapper">
-<div class="order-block-list__subtitle">{{ __('smart-mailer::messages.you_send') }}</div>
-<div class="order-block-list__value-2">
-{{ $order->give_price }} {{ $order->direction_exchange->currency1->code_currency->name }}<br>
-{{ $order->direction_exchange->currency1->payment->name }} {{ $order->direction_exchange->currency1->code_currency->name }}
-</div>
 
 @if(isset($order->from_shot))
-<div class="order-block-list__subtitle">{{ $order->direction_exchange->currency1->field_name_from }}</div>
-<div class="order-block-list__value-2">{{ $order->from_shot }}</div>
+**{{ $order->direction_exchange->currency1->field_name_from }}:** {{ $order->from_shot }}
+@endif
+
+@if(isset($order->to_shot))
+**{{ $order->direction_exchange->currency2->field_name_to }}:** {{ $order->to_shot }}
+@endif
+
+@if(count($tasks_fields['requisites_info_field']) > 0)
+@foreach($tasks_fields['requisites_info_field'] as $value)
+**{{ $value['key_name'] }}:** {{ $value['value_name'] }}
+@endforeach
+@endif
+
+@if(count($tasks_fields['many']) > 0)
+@foreach($tasks_fields['many'] as $value)
+**{{ $value['field_name'] }}:** {{ $value['field_value'] ?? __('smart-mailer::messages.not_specified') }}
+@endforeach
 @endif
 
 @if(isset($tasks_fields['currency_in']) && count($tasks_fields['currency_in']) > 0)
 @foreach($tasks_fields['currency_in'] as $item)
-<div class="order-block-list__subtitle">{{ $item['field_name'] }}</div>
-<div class="order-block-list__value-2">
-{{ $item['field_value'] ?? __('smart-mailer::messages.not_specified') }}
-</div>
+**{{ $item['field_name'] }}:** {{ $item['field_value'] ?? __('smart-mailer::messages.not_specified') }}
 @endforeach
-@endif
-</div>
-
-{{-- Информация "Получаете" --}}
-<div class="order-block-list__wrapper">
-<div class="order-block-list__subtitle">{{ __('smart-mailer::messages.you_receive') }}</div>
-<div class="order-block-list__value-2">
-{{ $order->receiving_price }} {{ $order->direction_exchange->currency2->code_currency->name }}<br>
-{{ $order->direction_exchange->currency2->payment->name }} {{ $order->direction_exchange->currency2->code_currency->name }}
-</div>
-
-@if(isset($order->to_shot))
-<div class="order-block-list__subtitle">{{ $order->direction_exchange->currency2->field_name_to }}</div>
-<div class="order-block-list__value-2">{{ $order->to_shot }}</div>
 @endif
 
 @if(isset($tasks_fields['currency_out']) && count($tasks_fields['currency_out']) > 0)
 @foreach($tasks_fields['currency_out'] as $item)
-<div class="order-block-list__subtitle">{{ $item['field_name'] }}</div>
-<div class="order-block-list__value-2">
-{{ $item['field_value'] ?? __('smart-mailer::messages.not_specified') }}
-</div>
+**{{ $item['field_name'] }}:** {{ $item['field_value'] ?? __('smart-mailer::messages.not_specified') }}
 @endforeach
 @endif
-</div>
 
-{{-- Город/страна --}}
 @if(!empty($order->task_info->country_name))
-<div class="order-block-list__wrapper">
-<div class="order-block-list__subtitle">{{ __('smart-mailer::messages.location') }}</div>
-<div class="order-block-list__value-2">
-{{ $order->task_info->country_name }} / {{ $order->task_info->city_name }}
-</div>
-</div>
+**{{ __('smart-mailer::messages.location') }}:** {{ $order->task_info->country_name }} / {{ $order->task_info->city_name }}
 @endif
 
-{{-- Ставка --}}
-@if(isset($order->task_info->directionCity->bid_value))
-<div class="order-block-list__wrapper">
-<div class="order-block-list__subtitle">{{ __('smart-mailer::messages.bid_rate') }}</div>
-<div class="order-block-list__value-2">
-{!! $order->task_info->directionCity->bid_value !!}
-</div>
-</div>
-@endif
+**{{ __('smart-mailer::messages.operation_date') }}:** {{ \Illuminate\Support\Carbon::parse($order->created_at)->translatedFormat('d M Y H:i') }}
 
-{{-- Биржа --}}
-@if(isset($order->task_info->directionCity->exchange_text))
-<div class="order-block-list__wrapper">
-<div class="order-block-list__subtitle">{{ __('smart-mailer::messages.exchange') }}</div>
-<div class="order-block-list__value-2">
-{!! $order->task_info->directionCity->exchange_text !!}
-</div>
-</div>
-@endif
-
-<div class="order-block-list__wrapper">
-<div class="order-block-list__subtitle">{{ __('smart-mailer::messages.operation_date') }}</div>
-<div class="order-block-list__value-2">
-{{ \Illuminate\Support\Carbon::parse($order->created_at)->translatedFormat('d M Y H:i') }}
-</div>
-</div>
-
-{{-- Время на оплату --}}
-@if(empty($order->task_info->country_name))
-<div class="order-block-list__wrapper">
-<div class="order-block-list__subtitle">{{ __('smart-mailer::messages.payment_time') }}</div>
-<div class="order-block-list__value-2">
-{{ ((int) iEXSetting('max_time_task')) / 60 }} {{ __('smart-mailer::messages.minutes') }}
-</div>
-</div>
-@endif
-
-
-
-{{-- Направление обмена --}}
-<div class="order-block-list__wrapper">
-<div class="order-block-list__subtitle">{{ __('smart-mailer::messages.exchange_direction') }}</div>
-<div class="order-block-list__value-2">
-{{ direction_name($order->direction_exchange) }}
-</div>
-</div>
-
-{{-- Описание --}}
 @if($textInfo)
-<div class="order-block-list__wrapper">
-<div class="order-block-list__subtitle">{{ __('smart-mailer::messages.description') }}</div>
-<div class="order-block-list__value-2">{!! $textInfo !!}</div>
-</div>
+{{-- Direction-specific instruction (secondary) --}}
+{!! $textInfo !!}
 @endif
-
 
 @if(!empty($directionCityInstruction))
-<div class="order-block-list__wrapper">
-    <div class="order-block-list__subtitle">{{ __('smart-mailer::messages.operation_information') }}</div>
-    <div class="order-block-list__value-2">{!! $directionCityInstruction !!}</div>
-</div>
+**{{ __('smart-mailer::messages.operation_information') }}:**  
+{!! $directionCityInstruction !!}
 @endif
 
-
-<hr />
-
-<x-mail::button :url="config('app.frontend_url') . '/order/'.$order->public_id" color="primary">
-{{ __('smart-mailer::messages.open_order') }}
-</x-mail::button>
-
-
-<hr />
+---
 
 <x-mail::subcopy>
 {{ __('smart-mailer::messages.contact_support') }}<br>
