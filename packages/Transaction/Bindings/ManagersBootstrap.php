@@ -4,7 +4,6 @@ namespace iEXPackages\Transaction\Bindings;
 
 use App\Events\OrderStatusesEvent;
 use App\Jobs\AdminNewOrderJob;
-use App\Jobs\Order\OrderStatusMailJob;
 use App\Models\DirectionExchange;
 use App\Models\Reserve;
 use App\Models\Task;
@@ -81,12 +80,11 @@ trait ManagersBootstrap
             // Уведомлять о новых заявках в Telegram (Для операторов)
             \iEXApp::telegramNotificationForChannel('new_order_for_operator', $this->transaction);
 
-            // Уведомляем клиента об отклонении заявки
-            if ((int) iEXSetting('is_mail_order_change_status') == 1) {
-                $delay = now()->addSeconds(15);
-                dispatch(new OrderStatusMailJob($this->transaction))
-                    ->delay($delay)->onQueue('high');
-            }
+            // Customer status mails for completed/rejected/frozen use SmartMailer jobs
+            // (OrderCompletedMailJob / OrderRejectedMailJob / OrderDeferMailJob).
+            // Do not dispatch App\Jobs\Order\OrderStatusMailJob — class was never present
+            // in recoverable source/releases and only produced queue failures.
+
         }
     }
 

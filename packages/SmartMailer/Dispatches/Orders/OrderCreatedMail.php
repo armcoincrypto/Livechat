@@ -1,10 +1,10 @@
 <?php
 namespace iEXPackages\SmartMailer\Dispatches\Orders;
 
-use App\Enums\TaskStatusEnum;
 use App\Models\Task;
 use App\Models\User;
 use iEXPackages\Order\Facades\OrderInvoiceFacade;
+use iEXPackages\SmartMailer\LocalizesOrderMailStatus;
 use iEXPackages\SmartMailer\SmartMailable;
 use iEXPackages\Transaction\Facades\TransactionFacade;
 use Illuminate\Bus\Queueable;
@@ -16,7 +16,7 @@ use Throwable;
 
 class OrderCreatedMail extends SmartMailable
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, LocalizesOrderMailStatus;
 
     protected Task $order;
 
@@ -47,44 +47,11 @@ class OrderCreatedMail extends SmartMailable
                 'transaction'          => $transaction,
                 'walletInfoAccount'    => $this->getWalletInfoAccount(),
                 'tasks_fields'         => $transaction->getTasksFields(),
-                'localizedStatus'      => $this->localizedStatusName(),
+                'localizedStatus'      => $this->localizedOrderStatusName($this->order),
                 'showSetPasswordCta'   => $setPasswordUrl !== null,
                 'setPasswordUrl'       => $setPasswordUrl,
                 'openOrderUrl'         => rtrim((string) config('app.frontend_url'), '/') . '/order/' . $this->order->public_id,
             ]);
-    }
-
-    /**
-     * Status label matching the email locale (never mix EN body with RU DB default).
-     */
-    protected function localizedStatusName(): string
-    {
-        $statusId = (int) ($this->order->status ?? 0);
-        $key = 'smart-mailer::messages.status_' . $statusId;
-        $translated = __($key);
-
-        if (is_string($translated) && $translated !== $key) {
-            return $translated;
-        }
-
-        $status = $this->order->task_status;
-        if ($status === null) {
-            return (string) ($this->order->status ?? '');
-        }
-
-        $locale = $this->locale ?: app()->getLocale();
-        $fromDb = $status->getTranslation('name', $locale, false);
-
-        if (is_string($fromDb) && $fromDb !== '') {
-            return $fromDb;
-        }
-
-        // Last resort: Spatie fallback (often RU-only in production). Prefer EN key for PENDING.
-        if ($statusId === TaskStatusEnum::PENDING_PAYMENT->value) {
-            return __('smart-mailer::messages.status_2');
-        }
-
-        return (string) $status->name;
     }
 
     /**

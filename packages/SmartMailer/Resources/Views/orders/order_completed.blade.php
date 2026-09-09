@@ -12,7 +12,7 @@
 {{-- Статус заявки --}}
 <div class="order-block-list__wrapper">
 <div class="order-block-list__subtitle">{{ __('smart-mailer::messages.order_status') }}</div>
-<div class="order-block-list__value-2">{{ $order->task_status->name }}</div>
+<div class="order-block-list__value-2">{{ $localizedStatus ?? $order->task_status->name }}</div>
 </div>
 
 {{-- Курс обмена --}}

@@ -2,7 +2,6 @@
 
 namespace iEXPackages\Transaction\Bindings;
 
-use App\Jobs\Order\OrderStatusMailJob;
 use App\Jobs\OrderShotBlackListJob;
 use App\Mail\Order\OrderRecountMail;
 use App\Mail\Order\OrderRestoreMail;

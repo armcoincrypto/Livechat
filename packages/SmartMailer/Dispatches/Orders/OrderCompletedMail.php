@@ -3,6 +3,7 @@
 namespace iEXPackages\SmartMailer\Dispatches\Orders;
 
 use App\Models\Task;
+use iEXPackages\SmartMailer\LocalizesOrderMailStatus;
 use iEXPackages\SmartMailer\SmartMailable;
 use iEXPackages\Transaction\Facades\TransactionFacade;
 use Illuminate\Bus\Queueable;
@@ -10,7 +11,7 @@ use Illuminate\Queue\SerializesModels;
 
 class OrderCompletedMail extends SmartMailable
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, LocalizesOrderMailStatus;
 
     protected Task $order;
 
@@ -34,6 +35,7 @@ class OrderCompletedMail extends SmartMailable
             'subject' => $this->subject,
             'order' => $item,
             'tasks_fields'         => $transaction->getTasksFields(),
+            'localizedStatus'      => $this->localizedOrderStatusName($this->order),
         ]);
     }
 }
