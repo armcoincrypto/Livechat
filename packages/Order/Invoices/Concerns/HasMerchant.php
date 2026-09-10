@@ -144,10 +144,16 @@ trait HasMerchant
                 'task_id' => $this->task->id,
                 'error' => $e->getMessage(),
             ]);
+            $this->clearMerchantBindingIfDestinationMissing();
             return [];
         }
 
-        return $this->fetchMerchantTransactionData();
+        $issued = $this->fetchMerchantTransactionData();
+        if ($issued === []) {
+            $this->clearMerchantBindingIfDestinationMissing();
+        }
+
+        return $issued;
     }
 
     /**
@@ -180,12 +186,18 @@ trait HasMerchant
                 'task_id' => $this->task->id,
                 'merchant_id' => $merchantResponse['id']
             ]);
+            $this->clearMerchantBindingIfDestinationMissing();
             return [];
         }
 
         $this->merchantPay = $this->task->merchant()->first();
 
-        return $this->fetchMerchantTransactionData();
+        $issued = $this->fetchMerchantTransactionData();
+        if ($issued === []) {
+            $this->clearMerchantBindingIfDestinationMissing();
+        }
+
+        return $issued;
     }
 
     protected function fetchMerchantTransactionData(): array
@@ -252,6 +264,37 @@ trait HasMerchant
             'tag'     => array_key_exists('memo_id', $ext) ? (string)$ext['memo_id'] : null,
             'label'   => array_key_exists('label', $ext) ? (string)$ext['label'] : null,
         ], static fn($v) => $v !== null && $v !== '');
+    }
+
+    /**
+     * Destination-required rails must not keep a merchant binding without usable MTD.
+     */
+    protected function clearMerchantBindingIfDestinationMissing(): void
+    {
+        if (! isset($this->currencyIn)
+            || ! \App\Services\Orders\PaymentDestinationRouter::isKobbopayInboundCurrency($this->currencyIn)
+        ) {
+            return;
+        }
+
+        if ((int) ($this->task->id_merchant ?? 0) <= 0) {
+            return;
+        }
+
+        if (\App\Services\Orders\InboundPaymentDestinationGuard::taskHasAssignedDestination($this->task)) {
+            return;
+        }
+
+        Log::warning('payment_destination_merchant_unbound', [
+            'task_id' => $this->task->id,
+            'public_id' => $this->task->public_id ?? null,
+            'merchant_id' => $this->task->id_merchant,
+            'provider' => \App\Services\Orders\PaymentDestinationRouter::OWNER_KOBBOPAY,
+            'failure_class' => 'empty_or_missing_destination',
+        ]);
+
+        $this->task->update(['id_merchant' => 0]);
+        $this->merchantPay = [];
     }
 
     /**

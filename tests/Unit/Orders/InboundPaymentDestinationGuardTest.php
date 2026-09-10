@@ -66,14 +66,17 @@ final class InboundPaymentDestinationGuardTest extends TestCase
         $invoice = (string) file_get_contents(dirname(__DIR__, 3).'/packages/Order/Services/InvoiceContextService.php');
         $mail = (string) file_get_contents(dirname(__DIR__, 3).'/packages/SmartMailer/Dispatches/Orders/OrderCreatedMail.php');
         $create = (string) file_get_contents(dirname(__DIR__, 3).'/packages/Order/Bindings/ManagerOrder.php');
+        $failClosed = (string) file_get_contents(dirname(__DIR__, 3).'/app/Services/Orders/PaymentDestinationFailClosedGuard.php');
 
         $this->assertStringContainsString('function snapshot()', $manager);
         $this->assertStringContainsString('payment_destination_snapshot_empty', $manager);
         $this->assertStringContainsString('bool $allowIssue = true', $invoice);
         $this->assertStringContainsString('$manager->snapshot()', $invoice);
         $this->assertStringContainsString('->snapshot()', $mail);
-        $this->assertStringContainsString('->resolve($order)', $create);
+        $this->assertStringContainsString('enforceAfterCreate', $create);
+        $this->assertStringContainsString('->resolve($order)', $failClosed);
         $this->assertStringNotContainsString('resolve($order, false)', $create);
+        $this->assertStringNotContainsString('resolve($order, false)', $failClosed);
     }
 
     public function test_incident_order_snapshot_does_not_assign_destination(): void
