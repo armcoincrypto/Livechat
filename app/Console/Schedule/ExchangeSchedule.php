@@ -289,6 +289,7 @@ class ExchangeSchedule
             ->everyFiveMinutes()
             ->onOneServer()
             ->withoutOverlapping(5)
+            ->runInBackground()
             ->appendOutputTo(storage_path('logs/orders_waiting_deposit_health.log'));
 
         $schedule->command('orders:payment-routing-health --format=json')

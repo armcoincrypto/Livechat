@@ -7,10 +7,15 @@ namespace Tests\Unit;
 use App\Jobs\Notifications\EmailResetPasswordJob;
 use App\Models\User;
 use App\Notifications\ResetPasswordNotification;
+use ArrayObject;
+use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use RuntimeException;
+use Throwable;
 
 /**
  * P14.4B.2 — Password reset mail delivery remediation tests.
@@ -97,6 +102,111 @@ final class ResetPasswordDeliveryTest extends TestCase
         $job = new EmailResetPasswordJob(new User(), self::PLAIN_TOKEN);
         self::assertInstanceOf(\Illuminate\Contracts\Queue\ShouldQueue::class, $job);
         self::assertSame(3, $job->tries);
+        self::assertSame([10, 30, 90], $job->backoff);
+    }
+
+    public function test_smtp_success_completes_job_once_without_real_mailer(): void
+    {
+        Notification::fake();
+        $jobLogs = $this->captureResetJobLogs();
+
+        $user = new User();
+        $user->email = 'qa-reset@example.com';
+        $user->id = 901;
+
+        $job = new EmailResetPasswordJob($user, self::PLAIN_TOKEN);
+        $job->handle();
+
+        Notification::assertSentTo($user, ResetPasswordNotification::class);
+        Notification::assertCount(1);
+        self::assertCount(0, $jobLogs);
+    }
+
+    public function test_smtp_exception_is_logged_and_rethrown_so_queue_retries_apply(): void
+    {
+        $jobLogs = $this->captureResetJobLogs();
+
+        $user = new class extends User {
+            public function notify($instance): void
+            {
+                throw new RuntimeException('simulated smtp 421');
+            }
+        };
+        $user->id = 902;
+        $user->email = 'qa-reset@example.com';
+
+        $job = new EmailResetPasswordJob($user, self::PLAIN_TOKEN);
+
+        $caught = null;
+        try {
+            $job->handle();
+        } catch (Throwable $e) {
+            $caught = $e;
+        }
+
+        self::assertInstanceOf(RuntimeException::class, $caught);
+        self::assertSame('simulated smtp 421', $caught->getMessage());
+        self::assertSame(3, $job->tries, 'swallowed exceptions would make $tries ineffective');
+        self::assertCount(1, $jobLogs);
+
+        $event = $jobLogs[0];
+        self::assertSame('warning', $event->level);
+        self::assertSame('EmailResetPasswordJob mail failed', $event->message);
+        self::assertSame('simulated smtp 421', $event->context['error'] ?? null);
+        self::assertSame(RuntimeException::class, $event->context['exception'] ?? null);
+        self::assertSame($user->getKey(), $event->context['user_id'] ?? null);
+        $encoded = json_encode($event->context);
+        self::assertIsString($encoded);
+        self::assertStringNotContainsString(self::PLAIN_TOKEN, $encoded);
+        self::assertStringNotContainsString('qa-reset@example.com', $encoded);
+    }
+
+    public function test_transient_smtp_failure_then_success_can_retry_same_job(): void
+    {
+        $user = new class extends User {
+            public int $notifyCalls = 0;
+
+            public function notify($instance): void
+            {
+                $this->notifyCalls++;
+                if ($this->notifyCalls === 1) {
+                    throw new RuntimeException('transient smtp 421');
+                }
+            }
+        };
+
+        $job = new EmailResetPasswordJob($user, self::PLAIN_TOKEN);
+
+        try {
+            $job->handle();
+            self::fail('first attempt must throw so Laravel can retry');
+        } catch (RuntimeException $e) {
+            self::assertSame('transient smtp 421', $e->getMessage());
+        }
+
+        $job->handle();
+        self::assertSame(2, $user->notifyCalls);
+    }
+
+    public function test_job_has_no_failed_handler_that_would_hide_exhausted_attempts(): void
+    {
+        $ref = new ReflectionClass(EmailResetPasswordJob::class);
+        self::assertFalse($ref->hasMethod('failed'), 'failed() would hide exhausted SMTP attempts');
+    }
+
+    /**
+     * @return ArrayObject<int, MessageLogged>
+     */
+    private function captureResetJobLogs(): ArrayObject
+    {
+        $jobLogs = new ArrayObject();
+        Log::listen(function (MessageLogged $event) use ($jobLogs): void {
+            if (str_contains((string) $event->message, 'EmailResetPasswordJob')) {
+                $jobLogs[] = $event;
+            }
+        });
+
+        return $jobLogs;
     }
 
     public function test_mail_from_address_falls_back_to_smtp_username_when_env_empty(): void

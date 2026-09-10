@@ -104,13 +104,19 @@ final class OrdersWaitingDepositHealthCommand extends Command
             'counts_by_kind' => $counts,
         ];
 
-        Log::info('orders:waiting-deposit-health', [
+        $logContext = [
             'ok' => $ok,
             'NEW_PAYABLE_ORDER_WITHOUT_DESTINATION' => $newPayable,
+            'new_payable_public_ids' => $newPayablePublicIds,
             'missing_and_no_source' => $missingAndNoSource,
             'missing_assigned_destination' => $missingAssigned,
             'counts_by_kind' => $counts,
-        ]);
+        ];
+        if ($ok) {
+            Log::info('orders:waiting-deposit-health', $logContext);
+        } else {
+            Log::error('orders:waiting-deposit-health', $logContext);
+        }
 
         if ($this->option('format') === 'json') {
             $this->line(json_encode($payload, JSON_UNESCAPED_SLASHES));
