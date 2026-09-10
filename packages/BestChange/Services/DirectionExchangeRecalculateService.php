@@ -139,6 +139,58 @@ final class DirectionExchangeRecalculateService
                         continue;
                     }
 
+                    // Model B: Coin→ZELLEUSD external-position controller (canonical course).
+                    try {
+                        $controller = app(\App\Services\Rates\CoinZelleExternalPositionController::class);
+                        if ($controller->isCoinToZelle($exchange)) {
+                            $bd = $exchange->bestchange_directions->firstWhere('status', 1)
+                                ?? $exchange->bestchange_directions->first();
+                            $book = [];
+                            if ($bd) {
+                                $market = app(\iEXPackages\BestChange\BestChange::class)
+                                    ->rates()
+                                    ->marketForDirection($bd);
+                                $book = is_object($market) && isset($market->sortedRows) && is_array($market->sortedRows)
+                                    ? $market->sortedRows
+                                    : (is_object($market) && isset($market->rawRows) && is_array($market->rawRows)
+                                        ? $market->rawRows
+                                        : []);
+                                if ($book !== []) {
+                                    usort(
+                                        $book,
+                                        static fn ($a, $b) => bccomp((string) ($a['rate'] ?? '0'), (string) ($b['rate'] ?? '0'), 18)
+                                    );
+                                }
+                            }
+                            $exportDecimals = (int) ($exchange->currency2->number_format ?? 4);
+                            $adj = $controller->adjust($exchange, $courseValue, $book, max(0, $exportDecimals));
+                            if (!empty($adj['applied']) && is_numeric($adj['course'] ?? null) && (float) $adj['course'] > 0) {
+                                $courseValue = (string) $adj['course'];
+                                try {
+                                    $labelDir = clone $exchange;
+                                    $labelDir->course_value = $courseValue;
+                                    $exchangeRateLabel = \App\Services\Rates\AdminRateSourcePresenter::liveExchangeRateLabel($labelDir);
+                                } catch (\Throwable) {
+                                    // keep prior label
+                                }
+                                \App\Services\Rates\RateWriteAuditLogger::record([
+                                    'event' => 'coin_zelle_external_position',
+                                    'direction_id' => $directionId,
+                                    'new_base' => $courseValue,
+                                    'writer' => 'CoinZelleExternalPositionController',
+                                    'source' => 'BestChange',
+                                    'reason' => (string) ($adj['reason'] ?? 'applied'),
+                                    'meta' => $adj['explain'] ?? [],
+                                ]);
+                            }
+                        }
+                    } catch (\Throwable $e) {
+                        Log::warning('CoinZelleExternalPositionController skipped', [
+                            'direction_exchange_id' => $directionId,
+                            'message' => $e->getMessage(),
+                        ]);
+                    }
+
                     $oldBase = (string) ($exchange->course_value ?? '');
                     $successUpdates[] = [
                         'id'                 => $directionId,

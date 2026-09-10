@@ -91,7 +91,68 @@ final class BestChangeConfig extends DynamicConfigModel
 
             'auto_blacklist_enabled',
             'auto_blacklist_default_minutes',
+
+            // Coin→ZELLEUSD Model B external-position controller
+            'coin_zelle_external_position_enabled',
+            'coin_zelle_external_position_target',
+            'coin_zelle_competitive_edge_mode',
+            'coin_zelle_min_safe_margin_vs_top1_bps',
+            'coin_zelle_controller_direction_ids',
+            'coin_zelle_min_book_depth',
+            'coin_zelle_outlier_guard_enabled',
+            'coin_zelle_outlier_sep_bps',
         ];
+    }
+
+    public function coinZelleExternalPositionEnabled(): bool
+    {
+        return $this->getBool('coin_zelle_external_position_enabled', false);
+    }
+
+    public function coinZelleExternalPositionTarget(): int
+    {
+        return max(1, $this->getInt('coin_zelle_external_position_target', 1));
+    }
+
+    public function coinZelleCompetitiveEdgeMode(): string
+    {
+        $v = strtolower(trim($this->getString('coin_zelle_competitive_edge_mode', 'minimum_winning_increment')));
+
+        return $v === 'minimum_winning_increment' ? $v : 'minimum_winning_increment';
+    }
+
+    /**
+     * Floor on margin vs live top1 in basis points.
+     * 0 = must not beat top1; -1 = allow at most ~1bp competitive cost (one export tick).
+     */
+    public function coinZelleMinSafeMarginVsTop1Bps(): float
+    {
+        return (float) $this->getString('coin_zelle_min_safe_margin_vs_top1_bps', '-1');
+    }
+
+    /**
+     * Empty = all Coin→Zelle BestChange directions; otherwise allowlist of direction_exchange ids.
+     *
+     * @return int[]
+     */
+    public function coinZelleControllerDirectionIds(): array
+    {
+        return array_values(array_map('intval', (array) $this->getArray('coin_zelle_controller_direction_ids', [])));
+    }
+
+    public function coinZelleMinBookDepth(): int
+    {
+        return max(1, $this->getInt('coin_zelle_min_book_depth', 3));
+    }
+
+    public function coinZelleOutlierGuardEnabled(): bool
+    {
+        return $this->getBool('coin_zelle_outlier_guard_enabled', true);
+    }
+
+    public function coinZelleOutlierSepBps(): float
+    {
+        return (float) $this->getString('coin_zelle_outlier_sep_bps', '200');
     }
 
     // ---------------------------------------------------------------------
@@ -439,6 +500,36 @@ final class BestChangeConfig extends DynamicConfigModel
             $normalized['blacklist'] = (array) $data['blacklist'];
         }
 
+        // --- Coin→Zelle external position (Model B) ---
+        if (array_key_exists('coin_zelle_external_position_enabled', $data)) {
+            $normalized['coin_zelle_external_position_enabled'] = (bool) $data['coin_zelle_external_position_enabled'];
+        }
+        if (array_key_exists('coin_zelle_external_position_target', $data)) {
+            $normalized['coin_zelle_external_position_target'] = max(1, (int) $data['coin_zelle_external_position_target']);
+        }
+        if (array_key_exists('coin_zelle_competitive_edge_mode', $data)) {
+            $normalized['coin_zelle_competitive_edge_mode'] = 'minimum_winning_increment';
+        }
+        if (array_key_exists('coin_zelle_min_safe_margin_vs_top1_bps', $data)) {
+            $normalized['coin_zelle_min_safe_margin_vs_top1_bps'] = (string) $data['coin_zelle_min_safe_margin_vs_top1_bps'];
+        }
+        if (array_key_exists('coin_zelle_controller_direction_ids', $data)) {
+            $value = $data['coin_zelle_controller_direction_ids'];
+            if (is_string($value)) {
+                $value = array_filter(array_map('trim', explode(',', $value)));
+            }
+            $normalized['coin_zelle_controller_direction_ids'] = array_values(array_map('intval', (array) $value));
+        }
+        if (array_key_exists('coin_zelle_min_book_depth', $data)) {
+            $normalized['coin_zelle_min_book_depth'] = max(1, (int) $data['coin_zelle_min_book_depth']);
+        }
+        if (array_key_exists('coin_zelle_outlier_guard_enabled', $data)) {
+            $normalized['coin_zelle_outlier_guard_enabled'] = (bool) $data['coin_zelle_outlier_guard_enabled'];
+        }
+        if (array_key_exists('coin_zelle_outlier_sep_bps', $data)) {
+            $normalized['coin_zelle_outlier_sep_bps'] = (string) $data['coin_zelle_outlier_sep_bps'];
+        }
+
         parent::update($normalized);
     }
 
@@ -480,6 +571,15 @@ final class BestChangeConfig extends DynamicConfigModel
 
             'auto_blacklist_enabled' => $this->autoBlacklistEnabled(),
             'auto_blacklist_default_minutes' => $this->autoBlacklistDefaultMinutes(),
+
+            'coin_zelle_external_position_enabled' => $this->coinZelleExternalPositionEnabled(),
+            'coin_zelle_external_position_target' => $this->coinZelleExternalPositionTarget(),
+            'coin_zelle_competitive_edge_mode' => $this->coinZelleCompetitiveEdgeMode(),
+            'coin_zelle_min_safe_margin_vs_top1_bps' => $this->coinZelleMinSafeMarginVsTop1Bps(),
+            'coin_zelle_controller_direction_ids' => $this->coinZelleControllerDirectionIds(),
+            'coin_zelle_min_book_depth' => $this->coinZelleMinBookDepth(),
+            'coin_zelle_outlier_guard_enabled' => $this->coinZelleOutlierGuardEnabled(),
+            'coin_zelle_outlier_sep_bps' => $this->coinZelleOutlierSepBps(),
         ];
     }
 }

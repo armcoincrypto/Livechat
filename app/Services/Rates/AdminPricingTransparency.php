@@ -127,6 +127,7 @@ final class AdminPricingTransparency
             ],
             'freshness' => $freshness,
             'help' => $resolver->helpText($item),
+            'external_position' => self::coinZelleExternalPositionExplain($item, $position, $base, $floating->finalRate),
             // Back-compat keys for existing overlay consumers.
             'base' => $base,
             'profit' => $displayProfit,
@@ -139,6 +140,38 @@ final class AdminPricingTransparency
             'bestchange_rate' => $health['rate_value'] ?? null,
             'source_updated_at' => $updatedAt,
             'parser_source_name' => (string) ($item->parser_source_name ?? ''),
+        ];
+    }
+
+    /**
+     * Distinguish internal BestChange source position from external BC rank target.
+     *
+     * @param  array<string,mixed>  $position
+     * @return array<string,mixed>
+     */
+    private static function coinZelleExternalPositionExplain(
+        DirectionExchange $item,
+        array $position,
+        string $base,
+        string $customerRate,
+    ): array {
+        $to = (string) ($item->currency2?->designation_xml ?? '');
+        $from = (string) ($item->currency1?->designation_xml ?? '');
+        if ($to !== 'ZELLEUSD' || $from === 'ZELLEUSD') {
+            return ['applicable' => false];
+        }
+        $cfg = app(BestChangeConfig::class);
+
+        return [
+            'applicable' => true,
+            'bestchange_source_position' => $position['effective'] ?? null,
+            'external_target_rank' => $cfg->coinZelleExternalPositionTarget(),
+            'controller_enabled' => $cfg->coinZelleExternalPositionEnabled(),
+            'competitive_edge_mode' => $cfg->coinZelleCompetitiveEdgeMode(),
+            'margin_floor_vs_top1_bps' => $cfg->coinZelleMinSafeMarginVsTop1Bps(),
+            'our_customer_rate' => $customerRate,
+            'source_base' => $base,
+            'note' => 'Source position selects competitor BASE; external target is Exswaping rank on BestChange after currencies.xml.',
         ];
     }
 
