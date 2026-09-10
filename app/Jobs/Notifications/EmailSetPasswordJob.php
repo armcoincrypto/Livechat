@@ -24,6 +24,9 @@ final class EmailSetPasswordJob implements ShouldQueue
 
     public int $tries = 3;
 
+    /** @var list<int> */
+    public array $backoff = [10, 30, 90];
+
     public function __construct(
         protected User $user,
         #[\SensitiveParameter] protected string $token,
@@ -35,7 +38,12 @@ final class EmailSetPasswordJob implements ShouldQueue
         try {
             $this->user->notify(new SetPasswordNotification($this->token));
         } catch (Throwable $e) {
-            Log::warning('EmailSetPasswordJob mail failed', ['error' => $e->getMessage()]);
+            Log::warning('EmailSetPasswordJob mail failed', [
+                'error' => $e->getMessage(),
+                'exception' => $e::class,
+                'user_id' => $this->user->getKey(),
+            ]);
+            throw $e;
         }
     }
 }

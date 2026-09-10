@@ -61,7 +61,7 @@ final class NewOwnerPolicyBestChangeOverDerivedTest extends TestCase
             dirname(__DIR__, 3) . '/packages/BestChange/Services/DirectionExchangeRecalculateService.php'
         );
         $this->assertStringContainsString('BestChangeMarketBaseHealth::evaluate', $src);
-        $this->assertStringContainsString("if (!$health['healthy'])", $src);
+        $this->assertStringContainsString('if (!$health[\'healthy\'])', $src);
     }
 
     public function test_protection_guard_still_honors_config_flag_when_set(): void
