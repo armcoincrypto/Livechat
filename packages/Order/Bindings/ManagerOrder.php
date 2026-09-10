@@ -103,6 +103,9 @@ trait ManagerOrder
             return $abandoned;
         }
 
+        // Destination-required rails: only after fail-closed restored a payable order.
+        $this->dispatchOrderCreatedMailIfEligible($order);
+
         try {
             $this->rememberRecentCreateDedupKey($order);
         } catch (\Throwable) {
@@ -357,10 +360,17 @@ trait ManagerOrder
 
         // Operator Telegram is operational (queued). Never fail customer create after persist.
         app(OrderCreatedTelegramNotifier::class)->notifyCreated($this->getOrder());
+    }
 
-
-        // Отсылаем сообщение о создании заявки (стандартная)
+    /**
+     * Single create-path owner for OrderCreatedMail. Call only after fail-closed
+     * has a final payable state so dest-required orders never queue a normal
+     * created mail while still missing deposit instructions.
+     */
+    private function dispatchOrderCreatedMailIfEligible(Task $order): void
+    {
         try {
+            $order->refresh();
             if (SmartMailerConditionFactory::make('order_created', $order)->shouldSend()) {
                 SmartMailer::dispatch(
                     sendable: 'order_created_job',
