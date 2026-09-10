@@ -146,21 +146,37 @@ final class DirectionExchangeRecalculateService
                             $bd = $exchange->bestchange_directions->firstWhere('status', 1)
                                 ?? $exchange->bestchange_directions->first();
                             $book = [];
+                            $bd = \App\Models\BestChangeDirection::query()
+                                ->where('id_direction_exchange', $directionId)
+                                ->where('status', 1)
+                                ->orderByDesc('id')
+                                ->first();
                             if ($bd) {
-                                // Fresh rates handle per direction — reused connection can
-                                // leak sortedRows across pair keys (observed cross-pair book).
+                                // Fresh rates handle per direction — do not reuse sortedRows.
                                 $market = app(\iEXPackages\BestChange\BestChange::class)
                                     ->rates()
                                     ->marketForDirection($bd);
-                                $raw = (is_object($market) && isset($market->rawRows) && is_array($market->rawRows))
-                                    ? $market->rawRows
+                                $book = (is_object($market) && isset($market->rawRows) && is_array($market->rawRows))
+                                    ? array_values($market->rawRows)
                                     : [];
-                                $book = $raw;
                                 if ($book !== []) {
                                     usort(
                                         $book,
                                         static fn ($a, $b) => bccomp((string) ($a['rate'] ?? '0'), (string) ($b['rate'] ?? '0'), 18)
                                     );
+                                }
+                                // Reject cross-pair books (presence pair must match BD currencies).
+                                $expectedPair = (int) $bd->id_currency_in.'-'.(int) $bd->id_currency_out;
+                                $gotPair = is_object($market) && isset($market->presence['pair'])
+                                    ? (string) $market->presence['pair']
+                                    : $expectedPair;
+                                if ($gotPair !== $expectedPair) {
+                                    Log::warning('CoinZelleExternalPositionController pair_mismatch', [
+                                        'direction_exchange_id' => $directionId,
+                                        'expected' => $expectedPair,
+                                        'got' => $gotPair,
+                                    ]);
+                                    $book = [];
                                 }
                             }
                             $exportDecimals = (int) ($exchange->currency2->number_format ?? 4);

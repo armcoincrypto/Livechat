@@ -61,16 +61,16 @@ final class CoinZelleExternalPositionController
         ];
 
         if (! $this->config->coinZelleExternalPositionEnabled()) {
-            return $empty + ['reason' => 'controller_disabled'];
+            return array_merge($empty, ['reason' => 'controller_disabled']);
         }
 
         if (! $this->isCoinToZelle($direction)) {
-            return $empty + ['reason' => 'not_coin_to_zelle'];
+            return array_merge($empty, ['reason' => 'not_coin_to_zelle']);
         }
 
         $allow = $this->config->coinZelleControllerDirectionIds();
         if ($allow !== [] && ! in_array((int) $direction->id, $allow, true)) {
-            return $empty + ['reason' => 'direction_not_in_allowlist'];
+            return array_merge($empty, ['reason' => 'direction_not_in_allowlist']);
         }
 
         $ownId = $this->config->ownExchangerId();
@@ -94,10 +94,10 @@ final class CoinZelleExternalPositionController
         $depth = count($competitors);
         $minDepth = $this->config->coinZelleMinBookDepth();
         if ($depth < $minDepth) {
-            return $empty + [
+            return array_merge($empty, [
                 'reason' => 'thin_book',
                 'explain' => ['book_depth' => $depth, 'min_depth' => $minDepth],
-            ];
+            ]);
         }
 
         $top1 = $competitors[0];
