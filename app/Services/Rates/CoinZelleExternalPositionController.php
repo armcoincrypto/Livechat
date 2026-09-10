@@ -179,6 +179,26 @@ final class CoinZelleExternalPositionController
             ];
         }
 
+        // Sanity: refuse cross-pair / absurd books (target must stay near BASE).
+        if (bccomp($baseCourse, '0', self::SCALE) === 1) {
+            $ratio = bcdiv($targetCourse, $baseCourse, self::SCALE);
+            $jumpPct = abs((float) bcmul(bcsub($ratio, '1', self::SCALE), '100', 8));
+            if ($jumpPct > 2.0) {
+                return [
+                    'applied' => false,
+                    'course' => $baseCourse,
+                    'reason' => 'sanity_jump_blocked',
+                    'top1_inv' => $top1Inv,
+                    'target_course' => $targetCourse,
+                    'exported_out' => $baseExport,
+                    'margin_vs_top1_bps' => $marginBps,
+                    'margin_guard_blocked_top1' => false,
+                    'outlier_top1' => false,
+                    'explain' => $explain + ['status' => 'SANITY_BLOCK', 'jump_pct' => $jumpPct],
+                ];
+            }
+        }
+
         // Anti-chase: never move more than one export tick beyond the minimum winner.
         $maxCourse = $targetCourse;
         if (bccomp($baseCourse, $maxCourse, self::SCALE) === 1) {

@@ -147,14 +147,15 @@ final class DirectionExchangeRecalculateService
                                 ?? $exchange->bestchange_directions->first();
                             $book = [];
                             if ($bd) {
+                                // Fresh rates handle per direction — reused connection can
+                                // leak sortedRows across pair keys (observed cross-pair book).
                                 $market = app(\iEXPackages\BestChange\BestChange::class)
                                     ->rates()
                                     ->marketForDirection($bd);
-                                $book = is_object($market) && isset($market->sortedRows) && is_array($market->sortedRows)
-                                    ? $market->sortedRows
-                                    : (is_object($market) && isset($market->rawRows) && is_array($market->rawRows)
-                                        ? $market->rawRows
-                                        : []);
+                                $raw = (is_object($market) && isset($market->rawRows) && is_array($market->rawRows))
+                                    ? $market->rawRows
+                                    : [];
+                                $book = $raw;
                                 if ($book !== []) {
                                     usort(
                                         $book,
@@ -164,24 +165,36 @@ final class DirectionExchangeRecalculateService
                             }
                             $exportDecimals = (int) ($exchange->currency2->number_format ?? 4);
                             $adj = $controller->adjust($exchange, $courseValue, $book, max(0, $exportDecimals));
+                            // Hard sanity: never jump course by >2% vs BASE in one step.
                             if (!empty($adj['applied']) && is_numeric($adj['course'] ?? null) && (float) $adj['course'] > 0) {
-                                $courseValue = (string) $adj['course'];
-                                try {
-                                    $labelDir = clone $exchange;
-                                    $labelDir->course_value = $courseValue;
-                                    $exchangeRateLabel = \App\Services\Rates\AdminRateSourcePresenter::liveExchangeRateLabel($labelDir);
-                                } catch (\Throwable) {
-                                    // keep prior label
+                                $ratio = bcdiv((string) $adj['course'], $courseValue, 18);
+                                $jump = abs((float) bcmul(bcsub($ratio, '1', 18), '100', 8));
+                                if ($jump > 2.0) {
+                                    Log::warning('CoinZelleExternalPositionController sanity_block', [
+                                        'direction_exchange_id' => $directionId,
+                                        'base' => $courseValue,
+                                        'target' => $adj['course'],
+                                        'jump_pct' => $jump,
+                                    ]);
+                                } else {
+                                    $courseValue = (string) $adj['course'];
+                                    try {
+                                        $labelDir = clone $exchange;
+                                        $labelDir->course_value = $courseValue;
+                                        $exchangeRateLabel = \App\Services\Rates\AdminRateSourcePresenter::liveExchangeRateLabel($labelDir);
+                                    } catch (\Throwable) {
+                                        // keep prior label
+                                    }
+                                    \App\Services\Rates\RateWriteAuditLogger::record([
+                                        'event' => 'coin_zelle_external_position',
+                                        'direction_id' => $directionId,
+                                        'new_base' => $courseValue,
+                                        'writer' => 'CoinZelleExternalPositionController',
+                                        'source' => 'BestChange',
+                                        'reason' => (string) ($adj['reason'] ?? 'applied'),
+                                        'meta' => $adj['explain'] ?? [],
+                                    ]);
                                 }
-                                \App\Services\Rates\RateWriteAuditLogger::record([
-                                    'event' => 'coin_zelle_external_position',
-                                    'direction_id' => $directionId,
-                                    'new_base' => $courseValue,
-                                    'writer' => 'CoinZelleExternalPositionController',
-                                    'source' => 'BestChange',
-                                    'reason' => (string) ($adj['reason'] ?? 'applied'),
-                                    'meta' => $adj['explain'] ?? [],
-                                ]);
                             }
                         }
                     } catch (\Throwable $e) {
