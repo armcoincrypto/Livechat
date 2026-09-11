@@ -435,9 +435,9 @@ final class BestChangeExternalTopNController
         if ($family === self::FAMILY_COIN_TO_ZELLE) {
             return max($configured, $this->config->coinZelleMinBookDepth());
         }
-        // Zelle→Coin public books are often depth 2 (us + 1 competitor).
+        // Zelle→Coin public books are often only us + 1 competitor.
         if ($family === self::FAMILY_ZELLE_TO_COIN) {
-            return max(2, min($configured, 2));
+            return 1;
         }
 
         return max(3, $configured);
