@@ -6,6 +6,7 @@ namespace Tests\Unit\Rates;
 
 use App\Models\Currency;
 use App\Models\DirectionExchange;
+use App\Services\Rates\BestChangeExternalTopNController;
 use App\Services\Rates\CoinZelleExternalPositionController;
 use App\Settings\BestChangeConfig;
 use PHPUnit\Framework\TestCase;
@@ -48,7 +49,7 @@ final class CoinZelleExternalPositionControllerTest extends TestCase
         $c = $this->controller(enabled: true, floorBps: 0, allow: [1526]);
         $dir = $this->fakeDirection(1526);
         $book = [
-            ['changer' => 1160, 'rate' => '0.998901'], // inv ≈ 1.0011
+            ['changer' => 1160, 'rate' => '0.998901'],
             ['changer' => 1418, 'rate' => '0.9990009192'],
             ['changer' => 1328, 'rate' => '0.9991'],
         ];
@@ -76,8 +77,8 @@ final class CoinZelleExternalPositionControllerTest extends TestCase
         $c = $this->controller(enabled: true, allow: [3138], outlierSep: 200);
         $dir = $this->fakeDirection(3138);
         $book = [
-            ['changer' => 1, 'rate' => '0.5'], // inv 2.0
-            ['changer' => 2, 'rate' => '0.74'], // inv ~1.35
+            ['changer' => 1, 'rate' => '0.5'],
+            ['changer' => 2, 'rate' => '0.74'],
             ['changer' => 3, 'rate' => '0.741'],
         ];
         $adj = $c->adjust($dir, '1.35', $book, 4);
@@ -96,6 +97,7 @@ final class CoinZelleExternalPositionControllerTest extends TestCase
         float $outlierSep = 200,
     ): CoinZelleExternalPositionController {
         $cfg = $this->createMock(BestChangeConfig::class);
+        $cfg->method('externalTopNEnabled')->willReturn(false);
         $cfg->method('coinZelleExternalPositionEnabled')->willReturn($enabled);
         $cfg->method('coinZelleExternalPositionTarget')->willReturn(1);
         $cfg->method('coinZelleCompetitiveEdgeMode')->willReturn('minimum_winning_increment');
@@ -104,9 +106,20 @@ final class CoinZelleExternalPositionControllerTest extends TestCase
         $cfg->method('coinZelleMinBookDepth')->willReturn(3);
         $cfg->method('coinZelleOutlierGuardEnabled')->willReturn(true);
         $cfg->method('coinZelleOutlierSepBps')->willReturn($outlierSep);
+        $cfg->method('externalTopNFamilies')->willReturn(['COIN_TO_ZELLE']);
+        $cfg->method('externalTopNFamilyEnabled')->willReturnCallback(
+            static fn (string $f) use ($enabled): bool => $enabled && $f === 'COIN_TO_ZELLE'
+        );
+        $cfg->method('externalTopNDirectionIds')->willReturn([]);
+        $cfg->method('externalTopNMinBookDepth')->willReturn(3);
+        $cfg->method('externalTopNMinSafeMarginVsBoundaryBps')->willReturn($floorBps);
+        $cfg->method('externalTopNOutlierGuardEnabled')->willReturn(true);
+        $cfg->method('externalTopNOutlierSepBps')->willReturn($outlierSep);
         $cfg->method('ownExchangerId')->willReturn(1522);
 
-        return new CoinZelleExternalPositionController($cfg);
+        $topN = new BestChangeExternalTopNController($cfg);
+
+        return new CoinZelleExternalPositionController($cfg, $topN);
     }
 
     private function fakeDirection(int $id): DirectionExchange

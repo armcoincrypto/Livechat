@@ -139,19 +139,20 @@ final class DirectionExchangeRecalculateService
                         continue;
                     }
 
-                    // Model B: Coin→ZELLEUSD external-position controller (canonical course).
+                    // Model B: generic BestChange external Top-N controller (canonical course).
+                    // Eligible families only (currently Coin→Zelle certified). Target = position_num.
                     try {
-                        $controller = app(\App\Services\Rates\CoinZelleExternalPositionController::class);
-                        if ($controller->isCoinToZelle($exchange)) {
-                            $bd = $exchange->bestchange_directions->firstWhere('status', 1)
-                                ?? $exchange->bestchange_directions->first();
+                        $topN = app(\App\Services\Rates\BestChangeExternalTopNController::class);
+                        if ($topN->isEligible($exchange)) {
                             $book = [];
+                            $sourcePos = null;
                             $bd = \App\Models\BestChangeDirection::query()
                                 ->where('id_direction_exchange', $directionId)
                                 ->where('status', 1)
                                 ->orderByDesc('id')
                                 ->first();
                             if ($bd) {
+                                $sourcePos = (int) ($bd->position_num ?: 0) ?: null;
                                 // Fresh rates handle per direction — do not reuse sortedRows.
                                 $market = app(\iEXPackages\BestChange\BestChange::class)
                                     ->rates()
@@ -171,7 +172,7 @@ final class DirectionExchangeRecalculateService
                                     ? (string) $market->presence['pair']
                                     : $expectedPair;
                                 if ($gotPair !== $expectedPair) {
-                                    Log::warning('CoinZelleExternalPositionController pair_mismatch', [
+                                    Log::warning('BestChangeExternalTopNController pair_mismatch', [
                                         'direction_exchange_id' => $directionId,
                                         'expected' => $expectedPair,
                                         'got' => $gotPair,
@@ -180,13 +181,21 @@ final class DirectionExchangeRecalculateService
                                 }
                             }
                             $exportDecimals = (int) ($exchange->currency2->number_format ?? 4);
-                            $adj = $controller->adjust($exchange, $courseValue, $book, max(0, $exportDecimals));
+                            // ADMIN_POSITION_CHANGE_DYNAMIC: external target follows position_num.
+                            $adj = $topN->adjust(
+                                $exchange,
+                                $courseValue,
+                                $book,
+                                max(0, $exportDecimals),
+                                $sourcePos,
+                                $sourcePos,
+                            );
                             // Hard sanity: never jump course by >2% vs BASE in one step.
                             if (!empty($adj['applied']) && is_numeric($adj['course'] ?? null) && (float) $adj['course'] > 0) {
                                 $ratio = bcdiv((string) $adj['course'], $courseValue, 18);
                                 $jump = abs((float) bcmul(bcsub($ratio, '1', 18), '100', 8));
                                 if ($jump > 2.0) {
-                                    Log::warning('CoinZelleExternalPositionController sanity_block', [
+                                    Log::warning('BestChangeExternalTopNController sanity_block', [
                                         'direction_exchange_id' => $directionId,
                                         'base' => $courseValue,
                                         'target' => $adj['course'],
@@ -202,10 +211,10 @@ final class DirectionExchangeRecalculateService
                                         // keep prior label
                                     }
                                     \App\Services\Rates\RateWriteAuditLogger::record([
-                                        'event' => 'coin_zelle_external_position',
+                                        'event' => 'bestchange_external_topn',
                                         'direction_id' => $directionId,
                                         'new_base' => $courseValue,
-                                        'writer' => 'CoinZelleExternalPositionController',
+                                        'writer' => 'BestChangeExternalTopNController',
                                         'source' => 'BestChange',
                                         'reason' => (string) ($adj['reason'] ?? 'applied'),
                                         'meta' => $adj['explain'] ?? [],
@@ -214,7 +223,7 @@ final class DirectionExchangeRecalculateService
                             }
                         }
                     } catch (\Throwable $e) {
-                        Log::warning('CoinZelleExternalPositionController skipped', [
+                        Log::warning('BestChangeExternalTopNController skipped', [
                             'direction_exchange_id' => $directionId,
                             'message' => $e->getMessage(),
                         ]);

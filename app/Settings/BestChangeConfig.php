@@ -101,7 +101,82 @@ final class BestChangeConfig extends DynamicConfigModel
             'coin_zelle_min_book_depth',
             'coin_zelle_outlier_guard_enabled',
             'coin_zelle_outlier_sep_bps',
+            // Generic Top-N (platform)
+            'external_topn_enabled',
+            'external_topn_families',
+            'external_topn_direction_ids',
+            'external_topn_min_book_depth',
+            'external_topn_min_safe_margin_vs_boundary_bps',
+            'external_topn_outlier_guard_enabled',
+            'external_topn_outlier_sep_bps',
         ];
+    }
+
+    public function externalTopNEnabled(): bool
+    {
+        return $this->getBool('external_topn_enabled', false);
+    }
+
+    /**
+     * Certified families allowed to use generic Top-N controller.
+     *
+     * @return string[]
+     */
+    public function externalTopNFamilies(): array
+    {
+        $raw = $this->getArray('external_topn_families', ['COIN_TO_ZELLE']);
+
+        return array_values(array_filter(array_map(
+            static fn ($v) => strtoupper(trim((string) $v)),
+            (array) $raw
+        )));
+    }
+
+    public function externalTopNFamilyEnabled(string $family): bool
+    {
+        $family = strtoupper(trim($family));
+        if (! $this->externalTopNEnabled() && $family !== 'COIN_TO_ZELLE') {
+            return false;
+        }
+        // Coin→Zelle may be enabled via legacy switch even when global master is off.
+        if ($family === 'COIN_TO_ZELLE' && $this->coinZelleExternalPositionEnabled()) {
+            return in_array('COIN_TO_ZELLE', $this->externalTopNFamilies(), true)
+                || $this->externalTopNFamilies() === [];
+        }
+        if (! $this->externalTopNEnabled()) {
+            return false;
+        }
+        $families = $this->externalTopNFamilies();
+
+        return $families === [] ? false : in_array($family, $families, true);
+    }
+
+    /**
+     * @return int[]
+     */
+    public function externalTopNDirectionIds(): array
+    {
+        return array_values(array_map('intval', (array) $this->getArray('external_topn_direction_ids', [])));
+    }
+
+    public function externalTopNMinBookDepth(): int
+    {
+        return max(1, $this->getInt('external_topn_min_book_depth', 3));
+    }
+
+    public function externalTopNMinSafeMarginVsBoundaryBps(): float
+    {
+        return (float) $this->getString('external_topn_min_safe_margin_vs_boundary_bps', '-1');
+    }
+
+    public function externalTopNOutlierGuardEnabled(): bool
+    {
+        return $this->getBool('external_topn_outlier_guard_enabled', true);
+    }
+
+    public function externalTopNOutlierSepBps(): float
+    {
+        return (float) $this->getString('external_topn_outlier_sep_bps', '200');
     }
 
     public function coinZelleExternalPositionEnabled(): bool
@@ -530,6 +605,39 @@ final class BestChangeConfig extends DynamicConfigModel
             $normalized['coin_zelle_outlier_sep_bps'] = (string) $data['coin_zelle_outlier_sep_bps'];
         }
 
+        if (array_key_exists('external_topn_enabled', $data)) {
+            $normalized['external_topn_enabled'] = (bool) $data['external_topn_enabled'];
+        }
+        if (array_key_exists('external_topn_families', $data)) {
+            $value = $data['external_topn_families'];
+            if (is_string($value)) {
+                $value = array_filter(array_map('trim', explode(',', $value)));
+            }
+            $normalized['external_topn_families'] = array_values(array_map(
+                static fn ($v) => strtoupper(trim((string) $v)),
+                (array) $value
+            ));
+        }
+        if (array_key_exists('external_topn_direction_ids', $data)) {
+            $value = $data['external_topn_direction_ids'];
+            if (is_string($value)) {
+                $value = array_filter(array_map('trim', explode(',', $value)));
+            }
+            $normalized['external_topn_direction_ids'] = array_values(array_map('intval', (array) $value));
+        }
+        if (array_key_exists('external_topn_min_book_depth', $data)) {
+            $normalized['external_topn_min_book_depth'] = max(1, (int) $data['external_topn_min_book_depth']);
+        }
+        if (array_key_exists('external_topn_min_safe_margin_vs_boundary_bps', $data)) {
+            $normalized['external_topn_min_safe_margin_vs_boundary_bps'] = (string) $data['external_topn_min_safe_margin_vs_boundary_bps'];
+        }
+        if (array_key_exists('external_topn_outlier_guard_enabled', $data)) {
+            $normalized['external_topn_outlier_guard_enabled'] = (bool) $data['external_topn_outlier_guard_enabled'];
+        }
+        if (array_key_exists('external_topn_outlier_sep_bps', $data)) {
+            $normalized['external_topn_outlier_sep_bps'] = (string) $data['external_topn_outlier_sep_bps'];
+        }
+
         parent::update($normalized);
     }
 
@@ -580,6 +688,14 @@ final class BestChangeConfig extends DynamicConfigModel
             'coin_zelle_min_book_depth' => $this->coinZelleMinBookDepth(),
             'coin_zelle_outlier_guard_enabled' => $this->coinZelleOutlierGuardEnabled(),
             'coin_zelle_outlier_sep_bps' => $this->coinZelleOutlierSepBps(),
+
+            'external_topn_enabled' => $this->externalTopNEnabled(),
+            'external_topn_families' => $this->externalTopNFamilies(),
+            'external_topn_direction_ids' => $this->externalTopNDirectionIds(),
+            'external_topn_min_book_depth' => $this->externalTopNMinBookDepth(),
+            'external_topn_min_safe_margin_vs_boundary_bps' => $this->externalTopNMinSafeMarginVsBoundaryBps(),
+            'external_topn_outlier_guard_enabled' => $this->externalTopNOutlierGuardEnabled(),
+            'external_topn_outlier_sep_bps' => $this->externalTopNOutlierSepBps(),
         ];
     }
 }

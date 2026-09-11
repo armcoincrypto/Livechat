@@ -165,13 +165,17 @@ final class AdminPricingTransparency
         return [
             'applicable' => true,
             'bestchange_source_position' => $position['effective'] ?? null,
+            'configured_external_target' => $cfg->coinZelleExternalPositionTarget(),
             'external_target_rank' => $cfg->coinZelleExternalPositionTarget(),
-            'controller_enabled' => $cfg->coinZelleExternalPositionEnabled(),
+            'external_target_follows_position_num' => true,
+            'target_mode' => 'AT_OR_BETTER_THAN_N',
+            'controller_enabled' => $cfg->coinZelleExternalPositionEnabled() || $cfg->externalTopNEnabled(),
             'competitive_edge_mode' => $cfg->coinZelleCompetitiveEdgeMode(),
             'margin_floor_vs_top1_bps' => $cfg->coinZelleMinSafeMarginVsTop1Bps(),
+            'margin_guard' => $cfg->coinZelleMinSafeMarginVsTop1Bps(),
             'our_customer_rate' => $customerRate,
             'source_base' => $base,
-            'note' => 'Source position selects competitor BASE; external target is Exswaping rank on BestChange after currencies.xml.',
+            'note' => 'Source competitor position selects BASE; configured external target follows position_num (AT_OR_BETTER_THAN_N). Actual external rank is measured on BestChange after currencies.xml.',
         ];
     }
 
