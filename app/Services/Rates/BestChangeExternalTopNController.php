@@ -33,6 +33,8 @@ final class BestChangeExternalTopNController
 
     public const FAMILY_FIAT_BANK_TO_COIN = 'FIAT_BANK_TO_COIN';
 
+    public const FAMILY_FIAT_TO_FIAT = 'FIAT_TO_FIAT';
+
     public const STATUS_TARGET_PASS = 'TARGET_PASS';
 
     public const STATUS_BETTER_THAN_TARGET = 'BETTER_THAN_TARGET';
@@ -423,8 +425,8 @@ final class BestChangeExternalTopNController
         if (! $c1 && $c2) {
             return self::FAMILY_FIAT_BANK_TO_COIN;
         }
-
-        return null;
+        // Cash/fiat/payment ↔ cash/fiat/payment (neither side crypto).
+        return self::FAMILY_FIAT_TO_FIAT;
     }
 
     public function isEligible(DirectionExchange $direction): bool
