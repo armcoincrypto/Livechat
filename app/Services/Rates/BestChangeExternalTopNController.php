@@ -164,18 +164,56 @@ final class BestChangeExternalTopNController
             ]);
         }
 
-        $configuredTarget = max(1, $externalTargetPosition
-            ?? $sourcePosition
-            ?? $this->config->coinZelleExternalPositionTarget());
-        // Thin-book: clamp target to available competitor depth.
-        $effectiveTarget = min($configuredTarget, $depth);
-
         $actualRank = null;
         foreach ($fullAsc as $i => $row) {
             if ($ownId > 0 && $row['changer'] === $ownId) {
                 $actualRank = $i + 1;
                 break;
             }
+        }
+
+        $configuredTarget = max(1, $externalTargetPosition
+            ?? $sourcePosition
+            ?? $this->config->coinZelleExternalPositionTarget());
+        // Thin-book: clamp target to available competitor depth.
+        $effectiveTarget = min($configuredTarget, max(1, $depth));
+
+        // Already at or better than Top-N → never worsen (before outlier/chase logic).
+        if ($actualRank !== null && $actualRank <= $configuredTarget) {
+            $status = $actualRank < $configuredTarget
+                ? self::STATUS_BETTER_THAN_TARGET
+                : self::STATUS_TARGET_PASS;
+            $boundaryInvEarly = $competitors[0]['inv'] ?? null;
+
+            return [
+                'applied' => false,
+                'course' => $baseCourse,
+                'reason' => 'already_at_or_better_than_target',
+                'status' => $status,
+                'family' => $family,
+                'source_position' => $sourcePosition ?? $configuredTarget,
+                'external_target_position' => $configuredTarget,
+                'effective_target' => $effectiveTarget,
+                'actual_rank' => $actualRank,
+                'boundary_inv' => $boundaryInvEarly,
+                'target_course' => null,
+                'exported_out' => $this->exportOut($baseCourse, $exportDecimals),
+                'margin_vs_boundary_bps' => $boundaryInvEarly !== null
+                    ? $this->marginBps($boundaryInvEarly, $baseCourse)
+                    : null,
+                'margin_guard_blocked' => false,
+                'outlier_top1' => false,
+                'explain' => [
+                    'source_position' => $sourcePosition ?? $configuredTarget,
+                    'external_target' => $configuredTarget,
+                    'effective_target' => $effectiveTarget,
+                    'actual_rank' => $actualRank,
+                    'book_depth' => $depth,
+                    'family' => $family,
+                    'target_mode' => 'AT_OR_BETTER_THAN_N',
+                    'status' => $status,
+                ],
+            ];
         }
 
         $boundary = $competitors[$effectiveTarget - 1];
@@ -230,32 +268,6 @@ final class BestChangeExternalTopNController
             'target_mode' => 'AT_OR_BETTER_THAN_N',
             'competitive_edge_mode' => 'minimum_winning_increment',
         ];
-
-        // Already at or better than Top-N → never worsen.
-        if ($actualRank !== null && $actualRank <= $effectiveTarget) {
-            $status = $actualRank < $effectiveTarget
-                ? self::STATUS_BETTER_THAN_TARGET
-                : self::STATUS_TARGET_PASS;
-
-            return [
-                'applied' => false,
-                'course' => $baseCourse,
-                'reason' => 'already_at_or_better_than_target',
-                'status' => $status,
-                'family' => $family,
-                'source_position' => $sourcePosition ?? $configuredTarget,
-                'external_target_position' => $configuredTarget,
-                'effective_target' => $effectiveTarget,
-                'actual_rank' => $actualRank,
-                'boundary_inv' => $boundaryInv,
-                'target_course' => null,
-                'exported_out' => $this->exportOut($baseCourse, $exportDecimals),
-                'margin_vs_boundary_bps' => $this->marginBps($boundaryInv, $baseCourse),
-                'margin_guard_blocked' => false,
-                'outlier_top1' => $outlier,
-                'explain' => $explain + ['status' => $status],
-            ];
-        }
 
         // Also: if BASE/current export already beats boundary, treat as capable without raising further
         // (covers feed lag where our live rank is stale but course already wins).
