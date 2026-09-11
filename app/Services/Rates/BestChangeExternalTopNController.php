@@ -25,6 +25,14 @@ final class BestChangeExternalTopNController
 
     public const FAMILY_COIN_TO_ZELLE = 'COIN_TO_ZELLE';
 
+    public const FAMILY_ZELLE_TO_COIN = 'ZELLE_TO_COIN';
+
+    public const FAMILY_COIN_TO_COIN = 'COIN_TO_COIN';
+
+    public const FAMILY_COIN_TO_FIAT_BANK = 'COIN_TO_FIAT_BANK';
+
+    public const FAMILY_FIAT_BANK_TO_COIN = 'FIAT_BANK_TO_COIN';
+
     public const STATUS_TARGET_PASS = 'TARGET_PASS';
 
     public const STATUS_BETTER_THAN_TARGET = 'BETTER_THAN_TARGET';
@@ -146,10 +154,7 @@ final class BestChangeExternalTopNController
         ));
 
         $depth = count($competitors);
-        $minDepth = $this->config->externalTopNMinBookDepth();
-        if ($family === self::FAMILY_COIN_TO_ZELLE) {
-            $minDepth = max($minDepth, $this->config->coinZelleMinBookDepth());
-        }
+        $minDepth = $this->minBookDepthForFamily($family);
         if ($depth < $minDepth) {
             return array_merge($empty, [
                 'reason' => 'thin_book',
@@ -382,14 +387,31 @@ final class BestChangeExternalTopNController
 
     public function classifyFamily(DirectionExchange $direction): ?string
     {
-        $direction->loadMissing(['currency1', 'currency2']);
+        $direction->loadMissing(['currency1.payment', 'currency2.payment']);
         $to = (string) ($direction->currency2->designation_xml ?? '');
         $from = (string) ($direction->currency1->designation_xml ?? '');
         if ($to === 'ZELLEUSD' && $from !== '' && $from !== 'ZELLEUSD') {
             return self::FAMILY_COIN_TO_ZELLE;
         }
+        if ($from === 'ZELLEUSD' && $to !== '' && $to !== 'ZELLEUSD') {
+            return self::FAMILY_ZELLE_TO_COIN;
+        }
+        if ($from === '' || $to === '') {
+            return null;
+        }
 
-        // Other families intentionally unclassified until orientation-certified.
+        $c1 = $this->isCryptoDesignation($from);
+        $c2 = $this->isCryptoDesignation($to);
+        if ($c1 && $c2) {
+            return self::FAMILY_COIN_TO_COIN;
+        }
+        if ($c1 && ! $c2) {
+            return self::FAMILY_COIN_TO_FIAT_BANK;
+        }
+        if (! $c1 && $c2) {
+            return self::FAMILY_FIAT_BANK_TO_COIN;
+        }
+
         return null;
     }
 
@@ -405,6 +427,28 @@ final class BestChangeExternalTopNController
 
         return $family === self::FAMILY_COIN_TO_ZELLE
             && $this->config->coinZelleExternalPositionEnabled();
+    }
+
+    private function minBookDepthForFamily(string $family): int
+    {
+        $configured = $this->config->externalTopNMinBookDepth();
+        if ($family === self::FAMILY_COIN_TO_ZELLE) {
+            return max($configured, $this->config->coinZelleMinBookDepth());
+        }
+        // Zelle→Coin public books are often depth 2 (us + 1 competitor).
+        if ($family === self::FAMILY_ZELLE_TO_COIN) {
+            return max(2, min($configured, 2));
+        }
+
+        return max(3, $configured);
+    }
+
+    private function isCryptoDesignation(string $xml): bool
+    {
+        return (bool) preg_match(
+            '/^(USDT|USDC|BTC|ETH|LTC|XMR|XRP|SOL|TRX|BNB|DOGE|DOT|ADA|BCH|DASH|ETC|NEO|XLM|XTZ|ZEC|GRAM|SHIB|TON|MATIC|AVAX|LINK|ATOM)/i',
+            $xml
+        );
     }
 
     public function roundBcmath(string $number, int $decimals): string

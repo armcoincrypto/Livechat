@@ -157,22 +157,36 @@ final class AdminPricingTransparency
     ): array {
         $to = (string) ($item->currency2?->designation_xml ?? '');
         $from = (string) ($item->currency1?->designation_xml ?? '');
-        if ($to !== 'ZELLEUSD' || $from === 'ZELLEUSD') {
-            return ['applicable' => false];
-        }
         $cfg = app(BestChangeConfig::class);
+        $topN = app(BestChangeExternalTopNController::class);
+        $family = $topN->classifyFamily($item);
+        if ($family === null || ! $topN->isEligible($item)) {
+            // Keep Coin→Zelle explain surface even if temporarily disabled.
+            if ($to !== 'ZELLEUSD' || $from === 'ZELLEUSD') {
+                return ['applicable' => false];
+            }
+        }
+
+        $sourcePos = $position['effective'] ?? null;
 
         return [
             'applicable' => true,
-            'bestchange_source_position' => $position['effective'] ?? null,
-            'configured_external_target' => $cfg->coinZelleExternalPositionTarget(),
-            'external_target_rank' => $cfg->coinZelleExternalPositionTarget(),
+            'family' => $family ?? 'COIN_TO_ZELLE',
+            'pricing_owner' => 'BestChange',
+            'bestchange_source_position' => $sourcePos,
+            'source_competitor_position' => $sourcePos,
+            'configured_external_target' => $sourcePos ?? $cfg->coinZelleExternalPositionTarget(),
+            'external_target_rank' => $sourcePos ?? $cfg->coinZelleExternalPositionTarget(),
             'external_target_follows_position_num' => true,
             'target_mode' => 'AT_OR_BETTER_THAN_N',
-            'controller_enabled' => $cfg->coinZelleExternalPositionEnabled() || $cfg->externalTopNEnabled(),
+            'controller_enabled' => $topN->isEligible($item),
             'competitive_edge_mode' => $cfg->coinZelleCompetitiveEdgeMode(),
-            'margin_floor_vs_top1_bps' => $cfg->coinZelleMinSafeMarginVsTop1Bps(),
-            'margin_guard' => $cfg->coinZelleMinSafeMarginVsTop1Bps(),
+            'margin_floor_vs_boundary_bps' => $family === BestChangeExternalTopNController::FAMILY_COIN_TO_ZELLE
+                ? $cfg->coinZelleMinSafeMarginVsTop1Bps()
+                : $cfg->externalTopNMinSafeMarginVsBoundaryBps(),
+            'margin_guard' => $family === BestChangeExternalTopNController::FAMILY_COIN_TO_ZELLE
+                ? $cfg->coinZelleMinSafeMarginVsTop1Bps()
+                : $cfg->externalTopNMinSafeMarginVsBoundaryBps(),
             'our_customer_rate' => $customerRate,
             'source_base' => $base,
             'note' => 'Source competitor position selects BASE; configured external target follows position_num (AT_OR_BETTER_THAN_N). Actual external rank is measured on BestChange after currencies.xml.',
