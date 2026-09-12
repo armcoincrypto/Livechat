@@ -68,7 +68,12 @@
 
     var summary =
       row('Источник', sourceLabel) +
-      row('Эффективная позиция', pos.effective != null ? pos.effective : (a.effective_bestchange_position || p.bestchange_position || '—')) +
+      row('Позиция источника (BASE)', pos.effective != null ? ('#' + pos.effective) : (a.effective_bestchange_position != null ? ('#' + a.effective_bestchange_position) : (p.bestchange_position != null ? ('#' + p.bestchange_position) : '—'))) +
+      row('Внешняя цель Top-N', (function () {
+        var t = (p.coin_zelle_external_position && (p.coin_zelle_external_position.configured_external_target || p.coin_zelle_external_position.external_target_rank))
+          || pos.effective || a.effective_bestchange_position || p.bestchange_position;
+        return t != null && t !== '' ? ('Top ' + t) : '—';
+      })()) +
       row('Прибыль', (com.explicit_profit_percent != null ? com.explicit_profit_percent : (a.profit != null ? a.profit : p.profit)) + '%') +
       row('Состояние', fresh.state_label || a.freshness_label || p.source_status || '—');
 
@@ -76,17 +81,20 @@
       row('Почему назначен', own.reason || '—') +
       row('Глобальная позиция', pos.global != null ? pos.global : '—') +
       row('Переопределение пары', pairOverride) +
-      row('Курс источника', p.base || a.base_rate || '—') +
-      row(layers.is_floating_fee_additional ? 'Доп. корректировка (плав.)' : 'Корректировка плавающего (от прибыли)',
+      row('BASE (источник)', p.base || a.base_rate || '—') +
+      row('Корректировка прибыли', (com.explicit_profit_percent != null ? com.explicit_profit_percent : (a.profit != null ? a.profit : p.profit)) + '%') +
+      row(layers.is_floating_fee_additional ? 'Доп. корректировка (плав./floating_fee)' : 'Корректировка плавающего (от прибыли)',
         layers.floating_adjustment_percent != null ? layers.floating_adjustment_percent + '%' : '—') +
       row('Курс клиента (плавающий)', rates.floating || a.final_floating_rate || p.final_floating || '—') +
-      row(layers.is_fixed_fee_additional ? 'Доп. корректировка (фикс.)' : 'Корректировка фиксированного',
-        (com.fix_fee != null ? com.fix_fee : p.fix_fee) + '%') +
+      row('fix_fee (фикс. режим)', (com.fix_fee != null ? com.fix_fee : p.fix_fee) + '%') +
       row('Курс клиента (фиксированный)', rates.fixed || a.final_fixed_rate || p.final_fixed || '—') +
       row('Последнее обновление', fresh.human || a.freshness_human || p.source_updated_at || '—') +
       (com.zero_profit_wording ? '<div style="margin-top:6px;color:#475569;font-size:11px">' + esc(com.zero_profit_wording) + '</div>' : '') +
       '<div style="margin-top:8px;color:#475569;font-size:11px">' +
         esc(own.profit_survives_hint || a.profit_survives_hint || 'Коммерческая настройка (Прибыль) сохраняется при автообновлении курса.') +
+      '</div>' +
+      '<div style="margin-top:6px;color:#64748b;font-size:11px">' +
+        esc('Порядок: BASE(position) → Прибыль% → floating_fee/fix_fee (по режиму) → Top-N adjustment (если eligible). Margin guard не даёт Top-N стереть коммерческий пол.') +
       '</div>' +
       (layers.when_each_applies ? '<div style="margin-top:6px;color:#64748b;font-size:11px">' + esc(layers.when_each_applies) + '</div>' : '');
 
