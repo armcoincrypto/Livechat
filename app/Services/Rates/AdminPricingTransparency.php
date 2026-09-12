@@ -140,6 +140,11 @@ final class AdminPricingTransparency
             'bestchange_rate' => $health['rate_value'] ?? null,
             'source_updated_at' => $updatedAt,
             'parser_source_name' => (string) ($item->parser_source_name ?? ''),
+            'mapping_authority_label' => self::mappingAuthorityLabel($item),
+            'source_exchanger' => self::sourceExchangerName($item, $health),
+            'topn' => self::topnSnapshotForDirection((int) $item->id),
+            'topn_status' => (self::topnSnapshotForDirection((int) $item->id)['status'] ?? null),
+            'external_rank' => (self::topnSnapshotForDirection((int) $item->id)['actual_rank'] ?? null),
         ];
     }
 
@@ -291,7 +296,24 @@ final class AdminPricingTransparency
             }
         }
 
-        $healthy = ($owners['UNKNOWN'] ?? 0) === 0 && $dupBothActive === 0;
+        $activeError = (int) DB::table('bestchange_directions as bc')
+            ->join('direction_exchange as de', 'de.id', '=', 'bc.id_direction_exchange')
+            ->where('de.status', 1)->whereNull('de.deleted_at')
+            ->where('bc.status', 1)->where('bc.is_error_parser', 1)->count();
+        $activeNoRate = (int) DB::table('direction_exchange as de')
+            ->where('de.status', 1)->whereNull('de.deleted_at')
+            ->where('de.parser_source_name', 'BestChange')
+            ->whereRaw('NOT EXISTS (SELECT 1 FROM bestchange_directions bc WHERE bc.id_direction_exchange=de.id AND bc.status=1)')
+            ->count();
+        $zeroRateActive = (int) DB::table('direction_exchange')
+            ->where('status', 1)->whereNull('deleted_at')
+            ->where(function ($q) {
+                $q->whereNull('course_value')->orWhere('course_value', '')->orWhereRaw('CAST(course_value AS DECIMAL(36,18)) <= 0');
+            })->count();
+        $activeDirections = (int) DB::table('direction_exchange')->where('status', 1)->whereNull('deleted_at')->count();
+        $topnSnap = self::readTopnSnapshot();
+        $healthy = ($owners['UNKNOWN'] ?? 0) === 0 && $dupBothActive === 0
+            && $activeError === 0 && $activeNoRate === 0 && $zeroRateActive === 0;
 
         return [
             'healthy' => $healthy,
@@ -313,6 +335,16 @@ final class AdminPricingTransparency
             'duplicate_mapping_groups' => $dupGroups,
             'duplicate_both_active' => $dupBothActive,
             'runtime_ambiguity' => $dupBothActive > 0,
+            'active_directions' => $activeDirections,
+            'active_error_count' => $activeError,
+            'active_no_rate_count' => $activeNoRate,
+            'zero_rate_active_count' => $zeroRateActive,
+            'ownership_drift' => (int) ($owners['UNKNOWN'] ?? 0),
+            'topn' => [
+                'TOTAL_ELIGIBLE' => $topnSnap['TOTAL_ELIGIBLE'] ?? null,
+                'histogram' => $topnSnap['histogram'] ?? null,
+                'generated_at' => $topnSnap['generated_at'] ?? null,
+            ],
             'generated_at' => gmdate('c'),
         ];
     }
@@ -550,4 +582,68 @@ final class AdminPricingTransparency
 
         return (int) floor($seconds / 86400) . ' дн назад';
     }
+
+    private static function mappingAuthorityLabel(DirectionExchange $item): string
+    {
+        $family = (new CommercialAdjustmentResolver())->family($item);
+        $bc = $item->bestchange_directions;
+        if (! $bc instanceof BestChangeDirection) {
+            $bc = BestChangeDirection::query()
+                ->where('id_direction_exchange', (int) $item->id)
+                ->orderByDesc('status')
+                ->orderByDesc('id')
+                ->first();
+        }
+        if ($bc && (int) $bc->status !== 1 && in_array($family, ['ZELLE', 'DERIVED', 'MANUAL'], true)) {
+            return 'INACTIVE — NOT USED FOR LIVE PRICING';
+        }
+        if ($bc && (int) $bc->status !== 1) {
+            return 'INACTIVE HISTORICAL MAPPING';
+        }
+        if ($bc && (int) ($bc->is_error_parser ?? 0) === 1 && (int) $bc->status === 1) {
+            return 'ACTIVE ERROR';
+        }
+        if ($bc && (int) ($bc->is_error_parser ?? 0) === 1) {
+            return 'INACTIVE HISTORICAL ERROR';
+        }
+
+        return 'ACTIVE MAPPING';
+    }
+
+    /** @param array<string,mixed> $health */
+    private static function sourceExchangerName(DirectionExchange $item, array $health): ?string
+    {
+        $bc = $item->bestchange_directions;
+        if ($bc instanceof BestChangeDirection && ! empty($bc->source_name)) {
+            return (string) $bc->source_name;
+        }
+
+        return isset($health['source_name']) ? (string) $health['source_name'] : null;
+    }
+
+    /** @return array<string,mixed> */
+    private static function readTopnSnapshot(): array
+    {
+        $path = '/var/lib/exswaping-owned/pricing/topn_status_latest.json';
+        if (! is_file($path)) {
+            return [];
+        }
+        $j = json_decode((string) file_get_contents($path), true);
+
+        return is_array($j) ? $j : [];
+    }
+
+    /** @return array<string,mixed> */
+    private static function topnSnapshotForDirection(int $directionId): array
+    {
+        $snap = self::readTopnSnapshot();
+        foreach (($snap['details'] ?? []) as $row) {
+            if ((int) ($row['direction_id'] ?? 0) === $directionId) {
+                return $row;
+            }
+        }
+
+        return [];
+    }
 }
+

@@ -35,6 +35,12 @@ final class AdminPricingHealthController extends Controller
                 'duplicate_mapping_groups' => $snap['duplicate_mapping_groups'],
                 'duplicate_both_active' => $snap['duplicate_both_active'],
                 'runtime_ambiguity' => $snap['runtime_ambiguity'],
+                'active_directions' => $snap['active_directions'] ?? null,
+                'active_error_count' => $snap['active_error_count'] ?? 0,
+                'active_no_rate_count' => $snap['active_no_rate_count'] ?? 0,
+                'zero_rate_active_count' => $snap['zero_rate_active_count'] ?? 0,
+                'ownership_drift' => $snap['ownership_drift'] ?? 0,
+                'topn' => $snap['topn'] ?? null,
                 'generated_at' => $snap['generated_at'],
             ],
         ]);

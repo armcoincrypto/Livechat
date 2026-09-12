@@ -67,15 +67,27 @@
     el.style.display = 'block';
 
     var summary =
-      row('Источник', sourceLabel) +
+      (p.mapping_authority_label ? row('Маппинг', p.mapping_authority_label) : '') +
+      row('Владелец цены', own.label || sourceLabel) +
+      row('Источник (exchanger)', (p.source_rate && p.source_rate.source_exchanger) || (p.external_position && p.external_position.source_competitor_name) || p.source_exchanger || '—') +
       row('Позиция источника (BASE)', pos.effective != null ? ('#' + pos.effective) : (a.effective_bestchange_position != null ? ('#' + a.effective_bestchange_position) : (p.bestchange_position != null ? ('#' + p.bestchange_position) : '—'))) +
       row('Внешняя цель Top-N', (function () {
-        var t = (p.coin_zelle_external_position && (p.coin_zelle_external_position.configured_external_target || p.coin_zelle_external_position.external_target_rank))
+        var t = (p.external_position && (p.external_position.configured_external_target || p.external_position.external_target_rank))
+          || (p.coin_zelle_external_position && (p.coin_zelle_external_position.configured_external_target || p.coin_zelle_external_position.external_target_rank))
           || pos.effective || a.effective_bestchange_position || p.bestchange_position;
         return t != null && t !== '' ? ('Top ' + t) : '—';
       })()) +
+      row('Текущий внешний ранг', (p.topn && p.topn.actual_rank != null) ? p.topn.actual_rank : (p.external_rank != null ? p.external_rank : '—')) +
+      row('Top-N статус', (p.topn && p.topn.status) || p.topn_status || '—') +
+      row('BASE', p.base || (p.source_rate && p.source_rate.base) || a.base_rate || '—') +
       row('Прибыль', (com.explicit_profit_percent != null ? com.explicit_profit_percent : (a.profit != null ? a.profit : p.profit)) + '%') +
-      row('Состояние', fresh.state_label || a.freshness_label || p.source_status || '—');
+      row('Fee mode / Fee', (function () {
+        var mode = (layers && layers.fee_mode) || (com.storage_field) || '—';
+        var fee = com.floating_fee != null ? com.floating_fee : (com.fix_fee != null ? com.fix_fee : p.fix_fee);
+        return mode + ' / ' + (fee != null ? fee : '—');
+      })()) +
+      row('Итоговый курс', rates.floating || a.final_floating_rate || p.final_floating || '—') +
+      row('Свежесть', fresh.state_label || a.freshness_label || p.source_status || '—');
 
     var details =
       row('Почему назначен', own.reason || '—') +
