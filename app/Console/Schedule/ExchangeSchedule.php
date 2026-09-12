@@ -227,7 +227,7 @@ class ExchangeSchedule
     {
         $ratesMinutes = (int) iEXSetting('cron_interval_minutes_update_rates', 1);
         $exportMinutes = (int) iEXSetting('grates_cron_timer', 1);
-        $compilerWrapper = '/opt/exswaping-owned-frontend/scripts/ops/run_backend_compiler.sh';
+        $compilerWrapper = '/opt/exswaping-owned-ops/current/scripts/ops/run_backend_compiler.sh';
 
         // Wave3: heavy compilers MUST runInBackground. Observed BC runtime ~220–250s;
         // foreground execution pinned schedule:run across cron minutes (overlap pile-up).
