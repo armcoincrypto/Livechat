@@ -44,11 +44,13 @@ final class DirectionExchangeRecalculateService
             ->whereHas('bestchange_directions', static fn ($q) => $q->where('status', 1))
             ->with([
 
-                'currency1:id,number_format,id_payment,id_code_currency',
+                // designation_xml is required for BestChangeExternalTopNController::classifyFamily
+                // (limited selects without it make every family null → Top-N silently no-ops).
+                'currency1:id,number_format,id_payment,id_code_currency,designation_xml',
                 'currency1.payment:id,name',
                 'currency1.code_currency:id,name,sign',
 
-                'currency2:id,number_format,id_payment,id_code_currency',
+                'currency2:id,number_format,id_payment,id_code_currency,designation_xml',
                 'currency2.payment:id,name',
                 'currency2.code_currency:id,name,sign',
 

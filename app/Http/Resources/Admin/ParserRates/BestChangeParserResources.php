@@ -55,23 +55,48 @@ final class BestChangeParserResources extends ResourceCollection
                 $topN = $n > 0 ? $n : null;
             }
 
+            $dir = $item->direction_exchange;
+            $pricingOwner = trim((string) ($dir?->parser_source_name ?? ''));
+            $mappingActive = (bool) $item->status;
+            $ownerIsBestChange = $pricingOwner === 'BestChange';
+            $authoritative = $mappingActive && $ownerIsBestChange;
+            $sourcePos = trim((string) ($item->position_num ?? ''));
+            $displayHint = null;
+            if (! $mappingActive && (int) $item->is_error_parser === 1) {
+                $displayHint = $ownerIsBestChange
+                    ? 'Маппинг выключен · ошибка парсера (не влияет, пока status=0)'
+                    : 'Неавторитетный маппинг BestChange · владелец курса: '
+                        . ($pricingOwner !== '' ? $pricingOwner : 'другой')
+                        . ' · ошибка парсера не определяет live-курс';
+            } elseif (! $mappingActive) {
+                $displayHint = $ownerIsBestChange
+                    ? 'Маппинг выключен · позиция сохранена как настройка'
+                    : 'Неавторитетный маппинг · live-курс не из BestChange';
+            } elseif ($authoritative) {
+                $displayHint = 'Источник: позиция #' . ($sourcePos !== '' ? $sourcePos : '—')
+                    . ' · внешняя цель Top-N: #' . ($sourcePos !== '' ? $sourcePos : '—');
+            }
+
             return [
                 'id' => (int) $item->id,
                 'attributes' => [
                     'direction' => [
-                        'id' => $item->direction_exchange?->id,
-                        'name' => $item->direction_exchange?->tech_name,
-                        'status' => $item->direction_exchange?->status,
+                        'id' => $dir?->id,
+                        'name' => $dir?->tech_name,
+                        'status' => $dir?->status,
+                        'parser_source_name' => $pricingOwner,
                     ],
 
                     'code' => $item->code,
-                    'status' => (bool) $item->status,
+                    'status' => $mappingActive,
 
                     // стратегия выбора курса (NEW)
                     'rate_mode' => $rateMode,
                     'top_n' => $topN,
 
                     'position_num' => (string) $item->position_num,
+                    'source_position' => $sourcePos !== '' ? (int) $sourcePos : null,
+                    'external_target_position' => $sourcePos !== '' ? (int) $sourcePos : null,
                     'step' => (string) $item->step,
 
                     'rate_value_without_step' => removeTrailingZeros(
@@ -84,13 +109,16 @@ final class BestChangeParserResources extends ResourceCollection
 
                     'is_error_parser' => (int) $item->is_error_parser,
                     'source_name' => (string) ($item->source_name ?? ''),
+                    'pricing_owner' => $pricingOwner,
+                    'mapping_authoritative' => $authoritative,
+                    'display_status_hint' => $displayHint,
 
                     'id_currency_in' => (int) $item->id_currency_in,
                     'id_currency_out' => (int) $item->id_currency_out,
                     'city_id' => (int) $item->city_id,
 
                     'is_favorite' => (bool) $item->is_favorite,
-                    'direction_exchanges' => $item->direction_exchange,
+                    'direction_exchanges' => $dir,
 
                     'created_at' => $item->created_at,
                     'updated_at' => $item->updated_at,

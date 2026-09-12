@@ -76,6 +76,10 @@ final class RatesUpdateService
 
             $updatedDirections = 0;
             $updates = [];
+            // Successful identical-rate fetches still need a freshness heartbeat.
+            // Without this, monitors that use updated_at report false "stale" while
+            // books remain healthy and RatesUpdate intentionally skips rate writes.
+            $heartbeatIds = [];
 
             foreach ($directions as $direction) {
                 $directionId = (int) $direction->id;
@@ -131,7 +135,7 @@ final class RatesUpdateService
                     || (int)($direction->is_error_parser ?? 0) !== 0;
 
                 if (!$isChanged) {
-                    // ничего не изменилось — пропускаем запись
+                    $heartbeatIds[] = $directionId;
                     continue;
                 }
 
@@ -153,6 +157,15 @@ final class RatesUpdateService
                     ['id'],
                     ['rate_value', 'rate_value_without_step', 'source_name', 'is_error_parser', 'explain_payload']
                 );
+            }
+
+            if ($heartbeatIds !== []) {
+                // Chunk to keep UPDATE packets bounded on large active sets.
+                foreach (array_chunk(array_values(array_unique($heartbeatIds)), 500) as $chunk) {
+                    BestChangeDirection::query()
+                        ->whereIn('id', $chunk)
+                        ->update(['updated_at' => now()]);
+                }
             }
 
             return new UpdateResult($updatedDirections, $totalDirections, $uniquePairs);

@@ -402,6 +402,15 @@ final class BestChangeExternalTopNController
     public function classifyFamily(DirectionExchange $direction): ?string
     {
         $direction->loadMissing(['currency1.payment', 'currency2.payment']);
+        // If currencies were eager-loaded with a column subset that omitted designation_xml,
+        // reload full currency rows so family classification cannot silently collapse to null.
+        foreach (['currency1', 'currency2'] as $rel) {
+            $cur = $direction->{$rel};
+            if ($cur && trim((string) ($cur->designation_xml ?? '')) === '' && (int) ($cur->id ?? 0) > 0) {
+                $direction->unsetRelation($rel);
+            }
+        }
+        $direction->loadMissing(['currency1', 'currency2', 'currency1.payment', 'currency2.payment']);
         $to = (string) ($direction->currency2->designation_xml ?? '');
         $from = (string) ($direction->currency1->designation_xml ?? '');
         if ($to === 'ZELLEUSD' && $from !== '' && $from !== 'ZELLEUSD') {

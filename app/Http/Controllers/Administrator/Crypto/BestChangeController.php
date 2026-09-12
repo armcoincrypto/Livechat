@@ -54,7 +54,7 @@ final class BestChangeController extends Controller
         $query = BestChangeDirection::query()
             ->whereHas('direction_exchange')
             ->filter($request->all())
-            ->with(['direction_exchange:id,tech_name,status'])
+            ->with(['direction_exchange:id,tech_name,status,parser_source_name'])
             ->orderByDesc('is_favorite')
             ->orderBy($orderColumn, $orderDirection);
 
@@ -302,6 +302,7 @@ final class BestChangeController extends Controller
         // ------------------------------------------------------------
         if ($request->boolean('is_update')) {
             if ($request->boolean('change_position')) {
+                $beforePos = (string) $item->position_num;
                 $item->update([
                     'position_num' => ValueNormalizer::normalizePosition($request->input('position_num', '0')),
                 ]);
@@ -313,12 +314,36 @@ final class BestChangeController extends Controller
                 $message = 'Позиция ' . (string) $item->position_num . ' установлена';
                 if (!$affectsRate) {
                     $message .= '. Сейчас курс пары не из BestChange — позиция сохранена как настройка и начнёт влиять только после активации BestChange.';
+                } else {
+                    $message .= '. Источник BASE = №' . (string) $item->position_num
+                        . '; внешняя цель Top-N = №' . (string) $item->position_num
+                        . '. Курс обновится на следующем RatesUpdate/compiler.';
                 }
+
+                AdminBulkActionAuditLogger::record([
+                    'event' => 'bestchange_position_change',
+                    'action' => 'set_position',
+                    'result' => 'applied',
+                    'admin_user_id' => Auth::id(),
+                    'admin_email' => Auth::user()->email ?? null,
+                    'ip' => $request->ip(),
+                    'session_id' => $request->hasSession() ? $request->session()->getId() : null,
+                    'request_id' => $request->headers->get('X-Request-Id'),
+                    'route' => 'admin.crypto.bestchange.update',
+                    'row_count' => 1,
+                    'ids' => [(int) $item->id],
+                    'before_position' => $beforePos,
+                    'after_position' => (string) $item->position_num,
+                    'position_currently_authoritative' => $affectsRate,
+                    'user_agent' => (string) $request->userAgent(),
+                ]);
 
                 return response()->json([
                     'status'  => 0,
                     'message' => $message,
                     'position_currently_authoritative' => $affectsRate,
+                    'source_position' => (int) $item->position_num,
+                    'external_target_position' => (int) $item->position_num,
                 ]);
             }
 
