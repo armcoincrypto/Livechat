@@ -74,6 +74,10 @@ final class OptionsRequest extends AbstractRequest
         $options = [];
 
         foreach ($tokens as $token) {
+            if (is_array($token)) {
+                $token = $token['token'] ?? $token['code'] ?? '';
+            }
+
             if (!is_string($token)) {
                 continue;
             }

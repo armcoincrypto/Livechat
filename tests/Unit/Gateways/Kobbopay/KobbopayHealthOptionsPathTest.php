@@ -90,4 +90,31 @@ final class KobbopayHealthOptionsPathTest extends TestCase
         $optionsData = $options->getData();
         $this->assertArrayHasKey('USDTPOLYGON', $optionsData);
     }
+
+    public function test_options_maps_object_token_catalog_including_usdtpolygon(): void
+    {
+        $merchant = GatewayMerchant::query()->where('alias', 'kobbopay')->where('status', 1)->first();
+        if ($merchant === null) {
+            $this->markTestSkipped('No active kobbopay merchant in this environment');
+        }
+
+        Http::fake(function (HttpRequest $request) {
+            $this->assertStringContainsString('/api/user/token/fetch', $request->url());
+
+            return Http::response([
+                'tokens' => [
+                    ['token' => 'USDTTRC', 'currency' => 'USDT', 'network' => 'TRON'],
+                    ['token' => 'USDTPOLYGON', 'currency' => 'USDT', 'network' => 'POLYGON'],
+                ],
+            ], 200);
+        });
+
+        $options = Payments::forMerchant($merchant)->run('options', [
+            'method' => 'getCurrencies',
+        ]);
+        $data = $options->getData();
+        $this->assertArrayHasKey('USDTPOLYGON', $data);
+        $this->assertSame('USDTPOLYGON', $data['USDTPOLYGON']);
+        $this->assertArrayHasKey('USDTTRC', $data);
+    }
 }
