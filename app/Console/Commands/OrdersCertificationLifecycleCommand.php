@@ -18,7 +18,7 @@ final class OrdersCertificationLifecycleCommand extends Command
 
     protected $description = 'Operator-only default-off certification rail. Never calls Kobbopay.';
 
-    public function handle(CertificationLifecycleRunner $runner): int
+    public function handle(CertificationLifecycleRunner $runner, CertificationGate $gate): int
     {
         $token = (string) $this->option('token');
         $email = (string) $this->option('email');
@@ -27,13 +27,13 @@ final class OrdersCertificationLifecycleCommand extends Command
             $scenario = CertificationContext::SCENARIO_SUCCESS;
         }
 
-        if (! (bool) config('exs_order_certification.enabled', false)) {
+        if (! $gate->flagEnabled()) {
             $this->error(CertificationGate::REJECTED.' flag_disabled');
 
             return self::FAILURE;
         }
 
-        if ($token === '' || strlen($token) < 16) {
+        if ($token === '' || strlen($token) < 16 || ! hash_equals($gate->expectedToken(), $token)) {
             $this->error(CertificationGate::REJECTED.' token_not_configured');
 
             return self::FAILURE;

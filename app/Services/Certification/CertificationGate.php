@@ -20,7 +20,7 @@ final class CertificationGate
      */
     public function evaluate(?Request $request = null): array
     {
-        if (! (bool) config('exs_order_certification.enabled', false)) {
+        if (! $this->flagEnabled()) {
             return $this->deny('flag_disabled');
         }
 
@@ -38,7 +38,7 @@ final class CertificationGate
             return $this->deny('operator_context_missing');
         }
 
-        $expected = (string) config('exs_order_certification.token', '');
+        $expected = $this->expectedToken();
         if ($expected === '' || strlen($expected) < 16) {
             return $this->deny('token_not_configured');
         }
@@ -96,6 +96,29 @@ final class CertificationGate
         }
 
         return method_exists($user, 'can') && $user->can('admin_orders_execute');
+    }
+
+    /**
+     * Process env wins so artisan can enable a session without flipping FPM.
+     */
+    public function flagEnabled(): bool
+    {
+        $raw = getenv('EXS_ORDER_CERTIFICATION_ENABLED');
+        if ($raw !== false && $raw !== '') {
+            return filter_var($raw, FILTER_VALIDATE_BOOLEAN);
+        }
+
+        return (bool) config('exs_order_certification.enabled', false);
+    }
+
+    public function expectedToken(): string
+    {
+        $raw = getenv('EXS_ORDER_CERTIFICATION_TOKEN');
+        if (is_string($raw) && $raw !== '') {
+            return $raw;
+        }
+
+        return (string) config('exs_order_certification.token', '');
     }
 
     /**
