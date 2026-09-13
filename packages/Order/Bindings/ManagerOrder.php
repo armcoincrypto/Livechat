@@ -105,6 +105,7 @@ trait ManagerOrder
 
         // Destination-required rails: only after fail-closed restored a payable order.
         $this->dispatchOrderCreatedMailIfEligible($order);
+        $this->notifyOperatorCreatedTelegramIfEligible($order);
 
         try {
             $this->rememberRecentCreateDedupKey($order);
@@ -357,9 +358,6 @@ trait ManagerOrder
         $this->handleCardVerification($order);
 
         $this->handleIdentityVerification($order);
-
-        // Operator Telegram is operational (queued). Never fail customer create after persist.
-        app(OrderCreatedTelegramNotifier::class)->notifyCreated($this->getOrder());
     }
 
     /**
@@ -382,6 +380,16 @@ trait ManagerOrder
         } catch (\Throwable $e) {
             Log::error('SmartMailer dispatch failed: ' . $e->getMessage(), ['order_id' => $order->id]);
         }
+    }
+
+    /**
+     * Single create-path owner for the normal operator NEW Telegram card.
+     * Call only after fail-closed so dest-required rails never emit NEW
+     * while still missing a usable deposit destination.
+     */
+    private function notifyOperatorCreatedTelegramIfEligible(Task $order): void
+    {
+        app(OrderCreatedTelegramNotifier::class)->notifyCreated($order);
     }
 
     /**

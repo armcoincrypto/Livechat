@@ -8,12 +8,12 @@
 ---
 
 ## {{ __('smart-mailer::messages.you_send') }}
-**{{ $order->give_price }} {{ $order->direction_exchange->currency1->code_currency->name }}**  
-{{ $order->direction_exchange->currency1->payment->name }}
+**{{ $order->give_price }} {{ $sendCodeName }}**  
+{{ $sendPaymentName }}
 
 ## {{ __('smart-mailer::messages.you_receive') }}
-**{{ $order->receiving_price }} {{ $order->direction_exchange->currency2->code_currency->name }}**  
-{{ $order->direction_exchange->currency2->payment->name }}
+**{{ $order->receiving_price }} {{ $receiveCodeName }}**  
+{{ $receivePaymentName }}
 
 @if(isset($order->course_display))
 **{{ __('smart-mailer::messages.exchange_rate') }}:** {{ $order->course_display }}
@@ -64,12 +64,12 @@
 @endif
 @endif
 
-@if(isset($order->from_shot))
-**{{ $order->direction_exchange->currency1->field_name_from }}:** {{ $order->from_shot }}
+@if($fromShot !== '' || $fieldNameFrom !== '')
+**{{ $fieldNameFrom }}:** {{ $fromShot }}
 @endif
 
-@if(isset($order->to_shot))
-**{{ $order->direction_exchange->currency2->field_name_to }}:** {{ $order->to_shot }}
+@if($toShot !== '' || $fieldNameTo !== '')
+**{{ $fieldNameTo }}:** {{ $toShot }}
 @endif
 
 @if(count($tasks_fields['requisites_info_field']) > 0)

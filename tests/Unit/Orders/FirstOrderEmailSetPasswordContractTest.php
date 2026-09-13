@@ -39,7 +39,8 @@ final class FirstOrderEmailSetPasswordContractTest extends TestCase
         $src = File::get(base_path('packages/SmartMailer/Dispatches/Orders/OrderCreatedMail.php'));
 
         self::assertStringContainsString('resolveSetPasswordUrl', $src);
-        self::assertStringContainsString('localizedStatusName', $src);
+        self::assertStringContainsString('localizedOrderStatusName', $src);
+        self::assertStringContainsString("'localizedStatus'", $src);
         self::assertStringContainsString('showSetPasswordCta', $src);
         self::assertStringContainsString('Password::broker()->createToken', $src);
         self::assertStringContainsString('newbie', $src);

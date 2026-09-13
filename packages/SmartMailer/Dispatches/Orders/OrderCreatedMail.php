@@ -3,6 +3,7 @@ namespace iEXPackages\SmartMailer\Dispatches\Orders;
 
 use App\Models\Task;
 use App\Models\User;
+use App\Services\Mail\OrderMailDisplayText;
 use iEXPackages\Order\Facades\OrderInvoiceFacade;
 use iEXPackages\SmartMailer\LocalizesOrderMailStatus;
 use iEXPackages\SmartMailer\SmartMailable;
@@ -36,6 +37,9 @@ class OrderCreatedMail extends SmartMailable
         $item = $transaction->getTransaction();
 
         $setPasswordUrl = $this->resolveSetPasswordUrl();
+        $direction = $this->order->direction_exchange;
+        $currencyIn = $direction?->currency1;
+        $currencyOut = $direction?->currency2;
 
         $this->setSubject( __('smart-mailer::messages.order_created_subject', ['id' => current_order_id($this->order)]))
             ->markdown('smart-mailer::orders.order_created', [
@@ -44,10 +48,18 @@ class OrderCreatedMail extends SmartMailable
                 'directionCityInstruction' => $this->generateDirectionCityInstruction(),
                 'order'                => $this->order,
                 'account_number_field' => $this->getAccountNumberField($transaction),
+                'sendCodeName'        => OrderMailDisplayText::scalar($currencyIn?->code_currency?->name ?? null),
+                'sendPaymentName'     => OrderMailDisplayText::scalar($currencyIn?->payment?->name ?? null),
+                'receiveCodeName'    => OrderMailDisplayText::scalar($currencyOut?->code_currency?->name ?? null),
+                'receivePaymentName'  => OrderMailDisplayText::scalar($currencyOut?->payment?->name ?? null),
+                'fieldNameFrom'       => OrderMailDisplayText::scalar($currencyIn?->field_name_from ?? null),
+                'fieldNameTo'         => OrderMailDisplayText::scalar($currencyOut?->field_name_to ?? null),
+                'fromShot'            => OrderMailDisplayText::scalar($this->order->from_shot ?? null),
+                'toShot'              => OrderMailDisplayText::scalar($this->order->to_shot ?? null),
                 'transaction'          => $transaction,
                 'walletInfoAccount'    => $this->getWalletInfoAccount(),
-                'tasks_fields'         => $transaction->getTasksFields(),
-                'localizedStatus'      => $this->localizedOrderStatusName($this->order),
+                'tasks_fields'         => $this->scalarTasksFields($transaction->getTasksFields()),
+                'localizedStatus'      => OrderMailDisplayText::scalar($this->localizedOrderStatusName($this->order)),
                 'showSetPasswordCta'   => $setPasswordUrl !== null,
                 'setPasswordUrl'       => $setPasswordUrl,
                 'openOrderUrl'         => rtrim((string) config('app.frontend_url'), '/') . '/order/' . $this->order->public_id,
@@ -107,37 +119,62 @@ class OrderCreatedMail extends SmartMailable
         ];
 
         $replacements = [
-            direction_name($item->direction_exchange),
-            $item->created_at->translatedFormat('d M Y H:i'),
-            $item->course_display,
-            $item->task_info->city_name,
-            $item->task_info->country_name,
-            $item->give_price,
-            $item->receiving_price,
-            $item->direction_exchange->currency1->code_currency->name,
-            $item->direction_exchange->currency2->code_currency->name,
-            $item->direction_exchange->currency1->payment->name,
-            $item->direction_exchange->currency2->payment->name,
-            $item->public_id,
-            $item->id,
-            $item->direction_exchange->profit,
-            $item->to_shot,
+            OrderMailDisplayText::scalar(direction_name($item->direction_exchange)),
+            OrderMailDisplayText::scalar($item->created_at?->translatedFormat('d M Y H:i')),
+            OrderMailDisplayText::scalar($item->course_display ?? null),
+            OrderMailDisplayText::scalar($item->task_info->city_name ?? null),
+            OrderMailDisplayText::scalar($item->task_info->country_name ?? null),
+            OrderMailDisplayText::scalar($item->give_price ?? null),
+            OrderMailDisplayText::scalar($item->receiving_price ?? null),
+            OrderMailDisplayText::scalar($item->direction_exchange->currency1->code_currency->name ?? null),
+            OrderMailDisplayText::scalar($item->direction_exchange->currency2->code_currency->name ?? null),
+            OrderMailDisplayText::scalar($item->direction_exchange->currency1->payment->name ?? null),
+            OrderMailDisplayText::scalar($item->direction_exchange->currency2->payment->name ?? null),
+            OrderMailDisplayText::scalar($item->public_id ?? null),
+            OrderMailDisplayText::scalar($item->id ?? null),
+            OrderMailDisplayText::scalar($item->direction_exchange->profit ?? null),
+            OrderMailDisplayText::scalar($item->to_shot ?? null),
         ];
 
-        $text = $item->direction_exchange->text_order_created_email;
+        $text = OrderMailDisplayText::scalar($item->direction_exchange->text_order_created_email ?? null);
 
-        if (is_array($text)) {
-            $text = implode("\n", $text);
-        }
-
-        return str_replace($placeholders, $replacements, (string)$text);
+        return str_replace($placeholders, $replacements, $text);
     }
 
     protected function getAccountNumberField($transaction): string
     {
         $inCurrency = $transaction->getCurrencyIn();
 
-        return $inCurrency->account_number_field ?: __('Кошелек');
+        return OrderMailDisplayText::scalar(
+            $inCurrency->account_number_field ?? null,
+            (string) __('Кошелек'),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $fields
+     * @return array<string, mixed>
+     */
+    private function scalarTasksFields(array $fields): array
+    {
+        foreach (['requisites_info_field', 'many', 'currency_in', 'currency_out'] as $group) {
+            if (! isset($fields[$group]) || ! is_array($fields[$group])) {
+                continue;
+            }
+            foreach ($fields[$group] as $index => $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                foreach (['key_name', 'value_name', 'field_name', 'field_value'] as $key) {
+                    if (array_key_exists($key, $row)) {
+                        $row[$key] = OrderMailDisplayText::scalar($row[$key] ?? null);
+                    }
+                }
+                $fields[$group][$index] = $row;
+            }
+        }
+
+        return $fields;
     }
 
     protected function getWalletInfoAccount(): string
@@ -145,12 +182,13 @@ class OrderCreatedMail extends SmartMailable
         $result = OrderInvoiceFacade::make($this->order)->snapshot();
 
         if (is_array($result)) {
-            return $result['wallet_number']
-                ?? $result['checkout_url']
-                ?? __('Не определен');
+            return OrderMailDisplayText::scalar(
+                $result['wallet_number'] ?? $result['checkout_url'] ?? null,
+                (string) __('Не определен'),
+            );
         }
 
-        return (string)$result;
+        return OrderMailDisplayText::scalar($result, (string) __('Не определен'));
     }
 
     /**
@@ -176,7 +214,7 @@ class OrderCreatedMail extends SmartMailable
 
         $processed = $tagger
             ->setProcessor('direction_city')
-            ->setText((string) $rawInstruction)
+            ->setText(OrderMailDisplayText::scalar($rawInstruction))
             ->setData([
                 'direction_id' => $directionId,
                 'city_id'      => $directionCity->id,
