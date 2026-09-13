@@ -56,6 +56,13 @@ final class BestChangeParserResources extends ResourceCollection
             }
 
             $dir = $item->direction_exchange;
+            $fromCode = strtoupper((string) ($dir?->currency1?->designation_xml ?? ''));
+            $toCode = strtoupper((string) ($dir?->currency2?->designation_xml ?? ''));
+            $pair = ($fromCode !== '' && $toCode !== '') ? $fromCode.'→'.$toCode : '';
+            $techName = (string) ($dir?->tech_name ?? '');
+            $displayName = $pair !== ''
+                ? ($techName !== '' && $techName !== $pair ? $pair.' · '.$techName : $pair)
+                : $techName;
             $pricingOwner = trim((string) ($dir?->parser_source_name ?? ''));
             $mappingActive = (bool) $item->status;
             $ownerIsBestChange = $pricingOwner === 'BestChange';
@@ -82,7 +89,11 @@ final class BestChangeParserResources extends ResourceCollection
                 'attributes' => [
                     'direction' => [
                         'id' => $dir?->id,
-                        'name' => $dir?->tech_name,
+                        'name' => $displayName,
+                        'tech_name' => $techName,
+                        'from_code' => $fromCode !== '' ? $fromCode : null,
+                        'to_code' => $toCode !== '' ? $toCode : null,
+                        'pair' => $pair !== '' ? $pair : null,
                         'status' => $dir?->status,
                         'parser_source_name' => $pricingOwner,
                     ],

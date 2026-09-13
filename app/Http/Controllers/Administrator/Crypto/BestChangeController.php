@@ -68,7 +68,11 @@ final class BestChangeController extends Controller
             \App\Services\Rates\BestChangeAdminListingSearch::apply($query, $search);
         }
         $query->filter($filterInput)
-            ->with(['direction_exchange:id,tech_name,status,parser_source_name'])
+            ->with([
+                'direction_exchange:id,tech_name,status,parser_source_name,id_currency1,id_currency2',
+                'direction_exchange.currency1:id,designation_xml',
+                'direction_exchange.currency2:id,designation_xml',
+            ])
             ->orderByDesc('is_favorite')
             ->orderBy($orderColumn, $orderDirection);
 

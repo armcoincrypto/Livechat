@@ -50,7 +50,7 @@
       'font:13px/1.4 ui-sans-serif,system-ui,sans-serif');
     el.innerHTML =
       '<label style="font-weight:600">Поиск</label>' +
-      '<input id="exs-bc-q" type="search" placeholder="ID, USDTTRC20, YAMRUB, YooMoney, tech_name" ' +
+      '<input id="exs-bc-q" type="search" placeholder="ID, USDTTRC20, YooMoney, сбер, AdvCash, TON, Gram" ' +
       'style="min-width:280px;flex:1;padding:6px 8px;border:1px solid #94a3b8;border-radius:6px"/>' +
       '<select id="exs-bc-per-page" style="padding:6px 8px;border:1px solid #94a3b8;border-radius:6px">' +
       '<option value="30">30 / стр</option><option value="50">50 / стр</option><option value="100">100 / стр</option>' +

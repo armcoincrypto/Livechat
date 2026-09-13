@@ -14,7 +14,44 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final class BestChangeAdminListingSearch
 {
-    // $query is Eloquent Builder or EloquentFilter ModelFilter (both expose where()).
+    /**
+     * @var list<array{keys:list<string>,add:list<string>}>
+     */
+    private const ALIAS_GROUPS = [
+        [
+            'keys' => ['yoomoney', 'yamoney', 'yamrub', 'юmoney', 'юмани', 'yandex.money', 'yandex money', 'yandex'],
+            'add' => ['YAMRUB', 'ЮMoney', 'YooMoney', 'Yamoney'],
+        ],
+        [
+            'keys' => ['sber', 'sberbank', 'сбер', 'сбербанк', 'sberrub'],
+            'add' => ['SBERRUB', 'SBER', 'Sber'],
+        ],
+        [
+            'keys' => ['tinkoff', 'tinkoffbank', 'тинькофф', 'тиньков', 'tcs', 'tcsbrub'],
+            'add' => ['TCSBRUB', 'TINKOFF', 'Tinkoff'],
+        ],
+        [
+            'keys' => ['alfa', 'alfabank', 'альфа', 'альфабанк', 'acrub'],
+            'add' => ['ACRUB', 'ALFA', 'Alfa'],
+        ],
+        [
+            'keys' => ['sbp', 'сбп', 'sbprub'],
+            'add' => ['SBPRUB', 'SBP', 'СБП'],
+        ],
+        [
+            'keys' => ['advcash', 'advancedcash', 'advc'],
+            'add' => ['ADVCUSD', 'ADVCEUR', 'Volet'],
+        ],
+        [
+            'keys' => ['ton', 'toncoin'],
+            'add' => ['USDTTON', 'TON', 'Tether TON', 'GRAM', 'Gram'],
+        ],
+        [
+            'keys' => ['gram', 'грамм'],
+            'add' => ['GRAM', 'Gram', 'TON'],
+        ],
+    ];
+
     /**
      * @return list<string>
      */
@@ -37,21 +74,12 @@ final class BestChangeAdminListingSearch
     {
         $out = [$token];
         $lower = mb_strtolower($token);
-        $aliases = [
-            'yoomoney',
-            'yamoney',
-            'yamrub',
-            'юmoney',
-            'юмани',
-            'yandex.money',
-            'yandex money',
-            'yandex',
-        ];
-        if (in_array($lower, $aliases, true)) {
-            $out[] = 'YAMRUB';
-            $out[] = 'ЮMoney';
-            $out[] = 'YooMoney';
-            $out[] = 'Yamoney';
+        foreach (self::ALIAS_GROUPS as $group) {
+            if (in_array($lower, $group['keys'], true)) {
+                foreach ($group['add'] as $extra) {
+                    $out[] = $extra;
+                }
+            }
         }
 
         return array_values(array_unique($out));

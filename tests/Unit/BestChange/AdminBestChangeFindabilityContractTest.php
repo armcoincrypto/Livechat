@@ -23,6 +23,14 @@ final class AdminBestChangeFindabilityContractTest extends TestCase
         $this->assertContains('YAMRUB', BestChangeAdminListingSearch::expansions('юмани'));
         $this->assertContains('ЮMoney', BestChangeAdminListingSearch::expansions('yamrub'));
         $this->assertSame(['USDTTRC20'], BestChangeAdminListingSearch::expansions('USDTTRC20'));
+        $this->assertContains('SBERRUB', BestChangeAdminListingSearch::expansions('сбер'));
+        $this->assertContains('TCSBRUB', BestChangeAdminListingSearch::expansions('тинькофф'));
+        $this->assertContains('ACRUB', BestChangeAdminListingSearch::expansions('Альфа'));
+        $this->assertContains('ADVCUSD', BestChangeAdminListingSearch::expansions('AdvCash'));
+        $this->assertContains('USDTTON', BestChangeAdminListingSearch::expansions('TON'));
+        $this->assertContains('GRAM', BestChangeAdminListingSearch::expansions('TON'));
+        $this->assertContains('GRAM', BestChangeAdminListingSearch::expansions('Gram'));
+        $this->assertContains('TON', BestChangeAdminListingSearch::expansions('грамм'));
     }
 
     public function test_controller_exposes_search_counts_and_per_page(): void
@@ -38,6 +46,7 @@ final class AdminBestChangeFindabilityContractTest extends TestCase
         $this->assertStringContainsString('id_direction_exchange', $src);
         $this->assertStringContainsString('orderByDesc(\'status\')', $src);
         $this->assertStringContainsString('paginate($perPage)', $src);
+        $this->assertStringContainsString('direction_exchange.currency1:id,designation_xml', $src);
         $this->assertStringNotContainsString('$query->get()', $src);
     }
 
@@ -91,5 +100,22 @@ final class AdminBestChangeFindabilityContractTest extends TestCase
         $this->assertStringContainsString('orWhereHas', $src);
         $this->assertStringContainsString('designation_xml', $src);
         $this->assertStringContainsString('tech_name', $src);
+        $this->assertStringNotContainsString('parser_source_name', $src);
+    }
+
+    public function test_listing_resource_exposes_canonical_pair_and_owner(): void
+    {
+        $src = (string) file_get_contents(
+            dirname(__DIR__, 3) . '/app/Http/Resources/Admin/ParserRates/BestChangeParserResources.php'
+        );
+        $this->assertStringContainsString('from_code', $src);
+        $this->assertStringContainsString('to_code', $src);
+        $this->assertStringContainsString("'pair'", $src);
+        $this->assertStringContainsString('pricing_owner', $src);
+        $this->assertStringContainsString('mapping_authoritative', $src);
+        $this->assertStringContainsString('is_error_parser', $src);
+        $this->assertStringContainsString('displayName', $src);
+        $this->assertStringNotContainsString('->update(', $src);
+        $this->assertStringNotContainsString('profit', $src);
     }
 }
