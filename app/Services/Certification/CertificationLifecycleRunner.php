@@ -115,7 +115,7 @@ final class CertificationLifecycleRunner
 
         if ($direction === null) {
             $direction = DirectionExchange::query()
-                ->with(['currency1', 'currency2'])
+                ->with(['currency1.currency_in_fields', 'currency2.currency_out_fields'])
                 ->where('status', 1)
                 ->whereHas('currency1', function ($q): void {
                     $q->whereIn('designation_xml', PaymentDestinationRouter::KOBBOPAY_USDT_LETTER_CODS);
@@ -149,6 +149,7 @@ final class CertificationLifecycleRunner
      */
     private function createOrder(array $quote, string $email): array
     {
+        $quote['direction']->loadMissing(['currency1.currency_in_fields', 'currency2.currency_out_fields']);
         $payload = [
             'income_payment_system' => $quote['income_id'],
             'outcome_payment_system' => $quote['outcome_id'],
@@ -157,13 +158,8 @@ final class CertificationLifecycleRunner
             'email' => $email,
             'outcome_account' => '4400430000000001',
             'agree_rules' => 1,
-            'fields_in' => [
-                'income_outcome_income_vas_telegramm_whatsapp_1' => '@qa_exswaping_cert',
-            ],
-            'fields_out' => [
-                'outcome_nomer_karty' => '4400430000000001',
-                'sender_fullname' => 'QA Certification',
-            ],
+            'fields_in' => $this->syntheticExtraFields($quote['direction']->currency1?->currency_in_fields),
+            'fields_out' => $this->syntheticExtraFields($quote['direction']->currency2?->currency_out_fields),
         ];
 
         $request = Request::create('/client-api/v1/order', 'POST', $payload);
@@ -190,6 +186,56 @@ final class CertificationLifecycleRunner
         }
 
         return ['order' => $order, 'raw' => $response];
+    }
+
+    /**
+     * @param  mixed  $fields
+     * @return array<string, string>
+     */
+    private function syntheticExtraFields(mixed $fields): array
+    {
+        $bag = [];
+        if ($fields instanceof \Illuminate\Support\Collection) {
+            $fields = $fields->all();
+        }
+        if (! is_iterable($fields)) {
+            return $bag;
+        }
+        foreach ($fields as $item) {
+            if ((int) ($item->status ?? 0) === 1) {
+                continue;
+            }
+            $key = (string) ($item->key_id ?? '');
+            if ($key === '') {
+                continue;
+            }
+            $bag[$key] = $this->syntheticFieldValue($item);
+        }
+
+        return $bag;
+    }
+
+    private function syntheticFieldValue(object $item): string
+    {
+        $key = strtolower((string) ($item->key_id ?? ''));
+        if (str_contains($key, 'telegram') || str_contains($key, 'whatsapp')) {
+            return '@qa_exswaping_cert';
+        }
+        if (str_contains($key, 'karty') || str_contains($key, 'card')) {
+            return '4400430000000001';
+        }
+        if (str_contains($key, 'fullname') || str_contains($key, 'name')) {
+            return 'QA Certification';
+        }
+        if (str_contains($key, 'telefon') || str_contains($key, 'phone')) {
+            return '+77000000000';
+        }
+        $type = (string) ($item->field_type ?? 'string');
+        if ($type === 'integer') {
+            return '4400430000000001';
+        }
+
+        return 'QA_CERT_FIELD';
     }
 
     private function mailSent(): bool
