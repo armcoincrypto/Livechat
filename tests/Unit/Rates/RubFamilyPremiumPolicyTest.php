@@ -158,6 +158,74 @@ final class RubFamilyPremiumPolicyTest extends TestCase
         $this->assertTrue($gram === null || $gram === 'TON' || $gram === 'GRAM');
     }
 
+    /**
+     * Production SBER/TCS/RFB band after 2026-09-13 OTC audit:
+     * explained ceiling = already-approved warning 6%; unexplained block 2.5; hard 9.
+     */
+    private function productionSberFamilyPolicy(): RubFamilyPremiumPolicy
+    {
+        return new RubFamilyPremiumPolicy([
+            'approved' => true,
+            'approved_by' => 'test',
+            'default_thresholds' => [
+                'unexplained_warning_percent' => 1.0,
+                'unexplained_block_percent' => 2.5,
+            ],
+            'families' => [
+                'SBERRUB' => [
+                    'destination_codes' => ['SBERRUB'],
+                    'decision' => 'APPROVE',
+                    'target_premium_min_percent' => 1.5,
+                    'target_premium_max_percent' => 6.0,
+                    'warning_premium_percent' => 6.0,
+                    'hard_maximum_premium_percent' => 9.0,
+                    'export_allowed_when_approved' => true,
+                    'order_allowed_when_approved' => true,
+                ],
+            ],
+        ]);
+    }
+
+    public function testNormalMarketPremiumInsideSberExplainedBandPasses(): void
+    {
+        $eval = $this->productionSberFamilyPolicy()->evaluateCoinRub('SBERRUB', 3.2, 1.0);
+        $this->assertSame('PASS_EXPLAINED_SPREAD', $eval['classification']);
+        $this->assertTrue($eval['order_allowed']);
+        $this->assertEqualsWithDelta(6.0, (float) $eval['expected_premium_percent'], 0.001);
+        $this->assertLessThan(0.0, (float) $eval['unexplained_vs_expected_percent']);
+    }
+
+    public function testLegitimateHighSberOtcPremiumIsReviewNotQuarantine(): void
+    {
+        // Live USDTTRC20→SBERRUB: ~7.71% vs CBR; unexplained 1.71% < 2.5 block.
+        $eval = $this->productionSberFamilyPolicy()->evaluateCoinRub('SBERRUB', 7.71483, 1.0);
+        $this->assertSame('REVIEW', $eval['classification']);
+        $this->assertFalse($eval['order_allowed']);
+        $this->assertFalse($eval['export_allowed']);
+        $this->assertContains('premium_or_unexplained_warning_band', $eval['reasons']);
+        $this->assertNotContains('unexplained_above_expected_block', $eval['reasons']);
+        $this->assertEqualsWithDelta(1.71483, (float) $eval['unexplained_vs_expected_percent'], 0.001);
+    }
+
+    public function testTrueAbnormalSberDeviationStillQuarantines(): void
+    {
+        $p = $this->productionSberFamilyPolicy();
+        $hard = $p->evaluateCoinRub('SBERRUB', 9.2, 1.0);
+        $this->assertSame('QUARANTINE_REQUIRED', $hard['classification']);
+        $this->assertContains('raw_premium_exceeds_hard_maximum', $hard['reasons']);
+
+        $unexplained = $p->evaluateCoinRub('SBERRUB', 8.6, 1.0);
+        $this->assertSame('QUARANTINE_REQUIRED', $unexplained['classification']);
+        $this->assertContains('unexplained_above_expected_block', $unexplained['reasons']);
+    }
+
+    public function testMissingIndependentBaselineFailsClosed(): void
+    {
+        $eval = $this->productionSberFamilyPolicy()->evaluateCoinRub('SBERRUB', null, 1.0);
+        $this->assertSame('NO_BASELINE', $eval['classification']);
+        $this->assertFalse($eval['order_allowed']);
+    }
+
     public function testKeepBlockedFamilyNeverExports(): void
     {
         $p = $this->approvedPolicy();
@@ -171,6 +239,7 @@ final class RubFamilyPremiumPolicyTest extends TestCase
             'intentional_commercial' => [
                 'usdt_rub_customer_floating' => 95.0,
                 'applies_to_families' => ['SBERRUB'],
+                'mode' => 'AUTO_TARGET',
             ],
             'default_thresholds' => [
                 'unexplained_warning_percent' => 1.0,

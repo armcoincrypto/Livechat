@@ -1,11 +1,11 @@
 {
-  "version": 10,
+  "version": 11,
   "schema": "rub_family_premium_policy_v3",
   "approved": true,
-  "approved_at": "2026-08-09T22:10:00Z",
-  "approved_by": "exswaping-owner-chat-commercial-95",
-  "approval_source": "Owner 2026-08-14 restore: MANUAL_PROFIT after accidental worktree wipe; 85–86 monitoring only",
-  "notes": "Family maximum is a CEILING only. Classic USDT→bank RUB uses MANUAL_PROFIT. preferred_customer_floating_band 85–86 is observation/review only — never rewrite profit. Never restore frozen legacy −15.661082.",
+  "approved_at": "2026-09-13T11:10:00Z",
+  "approved_by": "exswaping-rates-rub-ton-gram-remediation-20260913",
+  "approval_source": "2026-09-13 audit: BestChange USDTTRC20→SBERRUB/TCSBRUB OTC cluster ~7.5–7.9% vs CBR; mapping VERIFIED (BC 10→42 / 10→105); raise explained ceiling to already-approved warning band. 85–86 monitoring only",
+  "notes": "Family maximum is a CEILING only. Classic USDT→bank RUB uses MANUAL_PROFIT. preferred_customer_floating_band 85–86 is observation/review only — never rewrite profit. Never restore frozen legacy −15.661082. SBER/TCS/RFB target_premium_max 6.0 matches live BestChange bank-RUB OTC under hard 9%; unexplained 2.5% and hard max remain fail-closed.",
   "intentional_commercial": {
     "usdt_rub_customer_floating": null,
     "orientation": "RUB_per_1_USDT",
@@ -66,12 +66,12 @@
       ],
       "decision": "APPROVE",
       "target_premium_min_percent": 1.5,
-      "target_premium_max_percent": 4.0,
+      "target_premium_max_percent": 6.0,
       "warning_premium_percent": 6.0,
       "hard_maximum_premium_percent": 9.0,
       "order_allowed_when_approved": true,
       "export_allowed_when_approved": true,
-      "notes": "MANUAL_PROFIT; preferred floating band 85–86 monitoring only",
+      "notes": "MANUAL_PROFIT; preferred floating band 85–86 monitoring only. Explained ceiling 6% aligns with live BestChange Sber OTC (~7.5–7.9% vs CBR stays REVIEW under warning=6 / unexplained 2.5; hard max 9).",
       "preferred_customer_floating_band": {
         "min": 85.0,
         "max": 86.0
@@ -85,12 +85,12 @@
       ],
       "decision": "APPROVE",
       "target_premium_min_percent": 1.5,
-      "target_premium_max_percent": 4.0,
+      "target_premium_max_percent": 6.0,
       "warning_premium_percent": 6.0,
       "hard_maximum_premium_percent": 9.0,
       "order_allowed_when_approved": true,
       "export_allowed_when_approved": true,
-      "notes": "MANUAL_PROFIT; preferred floating band 85–86 monitoring only",
+      "notes": "MANUAL_PROFIT; preferred floating band 85–86 monitoring only. Explained ceiling 6% aligns with live BestChange T-Bank OTC (includes TBRUB codes).",
       "preferred_customer_floating_band": {
         "min": 85.0,
         "max": 86.0
@@ -149,12 +149,12 @@
       ],
       "decision": "APPROVE",
       "target_premium_min_percent": 1.5,
-      "target_premium_max_percent": 4.0,
+      "target_premium_max_percent": 6.0,
       "warning_premium_percent": 6.0,
       "hard_maximum_premium_percent": 9.0,
       "order_allowed_when_approved": true,
       "export_allowed_when_approved": true,
-      "notes": "MANUAL_PROFIT; preferred floating band 85–86 monitoring only",
+      "notes": "MANUAL_PROFIT; preferred floating band 85–86 monitoring only. Explained ceiling 6% covers live USDTERC20→RFBRUB BestChange OTC (~7.3% vs CBR) as REVIEW, not quarantine.",
       "preferred_customer_floating_band": {
         "min": 85.0,
         "max": 86.0
@@ -188,6 +188,6 @@
       "export_allowed_when_approved": false
     }
   },
-  "updated_at": "2026-08-09T22:10:00Z",
-  "update_note": "v7: intentional commercial USDT→RUB ≈95 for classic banks; review vs approved commercial expectation; CARDRUB/YAMRUB/PRRUB retain near-CBR bands"
+  "updated_at": "2026-09-13T11:10:00Z",
+  "update_note": "v11: SBER/TCS/RFB explained ceiling 4→6 to match already-approved warning band and live BestChange bank-RUB OTC; SBP/ACRUB remain 4.0; hard max 9 and unexplained block 2.5 unchanged; no profit/formula/ownership change"
 }

@@ -45,11 +45,15 @@ final class IndependentMarketBaseline
         $symbol = strtoupper(trim($symbol));
         if (isset($this->injected[$symbol])) {
             $q = $this->injected[$symbol];
+            $rate = (string) ($q['rate'] ?? '');
+            if ($rate === '' || !is_numeric($rate) || bccomp($rate, '0', self::SCALE) !== 1) {
+                return null;
+            }
             $asOf = $q['as_of'];
             $age = max(0, time() - strtotime($asOf));
 
             return [
-                'rate' => $q['rate'],
+                'rate' => bcmul($rate, '1', self::SCALE),
                 'source' => $q['source'],
                 'as_of' => $asOf,
                 'age_seconds' => $age,
@@ -108,7 +112,7 @@ final class IndependentMarketBaseline
      */
     public function cryptoRub(string $asset): ?array
     {
-        $asset = strtoupper($asset);
+        $asset = self::assetFromCode($asset) ?? strtoupper(trim($asset));
         $crypto = $this->quote($asset . 'USDT');
         if ($crypto === null) {
             $crypto = $this->quote($asset . 'USD');
@@ -146,8 +150,8 @@ final class IndependentMarketBaseline
      */
     public function cryptoViaUsdt(string $fromAsset, string $toAsset): ?array
     {
-        $fromAsset = strtoupper($fromAsset);
-        $toAsset = strtoupper($toAsset);
+        $fromAsset = self::assetFromCode($fromAsset) ?? strtoupper(trim($fromAsset));
+        $toAsset = self::assetFromCode($toAsset) ?? strtoupper(trim($toAsset));
         if ($fromAsset === '' || $toAsset === '' || $fromAsset === $toAsset) {
             return null;
         }
