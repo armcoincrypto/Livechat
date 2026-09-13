@@ -551,11 +551,54 @@ class DirectionExchange extends Model
     public function bestchange_directions(): HasOne
     {
         // Prefer the live mapping when duplicate active/inactive twins exist.
-        return $this->hasOne(BestChangeDirection::class, 'id_direction_exchange', 'id')
+        $relation = $this->hasOne(BestChangeDirection::class, 'id_direction_exchange', 'id')
             ->ofMany([
                 'status' => 'max',
                 'id' => 'max',
             ]);
+
+        // ofMany inner-joins an aggregate subquery that also selects
+        // id_direction_exchange. Constrained eager-loads such as
+        // with('bestchange_directions:id,id_direction_exchange,...') replace
+        // the qualified bestchange_directions.* select with bare columns and
+        // then fail with SQLSTATE 1052. Qualify those columns just before
+        // execute so ofMany preference stays intact.
+        $relation->getQuery()->beforeQuery(static function ($query): void {
+            $query->columns = self::qualifyBestchangeDirectionSelectColumns($query->columns);
+        });
+
+        return $relation;
+    }
+
+    /**
+     * Qualify bare bestchange_directions select columns for ofMany joins.
+     *
+     * @param  list<mixed>|null  $columns
+     * @return list<mixed>|null
+     */
+    public static function qualifyBestchangeDirectionSelectColumns(?array $columns): ?array
+    {
+        if ($columns === null) {
+            return null;
+        }
+
+        $table = (new BestChangeDirection())->getTable();
+
+        return array_map(static function ($column) use ($table) {
+            if (!is_string($column)) {
+                return $column;
+            }
+
+            $trimmed = trim($column);
+            if ($trimmed === '' || $trimmed === '*') {
+                return $table.'.*';
+            }
+            if (str_contains($trimmed, '.') || str_contains($trimmed, ' ') || str_contains($trimmed, '(')) {
+                return $column;
+            }
+
+            return $table.'.'.$trimmed;
+        }, $columns);
     }
 
     /**
