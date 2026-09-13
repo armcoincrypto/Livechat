@@ -7,6 +7,8 @@ use App\Models\SumsubId;
 use App\Models\UserVerification;
 use iEXPackages\ExchangerClient\Support\AssertIdentityApplicantAccess;
 use iEXPackages\KYCPlugin\Drivers\SumSub\SumSubDriver;
+use iEXPackages\KYCPlugin\Services\DiditKycService;
+use iEXPackages\KYCPlugin\Services\KycProviderResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -21,6 +23,7 @@ use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Throwable;
 
 class IdentityVerifyController extends Controller
 {
@@ -35,14 +38,47 @@ class IdentityVerifyController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        // Данные пользователя
         $user = $request->user();
-        $typeService = (int)iEXSetting('type_kyc_service', 0);
+        $typeService = (int) iEXSetting('type_kyc_service', 0);
+        $is_verified = (int) $user->is_verify_account === 1;
 
+        if ($is_verified) {
+            $options = [
+                'status' => 'approved',
+                'verification_url' => null,
+                'can_start' => false,
+                'is_check' => false,
+            ];
+            $provider = (new KycProviderResolver())->resolveForUser($user);
+            if ($provider === KycProviderResolver::PROVIDER_DIDIT) {
+                $local = (new DiditKycService())->readLocalStatus($user);
+                $options['provider'] = KycProviderResolver::PROVIDER_DIDIT;
+                $options['status'] = 'approved';
+                $options['session_id'] = $local['session_id'];
+            }
 
+            return Response::json([
+                'type_service' => $typeService,
+                'is_verified' => true,
+                ...$options,
+            ]);
+        }
+
+        $provider = (new KycProviderResolver())->resolveForUser($user);
         $options = [];
-        if($typeService == 0)
-        {
+
+        if ($provider === KycProviderResolver::PROVIDER_DIDIT) {
+            // Read-only: never create a remote Didit session on GET.
+            $local = (new DiditKycService())->readLocalStatus($user);
+            $options = [
+                'provider' => $local['provider'],
+                'status' => $local['status'],
+                'verification_url' => $local['verification_url'],
+                'can_start' => $local['can_start'],
+                'session_id' => $local['session_id'],
+                'is_check' => in_array($local['status'], ['pending', 'manual_review'], true),
+            ];
+        } elseif ($typeService == 0) {
             $is_check = UserVerification::where('user_id', (int) $user->id)->where('status', 0)->exists();
             $histories = UserVerification::where('user_id', (int) $user->id)->get()->map(function ($item) {
                 return [
@@ -56,12 +92,10 @@ class IdentityVerifyController extends Controller
                 'is_check' => $is_check,
             ];
         } else {
-            // Если верификация уже завершена (по пользователю или по SumsubId) — не отдаём sumsub вообще
             $isAlreadyVerified = ((int) $user->is_verify_account === 1)
                 || (bool) SumsubId::query()->where('user_id', (int) $user->id)->value('is_completed');
 
             if (!$isAlreadyVerified) {
-                // Token + applicant always bound to authenticated user (driver enforces).
                 $options['sum_sub'] = (new SumSubDriver())->getAccessToken((string) $user->id, [
                     'email' => $user->email,
                     'type' => 'individual',
@@ -74,21 +108,79 @@ class IdentityVerifyController extends Controller
                 $getStatus = $ownedApplicant !== ''
                     ? (new SumSubDriver())->getStatus($ownedApplicant)
                     : [];
-                // Если статус существует и reviewStatus = completed — не требуется колбэк
                 if (!empty($getStatus['reviewStatus']) && $getStatus['reviewStatus'] === 'completed') {
                     $options['sum_sub']['is_callback'] = false;
                 }
             }
         }
 
-
-        $is_verified = (int) $user->is_verify_account == 1;
-
         return Response::json([
-            'type_service' => (int)iEXSetting('type_kyc_service', 0),
-            'is_verified' => $is_verified,
-            ...$options
+            'type_service' => $typeService,
+            'is_verified' => false,
+            ...$options,
         ]);
+    }
+
+    /**
+     * Explicit Didit start. Authenticated customers only.
+     * Never used by GET status.
+     */
+    public function start(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['message' => self::DENY_MESSAGE], 403);
+        }
+
+        $typeService = (int) iEXSetting('type_kyc_service', 0);
+
+        if ((int) $user->is_verify_account === 1) {
+            return response()->json([
+                'type_service' => $typeService,
+                'is_verified' => true,
+                'provider' => KycProviderResolver::PROVIDER_DIDIT,
+                'status' => 'approved',
+                'verification_url' => null,
+                'can_start' => false,
+            ]);
+        }
+
+        $provider = (new KycProviderResolver())->resolveForUser($user);
+        if ($provider !== KycProviderResolver::PROVIDER_DIDIT) {
+            return response()->json([
+                'type_service' => $typeService,
+                'is_verified' => false,
+                'provider' => $provider,
+                'can_start' => false,
+                'verification_url' => null,
+                'message' => 'Didit start is not available for this account',
+            ], 422);
+        }
+
+        try {
+            $didit = (new DiditKycService())->createVerificationSession($user);
+
+            return response()->json([
+                'type_service' => $typeService,
+                'is_verified' => (int) $user->fresh()?->is_verify_account === 1,
+                ...$didit,
+            ]);
+        } catch (Throwable $e) {
+            Log::warning('didit_session_start_failed', [
+                'user_id' => (int) $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'type_service' => $typeService,
+                'is_verified' => false,
+                'provider' => KycProviderResolver::PROVIDER_DIDIT,
+                'status' => 'unknown',
+                'verification_url' => null,
+                'can_start' => false,
+                'message' => 'Verification is temporarily unavailable',
+            ], 503);
+        }
     }
 
     /**
@@ -111,6 +203,19 @@ class IdentityVerifyController extends Controller
         // Если есть ошибки, то дальше не пускаем
         if ($validator->fails()) {
             return response()->json(['message' => $validator->messages()->first()], 422);
+        }
+
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['message' => self::DENY_MESSAGE], 403);
+        }
+        if ((int) $user->is_verify_account === 1) {
+            return response()->json(['message' => 'Account already verified'], 422);
+        }
+        if ((new KycProviderResolver())->resolveForUser($user) === KycProviderResolver::PROVIDER_DIDIT) {
+            return response()->json([
+                'message' => 'Didit start is required for this account',
+            ], 422);
         }
 
         $fileOneCheck = $this->assertSafeIdentityImage($request->file('file_one'));

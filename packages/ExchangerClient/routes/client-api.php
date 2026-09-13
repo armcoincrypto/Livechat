@@ -97,6 +97,7 @@ Route::middleware(['auth'])->group(function ()
 
         // Верификация учетной записи
         Route::get('/identity-verification', [IdentityVerifyController::class, 'index']);
+        Route::post('/identity-verification/start', [IdentityVerifyController::class, 'start']);
         Route::post('/identity-verification', [IdentityVerifyController::class, 'store']);
         Route::get('/identity-verification/{id}', [IdentityVerifyController::class, 'status']);
 

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Administrator\Verifications;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Admin\Verifications\VerificationAccountResources;
+use App\Models\KycProviderSession;
 use App\Models\User;
 use App\Models\UserVerification;
+use iEXPackages\KYCPlugin\Services\KycProviderResolver;
 use iEXPackages\SmartMailer\Facades\SmartMailer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -141,9 +143,19 @@ class VerificationAccountController extends Controller
 
         $user = User::find($verification->user_id);
         if ($user) {
-            $user->update([
-                'is_verify_account' => $newStatus === 1 ? 1 : 0,
-            ]);
+            $preserveDidit = $this->hasAuthoritativeDiditApproval((int) $user->id);
+            if ($newStatus === 1) {
+                $user->update(['is_verify_account' => 1]);
+            } elseif (!$preserveDidit) {
+                $user->update(['is_verify_account' => 0]);
+            } else {
+                Log::info('verification_account_admin_preserved_didit_approval', [
+                    'verification_id' => $verification->id,
+                    'target_user_id' => (int) $user->id,
+                    'admin_id' => auth()->id(),
+                    'requested_status' => $newStatus,
+                ]);
+            }
         }
 
         Log::info('verification_account_admin_review', [
@@ -207,9 +219,15 @@ class VerificationAccountController extends Controller
         $targetUserId = (int) $verification->user_id;
 
         $user = User::find($verification->user_id);
-        if ($user) {
+        if ($user && !$this->hasAuthoritativeDiditApproval($targetUserId)) {
             $user->update([
                 'is_verify_account' => 0,
+            ]);
+        } elseif ($user) {
+            Log::info('verification_account_admin_delete_preserved_didit_approval', [
+                'verification_id' => $verificationId,
+                'admin_id' => auth()->id(),
+                'target_user_id' => $targetUserId,
             ]);
         }
 
@@ -251,5 +269,14 @@ class VerificationAccountController extends Controller
         }
 
         return str_starts_with($value, '********');
+    }
+
+    private function hasAuthoritativeDiditApproval(int $userId): bool
+    {
+        return KycProviderSession::query()
+            ->where('user_id', $userId)
+            ->where('provider', KycProviderResolver::PROVIDER_DIDIT)
+            ->where('normalized_status', 'approved')
+            ->exists();
     }
 }

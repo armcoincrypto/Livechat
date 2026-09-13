@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace iEXPackages\KYCPlugin\Services;
 
+use App\Jobs\Telegram\TelegramIdentityVerifiedJob;
 use App\Models\KycProviderSession;
 use App\Models\User;
 use iEXPackages\KYCPlugin\Drivers\Didit\DiditClient;
 use iEXPackages\KYCPlugin\Drivers\Didit\DiditStatusNormalizer;
+use iEXPackages\KYCPlugin\Drivers\Didit\DiditStatusTransition;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -36,6 +38,64 @@ final class DiditKycService
      */
     public function createVerificationSession(User $user): array
     {
+        return DB::transaction(function () use ($user) {
+            User::query()->whereKey((int) $user->id)->lockForUpdate()->first();
+            $user->refresh();
+
+            return $this->createVerificationSessionLocked($user);
+        });
+    }
+
+    /**
+     * Local status only — never creates a remote Didit session.
+     *
+     * @return array{provider:string,status:string,verification_url:?string,can_start:bool,session_id:?string}
+     */
+    public function readLocalStatus(User $user): array
+    {
+        if ((int) $user->is_verify_account === 1) {
+            $approved = $this->latestSession((int) $user->id, ['approved']);
+
+            return [
+                'provider' => KycProviderResolver::PROVIDER_DIDIT,
+                'status' => 'approved',
+                'verification_url' => null,
+                'can_start' => false,
+                'session_id' => $approved ? (string) $approved->provider_session_id : null,
+            ];
+        }
+
+        $active = $this->latestSession((int) $user->id, ['not_started', 'pending', 'manual_review']);
+        if ($active) {
+            $canStart = in_array($active->normalized_status, ['not_started', 'pending'], true);
+
+            return [
+                'provider' => KycProviderResolver::PROVIDER_DIDIT,
+                'status' => (string) $active->normalized_status,
+                'verification_url' => filled($active->verification_url) ? (string) $active->verification_url : null,
+                'can_start' => $canStart && filled($active->verification_url),
+                'session_id' => (string) $active->provider_session_id,
+            ];
+        }
+
+        $latest = $this->latestSession((int) $user->id);
+        $status = $latest ? (string) $latest->normalized_status : 'not_started';
+        $retryable = in_array($status, ['not_started', 'rejected', 'expired', 'abandoned', 'unknown'], true);
+
+        return [
+            'provider' => KycProviderResolver::PROVIDER_DIDIT,
+            'status' => $status,
+            'verification_url' => null,
+            'can_start' => $retryable || $latest === null,
+            'session_id' => $latest ? (string) $latest->provider_session_id : null,
+        ];
+    }
+
+    /**
+     * @return array{provider:string,status:string,verification_url:?string,can_start:bool,session_id:?string}
+     */
+    private function createVerificationSessionLocked(User $user): array
+    {
         if ((int) $user->is_verify_account === 1) {
             return [
                 'provider' => KycProviderResolver::PROVIDER_DIDIT,
@@ -46,12 +106,7 @@ final class DiditKycService
             ];
         }
 
-        $approved = KycProviderSession::query()
-            ->where('user_id', (int) $user->id)
-            ->where('provider', KycProviderResolver::PROVIDER_DIDIT)
-            ->where('normalized_status', 'approved')
-            ->orderByDesc('id')
-            ->first();
+        $approved = $this->latestSession((int) $user->id, ['approved']);
 
         if ($approved) {
             return [
@@ -63,27 +118,35 @@ final class DiditKycService
             ];
         }
 
-        $active = KycProviderSession::query()
-            ->where('user_id', (int) $user->id)
-            ->where('provider', KycProviderResolver::PROVIDER_DIDIT)
-            ->whereIn('normalized_status', ['not_started', 'pending', 'manual_review'])
-            ->orderByDesc('id')
-            ->first();
+        $active = $this->latestSession((int) $user->id, ['not_started', 'pending', 'manual_review']);
 
         if ($active && filled($active->verification_url)) {
             // Sticky reuse: reconcile against authenticated provider truth so a missed
-            // or rejected webhook cannot leave the customer UI stuck on not_started.
-            // Does not create a second session; retrieve maps only this user's row.
+            // webhook cannot leave the customer UI stuck. GET status never does this.
             try {
                 $synced = $this->retrieveVerificationStatus($user);
-
-                return [
-                    'provider' => $synced['provider'],
-                    'status' => $synced['status'],
-                    'verification_url' => $synced['verification_url'],
-                    'can_start' => $synced['can_start'],
-                    'session_id' => (string) $active->provider_session_id,
-                ];
+                $user->refresh();
+                if ((int) $user->is_verify_account === 1 || ($synced['status'] ?? '') === 'approved') {
+                    return [
+                        'provider' => KycProviderResolver::PROVIDER_DIDIT,
+                        'status' => 'approved',
+                        'verification_url' => null,
+                        'can_start' => false,
+                        'session_id' => (string) ($synced['session_id'] ?? $active->provider_session_id),
+                    ];
+                }
+                $stillReusable = in_array((string) ($synced['status'] ?? ''), ['not_started', 'pending', 'manual_review'], true)
+                    && filled($synced['verification_url'] ?? null);
+                if ($stillReusable) {
+                    return [
+                        'provider' => $synced['provider'],
+                        'status' => $synced['status'],
+                        'verification_url' => $synced['verification_url'],
+                        'can_start' => $synced['can_start'],
+                        'session_id' => (string) $active->provider_session_id,
+                    ];
+                }
+                // Terminal/expired after reconcile — fall through and create a new session.
             } catch (Throwable $e) {
                 Log::warning('didit_sticky_reconcile_failed', [
                     'user_id' => (int) $user->id,
@@ -154,6 +217,22 @@ final class DiditKycService
     }
 
     /**
+     * @param  list<string>|null  $statuses
+     */
+    private function latestSession(int $userId, ?array $statuses = null): ?KycProviderSession
+    {
+        $query = KycProviderSession::query()
+            ->where('user_id', $userId)
+            ->where('provider', KycProviderResolver::PROVIDER_DIDIT)
+            ->orderByDesc('id');
+        if ($statuses !== null) {
+            $query->whereIn('normalized_status', $statuses);
+        }
+
+        return $query->first();
+    }
+
+    /**
      * @return array{provider:string,status:string,verification_url:?string,can_start:bool,is_verified:bool}
      */
     public function retrieveVerificationStatus(User $user, ?string $providedSessionId = null): array
@@ -207,6 +286,7 @@ final class DiditKycService
             'verification_url' => $session->isActive() ? (string) $session->verification_url : null,
             'can_start' => $session->isActive() && in_array($session->normalized_status, ['not_started', 'pending'], true),
             'is_verified' => (int) $user->is_verify_account === 1,
+            'session_id' => (string) $session->provider_session_id,
         ];
     }
 
@@ -250,39 +330,100 @@ final class DiditKycService
             return true; // idempotent duplicate
         }
 
-        $providerStatus = (string) ($decisionOrEvent['status'] ?? $session->provider_status ?? '');
-        $normalized = DiditStatusNormalizer::normalize($providerStatus);
-
-        $session->provider_status = $providerStatus !== '' ? $providerStatus : $session->provider_status;
-        $session->normalized_status = $normalized;
-        $session->last_synced_at = now();
-        if ($eventId !== null && $eventId !== '') {
-            $session->last_event_id = $eventId;
-        }
-        if (DiditStatusNormalizer::maySetVerified($normalized) || DiditStatusNormalizer::isTerminalRejected($normalized)) {
-            $session->completed_at = $session->completed_at ?? now();
-        }
-        $session->save();
-
-        $user = User::query()->find((int) $session->user_id);
-        if (!$user) {
-            return false;
-        }
-
-        if (DiditStatusNormalizer::maySetVerified($normalized)) {
-            if ((int) $user->is_verify_account !== 1) {
-                $user->is_verify_account = 1;
-                $user->save();
+        return DB::transaction(function () use ($session, $decisionOrEvent, $eventId): bool {
+            $lockedSession = KycProviderSession::query()
+                ->whereKey((int) $session->id)
+                ->lockForUpdate()
+                ->first();
+            if (!$lockedSession) {
+                return false;
             }
+
+            if ($eventId !== null && $eventId !== '' && (string) $lockedSession->last_event_id === $eventId) {
+                return true;
+            }
+
+            $providerStatus = (string) ($decisionOrEvent['status'] ?? $lockedSession->provider_status ?? '');
+            $normalized = DiditStatusNormalizer::normalize($providerStatus);
+            $current = (string) $lockedSession->normalized_status;
+            $overwrite = DiditStatusTransition::mayOverwriteSession($current, $normalized);
+
+            $lockedSession->last_synced_at = now();
+            if ($eventId !== null && $eventId !== '') {
+                $lockedSession->last_event_id = $eventId;
+            }
+
+            if (!$overwrite) {
+                $lockedSession->save();
+                $this->writeKycLog((int) $lockedSession->user_id, 'status_transition_rejected', $normalized, [
+                    'session_id' => (string) $lockedSession->provider_session_id,
+                    'current' => $current,
+                    'incoming' => $normalized,
+                ]);
+                Log::info('didit_status_transition_rejected', [
+                    'session_pk' => $lockedSession->id,
+                    'user_id' => (int) $lockedSession->user_id,
+                    'current' => $current,
+                    'incoming' => $normalized,
+                ]);
+                $session->normalized_status = $lockedSession->normalized_status;
+                $session->last_event_id = $lockedSession->last_event_id;
+
+                return true;
+            }
+
+            $lockedSession->provider_status = $providerStatus !== '' ? $providerStatus : $lockedSession->provider_status;
+            $lockedSession->normalized_status = $normalized;
+            if (DiditStatusNormalizer::maySetVerified($normalized) || DiditStatusNormalizer::isTerminalRejected($normalized)) {
+                $lockedSession->completed_at = $lockedSession->completed_at ?? now();
+            }
+            $lockedSession->save();
+            $session->normalized_status = $lockedSession->normalized_status;
+            $session->last_event_id = $lockedSession->last_event_id;
+
+            $user = User::query()->whereKey((int) $lockedSession->user_id)->lockForUpdate()->first();
+            if (!$user) {
+                return false;
+            }
+
+            $firstApproval = false;
+            if (DiditStatusNormalizer::maySetVerified($normalized)) {
+                if ((int) $user->is_verify_account !== 1) {
+                    $user->is_verify_account = 1;
+                    $user->save();
+                    $firstApproval = true;
+                }
+            }
+            // Declined/pending/etc. must not bypass; do not clear an already-approved account here.
+
+            $this->writeKycLog((int) $user->id, 'decision', $normalized, [
+                'session_id' => (string) $lockedSession->provider_session_id,
+                'provider_status' => $providerStatus,
+            ]);
+
+            if ($firstApproval) {
+                $this->enqueueApprovalNotification((int) $user->id, (int) $lockedSession->id);
+            }
+
+            return true;
+        });
+    }
+
+    private function enqueueApprovalNotification(int $userId, int $sessionPk): void
+    {
+        try {
+            TelegramIdentityVerifiedJob::dispatch($userId, $sessionPk);
+            Log::info('telegram_identity_verified_enqueued', [
+                'user_id' => $userId,
+                'session_pk' => $sessionPk,
+            ]);
+        } catch (Throwable $e) {
+            Log::error('telegram_identity_verified_enqueue_failed', [
+                'user_id' => $userId,
+                'session_pk' => $sessionPk,
+                'error' => $e->getMessage(),
+            ]);
         }
-        // Declined/pending/etc. must not bypass; do not clear an already-approved account here.
-
-        $this->writeKycLog((int) $user->id, 'decision', $normalized, [
-            'session_id' => (string) $session->provider_session_id,
-            'provider_status' => $providerStatus,
-        ]);
-
-        return true;
     }
 
     /**
