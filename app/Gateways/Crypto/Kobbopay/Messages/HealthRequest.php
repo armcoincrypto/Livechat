@@ -19,7 +19,7 @@ final class HealthRequest extends AbstractRequest
         $started = microtime(true);
 
         try {
-            $raw = $this->sendRequest('get', '/user/token/fetch', []);
+            $raw = $this->sendRequest('get', $this->tokenCatalogPath(), []);
 
             $latency = (int) round((microtime(true) - $started) * 1000);
 

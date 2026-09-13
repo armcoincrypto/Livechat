@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Gateways\Crypto\Kobbopay\Messages;
 
+use App\Gateways\Crypto\Kobbopay\KobbopayMerchantApiPath;
 use App\Gateways\Crypto\Kobbopay\Messages\Traits\GeneratedMerchantInputs;
 use App\Gateways\Crypto\Kobbopay\Services\SecureSignatureService;
 use iEXPackages\Payments\Core\Engine\AbstractRequest as BaseAbstractRequest;
@@ -30,6 +31,11 @@ abstract class AbstractRequest extends BaseAbstractRequest
         }
 
         return 'https://merchant.kobbex.com';
+    }
+
+    protected function tokenCatalogPath(): string
+    {
+        return KobbopayMerchantApiPath::tokenFetch($this->endpointCustomBaseUrl());
     }
 
     protected function httpConfig(): array

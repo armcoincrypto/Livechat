@@ -45,7 +45,7 @@ final class OptionsRequest extends AbstractRequest
         return match ($method) {
             'getCurrencies' => (array) $this->sendRequest(
                 method: 'get',
-                path: '/user/token/fetch',
+                path: $this->tokenCatalogPath(),
                 data: $params,
                 format: 'asJson'
             ),
