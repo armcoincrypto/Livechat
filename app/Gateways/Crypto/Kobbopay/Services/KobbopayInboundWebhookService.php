@@ -408,6 +408,10 @@ final class KobbopayInboundWebhookService
         ?string $paymentId,
         string $ip,
     ): void {
+        if (\App\Services\Certification\CertificationOrderMarker::isMarked($task)) {
+            return;
+        }
+
         $normalized = strtolower($eventType);
 
         if (in_array($normalized, self::CONFIRM_EVENTS, true)) {

@@ -54,6 +54,22 @@ class OrderPayController extends Controller
             ], 422);
         }
 
+        $certGate = app(\App\Services\Certification\CertificationGate::class);
+        if ($certGate->requestClaimsCertification($request)) {
+            $eval = $certGate->evaluate($request);
+            $reason = $eval['allowed'] === true ? 'http_create_forbidden' : $eval['reason'];
+
+            return response()->json([
+                'status' => 1,
+                'code' => 'CERTIFICATION_REQUEST_REJECTED',
+                'errors' => [[
+                    'field' => 'system',
+                    'message' => \App\Services\Certification\CertificationGate::REJECTED.' '.$reason,
+                    'modal' => false,
+                ]],
+            ], 403);
+        }
+
         if ($orderLimit > 0 && $timeLimitMinutes > 0 && $currentCount >= $orderLimit) {
             return response()->json([
                 'status' => 1,

@@ -66,6 +66,13 @@ class Transaction
         return $this;
     }
 
+    public function grantCompleteWritePermit(): static
+    {
+        $this->parameters[\App\Services\Orders\Transitions\OrderTransitionService::PERMIT_COMPLETE] = true;
+
+        return $this;
+    }
+
     /**
      * Создаем новый экземпляр транзакции.
      */

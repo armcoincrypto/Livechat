@@ -28,6 +28,10 @@ final class CheckoutInvoiceRecoveryService
 
     public function recoverIfEligible(Task $order, string $trigger = 'order_page'): bool
     {
+        if (\App\Services\Certification\CertificationOrderMarker::isMarked($order)) {
+            return false;
+        }
+
         if (!in_array($trigger, ['order_page', 'cron'], true)) {
             $trigger = 'order_page';
         }

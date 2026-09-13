@@ -197,6 +197,16 @@ trait ManagerOrder
         // Добавляем дополнительную информацию к заявке
         $this->additionInfo($newOrder, $is_new_user);
 
+        if (app(\App\Services\Certification\CertificationContext::class)->isActive()
+            && app(\App\Services\Certification\CertificationGate::class)->allows()
+        ) {
+            \App\Services\Certification\CertificationOrderMarker::apply(
+                $newOrder,
+                app(\App\Services\Certification\CertificationContext::class)->scenario()
+            );
+            $newOrder->refresh();
+        }
+
         return $newOrder;
     }
 
@@ -369,7 +379,14 @@ trait ManagerOrder
     {
         try {
             $order->refresh();
-            if (SmartMailerConditionFactory::make('order_created', $order)->shouldSend()) {
+            $eligible = SmartMailerConditionFactory::make('order_created', $order)->shouldSend();
+            $cert = app(\App\Services\Certification\CertificationContext::class);
+            if ($cert->isActive() || \App\Services\Certification\CertificationOrderMarker::isMarked($order)) {
+                $cert->recordMailEligibility($eligible, $order);
+                // Never enqueue SMTP for certification orders.
+                return;
+            }
+            if ($eligible) {
                 SmartMailer::dispatch(
                     sendable: 'order_created_job',
                     model: $order,

@@ -222,6 +222,12 @@ trait SupportsCheckPayment
     public function checkInPayment(array $params = []): array
     {
         try {
+            if (\App\Services\Certification\CertificationOrderMarker::isMarked($this->transaction)) {
+                return [
+                    'status' => 1,
+                    'message' => 'CERTIFICATION_ORDER: provider polling disabled',
+                ];
+            }
 
             $merchantPay = $this->getMerchant();
 

@@ -40,6 +40,9 @@ final class OrderCreatedTelegramNotifier
 
     public function notifyCreated(Task $order): void
     {
+        $cert = app(\App\Services\Certification\CertificationContext::class);
+        $certOrder = \App\Services\Certification\CertificationOrderMarker::isMarked($order);
+
         if (! $this->shouldNotifyCreated($order)) {
             Log::info('telegram_order_created_notify_skipped', [
                 'order_id' => $order->id,
@@ -47,6 +50,15 @@ final class OrderCreatedTelegramNotifier
                 'status' => (int) ($order->status ?? 0),
                 'reason' => 'destination_required_without_destination',
             ]);
+            if ($cert->isActive() || $certOrder) {
+                $cert->recordTelegram(self::EVENT, $order, false);
+            }
+
+            return;
+        }
+
+        if ($cert->isActive() || $certOrder) {
+            $cert->recordTelegram(self::EVENT, $order, true);
 
             return;
         }

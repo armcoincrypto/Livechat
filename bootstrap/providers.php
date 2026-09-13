@@ -33,6 +33,7 @@ $providers = [
      */
     DynamicConfigServiceProvider::class,
     AppServiceProvider::class,
+    \App\Providers\OrderCertificationServiceProvider::class,
     RatesOwnerControlServiceProvider::class,
     AttributionServiceProvider::class,
     AuthServiceProvider::class,

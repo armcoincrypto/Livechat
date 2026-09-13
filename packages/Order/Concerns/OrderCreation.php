@@ -84,6 +84,16 @@ trait OrderCreation
             'promo_code_discount_type' => $promoId > 0 ? ($responseFee['promo_code_discount_type'] ?? null) : null, // percent|fixed
             'promo_code_value' => $promoId > 0 ? ($responseFee['promo_code_value'] ?? null) : null, // discount_value
         ];
+
+        if (app(\App\Services\Certification\CertificationContext::class)->isActive()
+            && app(\App\Services\Certification\CertificationGate::class)->allows()
+        ) {
+            $payload['opt_params'] = \App\Services\Certification\CertificationOrderMarker::payload(
+                app(\App\Services\Certification\CertificationContext::class)->scenario()
+            );
+        }
+
+        return $payload;
     }
 
     protected function formatAmount($amount, int $decimal): string

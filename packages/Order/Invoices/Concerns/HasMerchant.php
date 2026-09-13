@@ -456,6 +456,16 @@ trait HasMerchant
      */
     protected function processMerchantPayment(GatewayConfig $cfg): array
     {
+        if (\App\Services\Certification\CertificationOrderMarker::isMarked($this->task)
+            || app(\App\Services\Certification\CertificationContext::class)->isActive()
+        ) {
+            Log::info('certification_merchant_purchase_blocked', [
+                'task_id' => $this->task->id ?? null,
+            ]);
+
+            return [];
+        }
+
         if (!$this->currencyIn || !$this->currencyIn->code_currency) {
             Log::error('Невозможно выполнить платёж: отсутствует валюта или её код', [
                 'task_id'  => $this->task->id,

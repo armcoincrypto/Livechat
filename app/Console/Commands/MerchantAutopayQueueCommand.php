@@ -48,7 +48,7 @@ final class MerchantAutopayQueueCommand extends Command
         // Доп. фильтры (is_auto_check_pay/is_bot) НЕ ставлю специально, т.к. оплата могла прийти callback'ом,
         // а нам важно, чтобы очередь работала одинаково для всех способов подтверждения оплаты.
         Task::query()
-            ->select(['id', 'status'])
+            ->select(['id', 'status', 'opt_params'])
             ->where('status', TaskStatusEnum::PAID->value)
             ->orderBy('id')
             ->limit($limit)
@@ -75,6 +75,15 @@ final class MerchantAutopayQueueCommand extends Command
                         if ((int) $locked->status !== TaskStatusEnum::PAID->value) {
                             DB::rollBack();
                             $skipped++;
+                            continue;
+                        }
+
+                        if (\App\Services\Certification\CertificationOrderMarker::isMarked($locked)) {
+                            DB::rollBack();
+                            $skipped++;
+                            Log::info('autopay_queue_skipped_certification_order', [
+                                'task_id' => $locked->id,
+                            ]);
                             continue;
                         }
 

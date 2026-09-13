@@ -75,6 +75,14 @@ final class MerchantAutopayRunCommand extends Command
                     try {
                         $freshTask = Task::query()->findOrFail((int) $task->id);
 
+                        if (\App\Services\Certification\CertificationOrderMarker::isMarked($freshTask)) {
+                            $skipped++;
+                            Log::info('autopay_run_skipped_certification_order', [
+                                'task_id' => (int) $freshTask->id,
+                            ]);
+                            continue;
+                        }
+
                         // Если статус уже изменили (не 16) — не продолжаем
                         if ((int) $freshTask->status !== TaskStatusEnum::PAYOUT_QUEUE->value) {
                             $skipped++;

@@ -4,6 +4,10 @@ namespace iEXPackages\Order\Services;
 
 use App\Models\Task;
 use iEXPackages\Order\Facades\OrderInvoiceFacade;
+use App\Services\Certification\CertificationContext;
+use App\Services\Certification\CertificationDestinationIssuer;
+use App\Services\Certification\CertificationGate;
+use App\Services\Certification\CertificationOrderMarker;
 
 /**
  * InvoiceContext (нормализованный)
@@ -19,6 +23,19 @@ final class InvoiceContextService
 {
     public function resolve(Task $task, bool $allowIssue = true): array
     {
+        $certContext = app(CertificationContext::class);
+        $marked = CertificationOrderMarker::isMarked($task);
+        if ($certContext->isActive() || $marked) {
+            if ($certContext->isActive() && ! app(CertificationGate::class)->allows()) {
+                throw new \RuntimeException(CertificationGate::REJECTED);
+            }
+            if ($marked && ! $certContext->isActive()) {
+                $allowIssue = false;
+            }
+
+            return app(CertificationDestinationIssuer::class)->resolve($task, $allowIssue);
+        }
+
         $manager = OrderInvoiceFacade::make($task);
         $raw = $allowIssue ? $manager->get() : $manager->snapshot();
 

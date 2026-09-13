@@ -42,6 +42,16 @@ class OrderCreatedMailJob extends SmartQueueableJob
             return;
         }
 
+        if (\App\Services\Certification\CertificationOrderMarker::isMarked($this->order)) {
+            Log::info('order_created_mail_skipped', [
+                'task_id' => $this->order->id,
+                'public_id' => $this->order->public_id,
+                'reason' => 'certification_order_no_smtp',
+            ]);
+
+            return;
+        }
+
         if (! (new OrderCreatedCondition($this->order))->shouldSend()) {
             Log::info('order_created_mail_skipped', [
                 'task_id' => $this->order->id,
