@@ -54,6 +54,27 @@ class BestchangeDirectionFilter extends ModelFilter
     }
 
     /**
+     * Free-text search (direction id, tech_name, currency codes).
+     * Applied by BestChangeController via BestChangeAdminListingSearch;
+     * kept here so EloquentFilter accepts the request key.
+     */
+    public function q(mixed $value): BestchangeDirectionFilter
+    {
+        $raw = trim((string) $value);
+        if ($raw === '') {
+            return $this;
+        }
+        \App\Services\Rates\BestChangeAdminListingSearch::apply($this, $raw);
+
+        return $this;
+    }
+
+    public function search(mixed $value): BestchangeDirectionFilter
+    {
+        return $this->q($value);
+    }
+
+    /**
      * Сортировка по колонкам
      *
      * @param $value

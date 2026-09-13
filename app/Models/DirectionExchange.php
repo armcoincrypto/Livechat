@@ -550,7 +550,12 @@ class DirectionExchange extends Model
      */
     public function bestchange_directions(): HasOne
     {
-        return $this->hasOne(BestChangeDirection::class,'id_direction_exchange', 'id');
+        // Prefer the live mapping when duplicate active/inactive twins exist.
+        return $this->hasOne(BestChangeDirection::class, 'id_direction_exchange', 'id')
+            ->ofMany([
+                'status' => 'max',
+                'id' => 'max',
+            ]);
     }
 
     /**

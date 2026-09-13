@@ -47,13 +47,27 @@ final class BestChangeController extends Controller
         }
 
         $defaultPerPage = (int) iEXSetting('admin_bestchange_parser_pagination', 20);
-        $perPage = max(10, min(100, (int) $request->integer('per_page', $defaultPerPage)));
+        $requestedPerPage = (int) $request->integer('per_page', $defaultPerPage);
+        if (in_array($requestedPerPage, [30, 50, 100], true)) {
+            $perPage = $requestedPerPage;
+        } else {
+            $perPage = max(10, min(100, $requestedPerPage > 0 ? $requestedPerPage : $defaultPerPage));
+        }
 
         [$orderColumn, $orderDirection] = $this->resolveSorting($request);
 
+        $search = trim((string) ($request->input('q') ?: $request->input('search') ?: ''));
+        $unfilteredTotal = (int) BestChangeDirection::query()->whereHas('direction_exchange')->count();
+
+        $filterInput = $request->all();
+        unset($filterInput['q'], $filterInput['search']);
+
         $query = BestChangeDirection::query()
-            ->whereHas('direction_exchange')
-            ->filter($request->all())
+            ->whereHas('direction_exchange');
+        if ($search !== '') {
+            \App\Services\Rates\BestChangeAdminListingSearch::apply($query, $search);
+        }
+        $query->filter($filterInput)
             ->with(['direction_exchange:id,tech_name,status,parser_source_name'])
             ->orderByDesc('is_favorite')
             ->orderBy($orderColumn, $orderDirection);
@@ -65,8 +79,12 @@ final class BestChangeController extends Controller
         $paginator = $query->paginate($perPage);
 
         return response()->json([
-            'items'            => new BestChangeParserResources($paginator),
-            'per_page'         => $perPage,
+            'items' => new BestChangeParserResources($paginator),
+            'per_page' => $perPage,
+            'total_mapping_rows' => $unfilteredTotal,
+            'filtered_total' => $paginator->total(),
+            'search' => $search,
+            'id_direction_exchange' => $request->input('id_direction_exchange'),
         ]);
     }
 
@@ -155,9 +173,20 @@ final class BestChangeController extends Controller
         /** @var BestChangeConfig $config */
         $config = app(BestChangeConfig::class);
 
-        $item = $request->boolean('is_direction')
-            ? BestChangeDirection::query()->firstOrCreate(['id_direction_exchange' => $id])
-            : BestChangeDirection::query()->findOrFail($id);
+        if ($request->boolean('is_direction')) {
+            $item = BestChangeDirection::query()
+                ->where('id_direction_exchange', $id)
+                ->orderByDesc('status')
+                ->orderByDesc('id')
+                ->first();
+            if ($item === null) {
+                $item = BestChangeDirection::query()->firstOrCreate([
+                    'id_direction_exchange' => $id,
+                ]);
+            }
+        } else {
+            $item = BestChangeDirection::query()->findOrFail($id);
+        }
 
         $rates = BestChangeFacade::rates();
 
