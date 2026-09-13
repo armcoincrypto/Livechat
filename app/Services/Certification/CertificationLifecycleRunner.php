@@ -155,8 +155,11 @@ final class CertificationLifecycleRunner
             'income_amount' => $quote['income_amount'],
             'outcome_amount' => $quote['outcome_amount'],
             'email' => $email,
-            'outcome_account' => 'QA_CERT_PAYOUT_UNROUTABLE',
+            'outcome_account' => '4400430000000001',
             'agree_rules' => 1,
+            'fields_in' => [
+                'income_outcome_income_vas_telegramm_whatsapp_1' => '@qa_exswaping_cert',
+            ],
             'fields_out' => [
                 'outcome_nomer_karty' => '4400430000000001',
                 'sender_fullname' => 'QA Certification',
