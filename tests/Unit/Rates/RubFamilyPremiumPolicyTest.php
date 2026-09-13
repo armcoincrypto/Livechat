@@ -77,10 +77,13 @@ final class RubFamilyPremiumPolicyTest extends TestCase
     public function testUnexplainedBlockAtTwoPercentAboveExpected(): void
     {
         $p = $this->approvedPolicy();
-        // expected target 5%; raw 7.3% ⇒ unexplained 2.3% > 2% block
+        // expected target 5%; raw 7.3% ⇒ unexplained 2.3% > 2% monitoring band.
+        // Still under hard 8% → REVIEW, not quarantine.
         $eval = $p->evaluateCoinRub('SBPRUB', 7.3, 0.0);
-        $this->assertSame('QUARANTINE_REQUIRED', $eval['classification']);
-        $this->assertFalse($eval['export_allowed']);
+        $this->assertSame('REVIEW', $eval['classification']);
+        $this->assertTrue($eval['export_allowed']);
+        $this->assertTrue($eval['order_allowed']);
+        $this->assertContains('unexplained_above_expected_block', $eval['reasons']);
     }
 
     public function testHardMaximumBlocksEvenInsideUnexplainedMath(): void
@@ -99,24 +102,25 @@ final class RubFamilyPremiumPolicyTest extends TestCase
         $this->assertContains('configured_premium_exceeds_family_hard_maximum', $eval['reasons']);
     }
 
-    public function testWarningBandIsReviewNotExportable(): void
+    public function testWarningBandIsReviewAndOrderable(): void
     {
         $p = $this->approvedPolicy();
-        // raw 6.2% > warning 6%, unexplained vs 5% = 1.2% > 1% warn
+        // raw 6.2% > warning 6%, unexplained vs 5% = 1.2% > 1% warn; under hard 8.
         $eval = $p->evaluateCoinRub('SBPRUB', 6.2, 0.0);
         $this->assertSame('REVIEW', $eval['classification']);
-        $this->assertFalse($eval['export_allowed']);
-        $this->assertFalse($eval['order_allowed']);
+        $this->assertTrue($eval['export_allowed']);
+        $this->assertTrue($eval['order_allowed']);
     }
 
-    public function testUnexplainedBlockQuarantinesAndBlocksOrders(): void
+    public function testUnexplainedBlockWithinHardMaxRemainsOrderable(): void
     {
         $p = $this->approvedPolicy();
-        // Direction 268 pattern: raw ~7.14% vs SBP target 5% → unexplained ~2.14% > 2% block
+        // Direction 268 pattern: raw ~7.14% vs SBP target 5% → unexplained ~2.14%.
+        // Monitoring REVIEW; hard 8% is the fail-closed ceiling.
         $eval = $p->evaluateCoinRub('SBPRUB', 7.143137, 0.3);
-        $this->assertSame('QUARANTINE_REQUIRED', $eval['classification']);
-        $this->assertFalse($eval['export_allowed']);
-        $this->assertFalse($eval['order_allowed']);
+        $this->assertSame('REVIEW', $eval['classification']);
+        $this->assertTrue($eval['export_allowed']);
+        $this->assertTrue($eval['order_allowed']);
         $this->assertContains('unexplained_above_expected_block', $eval['reasons']);
     }
 
@@ -135,7 +139,7 @@ final class RubFamilyPremiumPolicyTest extends TestCase
         $this->assertTrue($eval['export_allowed']);
     }
 
-    public function testZec540BlockedIndividually(): void
+    public function testZec540WithinHardMaxIsReviewNotQuarantine(): void
     {
         $p = $this->approvedPolicy();
         $baseline = 41470.56;
@@ -146,8 +150,9 @@ final class RubFamilyPremiumPolicyTest extends TestCase
             profitPercent: '0',
         );
         $eval = $p->evaluateCoinRub('SBPRUB', (float) $analysis['raw_market_deviation'], 0.0);
-        $this->assertFalse($eval['export_allowed']);
-        $this->assertSame('QUARANTINE_REQUIRED', $eval['classification']);
+        $this->assertSame('REVIEW', $eval['classification']);
+        $this->assertTrue($eval['export_allowed']);
+        $this->assertTrue($eval['order_allowed']);
     }
 
     public function testTonIsNotGram(): void
@@ -200,8 +205,8 @@ final class RubFamilyPremiumPolicyTest extends TestCase
         // Live USDTTRC20→SBERRUB: ~7.71% vs CBR; unexplained 1.71% < 2.5 block.
         $eval = $this->productionSberFamilyPolicy()->evaluateCoinRub('SBERRUB', 7.71483, 1.0);
         $this->assertSame('REVIEW', $eval['classification']);
-        $this->assertFalse($eval['order_allowed']);
-        $this->assertFalse($eval['export_allowed']);
+        $this->assertTrue($eval['order_allowed']);
+        $this->assertTrue($eval['export_allowed']);
         $this->assertContains('premium_or_unexplained_warning_band', $eval['reasons']);
         $this->assertNotContains('unexplained_above_expected_block', $eval['reasons']);
         $this->assertEqualsWithDelta(1.71483, (float) $eval['unexplained_vs_expected_percent'], 0.001);
@@ -215,7 +220,8 @@ final class RubFamilyPremiumPolicyTest extends TestCase
         $this->assertContains('raw_premium_exceeds_hard_maximum', $hard['reasons']);
 
         $unexplained = $p->evaluateCoinRub('SBERRUB', 8.6, 1.0);
-        $this->assertSame('QUARANTINE_REQUIRED', $unexplained['classification']);
+        $this->assertSame('REVIEW', $unexplained['classification']);
+        $this->assertTrue($unexplained['order_allowed']);
         $this->assertContains('unexplained_above_expected_block', $unexplained['reasons']);
     }
 

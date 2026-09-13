@@ -333,31 +333,25 @@ final class RateDirectionEligibility
             }
 
             $payload['eligible_for_quote'] = $payload['eligible_for_quote'] && !$blockQuote;
+            $publicClass = $passClass || $reviewClass;
             $payload['eligible_for_order'] = $payload['eligible_for_order']
-                && $passClass
+                && $publicClass
                 && (bool) $eval['order_allowed']
                 && $reserve['ok'];
             $payload['eligible_for_export'] = $payload['eligible_for_export']
-                && $passClass
+                && $publicClass
                 && (bool) $eval['export_allowed']
                 && $reserve['ok'];
 
             // ZELLEUSD single-rate authority: BASE is the USDTTRC20 peer / ZELLE
-            // hierarchy, not a free-floating CBR premium. Rub-family REVIEW vs CBR
-            // must not strip order/export from otherwise AUTO_CANONICAL ZELLE→RUB
-            // rows; hard quarantine / NO_BASELINE still fail closed above.
+            // hierarchy, not a free-floating CBR premium. Hard quarantine /
+            // NO_BASELINE still fail closed above.
             $zelleAutoCanonical = $from === 'ZELLEUSD'
                 && (string) ($direction->parser_source_name ?? '') === ZelleUsdUsdtBenchmarkAuthority::PARSER_SOURCE_NAME;
-            // Rub-family sets order_allowed/export_allowed=false on REVIEW itself;
-            // for ZELLE AUTO_CANONICAL that flag must not gate the exemption.
             if ($reviewClass && $zelleAutoCanonical && !$blockQuote && $reserve['ok']) {
                 $payload['eligible_for_order'] = (bool) $payload['eligible_for_quote'];
                 $payload['eligible_for_export'] = (bool) $payload['eligible_for_quote'];
                 $reasons[] = 'zelle_authority_owns_rub_review_band';
-            } elseif ($reviewClass) {
-                $payload['eligible_for_order'] = false;
-                $payload['eligible_for_export'] = false;
-                $reasons[] = 'rub_family_review_public_blocked';
             }
             if ($blockQuote) {
                 $reasons[] = 'rub_family_' . strtolower((string) $classification);

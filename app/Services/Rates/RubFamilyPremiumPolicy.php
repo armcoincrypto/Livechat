@@ -340,19 +340,19 @@ final class RubFamilyPremiumPolicy
             return $base;
         }
 
-        if ($unexplained - $unexplBlock > 1e-9) {
-            $reasons[] = 'unexplained_above_expected_block';
-            $base['classification'] = 'QUARANTINE_REQUIRED';
-
-            return $base;
-        }
-
-        if ($rawPremiumVsMidPercent - $warnPrem > 1e-9 || $unexplained - $unexplWarn > 1e-9) {
-            $reasons[] = 'premium_or_unexplained_warning_band';
+        // CBR-relative unexplained vs the explained target is operator monitoring,
+        // not a second safety ceiling. Hard maximum already passed above.
+        // REVIEW must not strip order/export from a valid commercial rate.
+        $unexplainedBlock = $unexplained - $unexplBlock > 1e-9;
+        $warningBand = $rawPremiumVsMidPercent - $warnPrem > 1e-9
+            || $unexplained - $unexplWarn > 1e-9;
+        if ($unexplainedBlock || $warningBand) {
+            $reasons[] = $unexplainedBlock
+                ? 'unexplained_above_expected_block'
+                : 'premium_or_unexplained_warning_band';
             $base['classification'] = 'REVIEW';
-            // Public surfaces: REVIEW blocks order and export (quote may still be shown).
-            $base['order_allowed'] = false;
-            $base['export_allowed'] = false;
+            $base['order_allowed'] = $this->isFamilyOrderAllowed($toCode);
+            $base['export_allowed'] = $this->isFamilyExportAllowed($toCode);
 
             return $base;
         }

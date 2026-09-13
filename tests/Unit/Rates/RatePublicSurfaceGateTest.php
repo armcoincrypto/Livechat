@@ -55,20 +55,28 @@ final class RatePublicSurfaceGateTest extends TestCase
         ]);
     }
 
-    public function testDirection268PatternBlocksOrderAndExport(): void
+    public function testDirection268PatternWithinHardMaxAllowsOrderAndExport(): void
     {
         $eval = $this->approvedPolicy()->evaluateCoinRub('SBPRUB', 7.143137, 0.3);
+        $this->assertSame('REVIEW', $eval['classification']);
+        $this->assertTrue($eval['order_allowed']);
+        $this->assertTrue($eval['export_allowed']);
+    }
+
+    public function testHardMaximumStillBlocksOrderAndExport(): void
+    {
+        $eval = $this->approvedPolicy()->evaluateCoinRub('SBPRUB', 8.5, 0.3);
         $this->assertSame('QUARANTINE_REQUIRED', $eval['classification']);
         $this->assertFalse($eval['order_allowed']);
         $this->assertFalse($eval['export_allowed']);
     }
 
-    public function testReviewBlocksOrderAndExportAllowsQuoteSemantics(): void
+    public function testReviewAllowsOrderAndExportAndQuoteSemantics(): void
     {
         $eval = $this->approvedPolicy()->evaluateCoinRub('SBPRUB', 6.2, 0.0);
         $this->assertSame('REVIEW', $eval['classification']);
-        $this->assertFalse($eval['order_allowed']);
-        $this->assertFalse($eval['export_allowed']);
+        $this->assertTrue($eval['order_allowed']);
+        $this->assertTrue($eval['export_allowed']);
     }
 
     public function testPassExplainedAllowsAllPublicSurfaces(): void
@@ -178,7 +186,7 @@ final class RatePublicSurfaceGateTest extends TestCase
 
     public function testRubFamilyReviewAllowsQuoteDespiteGenericUnexplainedCritical(): void
     {
-        // raw=6.2% → REVIEW (quote may show; order/export blocked).
+        // raw=6.2% → REVIEW (quote + order + export; CBR warning is monitoring).
         $result = $this->eligibility(
             baseline: new IndependentMarketBaseline([
                 'USDRUB' => [
@@ -191,14 +199,14 @@ final class RatePublicSurfaceGateTest extends TestCase
 
         $this->assertSame('REVIEW', $result['classification']);
         $this->assertTrue($result['quote_allowed']);
-        $this->assertFalse($result['order_allowed']);
-        $this->assertFalse($result['export_allowed']);
-        $this->assertContains('rub_family_review_public_blocked', $result['reasons']);
+        $this->assertTrue($result['order_allowed']);
+        $this->assertTrue($result['export_allowed']);
+        $this->assertNotContains('rub_family_review_public_blocked', $result['reasons']);
     }
 
-    public function testUsdtTrc20SberRubIncidentPatternAllowsQuote(): void
+    public function testUsdtTrc20SberRubIncidentPatternAllowsQuoteAndOrder(): void
     {
-        // Live incident shape: ~6.48% vs CBR with profit 1 → REVIEW, quote required.
+        // Live incident shape: ~6.48% vs CBR with profit 1 → REVIEW, quote+order required.
         $result = $this->eligibility(
             baseline: new IndependentMarketBaseline([
                 'USDRUB' => [
@@ -211,8 +219,8 @@ final class RatePublicSurfaceGateTest extends TestCase
 
         $this->assertSame('REVIEW', $result['classification']);
         $this->assertTrue($result['quote_allowed']);
-        $this->assertFalse($result['order_allowed']);
-        $this->assertFalse($result['export_allowed']);
+        $this->assertTrue($result['order_allowed']);
+        $this->assertTrue($result['export_allowed']);
     }
 
     private function eligibility(IndependentMarketBaseline $baseline): RateDirectionEligibility
