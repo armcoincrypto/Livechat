@@ -88,7 +88,7 @@ final class AdminBestChangeFindabilityContractTest extends TestCase
         $this->assertStringNotContainsString('->save(', $src);
         $this->assertStringNotContainsString('profit', $src);
         $this->assertStringNotContainsString('position_num', $src);
-        $this->assertStringContainsString('whereHas', $src);
+        $this->assertStringContainsString('orWhereHas', $src);
         $this->assertStringContainsString('designation_xml', $src);
         $this->assertStringContainsString('tech_name', $src);
     }
