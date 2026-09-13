@@ -128,8 +128,8 @@ final class CertificationLifecycleRunner
             throw new RuntimeException('No quoteable Kobbopay inbound direction');
         }
 
-        $min = (float) ($direction->min_amount1 ?? $direction->currency1->min_amount ?? 1);
-        $amount = max($min, 200.0);
+        $min = (float) ($direction->min_price1 ?? $direction->min_amount1 ?? $direction->currency1->min_amount ?? 1);
+        $amount = max($min, 500.0);
         $calc = (new OrderCalculator($direction))
             ->setFromAmount($amount)
             ->run();
