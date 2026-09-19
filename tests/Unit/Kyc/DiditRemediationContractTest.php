@@ -50,9 +50,21 @@ final class DiditRemediationContractTest extends TestCase
         $this->assertStringContainsString('telegram-identity-verified:', $job);
         $this->assertStringContainsString('ShouldBeUnique', $job);
         $this->assertStringContainsString('TelegramSecretRedactor::message', $job);
+        $this->assertStringContainsString('authorizedActionTelegramUserIds', $job);
+        $this->assertStringContainsString('telegram_identity_verified_sent:', $job);
+        $this->assertStringNotContainsString('id_channel', $job);
+        $this->assertStringNotContainsString('TelegramNotification', $job);
 
         $notice = (string) file_get_contents(base_path('app/Notifications/TelegramIdentityVerified.php'));
-        $this->assertStringContainsString('token_access', $notice);
+        $this->assertStringContainsString('resolve(null)', $notice);
         $this->assertStringContainsString('TelegramBotTokenResolver', $notice);
+        $this->assertStringContainsString('operatorChatId', $notice);
+        $this->assertStringNotContainsString('token_access', $notice);
+        $this->assertStringNotContainsString('id_channel', $notice);
+
+        $channel = (string) file_get_contents(base_path('app/Notifications/TelegramPaymentFailed.php'));
+        $this->assertStringContainsString('token_access', $channel);
+        $orders = (string) file_get_contents(base_path('app/Jobs/Telegram/TelegramOrderJob.php'));
+        $this->assertStringContainsString('id_channel', $orders);
     }
 }

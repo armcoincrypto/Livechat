@@ -15,6 +15,10 @@ use Illuminate\Notifications\Notification;
 use NotificationChannels\Telegram\TelegramChannel;
 use NotificationChannels\Telegram\TelegramMessage;
 
+/**
+ * Didit approval DM. Token is TELEGRAM_OPERATOR_BOT_TOKEN only.
+ * Destination is a linked operator private chat. The channel notification row is not used.
+ */
 class TelegramIdentityVerified extends Notification implements ShouldQueue, ShouldBeUnique
 {
     use Queueable;
@@ -29,19 +33,16 @@ class TelegramIdentityVerified extends Notification implements ShouldQueue, Shou
     public int $uniqueFor = 86400;
 
     public function __construct(
-        public mixed $tokens,
         public User $user,
         public KycProviderSession $session,
-        public ?string $chatIdOverride = null,
+        public string $operatorChatId,
     ) {
         $this->onQueue('high');
     }
 
     public function uniqueId(): string
     {
-        $dest = $this->resolvedChatId() ?: 'default';
-
-        return 'telegram-identity-verified:'.$this->user->id.':'.$dest;
+        return 'telegram-identity-verified:'.$this->user->id.':'.$this->session->id.':'.$this->operatorChatId;
     }
 
     public function via(): array
@@ -51,23 +52,12 @@ class TelegramIdentityVerified extends Notification implements ShouldQueue, Shou
 
     public function resolvedChatId(): string
     {
-        if ($this->chatIdOverride !== null && $this->chatIdOverride !== '') {
-            return (string) $this->chatIdOverride;
-        }
-
-        return (string) ($this->tokens->id_channel ?? '');
+        return $this->operatorChatId;
     }
 
     public function toTelegram(): TelegramMessage
     {
-        // Use the destination row's bot. TELEGRAM_OPERATOR_BOT_TOKEN is a
-        // different identity and is not a member of the configured channel
-        // (production: chat not found). Fall back to the operator resolver
-        // only when the row has no token.
-        $rowToken = trim((string) ($this->tokens->token_access ?? ''));
-        $token = $rowToken !== ''
-            ? $rowToken
-            : app(TelegramBotTokenResolver::class)->resolve(null);
+        $token = app(TelegramBotTokenResolver::class)->resolve(null);
 
         return TelegramMessage::create()
             ->token($token)

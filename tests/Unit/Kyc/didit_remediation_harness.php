@@ -151,9 +151,18 @@ $check('admin_preserves_didit_approval', str_contains($admin, 'hasAuthoritativeD
 $check('admin_destroy_does_not_blindly_clear', str_contains($admin, 'verification_account_admin_delete_preserved_didit_approval'));
 
 $check('telegram_job_unique_per_user', str_contains($job, "telegram-identity-verified:") && str_contains($job, 'ShouldBeUnique'));
-$check('telegram_uses_existing_destinations', str_contains($job, 'TelegramNotification') && str_contains($job, 'id_channel'));
-$check('telegram_notice_prefers_destination_token', str_contains($notice, 'token_access')
-    && str_contains($notice, 'TelegramBotTokenResolver'));
+$check('telegram_uses_private_operator_chats', str_contains($job, 'authorizedActionTelegramUserIds')
+    && str_contains($job, 'telegram_identity_verified_sent:')
+    && !str_contains($job, 'id_channel')
+    && !str_contains($job, 'TelegramNotification'));
+$check('telegram_notice_uses_operator_token_only', str_contains($notice, 'resolve(null)')
+    && str_contains($notice, 'TelegramBotTokenResolver')
+    && str_contains($notice, 'operatorChatId')
+    && !str_contains($notice, 'token_access'));
+$payment = (string) file_get_contents($root.'/app/Notifications/TelegramPaymentFailed.php');
+$orderJob = (string) file_get_contents($root.'/app/Jobs/Telegram/TelegramOrderJob.php');
+$check('channel_payment_notice_still_uses_row_token', str_contains($payment, 'token_access'));
+$check('order_job_still_uses_channel_row', str_contains($orderJob, 'id_channel') && str_contains($orderJob, 'TelegramNotificationSelector'));
 $check('telegram_job_redacts_secrets', str_contains($job, 'TelegramSecretRedactor::message'));
 $leaky = 'Client error: POST https://api.telegram.org/bot123456:AAEXAMPLETOKENVALUEFORTESTXXXX/sendMessage chat not found';
 $safe = TelegramSecretRedactor::message($leaky);
