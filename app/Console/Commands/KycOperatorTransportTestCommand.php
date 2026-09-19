@@ -29,7 +29,7 @@ final class KycOperatorTransportTestCommand extends Command
             return self::FAILURE;
         }
 
-        $me = $this->call($token, 'getMe', []);
+        $me = $this->telegramCall($token, 'getMe', []);
         $username = (string) ($me['username'] ?? '');
         $this->line('BOT_USERNAME='.($username !== '' ? '@'.$username : 'none'));
         $this->line('TOKEN_VALID='.($me['ok'] ? 'yes' : 'no'));
@@ -50,14 +50,14 @@ final class KycOperatorTransportTestCommand extends Command
         $text = "Exswaping KYC notification transport test\n".gmdate('Y-m-d\TH:i:s\Z');
         $sent = 0;
         foreach ($chatIds as $chatId) {
-            $probe = $this->call($token, 'getChat', ['chat_id' => $chatId]);
+            $probe = $this->telegramCall($token, 'getChat', ['chat_id' => $chatId]);
             $type = (string) ($probe['type'] ?? '');
             if (!$probe['ok'] || $type !== 'private') {
                 $this->line('DESTINATION_SKIPPED suffix='.substr((string) $chatId, -3).' type='.($type !== '' ? $type : 'none'));
 
                 continue;
             }
-            $send = $this->call($token, 'sendMessage', [
+            $send = $this->telegramCall($token, 'sendMessage', [
                 'chat_id' => $chatId,
                 'text' => $text,
                 'disable_web_page_preview' => true,
@@ -84,7 +84,7 @@ final class KycOperatorTransportTestCommand extends Command
      * @param  array<string, mixed>  $params
      * @return array<string, mixed>
      */
-    private function call(string $token, string $method, array $params): array
+    private function telegramCall(string $token, string $method, array $params): array
     {
         try {
             $response = Http::timeout(12)->asJson()->post('https://api.telegram.org/bot'.$token.'/'.$method, $params);
