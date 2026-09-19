@@ -128,6 +128,10 @@ final class DirectionExchangeRecalculateService
                         $exchangeRateLabel = (string) $calculator->getFullRate();
                     }
 
+                    // Post-profit BestChange courses must not be raised by Top-N.
+                    // Derived raw-base storage and Zelle pre-profit authority are excluded.
+                    $clampTopNToCalculator = self::topNProfitFloorApplies($exchange, $derivedOwned);
+
                     // Never wipe a healthy manual/baseline course when BestChange
                     // is enabled but yields no positive market rate.
                     if (!is_numeric($courseValue) || (float) $courseValue <= 0) {
@@ -204,23 +208,38 @@ final class DirectionExchangeRecalculateService
                                         'jump_pct' => $jump,
                                     ]);
                                 } else {
-                                    $courseValue = (string) $adj['course'];
-                                    try {
-                                        $labelDir = clone $exchange;
-                                        $labelDir->course_value = $courseValue;
-                                        $exchangeRateLabel = \App\Services\Rates\AdminRateSourcePresenter::liveExchangeRateLabel($labelDir);
-                                    } catch (\Throwable) {
-                                        // keep prior label
+                                    $proposed = (string) $adj['course'];
+                                    $persisted = self::persistedCourseAfterTopN(
+                                        $courseValue,
+                                        $proposed,
+                                        $clampTopNToCalculator
+                                    );
+                                    if (self::courseStrictlyGreater($proposed, $courseValue) && $clampTopNToCalculator) {
+                                        // Keep the Calculator course. Do not record a Top-N write.
+                                        Log::warning('BestChangeExternalTopNController profit_floor_blocked', [
+                                            'direction_exchange_id' => $directionId,
+                                            'calculator' => $courseValue,
+                                            'topn' => $proposed,
+                                        ]);
+                                    } else {
+                                        $courseValue = $persisted;
+                                        try {
+                                            $labelDir = clone $exchange;
+                                            $labelDir->course_value = $courseValue;
+                                            $exchangeRateLabel = \App\Services\Rates\AdminRateSourcePresenter::liveExchangeRateLabel($labelDir);
+                                        } catch (\Throwable) {
+                                            // keep prior label
+                                        }
+                                        \App\Services\Rates\RateWriteAuditLogger::record([
+                                            'event' => 'bestchange_external_topn',
+                                            'direction_id' => $directionId,
+                                            'new_base' => $courseValue,
+                                            'writer' => 'BestChangeExternalTopNController',
+                                            'source' => 'BestChange',
+                                            'reason' => (string) ($adj['reason'] ?? 'applied'),
+                                            'meta' => $adj['explain'] ?? [],
+                                        ]);
                                     }
-                                    \App\Services\Rates\RateWriteAuditLogger::record([
-                                        'event' => 'bestchange_external_topn',
-                                        'direction_id' => $directionId,
-                                        'new_base' => $courseValue,
-                                        'writer' => 'BestChangeExternalTopNController',
-                                        'source' => 'BestChange',
-                                        'reason' => (string) ($adj['reason'] ?? 'applied'),
-                                        'meta' => $adj['explain'] ?? [],
-                                    ]);
                                 }
                             }
                         }
@@ -293,5 +312,58 @@ final class DirectionExchangeRecalculateService
                 );
             }
         });
+    }
+
+    /**
+     * True only for the BestChange post-profit path.
+     * Derived raw-base storage and Zelle pre-profit Top-N stay on their current writers.
+     */
+    public static function topNProfitFloorApplies(DirectionExchange $direction, bool $derivedOwned): bool
+    {
+        if ($derivedOwned) {
+            return false;
+        }
+
+        $owner = trim((string) ($direction->parser_source_name ?? ''));
+        if ($owner !== 'BestChange') {
+            return false;
+        }
+
+        $from = strtoupper(trim((string) ($direction->currency1->designation_xml ?? '')));
+        $to = strtoupper(trim((string) ($direction->currency2->designation_xml ?? '')));
+        if ($from === 'ZELLEUSD' || $to === 'ZELLEUSD') {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Decimal-safe persist rule. When the floor is on, a Top-N course above
+     * the Calculator course is discarded. Lower or equal Top-N results are kept.
+     * When the floor is off, the Top-N course is returned unchanged.
+     */
+    public static function persistedCourseAfterTopN(
+        string $calculatorCourse,
+        string $topnCourse,
+        bool $clampToCalculator
+    ): string {
+        if (!$clampToCalculator) {
+            return $topnCourse;
+        }
+        if (self::courseStrictlyGreater($topnCourse, $calculatorCourse)) {
+            return $calculatorCourse;
+        }
+
+        return $topnCourse;
+    }
+
+    public static function courseStrictlyGreater(string $left, string $right): bool
+    {
+        if (!is_numeric($left) || !is_numeric($right)) {
+            return false;
+        }
+
+        return bccomp(bcadd($left, '0', 18), bcadd($right, '0', 18), 18) === 1;
     }
 }
