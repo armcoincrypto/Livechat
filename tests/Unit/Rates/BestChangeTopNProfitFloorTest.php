@@ -170,7 +170,9 @@ final class BestChangeTopNProfitFloorTest extends TestCase
     {
         $file = (new \ReflectionClass(DirectionExchangeRecalculateService::class))->getFileName();
         $this->assertIsString($file);
-        $this->assertStringContainsString('topn-profit-floor-20260920', (string) $file);
+        $src = (string) file_get_contents((string) $file);
+        $this->assertStringContainsString('function persistedCourseAfterTopN', $src);
+        $this->assertStringContainsString('profit_floor_blocked', $src);
         $this->assertTrue(method_exists(DirectionExchangeRecalculateService::class, 'persistedCourseAfterTopN'));
     }
 
