@@ -49,5 +49,10 @@ final class DiditRemediationContractTest extends TestCase
         $job = (string) file_get_contents(base_path('app/Jobs/Telegram/TelegramIdentityVerifiedJob.php'));
         $this->assertStringContainsString('telegram-identity-verified:', $job);
         $this->assertStringContainsString('ShouldBeUnique', $job);
+        $this->assertStringContainsString('TelegramSecretRedactor::message', $job);
+
+        $notice = (string) file_get_contents(base_path('app/Notifications/TelegramIdentityVerified.php'));
+        $this->assertStringContainsString('token_access', $notice);
+        $this->assertStringContainsString('TelegramBotTokenResolver', $notice);
     }
 }

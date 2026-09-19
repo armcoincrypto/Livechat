@@ -8,6 +8,7 @@ use App\Models\KycProviderSession;
 use App\Models\TelegramNotification;
 use App\Models\User;
 use App\Notifications\TelegramIdentityVerified;
+use App\Services\TelegramOperator\TelegramSecretRedactor;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -16,6 +17,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use RuntimeException;
 use Throwable;
 
 class TelegramIdentityVerifiedJob implements ShouldQueue, ShouldBeUnique
@@ -85,13 +87,14 @@ class TelegramIdentityVerifiedJob implements ShouldQueue, ShouldBeUnique
                     'channel_id' => $notification->id,
                 ]);
             } catch (Throwable $e) {
+                $safe = TelegramSecretRedactor::message($e->getMessage());
                 Log::error('telegram_identity_verified_failed', [
                     'user_id' => $this->userId,
                     'session_pk' => $this->sessionPk,
                     'channel_id' => $notification->id,
-                    'error' => $e->getMessage(),
+                    'error' => $safe,
                 ]);
-                throw $e;
+                throw new RuntimeException('Telegram identity notice failed: '.$safe);
             }
         }
     }

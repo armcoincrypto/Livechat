@@ -60,9 +60,14 @@ class TelegramIdentityVerified extends Notification implements ShouldQueue, Shou
 
     public function toTelegram(): TelegramMessage
     {
-        $token = app(TelegramBotTokenResolver::class)->resolve(
-            $this->tokens->token_access ?? null
-        );
+        // Use the destination row's bot. TELEGRAM_OPERATOR_BOT_TOKEN is a
+        // different identity and is not a member of the configured channel
+        // (production: chat not found). Fall back to the operator resolver
+        // only when the row has no token.
+        $rowToken = trim((string) ($this->tokens->token_access ?? ''));
+        $token = $rowToken !== ''
+            ? $rowToken
+            : app(TelegramBotTokenResolver::class)->resolve(null);
 
         return TelegramMessage::create()
             ->token($token)

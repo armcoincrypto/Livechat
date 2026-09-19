@@ -16,7 +16,9 @@ require $root.'/packages/KYCPlugin/Drivers/Didit/DiditStatusNormalizer.php';
 require $root.'/packages/KYCPlugin/Drivers/Didit/DiditStatusTransition.php';
 require $root.'/packages/KYCPlugin/Drivers/Didit/DiditWebhookSignature.php';
 require $root.'/packages/KYCPlugin/Drivers/Didit/DiditOperatorNoticePrivacy.php';
+require $root.'/app/Services/TelegramOperator/TelegramSecretRedactor.php';
 
+use App\Services\TelegramOperator\TelegramSecretRedactor;
 use iEXPackages\KYCPlugin\Drivers\Didit\DiditOperatorNoticePrivacy;
 use iEXPackages\KYCPlugin\Drivers\Didit\DiditStatusNormalizer;
 use iEXPackages\KYCPlugin\Drivers\Didit\DiditStatusTransition;
@@ -95,6 +97,7 @@ $files = [
     'job' => $root.'/app/Jobs/Telegram/TelegramIdentityVerifiedJob.php',
     'notice' => $root.'/app/Notifications/TelegramIdentityVerified.php',
     'transition' => $root.'/packages/KYCPlugin/Drivers/Didit/DiditStatusTransition.php',
+    'redactor' => $root.'/app/Services/TelegramOperator/TelegramSecretRedactor.php',
 ];
 foreach ($files as $label => $path) {
     $check("file_exists_{$label}", is_file($path));
@@ -149,7 +152,13 @@ $check('admin_destroy_does_not_blindly_clear', str_contains($admin, 'verificatio
 
 $check('telegram_job_unique_per_user', str_contains($job, "telegram-identity-verified:") && str_contains($job, 'ShouldBeUnique'));
 $check('telegram_uses_existing_destinations', str_contains($job, 'TelegramNotification') && str_contains($job, 'id_channel'));
-$check('telegram_notice_uses_operator_token_resolver', str_contains($notice, 'TelegramBotTokenResolver'));
+$check('telegram_notice_prefers_destination_token', str_contains($notice, 'token_access')
+    && str_contains($notice, 'TelegramBotTokenResolver'));
+$check('telegram_job_redacts_secrets', str_contains($job, 'TelegramSecretRedactor::message'));
+$leaky = 'Client error: POST https://api.telegram.org/bot123456:AAEXAMPLETOKENVALUEFORTESTXXXX/sendMessage chat not found';
+$safe = TelegramSecretRedactor::message($leaky);
+$check('telegram_redactor_strips_bot_url', !str_contains($safe, 'AAEXAMPLETOKENVALUEFORTESTXXXX')
+    && str_contains($safe, 'bot[redacted]'));
 $check('telegram_notice_no_raw_pii_fields', !str_contains($notice, 'passport')
     && !str_contains($notice, 'selfie')
     && !str_contains($notice, 'date_of_birth')
