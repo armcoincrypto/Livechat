@@ -123,7 +123,7 @@ class TelegramOrderJob implements ShouldQueue, ShouldBeUnique
      */
     private function lifecycleTouched(array $stats): bool
     {
-        return (($stats['sent'] ?? 0) + ($stats['edited'] ?? 0) + ($stats['recovered'] ?? 0) + ($stats['skipped_stale'] ?? 0)) > 0;
+        return (($stats['sent'] ?? 0) + ($stats['edited'] ?? 0) + ($stats['recovered'] ?? 0) + ($stats['skipped_stale'] ?? 0) + ($stats['attention_alert'] ?? 0)) > 0;
     }
 
     private function handleLegacySend(

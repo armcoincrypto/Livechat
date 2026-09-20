@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 /**
  * One operational Telegram card per order destination (operator DMs).
  * NEW = compact SEND; later lifecycle states EDIT the stored message.
+ * PAID also emits exactly one short attention alert (not a second full card).
  * Channel destinations are intentionally excluded from order-card ownership.
  */
 final class TelegramOrderLifecyclePublisher
@@ -26,7 +27,7 @@ final class TelegramOrderLifecyclePublisher
     }
 
     /**
-     * @return array{sent: int, edited: int, recovered: int, skipped_stale: int}
+     * @return array{sent: int, edited: int, recovered: int, skipped_stale: int, attention_alert?: int}
      */
     public function publishNew(Task $task): array
     {
@@ -34,11 +35,25 @@ final class TelegramOrderLifecyclePublisher
     }
 
     /**
-     * @return array{sent: int, edited: int, recovered: int, skipped_stale: int}
+     * EDIT the permanent card, then SEND one short PAID attention alert.
+     *
+     * @return array{sent: int, edited: int, recovered: int, skipped_stale: int, attention_alert: int}
      */
     public function publishPaid(Task $task): array
     {
-        return $this->publish($task, TelegramOrderMessagePresenter::LIFECYCLE_PAID, allowSend: true, compactNew: false);
+        $fresh = $task->fresh() ?? $task;
+        $stats = $this->publish($fresh, TelegramOrderMessagePresenter::LIFECYCLE_PAID, allowSend: true, compactNew: false);
+        $authLife = TelegramOrderMessagePresenter::lifecycleFromStatus((int) ($fresh->status ?? 0));
+        if (TelegramOrderMessagePresenter::isTerminalLifecycle($authLife)
+            || $authLife === TelegramOrderMessagePresenter::LIFECYCLE_COMPLETED
+        ) {
+            $stats['attention_alert'] = 0;
+
+            return $stats;
+        }
+        $stats['attention_alert'] = $this->sendPaidAttentionAlertOnce($fresh);
+
+        return $stats;
     }
 
     /**
@@ -105,23 +120,22 @@ final class TelegramOrderLifecyclePublisher
 
         $run = function () use ($task, $taskId, $lifecycle, $allowSend, $compactNew, $allowRecover, $destinations, &$stats): void {
             $fresh = $task->fresh() ?? $task;
-            $authoritative = TelegramOrderMessagePresenter::lifecycleFromStatus((int) ($fresh->status ?? 0));
-            // Delayed older jobs must not regress the card past the live status.
-            if ($this->lifecycleRank($authoritative) > $this->lifecycleRank($lifecycle)
-                && ! ($lifecycle === TelegramOrderMessagePresenter::LIFECYCLE_CLAIMED
-                    && $authoritative === TelegramOrderMessagePresenter::LIFECYCLE_PAID)
-            ) {
+            // Present from live DB so claim/paid both reflect payment + ownership.
+            $payload = $this->presenter->present($fresh, $lifecycle);
+            $operator = $this->nonEmptyString($payload['operator'] ?? null);
+            $authoritative = TelegramOrderMessagePresenter::lifecycleFromStatus((int) ($fresh->status ?? 0), $operator);
+
+            if ($this->shouldSkipAgainstAuthoritative($lifecycle, $authoritative)) {
                 $stats['skipped_stale']++;
                 $this->audit($fresh, $lifecycle, 'SKIP_STALE', null, null);
 
                 return;
             }
 
-            $payload = $this->presenter->present($fresh, $lifecycle);
             $text = $compactNew
                 ? $this->presenter->renderCompactNew($payload)
                 : $this->presenter->renderText($payload);
-            $keyboard = $this->keyboardFor($lifecycle, $taskId);
+            $keyboard = $this->keyboardFor($lifecycle, $taskId, $operator !== null);
             $publicId = (string) ($fresh->public_id ?? $taskId);
 
             $existing = $this->registry->cards($taskId);
@@ -144,7 +158,7 @@ final class TelegramOrderLifecyclePublisher
                 $priorLife = (string) ($prior['lifecycle'] ?? '');
 
                 if ($messageId !== null && $messageId > 0
-                    && $this->lifecycleRank($priorLife) > $this->lifecycleRank($lifecycle)
+                    && $this->shouldSkipAgainstPrior($lifecycle, $priorLife)
                 ) {
                     $stats['skipped_stale']++;
                     $this->audit($fresh, $lifecycle, 'SKIP_STALE', $chatId, $messageId);
@@ -228,6 +242,136 @@ final class TelegramOrderLifecyclePublisher
         return $stats;
     }
 
+    /**
+     * Exactly one short PAID attention alert per order (durable idempotency).
+     */
+    private function sendPaidAttentionAlertOnce(Task $task): int
+    {
+        $taskId = (int) $task->id;
+        if ($taskId <= 0 || $this->registry->paidAttentionAlertAlreadySent($taskId)) {
+            Log::info('telegram_order_card', [
+                'order' => (string) ($task->public_id ?? $taskId),
+                'task_id' => $taskId,
+                'state' => TelegramOrderMessagePresenter::LIFECYCLE_PAID,
+                'card_action' => null,
+                'attention_alert' => 'SKIP_DUP',
+                'attention_alert_result' => 'already_sent',
+                'message_id' => null,
+                'chat_id_suffix' => null,
+            ]);
+
+            return 0;
+        }
+
+        $destinations = $this->destinations();
+        if ($destinations === []) {
+            return 0;
+        }
+
+        $payload = $this->presenter->present($task, TelegramOrderMessagePresenter::LIFECYCLE_PAID);
+        $text = $this->presenter->renderPaidAttentionAlert($payload);
+        $cards = $this->registry->cards($taskId);
+        $byChat = [];
+        foreach ($cards as $card) {
+            $byChat[(string) $card['chat_id']] = (int) $card['message_id'];
+        }
+
+        $sent = 0;
+        foreach ($destinations as $chatId) {
+            $chatId = (string) $chatId;
+            if ($chatId === '') {
+                continue;
+            }
+            $replyTo = $byChat[$chatId] ?? null;
+            $result = $this->bot->sendMessageResult(
+                $chatId,
+                $text,
+                null,
+                ($replyTo !== null && $replyTo > 0) ? $replyTo : null
+            );
+            if ($result['ok']) {
+                $sent++;
+                Log::info('telegram_order_card', [
+                    'order' => (string) ($task->public_id ?? $taskId),
+                    'task_id' => $taskId,
+                    'state' => TelegramOrderMessagePresenter::LIFECYCLE_PAID,
+                    'card_action' => 'EDIT',
+                    'attention_alert' => 'SEND',
+                    'attention_alert_result' => 'success',
+                    'message_id' => $replyTo,
+                    'alert_message_id' => $result['message_id'] ?? null,
+                    'chat_id_suffix' => substr($chatId, -4),
+                ]);
+            } else {
+                Log::warning('telegram_order_card', [
+                    'order' => (string) ($task->public_id ?? $taskId),
+                    'task_id' => $taskId,
+                    'state' => TelegramOrderMessagePresenter::LIFECYCLE_PAID,
+                    'attention_alert' => 'SEND',
+                    'attention_alert_result' => 'failed',
+                    'message_id' => $replyTo,
+                    'chat_id_suffix' => substr($chatId, -4),
+                ]);
+            }
+        }
+
+        if ($sent > 0) {
+            $this->registry->markPaidAttentionAlertSent($taskId);
+        }
+
+        return $sent;
+    }
+
+    private function shouldSkipAgainstAuthoritative(string $requested, string $authoritative): bool
+    {
+        if ($this->isOrthogonalActive($requested, $authoritative)) {
+            return false;
+        }
+        // Claim ownership may update while payment status is already PAID.
+        if ($requested === TelegramOrderMessagePresenter::LIFECYCLE_CLAIMED
+            && $authoritative === TelegramOrderMessagePresenter::LIFECYCLE_PAID
+        ) {
+            return false;
+        }
+        // Paid event while DB still maps to claimed-only (status unchanged) is rare; allow when requested paid.
+        if ($requested === TelegramOrderMessagePresenter::LIFECYCLE_PAID
+            && $authoritative === TelegramOrderMessagePresenter::LIFECYCLE_CLAIMED
+        ) {
+            return false;
+        }
+
+        return $this->lifecycleRank($authoritative) > $this->lifecycleRank($requested);
+    }
+
+    private function shouldSkipAgainstPrior(string $requested, string $priorLife): bool
+    {
+        if ($priorLife === '' || $this->isOrthogonalActive($requested, $priorLife)) {
+            return false;
+        }
+
+        return $this->lifecycleRank($priorLife) > $this->lifecycleRank($requested);
+    }
+
+    private function isOrthogonalActive(string $a, string $b): bool
+    {
+        $active = [
+            TelegramOrderMessagePresenter::LIFECYCLE_PAID,
+            TelegramOrderMessagePresenter::LIFECYCLE_CLAIMED,
+        ];
+
+        return in_array($a, $active, true) && in_array($b, $active, true);
+    }
+
+    private function nonEmptyString(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+        $trim = trim($value);
+
+        return $trim !== '' ? $trim : null;
+    }
+
     private function audit(Task $task, string $lifecycle, string $action, ?string $chatId, ?int $messageId): void
     {
         Log::info('telegram_order_card', [
@@ -235,6 +379,7 @@ final class TelegramOrderLifecyclePublisher
             'task_id' => (int) ($task->id ?? 0),
             'state' => $lifecycle,
             'action' => $action,
+            'card_action' => $action,
             'message_id' => $messageId,
             'chat_id_suffix' => $chatId !== null ? substr($chatId, -4) : null,
         ]);
@@ -244,12 +389,12 @@ final class TelegramOrderLifecyclePublisher
     {
         return match ($lifecycle) {
             TelegramOrderMessagePresenter::LIFECYCLE_NEW => 1,
-            TelegramOrderMessagePresenter::LIFECYCLE_PAID => 2,
-            TelegramOrderMessagePresenter::LIFECYCLE_CLAIMED => 3,
-            TelegramOrderMessagePresenter::LIFECYCLE_COMPLETED => 4,
+            TelegramOrderMessagePresenter::LIFECYCLE_PAID,
+            TelegramOrderMessagePresenter::LIFECYCLE_CLAIMED => 2,
+            TelegramOrderMessagePresenter::LIFECYCLE_COMPLETED => 3,
             TelegramOrderMessagePresenter::LIFECYCLE_CANCELLED,
             TelegramOrderMessagePresenter::LIFECYCLE_REJECTED,
-            TelegramOrderMessagePresenter::LIFECYCLE_EXPIRED => 5,
+            TelegramOrderMessagePresenter::LIFECYCLE_EXPIRED => 4,
             default => 0,
         };
     }
@@ -280,19 +425,23 @@ final class TelegramOrderLifecyclePublisher
     /**
      * @return list<list<array{text: string, callback_data?: string, url?: string}>>|null
      */
-    private function keyboardFor(string $lifecycle, int $taskId): ?array
+    private function keyboardFor(string $lifecycle, int $taskId, bool $hasOperator): ?array
     {
         if (! filter_var(config('telegram_operator.actions_enabled', false), FILTER_VALIDATE_BOOLEAN)) {
             return null;
         }
 
-        return match ($lifecycle) {
-            TelegramOrderMessagePresenter::LIFECYCLE_CLAIMED => TelegramOrderOperatorWorkflowService::claimedKeyboard($taskId),
-            TelegramOrderMessagePresenter::LIFECYCLE_COMPLETED,
-            TelegramOrderMessagePresenter::LIFECYCLE_CANCELLED,
-            TelegramOrderMessagePresenter::LIFECYCLE_REJECTED,
-            TelegramOrderMessagePresenter::LIFECYCLE_EXPIRED => TelegramOrderOperatorWorkflowService::completedKeyboard($taskId),
-            default => TelegramOrderOperatorWorkflowService::notificationKeyboard($taskId),
-        };
+        if (TelegramOrderMessagePresenter::isTerminalLifecycle($lifecycle)
+            || $lifecycle === TelegramOrderMessagePresenter::LIFECYCLE_COMPLETED
+        ) {
+            return TelegramOrderOperatorWorkflowService::completedKeyboard($taskId);
+        }
+
+        // Ownership wins over payment for action buttons (no second "Принять").
+        if ($hasOperator || $lifecycle === TelegramOrderMessagePresenter::LIFECYCLE_CLAIMED) {
+            return TelegramOrderOperatorWorkflowService::claimedKeyboard($taskId);
+        }
+
+        return TelegramOrderOperatorWorkflowService::notificationKeyboard($taskId);
     }
 }

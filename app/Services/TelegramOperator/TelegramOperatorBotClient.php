@@ -129,17 +129,21 @@ class TelegramOperatorBotClient
     /**
      * @param  list<list<array{text: string, callback_data?: string, url?: string}>>|null  $keyboard
      */
-    public function sendMessage(int|string $chatId, string $text, ?array $keyboard = null): void
+    public function sendMessage(int|string $chatId, string $text, ?array $keyboard = null, ?int $replyToMessageId = null): void
     {
-        $this->sendMessageResult($chatId, $text, $keyboard);
+        $this->sendMessageResult($chatId, $text, $keyboard, $replyToMessageId);
     }
 
     /**
      * @param  list<list<array{text: string, callback_data?: string, url?: string}>>|null  $keyboard
      * @return array{ok: bool, message_id: int|null}
      */
-    public function sendMessageResult(int|string $chatId, string $text, ?array $keyboard = null): array
-    {
+    public function sendMessageResult(
+        int|string $chatId,
+        string $text,
+        ?array $keyboard = null,
+        ?int $replyToMessageId = null,
+    ): array {
         $payload = [
             'chat_id' => $chatId,
             'text' => $text,
@@ -147,6 +151,10 @@ class TelegramOperatorBotClient
         ];
         if ($keyboard !== null) {
             $payload['reply_markup'] = ['inline_keyboard' => $keyboard];
+        }
+        if ($replyToMessageId !== null && $replyToMessageId > 0) {
+            $payload['reply_to_message_id'] = $replyToMessageId;
+            $payload['allow_sending_without_reply'] = true;
         }
 
         $result = $this->call('sendMessage', $payload);

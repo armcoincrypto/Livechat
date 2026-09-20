@@ -127,6 +127,7 @@ final class TelegramOrderMessagePresenter
             );
             $payload['lifecycle'] = $this->normalizeLifecycle($lifecycle, $task, $operator);
             $payload['completed_at'] = $this->completedAt($task, $payload['lifecycle']);
+            $payload['customer_marked_paid'] = self::isCustomerMarkedPaidStatus((int) ($task->status ?? 0));
 
             return $payload;
         } catch (Throwable) {
@@ -150,6 +151,7 @@ final class TelegramOrderMessagePresenter
                 'claimed_at' => null,
                 'lifecycle' => self::LIFECYCLE_NEW,
                 'completed_at' => null,
+                'customer_marked_paid' => false,
             ];
         }
     }
@@ -258,42 +260,91 @@ final class TelegramOrderMessagePresenter
     {
         $lines = [];
         $id = $payload['public_id'] ?? '';
-        $lines[] = '📋 Заявка №: '.$id;
+        $lines[] = '📋 Заявка №'.$id;
         if (! empty($payload['created_at'])) {
-            $lines[] = '📅 '.$payload['created_at'];
+            $lines[] = '🕐 Создана: '.$payload['created_at'];
         }
         $lines[] = '';
-        $lines[] = 'Отдает клиент:';
+        $lines[] = '💰 ОПЛАТА';
         if (! empty($payload['give_ps'])) {
-            $lines[] = ' — ПС: '.$payload['give_ps'];
+            $lines[] = (string) $payload['give_ps'];
         }
         if (! empty($payload['give_amount'])) {
-            $lines[] = ' — Сумма: '.$payload['give_amount'];
+            $lines[] = (string) $payload['give_amount'];
         }
         foreach ($payload['give_fields'] ?? [] as $row) {
-            $lines[] = ' — '.$row['label'].': '.$row['value'];
+            $lines[] = ($row['label'] ?? '').': '.($row['value'] ?? '');
         }
         $lines[] = '';
-        $lines[] = 'Получает клиент:';
+        $lines[] = '➡️ ВЫПЛАТА';
         if (! empty($payload['receive_ps'])) {
-            $lines[] = ' — ПС: '.$payload['receive_ps'];
+            $lines[] = (string) $payload['receive_ps'];
         }
         if (! empty($payload['receive_amount'])) {
-            $lines[] = ' — Сумма: '.$payload['receive_amount'];
+            $lines[] = (string) $payload['receive_amount'];
         }
         $mode = (string) ($payload['rate_mode'] ?? 'floating');
-        $lines[] = ' — Тип курса: '.($mode === 'fixed' ? 'Фиксированный' : 'Плавающий');
+        $lines[] = 'Тип курса: '.($mode === 'fixed' ? 'Фиксированный' : 'Плавающий');
         foreach ($this->rateLines($payload) as $rateLine) {
             $lines[] = $rateLine;
         }
-        foreach ($payload['receive_fields'] ?? [] as $row) {
-            $lines[] = ' — '.$row['label'].': '.$row['value'];
+        $recvFields = $payload['receive_fields'] ?? [];
+        if ($recvFields !== []) {
+            $lines[] = '';
+            $lines[] = '👤 ПОЛУЧАТЕЛЬ';
+            foreach ($recvFields as $row) {
+                $lines[] = ($row['label'] ?? '').': '.($row['value'] ?? '');
+            }
         }
+        $contactLines = [];
         if (! empty($payload['email'])) {
-            $lines[] = ' — E-mail: '.$payload['email'];
+            $contactLines[] = 'E-mail: '.$payload['email'];
+        }
+        $name = trim((string) ($payload['name'] ?? ''));
+        if ($name !== '' && strcasecmp($name, 'User') !== 0 && strcasecmp($name, 'Пользователь') !== 0) {
+            $contactLines[] = 'Имя: '.$name;
+        }
+        if ($contactLines !== []) {
+            $lines[] = '';
+            $lines[] = '🙋 КЛИЕНТ';
+            foreach ($contactLines as $c) {
+                $lines[] = $c;
+            }
         }
         $lines[] = '';
         $lines[] = $this->stateLine($payload);
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * Short operator-attention alert for customer "I paid" — not a second full card.
+     */
+    public function renderPaidAttentionAlert(array $payload): string
+    {
+        $id = (string) ($payload['public_id'] ?? '');
+        $givePs = (string) ($payload['give_ps'] ?? '');
+        $recvPs = (string) ($payload['receive_ps'] ?? '');
+        $giveAmt = (string) ($payload['give_amount'] ?? '');
+        $recvAmt = (string) ($payload['receive_amount'] ?? '');
+        $operator = $this->nonEmpty((string) ($payload['operator'] ?? ''));
+
+        $lines = [
+            '💰 Клиент отметил оплату',
+            '',
+            'Заявка №'.$id,
+        ];
+        if ($giveAmt !== '' || $recvAmt !== '') {
+            $lines[] = trim($giveAmt.($recvAmt !== '' ? ' → '.$recvAmt : ''));
+        }
+        if ($givePs !== '' || $recvPs !== '') {
+            $lines[] = trim($givePs.($recvPs !== '' ? ' → '.$recvPs : ''));
+        }
+        $lines[] = '';
+        if ($operator !== null) {
+            $lines[] = '👤 Оператор: '.$operator;
+        }
+        $lines[] = '🔎 Требуется проверить оплату';
 
         return implode("\n", $lines);
     }
@@ -344,7 +395,7 @@ final class TelegramOrderMessagePresenter
         $orderRate = $this->nonEmpty((string) ($payload['order_rate'] ?? ''));
         $currentRate = $this->nonEmpty((string) ($payload['current_rate'] ?? ''));
         $life = (string) ($payload['lifecycle'] ?? self::LIFECYCLE_NEW);
-        $prefix = $compact ? '' : ' — ';
+        $prefix = '';
 
         if ($mode === 'fixed' || $currentRate === null || $orderRate === null
             || $this->normalizeRate($orderRate) === $this->normalizeRate($currentRate)
@@ -361,10 +412,10 @@ final class TelegramOrderMessagePresenter
             return [];
         }
 
-        // Floating with distinct create vs payout-relevant rates.
+        // Floating: creation lock vs live direction quote (not settlement payout rate).
         return [
             $prefix.'Курс при создании: '.$orderRate,
-            $prefix.'Курс к выплате: '.$currentRate,
+            $prefix.'Курс направления сейчас: '.$currentRate,
         ];
     }
 
@@ -423,6 +474,8 @@ final class TelegramOrderMessagePresenter
         $claimed = $this->nonEmpty((string) ($payload['claimed_at'] ?? ''));
         $completed = $this->nonEmpty((string) ($payload['completed_at'] ?? ''));
         $clock = $completed ?? $claimed;
+        $paidMarked = (bool) ($payload['customer_marked_paid'] ?? false)
+            || $life === self::LIFECYCLE_PAID;
 
         if ($life === self::LIFECYCLE_CANCELLED) {
             return '❌ Заявка отменена';
@@ -447,19 +500,37 @@ final class TelegramOrderMessagePresenter
             return implode("\n", $lines);
         }
 
-        if ($life === self::LIFECYCLE_CLAIMED && $operator !== null) {
-            $bits = ['👤 '.$operator];
-            if ($claimed !== null) {
-                $bits[] = '🕐 '.$claimed;
-            }
-            $bits[] = '🟡 В работе';
-
-            return implode(' · ', $bits);
+        $lines = [];
+        // Payment state and operator ownership must coexist.
+        if ($paidMarked) {
+            $lines[] = '💰 Клиент отметил оплату';
+            $lines[] = '🔎 Требуется проверить оплату';
+        } elseif ($life === self::LIFECYCLE_NEW) {
+            $lines[] = '🟡 Ожидается оплата';
+        } else {
+            $status = trim((string) ($payload['status_label'] ?? ''));
+            $lines[] = $status !== '' ? '🟡 '.$status : '🟡 В работе';
         }
 
-        $status = trim((string) ($payload['status_label'] ?? ''));
+        if ($operator !== null) {
+            $owner = '👤 В работе у: '.$operator;
+            if ($claimed !== null) {
+                $owner .= ' · '.$claimed;
+            }
+            $lines[] = $owner;
+        } elseif ($life === self::LIFECYCLE_CLAIMED) {
+            $lines[] = '🟡 В работе';
+        }
 
-        return $status !== '' ? '🟡 '.$status : '🟡 Ожидается оплата';
+        return implode("\n", $lines);
+    }
+
+    /**
+     * Customer "I paid" / payment-check domain statuses (orthogonal to claim ownership).
+     */
+    public static function isCustomerMarkedPaidStatus(int $status): bool
+    {
+        return in_array($status, [3, 7, 12], true);
     }
 
     private function normalizeLifecycle(mixed $lifecycle, ?Task $task, mixed $operator): string

@@ -42,7 +42,7 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
         $this->assertSame('new', $cards[0]['lifecycle']);
     }
 
-    public function test_paid_edits_existing_card_without_second_send(): void
+    public function test_paid_edits_existing_card_and_sends_one_attention_alert(): void
     {
         Cache::flush();
         $task = $this->fakeTask(3);
@@ -58,14 +58,24 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
                     && str_contains($text, 'Заявка');
             })
             ->andReturn(['ok' => true, 'message_missing' => false]);
-        $bot->shouldReceive('sendMessageResult')->never();
+        $bot->shouldReceive('sendMessageResult')
+            ->once()
+            ->withArgs(function ($chat, $text, $kb, $replyTo) {
+                return (string) $chat === '777001'
+                    && str_contains((string) $text, 'Клиент отметил оплату')
+                    && ! str_contains((string) $text, 'ПОЛУЧАТЕЛЬ')
+                    && (int) $replyTo === 101;
+            })
+            ->andReturn(['ok' => true, 'message_id' => 501]);
 
         $stats = $this->publisher($bot, destinations: ['777001'])->publishPaid($task);
         $this->assertSame(1, $stats['edited']);
         $this->assertSame(0, $stats['sent']);
+        $this->assertSame(1, $stats['attention_alert']);
+        $this->assertTrue(app(TelegramOrderCardRegistry::class)->paidAttentionAlertAlreadySent((int) $task->id));
     }
 
-    public function test_paid_repeat_still_edits_same_message(): void
+    public function test_paid_repeat_still_edits_same_message_without_second_alert(): void
     {
         Cache::flush();
         $task = $this->fakeTask(3);
@@ -75,13 +85,69 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
         $bot->shouldReceive('editMessageResult')
             ->twice()
             ->andReturn(['ok' => true, 'message_missing' => false]);
-        $bot->shouldReceive('sendMessageResult')->never();
+        $bot->shouldReceive('sendMessageResult')
+            ->once()
+            ->withArgs(fn ($c, $t) => str_contains((string) $t, 'Клиент отметил оплату'))
+            ->andReturn(['ok' => true, 'message_id' => 502]);
 
         $publisher = $this->publisher($bot, destinations: ['777001']);
-        $publisher->publishPaid($task);
-        $publisher->publishPaid($task);
+        $first = $publisher->publishPaid($task);
+        $second = $publisher->publishPaid($task);
+        $this->assertSame(1, $first['attention_alert']);
+        $this->assertSame(0, $second['attention_alert']);
         $cards = app(TelegramOrderCardRegistry::class)->cards((int) $task->id);
         $this->assertSame(101, $cards[0]['message_id']);
+    }
+
+    public function test_paid_after_claim_edits_card_and_sends_alert(): void
+    {
+        Cache::flush();
+        $task = $this->fakeTask(3);
+        $task->setRelation('edit_data_manager', (object) ['name' => 'admin', 'email' => null]);
+        app(TelegramOrderCardRegistry::class)->remember((int) $task->id, '777001', 101, 'claimed');
+
+        $bot = Mockery::mock(TelegramOperatorBotClient::class);
+        $bot->shouldReceive('editMessageResult')
+            ->once()
+            ->withArgs(function ($chat, $msgId, $text) {
+                return (int) $msgId === 101
+                    && str_contains((string) $text, 'Клиент отметил оплату')
+                    && str_contains((string) $text, 'В работе у:');
+            })
+            ->andReturn(['ok' => true, 'message_missing' => false]);
+        $bot->shouldReceive('sendMessageResult')
+            ->once()
+            ->withArgs(fn ($c, $t, $k, $r) => str_contains((string) $t, 'Клиент отметил оплату') && (int) $r === 101)
+            ->andReturn(['ok' => true, 'message_id' => 601]);
+
+        $stats = $this->publisher($bot, destinations: ['777001'])->publishPaid($task);
+        $this->assertSame(1, $stats['edited']);
+        $this->assertSame(0, $stats['skipped_stale']);
+        $this->assertSame(1, $stats['attention_alert']);
+    }
+
+    public function test_claim_after_paid_keeps_payment_visible_without_second_alert(): void
+    {
+        Cache::flush();
+        $task = $this->fakeTask(3);
+        $task->setRelation('edit_data_manager', (object) ['name' => 'admin', 'email' => null]);
+        app(TelegramOrderCardRegistry::class)->remember((int) $task->id, '777001', 101, 'paid');
+        app(TelegramOrderCardRegistry::class)->markPaidAttentionAlertSent((int) $task->id);
+
+        $bot = Mockery::mock(TelegramOperatorBotClient::class);
+        $bot->shouldReceive('editMessageResult')
+            ->once()
+            ->withArgs(function ($chat, $msgId, $text) {
+                return (int) $msgId === 101
+                    && str_contains((string) $text, 'Клиент отметил оплату')
+                    && str_contains((string) $text, 'В работе у: admin');
+            })
+            ->andReturn(['ok' => true, 'message_missing' => false]);
+        $bot->shouldReceive('sendMessageResult')->never();
+
+        $stats = $this->publisher($bot, destinations: ['777001'])->publishClaimed($task);
+        $this->assertSame(1, $stats['edited']);
+        $this->assertSame(0, $stats['skipped_stale']);
     }
 
     public function test_missing_message_recovers_with_one_replacement(): void
@@ -94,17 +160,19 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
         $bot->shouldReceive('editMessageResult')
             ->once()
             ->andReturn(['ok' => false, 'message_missing' => true]);
+        // Recover full card + attention alert
         $bot->shouldReceive('sendMessageResult')
-            ->once()
-            ->andReturn(['ok' => true, 'message_id' => 202]);
+            ->twice()
+            ->andReturn(['ok' => true, 'message_id' => 202], ['ok' => true, 'message_id' => 203]);
 
         $stats = $this->publisher($bot, destinations: ['777001'])->publishPaid($task);
         $this->assertSame(1, $stats['recovered']);
+        $this->assertSame(1, $stats['attention_alert']);
         $cards = app(TelegramOrderCardRegistry::class)->cards((int) $task->id);
         $this->assertSame(202, $cards[0]['message_id']);
     }
 
-    public function test_network_edit_failure_does_not_duplicate(): void
+    public function test_network_edit_failure_does_not_duplicate_full_card(): void
     {
         Cache::flush();
         $task = $this->fakeTask(3);
@@ -114,7 +182,12 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
         $bot->shouldReceive('editMessageResult')
             ->once()
             ->andReturn(['ok' => false, 'message_missing' => false]);
-        $bot->shouldReceive('sendMessageResult')->never();
+        // Short attention alert may still notify; must not be a full card dump.
+        $bot->shouldReceive('sendMessageResult')
+            ->once()
+            ->withArgs(fn ($c, $t) => str_contains((string) $t, 'Клиент отметил оплату')
+                && ! str_contains((string) $t, 'ПОЛУЧАТЕЛЬ'))
+            ->andReturn(['ok' => true, 'message_id' => 701]);
 
         $stats = $this->publisher($bot, destinations: ['777001'])->publishPaid($task);
         $this->assertSame(0, $stats['sent']);
@@ -140,12 +213,12 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
         $this->assertStringContainsString('🆕 Новая заявка', $text);
         $this->assertStringContainsString('Курс:', $text);
         $this->assertStringNotContainsString('Курс заявки', $text);
-        $this->assertStringNotContainsString('Текущий курс', $text);
+        $this->assertStringNotContainsString('Курс к выплате', $text);
         $this->assertStringNotContainsString('Адрес для депозита', $text);
         $this->assertStringContainsString('Ожидается оплата', $text);
     }
 
-    public function test_full_rate_lines_dedupe_vague_labels(): void
+    public function test_full_rate_lines_label_direction_quote_not_settlement(): void
     {
         $presenter = new TelegramOrderMessagePresenter();
         $text = $presenter->renderText([
@@ -160,12 +233,38 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
             'give_fields' => [],
             'receive_fields' => [],
             'lifecycle' => 'paid',
+            'customer_marked_paid' => true,
             'status_label' => 'Ожидает проверки оплаты',
         ]);
         $this->assertStringContainsString('Курс при создании:', $text);
-        $this->assertStringContainsString('Курс к выплате:', $text);
+        $this->assertStringContainsString('Курс направления сейчас:', $text);
+        $this->assertStringNotContainsString('Курс к выплате:', $text);
         $this->assertStringNotContainsString('Курс заявки:', $text);
-        $this->assertStringNotContainsString('Текущий курс:', $text);
+        $this->assertStringContainsString('Клиент отметил оплату', $text);
+    }
+
+    public function test_claimed_state_line_preserves_paid_payment_state(): void
+    {
+        $presenter = new TelegramOrderMessagePresenter();
+        $text = $presenter->renderText([
+            'public_id' => '1789938124757626',
+            'give_ps' => 'USDT TRC20',
+            'receive_ps' => 'SBER RUB',
+            'give_amount' => '400 USDT',
+            'receive_amount' => '36 048.43 RUB',
+            'order_rate' => '1 USDT = 90.1211 RUB',
+            'current_rate' => null,
+            'rate_mode' => 'floating',
+            'give_fields' => [],
+            'receive_fields' => [],
+            'lifecycle' => 'claimed',
+            'customer_marked_paid' => true,
+            'operator' => 'admin',
+            'claimed_at' => '02:07',
+        ]);
+        $this->assertStringContainsString('Клиент отметил оплату', $text);
+        $this->assertStringContainsString('В работе у: admin · 02:07', $text);
+        $this->assertStringNotContainsString('👤 admin · 🕐 02:07 · 🟡 В работе', $text);
     }
 
     public function test_paid_before_new_keeps_single_advanced_card(): void
@@ -174,13 +273,14 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
         $task = $this->fakeTask(3);
         $bot = Mockery::mock(TelegramOperatorBotClient::class);
         $bot->shouldReceive('sendMessageResult')
-            ->once()
-            ->andReturn(['ok' => true, 'message_id' => 303]);
+            ->twice()
+            ->andReturn(['ok' => true, 'message_id' => 303], ['ok' => true, 'message_id' => 304]);
         $bot->shouldReceive('editMessageResult')->never();
 
         $publisher = $this->publisher($bot, destinations: ['777001']);
         $paid = $publisher->publishPaid($task);
         $this->assertSame(1, $paid['sent']);
+        $this->assertSame(1, $paid['attention_alert']);
 
         $lateNew = $publisher->publishNew($task);
         $this->assertSame(0, $lateNew['sent']);
@@ -214,8 +314,7 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
     public function test_rejected_and_expired_edit_same_card(): void
     {
         Cache::flush();
-        $rejected = $this->fakeTask(5);
-        $rejected->id = 9135207;
+        $rejected = $this->fakeTask(5, 9135207);
         app(TelegramOrderCardRegistry::class)->remember((int) $rejected->id, '777001', 111, 'paid');
         $bot = Mockery::mock(TelegramOperatorBotClient::class);
         $bot->shouldReceive('editMessageResult')
@@ -226,8 +325,7 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
         $this->assertSame(1, $this->publisher($bot, destinations: ['777001'])->publishRejected($rejected)['edited']);
 
         Cache::flush();
-        $expired = $this->fakeTask(1);
-        $expired->id = 9135208;
+        $expired = $this->fakeTask(1, 9135208);
         app(TelegramOrderCardRegistry::class)->remember((int) $expired->id, '777001', 222, 'new');
         $bot2 = Mockery::mock(TelegramOperatorBotClient::class);
         $bot2->shouldReceive('editMessageResult')
@@ -252,6 +350,7 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
         $this->assertSame(0, $stats['edited']);
         $this->assertSame(0, $stats['sent']);
         $this->assertGreaterThan(0, $stats['skipped_stale']);
+        $this->assertSame(0, $stats['attention_alert']);
         $this->assertSame('cancelled', app(TelegramOrderCardRegistry::class)->cards((int) $task->id)[0]['lifecycle']);
     }
 
@@ -293,6 +392,8 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
      */
     private function publisher(TelegramOperatorBotClient $bot, array $destinations): TelegramOrderLifecyclePublisher
     {
+        Config::set('telegram_operator.notify_operator_dms', true);
+        Config::set('telegram_operator.actions_enabled', false);
         $registry = app(TelegramOrderCardRegistry::class);
         $presenter = new TelegramOrderMessagePresenter();
         $selector = Mockery::mock(\App\Services\Orders\TelegramNotificationSelector::class);
@@ -305,13 +406,16 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
         return new TelegramOrderLifecyclePublisher($bot, $registry, $presenter, $selector, $auth);
     }
 
-    private function fakeTask(int $status): Task
+    private function fakeTask(int $status, ?int $id = null): Task
     {
-        $task = new Task();
-        $task->id = 9135206;
-        $task->public_id = '1789834712258163';
+        $task = Mockery::mock(Task::class)->makePartial();
+        $task->id = $id ?? (9900000 + $status * 1000 + random_int(1, 899));
+        $task->public_id = '1789'.(string) $task->id;
         $task->status = $status;
         $task->opt_params = [];
+        $task->shouldReceive('fresh')->andReturn($task);
+        $task->shouldReceive('loadMissing')->andReturn($task);
+        $task->shouldReceive('save')->andReturn(true);
 
         return $task;
     }
