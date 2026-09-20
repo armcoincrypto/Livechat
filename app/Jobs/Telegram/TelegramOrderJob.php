@@ -5,6 +5,7 @@ namespace App\Jobs\Telegram;
 use App\Models\Task;
 use App\Notifications\TelegramNewOrder;
 use App\Services\Orders\TelegramNotificationSelector;
+use App\Services\TelegramOperator\TelegramOrderLifecyclePublisher;
 use App\Services\TelegramOperator\TelegramOperatorAuthService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -44,6 +45,56 @@ class TelegramOrderJob implements ShouldQueue, ShouldBeUnique
     }
 
     public function handle(
+        TelegramNotificationSelector $selector,
+        TelegramOperatorAuthService $auth,
+        TelegramOrderLifecyclePublisher $lifecycle,
+    ): void {
+        if ($this->isCreatedEvent($this->param)) {
+            $this->handleLifecycleCreated($lifecycle);
+
+            return;
+        }
+
+        if ($this->isPaidOperatorEvent($this->param)) {
+            $this->handleLifecyclePaid($lifecycle);
+
+            return;
+        }
+
+        $this->handleLegacySend($selector, $auth);
+    }
+
+    private function handleLifecycleCreated(TelegramOrderLifecyclePublisher $lifecycle): void
+    {
+        $sentKey = 'telegram_notify_sent:'.$this->order->id.':lifecycle_new';
+        if (Cache::get($sentKey)) {
+            Log::info('telegram_order_notify_duplicate_skipped', [
+                'order_id' => $this->order->id,
+                'notification_type' => $this->param,
+                'lifecycle' => 'new',
+            ]);
+
+            return;
+        }
+
+        $stats = $lifecycle->publishNew($this->order->fresh() ?? $this->order);
+        if (($stats['sent'] + $stats['edited'] + $stats['recovered']) > 0) {
+            Cache::put($sentKey, 1, now()->addDays(7));
+        } else {
+            throw new \RuntimeException('telegram_order_lifecycle_new_failed');
+        }
+    }
+
+    private function handleLifecyclePaid(TelegramOrderLifecyclePublisher $lifecycle): void
+    {
+        // Idempotent EDIT of the existing card — do not SEND a second full card.
+        $stats = $lifecycle->publishPaid($this->order->fresh() ?? $this->order);
+        if (($stats['sent'] + $stats['edited'] + $stats['recovered']) === 0) {
+            throw new \RuntimeException('telegram_order_lifecycle_paid_failed');
+        }
+    }
+
+    private function handleLegacySend(
         TelegramNotificationSelector $selector,
         TelegramOperatorAuthService $auth,
     ): void {
@@ -140,6 +191,22 @@ class TelegramOrderJob implements ShouldQueue, ShouldBeUnique
         if ($channelFailed && ! $anyOk) {
             throw new \RuntimeException('telegram_order_notify_all_destinations_failed');
         }
+    }
+
+    private function isCreatedEvent(string $param): bool
+    {
+        $keys = TelegramNotificationSelector::eventKeys($param);
+
+        return in_array('process_created_order', $keys, true)
+            || in_array('is_process_created_order', $keys, true);
+    }
+
+    private function isPaidOperatorEvent(string $param): bool
+    {
+        $keys = TelegramNotificationSelector::eventKeys($param);
+
+        return in_array('new_order_for_operator', $keys, true)
+            || in_array('is_new_order_for_operator', $keys, true);
     }
 
     public function failed(?Throwable $exception): void

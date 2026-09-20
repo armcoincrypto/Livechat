@@ -363,6 +363,17 @@ final class TelegramOrderOperatorWorkflowService
                 $cardText,
                 self::completedKeyboard($taskId)
             );
+            if ($chatId !== null && $messageId !== null) {
+                try {
+                    app(TelegramOrderCardRegistry::class)->remember(
+                        $taskId,
+                        (string) $chatId,
+                        (int) $messageId,
+                        TelegramOrderMessagePresenter::LIFECYCLE_COMPLETED
+                    );
+                } catch (Throwable) {
+                }
+            }
         } catch (ManualCompletionException $e) {
             $this->bot->answerCallback($callbackId, $e->getMessage(), true);
             $this->audit->log('ORDER_TELEGRAM_COMPLETE_REJECTED', $taskId, $operator, $telegramUserId, [
@@ -404,6 +415,15 @@ final class TelegramOrderOperatorWorkflowService
             $text = trim($originalText) !== '' ? trim($originalText) : $text;
         }
         $this->bot->editMessage($chatId, $messageId, $text, self::claimedKeyboard($taskId));
+        try {
+            app(TelegramOrderCardRegistry::class)->remember(
+                $taskId,
+                (string) $chatId,
+                $messageId,
+                TelegramOrderMessagePresenter::LIFECYCLE_CLAIMED
+            );
+        } catch (Throwable) {
+        }
     }
 
     /**

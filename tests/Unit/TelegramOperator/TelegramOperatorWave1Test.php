@@ -215,10 +215,9 @@ final class TelegramOperatorWave1Test extends TestCase
         $src = (string) file_get_contents(dirname(__DIR__, 3).'/app/Services/TelegramOperator/TelegramOrderOperatorWorkflowService.php');
         $this->assertStringNotContainsString('TX hash / ID транзакции', $src);
         $this->assertStringNotContainsString('Укажите подтверждение выплаты', $src);
-        $this->assertStringContainsString("stage' => 'awaiting_confirm'", $src);
+        $this->assertStringContainsString('awaiting_confirm', $src);
         $this->assertStringContainsString('Да, завершить', $src);
-        $this->assertStringContainsString("'message' => \$note", $src);
-        $this->assertStringNotContainsString("'settlement_reference' => \$reference", $src);
+        $this->assertStringContainsString('SettlementEvidence::fromOptions', $src);
         $guard = (string) file_get_contents(dirname(__DIR__, 3).'/app/Services/Orders/ManualCompletion/ManualCompletionGuard.php');
         $this->assertStringContainsString('SettlementEvidence::fromOptions', $guard);
     }

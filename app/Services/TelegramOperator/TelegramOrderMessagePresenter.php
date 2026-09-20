@@ -18,6 +18,8 @@ final class TelegramOrderMessagePresenter
 {
     public const LIFECYCLE_NEW = 'new';
 
+    public const LIFECYCLE_PAID = 'paid';
+
     public const LIFECYCLE_CLAIMED = 'claimed';
 
     public const LIFECYCLE_COMPLETED = 'completed';
@@ -275,12 +277,8 @@ final class TelegramOrderMessagePresenter
         }
         $mode = (string) ($payload['rate_mode'] ?? 'floating');
         $lines[] = ' — Тип курса: '.($mode === 'fixed' ? 'Фиксированный' : 'Плавающий');
-        if (! empty($payload['order_rate'])) {
-            $lines[] = ' — Курс заявки: '.$payload['order_rate'];
-        }
-        $life = (string) ($payload['lifecycle'] ?? self::LIFECYCLE_NEW);
-        if ($mode === 'floating' && ! empty($payload['current_rate']) && $life !== self::LIFECYCLE_COMPLETED) {
-            $lines[] = ' — Текущий курс: '.$payload['current_rate'];
+        foreach ($this->rateLines($payload) as $rateLine) {
+            $lines[] = $rateLine;
         }
         foreach ($payload['receive_fields'] ?? [] as $row) {
             $lines[] = ' — '.$row['label'].': '.$row['value'];
@@ -292,6 +290,102 @@ final class TelegramOrderMessagePresenter
         $lines[] = $this->stateLine($payload);
 
         return implode("\n", $lines);
+    }
+
+    /**
+     * Compact NEW card: direction, amounts, single rate, masked contact, status.
+     * Omits deposit/payout field dumps until customer marks paid.
+     */
+    public function renderCompactNew(array $payload): string
+    {
+        $id = (string) ($payload['public_id'] ?? '');
+        $givePs = (string) ($payload['give_ps'] ?? '');
+        $recvPs = (string) ($payload['receive_ps'] ?? '');
+        $lines = [
+            '🆕 Новая заявка №'.$id,
+            '',
+        ];
+        if ($givePs !== '' || $recvPs !== '') {
+            $lines[] = 'Направление:';
+            $lines[] = trim($givePs.' → '.$recvPs);
+            $lines[] = '';
+        }
+        if (! empty($payload['give_amount'])) {
+            $lines[] = 'Отдает: '.$payload['give_amount'];
+        }
+        if (! empty($payload['receive_amount'])) {
+            $lines[] = 'Получает: '.$payload['receive_amount'];
+        }
+        foreach ($this->rateLines($payload, compact: true) as $rateLine) {
+            $lines[] = $rateLine;
+        }
+        $contact = $this->compactContact($payload);
+        if ($contact !== null) {
+            $lines[] = 'Клиент: '.$contact;
+        }
+        $lines[] = '';
+        $lines[] = '🟡 Ожидается оплата';
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function rateLines(array $payload, bool $compact = false): array
+    {
+        $mode = (string) ($payload['rate_mode'] ?? 'floating');
+        $orderRate = $this->nonEmpty((string) ($payload['order_rate'] ?? ''));
+        $currentRate = $this->nonEmpty((string) ($payload['current_rate'] ?? ''));
+        $life = (string) ($payload['lifecycle'] ?? self::LIFECYCLE_NEW);
+        $prefix = $compact ? '' : ' — ';
+
+        if ($mode === 'fixed' || $currentRate === null || $orderRate === null
+            || $this->normalizeRate($orderRate) === $this->normalizeRate($currentRate)
+            || $life === self::LIFECYCLE_COMPLETED
+        ) {
+            if ($orderRate !== null) {
+                return [$prefix.'Курс: '.$orderRate];
+            }
+            if ($currentRate !== null) {
+                return [$prefix.'Курс: '.$currentRate];
+            }
+
+            return [];
+        }
+
+        // Floating with distinct create vs payout-relevant rates.
+        return [
+            $prefix.'Курс при создании: '.$orderRate,
+            $prefix.'Курс к выплате: '.$currentRate,
+        ];
+    }
+
+    private function compactContact(array $payload): ?string
+    {
+        $email = $this->nonEmpty((string) ($payload['email'] ?? ''));
+        if ($email !== null) {
+            return $this->maskEmail($email);
+        }
+        $name = $this->nonEmpty((string) ($payload['name'] ?? ''));
+        if ($name !== null && strcasecmp($name, 'User') !== 0 && strcasecmp($name, 'Пользователь') !== 0) {
+            return $name;
+        }
+
+        return null;
+    }
+
+    private function maskEmail(string $email): string
+    {
+        $at = strpos($email, '@');
+        if ($at === false || $at < 1) {
+            return '***';
+        }
+        $local = substr($email, 0, $at);
+        $domain = substr($email, $at);
+        $keep = min(1, strlen($local));
+
+        return substr($local, 0, $keep).'***'.$domain;
     }
 
     public function renderCompletionPrompt(array $payload): string
@@ -354,12 +448,23 @@ final class TelegramOrderMessagePresenter
     private function normalizeLifecycle(mixed $lifecycle, ?Task $task, mixed $operator): string
     {
         $life = is_string($lifecycle) ? $lifecycle : '';
-        if (in_array($life, [self::LIFECYCLE_NEW, self::LIFECYCLE_CLAIMED, self::LIFECYCLE_COMPLETED], true)) {
+        if (in_array($life, [
+            self::LIFECYCLE_NEW,
+            self::LIFECYCLE_PAID,
+            self::LIFECYCLE_CLAIMED,
+            self::LIFECYCLE_COMPLETED,
+        ], true)) {
             return $life;
         }
         try {
-            if ($task !== null && (int) ($task->status ?? 0) === 4) {
-                return self::LIFECYCLE_COMPLETED;
+            if ($task !== null) {
+                $status = (int) ($task->status ?? 0);
+                if ($status === 4) {
+                    return self::LIFECYCLE_COMPLETED;
+                }
+                if ($status === 3) {
+                    return self::LIFECYCLE_PAID;
+                }
             }
         } catch (Throwable) {
         }
