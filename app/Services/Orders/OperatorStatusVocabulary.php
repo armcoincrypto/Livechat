@@ -53,6 +53,13 @@ final class OperatorStatusVocabulary
                 'telegram' => 'Отменена клиентом',
                 'customer_concept' => 'Order canceled',
             ],
+            TaskStatusEnum::EXPIRED->value => [
+                'id' => 1,
+                'key' => 'expired',
+                'admin' => 'Expired',
+                'telegram' => 'Истекла',
+                'customer_concept' => 'Order expired',
+            ],
             TaskStatusEnum::FROZEN->value => [
                 'id' => 8,
                 'key' => 'frozen',
@@ -75,7 +82,7 @@ final class OperatorStatusVocabulary
         $legacy = is_string($legacyName) ? trim($legacyName) : '';
         $canonical = self::describe($statusId)['admin'];
         // Prefer canonical vocabulary for the Wave A critical statuses.
-        if (in_array($statusId, [3, 4, 5, 6, 7, 8], true)) {
+        if (in_array($statusId, [1, 3, 4, 5, 6, 7, 8], true)) {
             return $canonical;
         }
 
@@ -86,7 +93,7 @@ final class OperatorStatusVocabulary
     {
         $legacy = is_string($legacyName) ? trim($legacyName) : '';
         $canonical = self::describe($statusId)['telegram'];
-        if (in_array($statusId, [3, 4, 5, 6, 7, 8], true)) {
+        if (in_array($statusId, [1, 3, 4, 5, 6, 7, 8], true)) {
             return $canonical;
         }
 

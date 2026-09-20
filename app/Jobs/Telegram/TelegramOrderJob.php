@@ -61,6 +61,12 @@ class TelegramOrderJob implements ShouldQueue, ShouldBeUnique
             return;
         }
 
+        if ($this->isTerminalLifecycleEvent($this->param)) {
+            $this->handleLifecycleTerminal($lifecycle);
+
+            return;
+        }
+
         $this->handleLegacySend($selector, $auth);
     }
 
@@ -78,7 +84,7 @@ class TelegramOrderJob implements ShouldQueue, ShouldBeUnique
         }
 
         $stats = $lifecycle->publishNew($this->order->fresh() ?? $this->order);
-        if (($stats['sent'] + $stats['edited'] + $stats['recovered']) > 0) {
+        if ($this->lifecycleTouched($stats)) {
             Cache::put($sentKey, 1, now()->addDays(7));
         } else {
             throw new \RuntimeException('telegram_order_lifecycle_new_failed');
@@ -89,9 +95,35 @@ class TelegramOrderJob implements ShouldQueue, ShouldBeUnique
     {
         // Idempotent EDIT of the existing card — do not SEND a second full card.
         $stats = $lifecycle->publishPaid($this->order->fresh() ?? $this->order);
-        if (($stats['sent'] + $stats['edited'] + $stats['recovered']) === 0) {
+        if (! $this->lifecycleTouched($stats)) {
             throw new \RuntimeException('telegram_order_lifecycle_paid_failed');
         }
+    }
+
+    private function handleLifecycleTerminal(TelegramOrderLifecyclePublisher $lifecycle): void
+    {
+        $fresh = $this->order->fresh() ?? $this->order;
+        $stats = match ($this->param) {
+            'lifecycle_cancelled' => $lifecycle->publishCancelled($fresh),
+            'lifecycle_rejected' => $lifecycle->publishRejected($fresh),
+            'lifecycle_expired' => $lifecycle->publishExpired($fresh),
+            default => ['sent' => 0, 'edited' => 0, 'recovered' => 0, 'skipped_stale' => 0],
+        };
+        // No card yet / stale skip is acceptable — do not retry forever.
+        if (! $this->lifecycleTouched($stats) && ($stats['skipped_stale'] ?? 0) === 0) {
+            Log::info('telegram_order_lifecycle_terminal_noop', [
+                'order_id' => $this->order->id,
+                'notification_type' => $this->param,
+            ]);
+        }
+    }
+
+    /**
+     * @param  array{sent?: int, edited?: int, recovered?: int, skipped_stale?: int}  $stats
+     */
+    private function lifecycleTouched(array $stats): bool
+    {
+        return (($stats['sent'] ?? 0) + ($stats['edited'] ?? 0) + ($stats['recovered'] ?? 0) + ($stats['skipped_stale'] ?? 0)) > 0;
     }
 
     private function handleLegacySend(
@@ -207,6 +239,15 @@ class TelegramOrderJob implements ShouldQueue, ShouldBeUnique
 
         return in_array('new_order_for_operator', $keys, true)
             || in_array('is_new_order_for_operator', $keys, true);
+    }
+
+    private function isTerminalLifecycleEvent(string $param): bool
+    {
+        return in_array($param, [
+            'lifecycle_cancelled',
+            'lifecycle_rejected',
+            'lifecycle_expired',
+        ], true);
     }
 
     public function failed(?Throwable $exception): void

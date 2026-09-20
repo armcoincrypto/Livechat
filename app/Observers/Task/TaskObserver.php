@@ -3,10 +3,11 @@ declare(strict_types=1);
 
 namespace App\Observers\Task;
 
+use App\Jobs\Telegram\TelegramOrderJob;
 use App\Models\Task;
 use App\Services\Analytics\AttributionEventRecorder;
+use App\Services\TelegramOperator\TelegramOrderMessagePresenter;
 use Carbon\Carbon;
-use iEXPackages\Transaction\Facades\TransactionFacade;
 use Illuminate\Support\Facades\Log;
 
 class TaskObserver
@@ -59,6 +60,42 @@ class TaskObserver
                 ->recordStatusTransitionFailOpen($task, (int) $task->status);
         } catch (\Throwable) {
             // never break status transitions
+        }
+
+        $this->dispatchTerminalOperatorCardFailOpen($task);
+    }
+
+    /**
+     * EDIT the canonical operator Telegram card on terminal status changes.
+     * Fail-open: never break the financial status path.
+     */
+    private function dispatchTerminalOperatorCardFailOpen(Task $task): void
+    {
+        $param = match ((int) $task->status) {
+            1 => 'lifecycle_expired',
+            5 => 'lifecycle_rejected',
+            6 => 'lifecycle_cancelled',
+            default => null,
+        };
+        if ($param === null) {
+            return;
+        }
+
+        try {
+            $life = TelegramOrderMessagePresenter::lifecycleFromStatus((int) $task->status);
+            if (! TelegramOrderMessagePresenter::isTerminalLifecycle($life)
+                || $life === TelegramOrderMessagePresenter::LIFECYCLE_COMPLETED
+            ) {
+                return;
+            }
+            TelegramOrderJob::dispatch($task, $param);
+        } catch (\Throwable $e) {
+            Log::warning('telegram_order_terminal_dispatch_failed', [
+                'task_id' => $task->id,
+                'public_id' => $task->public_id ?? null,
+                'status' => (int) $task->status,
+                'exception_class' => $e::class,
+            ]);
         }
     }
 }

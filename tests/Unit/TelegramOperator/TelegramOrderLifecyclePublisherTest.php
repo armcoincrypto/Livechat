@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\TelegramOperator;
 
-use App\Jobs\Telegram\TelegramOrderJob;
 use App\Models\Task;
 use App\Services\TelegramOperator\TelegramOrderCardRegistry;
 use App\Services\TelegramOperator\TelegramOrderLifecyclePublisher;
 use App\Services\TelegramOperator\TelegramOrderMessagePresenter;
 use App\Services\TelegramOperator\TelegramOperatorBotClient;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Mockery;
 use Tests\TestCase;
 
@@ -32,7 +32,7 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
             ->andReturn(['ok' => true, 'message_id' => 101]);
         $bot->shouldReceive('editMessageResult')->never();
 
-        $publisher = $this->publisher($bot, destinations: ['-1001']);
+        $publisher = $this->publisher($bot, destinations: ['777001']);
         $stats = $publisher->publishNew($task);
 
         $this->assertSame(1, $stats['sent']);
@@ -46,13 +46,13 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
     {
         Cache::flush();
         $task = $this->fakeTask(3);
-        app(TelegramOrderCardRegistry::class)->remember((int) $task->id, '-1001', 101, 'new');
+        app(TelegramOrderCardRegistry::class)->remember((int) $task->id, '777001', 101, 'new');
 
         $bot = Mockery::mock(TelegramOperatorBotClient::class);
         $bot->shouldReceive('editMessageResult')
             ->once()
             ->withArgs(function ($chat, $msgId, $text) {
-                return (string) $chat === '-1001'
+                return (string) $chat === '777001'
                     && (int) $msgId === 101
                     && is_string($text)
                     && str_contains($text, 'Заявка');
@@ -60,7 +60,7 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
             ->andReturn(['ok' => true, 'message_missing' => false]);
         $bot->shouldReceive('sendMessageResult')->never();
 
-        $stats = $this->publisher($bot, destinations: ['-1001'])->publishPaid($task);
+        $stats = $this->publisher($bot, destinations: ['777001'])->publishPaid($task);
         $this->assertSame(1, $stats['edited']);
         $this->assertSame(0, $stats['sent']);
     }
@@ -69,7 +69,7 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
     {
         Cache::flush();
         $task = $this->fakeTask(3);
-        app(TelegramOrderCardRegistry::class)->remember((int) $task->id, '-1001', 101, 'paid');
+        app(TelegramOrderCardRegistry::class)->remember((int) $task->id, '777001', 101, 'paid');
 
         $bot = Mockery::mock(TelegramOperatorBotClient::class);
         $bot->shouldReceive('editMessageResult')
@@ -77,7 +77,7 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
             ->andReturn(['ok' => true, 'message_missing' => false]);
         $bot->shouldReceive('sendMessageResult')->never();
 
-        $publisher = $this->publisher($bot, destinations: ['-1001']);
+        $publisher = $this->publisher($bot, destinations: ['777001']);
         $publisher->publishPaid($task);
         $publisher->publishPaid($task);
         $cards = app(TelegramOrderCardRegistry::class)->cards((int) $task->id);
@@ -88,7 +88,7 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
     {
         Cache::flush();
         $task = $this->fakeTask(3);
-        app(TelegramOrderCardRegistry::class)->remember((int) $task->id, '-1001', 101, 'new');
+        app(TelegramOrderCardRegistry::class)->remember((int) $task->id, '777001', 101, 'new');
 
         $bot = Mockery::mock(TelegramOperatorBotClient::class);
         $bot->shouldReceive('editMessageResult')
@@ -98,7 +98,7 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
             ->once()
             ->andReturn(['ok' => true, 'message_id' => 202]);
 
-        $stats = $this->publisher($bot, destinations: ['-1001'])->publishPaid($task);
+        $stats = $this->publisher($bot, destinations: ['777001'])->publishPaid($task);
         $this->assertSame(1, $stats['recovered']);
         $cards = app(TelegramOrderCardRegistry::class)->cards((int) $task->id);
         $this->assertSame(202, $cards[0]['message_id']);
@@ -108,7 +108,7 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
     {
         Cache::flush();
         $task = $this->fakeTask(3);
-        app(TelegramOrderCardRegistry::class)->remember((int) $task->id, '-1001', 101, 'new');
+        app(TelegramOrderCardRegistry::class)->remember((int) $task->id, '777001', 101, 'new');
 
         $bot = Mockery::mock(TelegramOperatorBotClient::class);
         $bot->shouldReceive('editMessageResult')
@@ -116,7 +116,7 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
             ->andReturn(['ok' => false, 'message_missing' => false]);
         $bot->shouldReceive('sendMessageResult')->never();
 
-        $stats = $this->publisher($bot, destinations: ['-1001'])->publishPaid($task);
+        $stats = $this->publisher($bot, destinations: ['777001'])->publishPaid($task);
         $this->assertSame(0, $stats['sent']);
         $this->assertSame(0, $stats['recovered']);
         $this->assertSame(101, app(TelegramOrderCardRegistry::class)->cards((int) $task->id)[0]['message_id']);
@@ -178,7 +178,7 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
             ->andReturn(['ok' => true, 'message_id' => 303]);
         $bot->shouldReceive('editMessageResult')->never();
 
-        $publisher = $this->publisher($bot, destinations: ['-1001']);
+        $publisher = $this->publisher($bot, destinations: ['777001']);
         $paid = $publisher->publishPaid($task);
         $this->assertSame(1, $paid['sent']);
 
@@ -191,13 +191,101 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
         $this->assertSame('paid', $cards[0]['lifecycle']);
     }
 
-    public function test_job_routes_created_and_paid_to_lifecycle(): void
+    public function test_cancelled_edits_same_card_and_repeat_is_idempotent(): void
+    {
+        Cache::flush();
+        $task = $this->fakeTask(6);
+        app(TelegramOrderCardRegistry::class)->remember((int) $task->id, '777001', 101, 'paid');
+
+        $bot = Mockery::mock(TelegramOperatorBotClient::class);
+        $bot->shouldReceive('editMessageResult')
+            ->twice()
+            ->withArgs(fn ($chat, $msgId, $text) => (int) $msgId === 101 && str_contains((string) $text, '❌ Заявка отменена'))
+            ->andReturn(['ok' => true, 'message_missing' => false]);
+        $bot->shouldReceive('sendMessageResult')->never();
+
+        $publisher = $this->publisher($bot, destinations: ['777001']);
+        $this->assertSame(1, $publisher->publishCancelled($task)['edited']);
+        $this->assertSame(1, $publisher->publishCancelled($task)['edited']);
+        $this->assertSame(101, app(TelegramOrderCardRegistry::class)->cards((int) $task->id)[0]['message_id']);
+        $this->assertSame('cancelled', app(TelegramOrderCardRegistry::class)->cards((int) $task->id)[0]['lifecycle']);
+    }
+
+    public function test_rejected_and_expired_edit_same_card(): void
+    {
+        Cache::flush();
+        $rejected = $this->fakeTask(5);
+        $rejected->id = 9135207;
+        app(TelegramOrderCardRegistry::class)->remember((int) $rejected->id, '777001', 111, 'paid');
+        $bot = Mockery::mock(TelegramOperatorBotClient::class);
+        $bot->shouldReceive('editMessageResult')
+            ->once()
+            ->withArgs(fn ($c, $m, $t) => str_contains((string) $t, '🔴 Заявка отклонена'))
+            ->andReturn(['ok' => true, 'message_missing' => false]);
+        $bot->shouldReceive('sendMessageResult')->never();
+        $this->assertSame(1, $this->publisher($bot, destinations: ['777001'])->publishRejected($rejected)['edited']);
+
+        Cache::flush();
+        $expired = $this->fakeTask(1);
+        $expired->id = 9135208;
+        app(TelegramOrderCardRegistry::class)->remember((int) $expired->id, '777001', 222, 'new');
+        $bot2 = Mockery::mock(TelegramOperatorBotClient::class);
+        $bot2->shouldReceive('editMessageResult')
+            ->once()
+            ->withArgs(fn ($c, $m, $t) => str_contains((string) $t, '⚪ Заявка истекла'))
+            ->andReturn(['ok' => true, 'message_missing' => false]);
+        $bot2->shouldReceive('sendMessageResult')->never();
+        $this->assertSame(1, $this->publisher($bot2, destinations: ['777001'])->publishExpired($expired)['edited']);
+    }
+
+    public function test_delayed_paid_cannot_regress_cancelled_card(): void
+    {
+        Cache::flush();
+        $task = $this->fakeTask(6);
+        app(TelegramOrderCardRegistry::class)->remember((int) $task->id, '777001', 101, 'cancelled');
+
+        $bot = Mockery::mock(TelegramOperatorBotClient::class);
+        $bot->shouldReceive('editMessageResult')->never();
+        $bot->shouldReceive('sendMessageResult')->never();
+
+        $stats = $this->publisher($bot, destinations: ['777001'])->publishPaid($task);
+        $this->assertSame(0, $stats['edited']);
+        $this->assertSame(0, $stats['sent']);
+        $this->assertGreaterThan(0, $stats['skipped_stale']);
+        $this->assertSame('cancelled', app(TelegramOrderCardRegistry::class)->cards((int) $task->id)[0]['lifecycle']);
+    }
+
+    public function test_order_card_destinations_are_operator_dms_not_channels(): void
+    {
+        $src = (string) file_get_contents(base_path('app/Services/TelegramOperator/TelegramOrderLifecyclePublisher.php'));
+        $this->assertStringContainsString('order-card channel path is retired', $src);
+        $this->assertStringContainsString('authorizedActionTelegramUserIds', $src);
+        $this->assertStringNotContainsString("enabledForEvent('process_created_order')", $src);
+    }
+
+    public function test_terminal_buttons_are_non_actionable(): void
+    {
+        Config::set('app.url', 'https://exswaping.com');
+        Config::set('telegram_operator.actions_enabled', true);
+        $kb = \App\Services\TelegramOperator\TelegramOrderOperatorWorkflowService::completedKeyboard(42);
+        $flat = json_encode($kb, JSON_UNESCAPED_UNICODE);
+        $this->assertStringNotContainsString('Принять', $flat);
+        $this->assertStringNotContainsString('Выполнить', $flat);
+        $this->assertStringNotContainsString('callback_data', $flat);
+    }
+
+    public function test_job_routes_created_paid_and_terminal_to_lifecycle(): void
     {
         $src = (string) file_get_contents(base_path('app/Jobs/Telegram/TelegramOrderJob.php'));
         $this->assertStringContainsString('TelegramOrderLifecyclePublisher', $src);
         $this->assertStringContainsString('publishNew', $src);
         $this->assertStringContainsString('publishPaid', $src);
-        $this->assertStringContainsString('isPaidOperatorEvent', $src);
+        $this->assertStringContainsString('publishCancelled', $src);
+        $this->assertStringContainsString('lifecycle_expired', $src);
+        $obs = (string) file_get_contents(base_path('app/Observers/Task/TaskObserver.php'));
+        $this->assertStringContainsString('lifecycle_cancelled', $obs);
+        $this->assertStringContainsString('lifecycle_rejected', $obs);
+        $this->assertStringContainsString('lifecycle_expired', $obs);
     }
 
     /**
@@ -208,10 +296,11 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
         $registry = app(TelegramOrderCardRegistry::class);
         $presenter = new TelegramOrderMessagePresenter();
         $selector = Mockery::mock(\App\Services\Orders\TelegramNotificationSelector::class);
-        $row = (object) ['id_channel' => $destinations[0] ?? '', 'token_access' => 'x'];
-        $selector->shouldReceive('enabledForEvent')->andReturn(collect([$row]));
+        $selector->shouldReceive('enabledForEvent')->andReturn(collect([]));
         $auth = Mockery::mock(\App\Services\TelegramOperator\TelegramOperatorAuthService::class);
-        $auth->shouldReceive('authorizedActionTelegramUserIds')->andReturn([]);
+        $auth->shouldReceive('authorizedActionTelegramUserIds')->andReturn(
+            array_map('intval', $destinations)
+        );
 
         return new TelegramOrderLifecyclePublisher($bot, $registry, $presenter, $selector, $auth);
     }

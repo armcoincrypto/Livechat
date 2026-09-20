@@ -24,6 +24,12 @@ final class TelegramOrderMessagePresenter
 
     public const LIFECYCLE_COMPLETED = 'completed';
 
+    public const LIFECYCLE_CANCELLED = 'cancelled';
+
+    public const LIFECYCLE_REJECTED = 'rejected';
+
+    public const LIFECYCLE_EXPIRED = 'expired';
+
     /** @var list<string> */
     private const SECRET_NEEDLES = [
         'token', 'secret', 'password', 'private', 'webhook', 'api_key',
@@ -343,6 +349,7 @@ final class TelegramOrderMessagePresenter
         if ($mode === 'fixed' || $currentRate === null || $orderRate === null
             || $this->normalizeRate($orderRate) === $this->normalizeRate($currentRate)
             || $life === self::LIFECYCLE_COMPLETED
+            || self::isTerminalLifecycle($life)
         ) {
             if ($orderRate !== null) {
                 return [$prefix.'Курс: '.$orderRate];
@@ -417,6 +424,16 @@ final class TelegramOrderMessagePresenter
         $completed = $this->nonEmpty((string) ($payload['completed_at'] ?? ''));
         $clock = $completed ?? $claimed;
 
+        if ($life === self::LIFECYCLE_CANCELLED) {
+            return '❌ Заявка отменена';
+        }
+        if ($life === self::LIFECYCLE_REJECTED) {
+            return '🔴 Заявка отклонена';
+        }
+        if ($life === self::LIFECYCLE_EXPIRED) {
+            return '⚪ Заявка истекла';
+        }
+
         if ($life === self::LIFECYCLE_COMPLETED) {
             $lines = ['✅ Выполнено'];
             if ($operator !== null) {
@@ -453,24 +470,48 @@ final class TelegramOrderMessagePresenter
             self::LIFECYCLE_PAID,
             self::LIFECYCLE_CLAIMED,
             self::LIFECYCLE_COMPLETED,
+            self::LIFECYCLE_CANCELLED,
+            self::LIFECYCLE_REJECTED,
+            self::LIFECYCLE_EXPIRED,
         ], true)) {
             return $life;
         }
         try {
             if ($task !== null) {
-                $status = (int) ($task->status ?? 0);
-                if ($status === 4) {
-                    return self::LIFECYCLE_COMPLETED;
-                }
-                if ($status === 3) {
-                    return self::LIFECYCLE_PAID;
-                }
+                return self::lifecycleFromStatus((int) ($task->status ?? 0), $operator);
             }
         } catch (Throwable) {
         }
         $op = $this->nonEmpty((string) $operator);
 
         return $op !== null ? self::LIFECYCLE_CLAIMED : self::LIFECYCLE_NEW;
+    }
+
+    /**
+     * Map authoritative TaskStatusEnum id to operator-card lifecycle.
+     */
+    public static function lifecycleFromStatus(int $status, mixed $operator = null): string
+    {
+        return match ($status) {
+            1 => self::LIFECYCLE_EXPIRED,
+            4 => self::LIFECYCLE_COMPLETED,
+            5 => self::LIFECYCLE_REJECTED,
+            6 => self::LIFECYCLE_CANCELLED,
+            3, 7, 12 => self::LIFECYCLE_PAID,
+            default => (is_string($operator) && trim($operator) !== '')
+                ? self::LIFECYCLE_CLAIMED
+                : self::LIFECYCLE_NEW,
+        };
+    }
+
+    public static function isTerminalLifecycle(string $lifecycle): bool
+    {
+        return in_array($lifecycle, [
+            self::LIFECYCLE_CANCELLED,
+            self::LIFECYCLE_REJECTED,
+            self::LIFECYCLE_EXPIRED,
+            self::LIFECYCLE_COMPLETED,
+        ], true);
     }
 
     private function completedAt(Task $task, string $lifecycle): ?string

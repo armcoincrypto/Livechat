@@ -139,6 +139,9 @@ final class TelegramOrderCardRegistry
             TelegramOrderMessagePresenter::LIFECYCLE_PAID => 2,
             TelegramOrderMessagePresenter::LIFECYCLE_CLAIMED => 3,
             TelegramOrderMessagePresenter::LIFECYCLE_COMPLETED => 4,
+            TelegramOrderMessagePresenter::LIFECYCLE_CANCELLED,
+            TelegramOrderMessagePresenter::LIFECYCLE_REJECTED,
+            TelegramOrderMessagePresenter::LIFECYCLE_EXPIRED => 5,
             default => 0,
         };
     }
