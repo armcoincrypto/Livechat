@@ -65,17 +65,26 @@ class StatusRatesFilesCommand extends Command
             // it can be frozen offline by WorkStatusMiddleware and wipe a just-started feed.
             if ($forcePublish) {
                 $export->store(isClear: false);
+                // force-publish is resume-path: drop any leftover monitor hide flag.
+                \App\Services\Rates\RatesXmlMonitorGate::show('scheme:files_force_publish');
             } else {
                 $isClear = WorkStatusFresh::isOffline();
                 if ($isClear) {
                     \App\Services\Rates\RatesXmlMonitorGate::hide('scheme:files_offline');
                 } else {
-                    // Online ticks: ensure hide flag is absent; do not restore parser dump every 2m.
+                    // Online ticks: clear sticky hide flag via official show()
+                    // (not raw unlink) so parser-best restore stays consistent.
                     if (\App\Services\Rates\RatesXmlMonitorGate::isHidden()) {
-                        @unlink(\App\Services\Rates\RatesXmlMonitorGate::FLAG_PATH);
+                        \App\Services\Rates\RatesXmlMonitorGate::show('scheme:files_online');
                     }
                 }
                 $export->store(isClear: $isClear);
+                // Race guard: a concurrent clear() can re-set the flag while the
+                // online publish runs; drop it again when the site is still online.
+                if (!$isClear && \App\Services\Rates\RatesXmlMonitorGate::isHidden()
+                    && !WorkStatusFresh::isOffline()) {
+                    \App\Services\Rates\RatesXmlMonitorGate::show('scheme:files_online_post');
+                }
             }
 
             $time = round(microtime(true) - $start, 4);

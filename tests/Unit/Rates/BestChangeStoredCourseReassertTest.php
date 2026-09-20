@@ -103,4 +103,15 @@ final class BestChangeStoredCourseReassertTest extends TestCase
             dirname(__DIR__, 3) . '/app/Services/Rates/BestChangeStoredCourseReassert.php'
         ));
     }
+
+    public function test_scheme_files_online_path_uses_gate_show(): void
+    {
+        $src = (string) file_get_contents(
+            dirname(__DIR__, 3) . '/app/Console/Commands/StatusRatesFilesCommand.php'
+        );
+        $this->assertStringContainsString("RatesXmlMonitorGate::show('scheme:files_online')", $src);
+        $this->assertStringContainsString("RatesXmlMonitorGate::show('scheme:files_online_post')", $src);
+        $this->assertStringNotContainsString('@unlink(\App\Services\Rates\RatesXmlMonitorGate::FLAG_PATH)', $src);
+    }
 }
+
