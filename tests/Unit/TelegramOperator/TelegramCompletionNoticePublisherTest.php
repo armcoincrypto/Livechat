@@ -22,7 +22,7 @@ final class TelegramCompletionNoticePublisherTest extends TestCase
                 $this->calls[] = ['edit', $chatId, $messageId, $text];
             }
 
-            public function sendMessage(int|string $chatId, string $text, ?array $keyboard = null): void
+            public function sendMessage(int|string $chatId, string $text, ?array $keyboard = null, ?int $replyToMessageId = null): void
             {
                 $this->calls[] = ['send', $chatId, $text];
             }
