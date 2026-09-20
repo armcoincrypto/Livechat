@@ -101,12 +101,22 @@ final class UpdateCoursesConsole extends Command
 
             // courses Directions can copy a stale manual_rate_value onto
             // zero-profit BestChange rows. Put the live rate back. No Top-N change.
+            // Late writers (forked compilers / concurrent competitor ticks) can
+            // re-mirror after Directions returns while reassert still sees 0;
+            // settle briefly and reassert again so the final stored course sticks.
             try {
                 $stale = (new BestChangeStoredCourseReassert())->reassert(dryRun: false);
                 $this->comment(sprintf(
                     'BestChange stored-course reassert: matched=%d updated=%d',
                     (int) ($stale['matched'] ?? 0),
                     (int) ($stale['updated'] ?? 0)
+                ));
+                usleep(2_500_000);
+                $stale2 = (new BestChangeStoredCourseReassert())->reassert(dryRun: false);
+                $this->comment(sprintf(
+                    'BestChange stored-course reassert settle: matched=%d updated=%d',
+                    (int) ($stale2['matched'] ?? 0),
+                    (int) ($stale2['updated'] ?? 0)
                 ));
             } catch (Throwable $staleEx) {
                 Log::error('compiler:courses bestchange stored-course reassert failed', [

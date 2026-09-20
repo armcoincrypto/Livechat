@@ -99,6 +99,7 @@ final class BestChangeStoredCourseReassertTest extends TestCase
         $this->assertNotFalse($full);
         $this->assertNotFalse($hook);
         $this->assertGreaterThan($full, $hook);
+        $this->assertStringContainsString('reassert settle', $src);
         $this->assertStringContainsString('MIRROR_REASSERT_MAX_AGE_SECONDS', (string) file_get_contents(
             dirname(__DIR__, 3) . '/app/Services/Rates/BestChangeStoredCourseReassert.php'
         ));
