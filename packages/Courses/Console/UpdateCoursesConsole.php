@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace iEXPackages\Courses\Console;
 
 use App\Models\HistoryUpdatedData;
+use App\Services\Rates\BestChangeStoredCourseReassert;
 use App\Services\Rates\ZelleUsdUsdtBenchmarkAuthority;
 use iEXPackages\Courses\Rates\Rates;
 use Illuminate\Console\Command;
@@ -96,6 +97,22 @@ final class UpdateCoursesConsole extends Command
                     'message' => $zelleEx->getMessage(),
                 ]);
                 $this->warn('ZELLE reassert failed: ' . $zelleEx->getMessage());
+            }
+
+            // courses Directions can copy a stale manual_rate_value onto
+            // zero-profit BestChange rows. Put the live rate back. No Top-N change.
+            try {
+                $stale = (new BestChangeStoredCourseReassert())->reassert(dryRun: false);
+                $this->comment(sprintf(
+                    'BestChange stored-course reassert: matched=%d updated=%d',
+                    (int) ($stale['matched'] ?? 0),
+                    (int) ($stale['updated'] ?? 0)
+                ));
+            } catch (Throwable $staleEx) {
+                Log::error('compiler:courses bestchange stored-course reassert failed', [
+                    'message' => $staleEx->getMessage(),
+                ]);
+                $this->warn('BestChange stored-course reassert failed: ' . $staleEx->getMessage());
             }
 
             $timeSec = round(microtime(true) - $startedAt, 4);
