@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\DirectionExchange;
 use App\Models\GroupCommission;
 use App\Models\ProfitProfile;
+use App\Services\Rates\AdminPricingFinancialAuditLogger;
+use App\Services\Rates\AdminPricingOperatorSafety;
 use App\Services\Rates\AdminPricingTransparency;
 use App\Services\Rates\AdminRateSourcePresenter;
 use App\Services\Rates\CommercialAdjustmentResolver;
@@ -17,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class DirectionExchangeProfitController extends Controller
 {
@@ -110,12 +113,24 @@ class DirectionExchangeProfitController extends Controller
         $item = DirectionExchange::query()->findOrFail($id);
         $resolver = new CommercialAdjustmentResolver();
 
+        // Phase 3: never silently switch ownership / rate authority via profit save.
+        foreach (['parser_source_name', 'ownership', 'owner', 'rate_mode', 'promote_manual'] as $blocked) {
+            if ($request->exists($blocked)) {
+                return response()->json([
+                    'status' => 1,
+                    'code' => 'OWNERSHIP_SWITCH_REQUIRES_DELIBERATE_ACTION',
+                    'message' => 'Field '.$blocked.' cannot be changed via Profit update. Use a deliberate ownership/rate-mode action.',
+                ], 422);
+            }
+        }
+
         $validator = Validator::make($request->all(), [
             'profit'                => ['nullable'],
             'profit_s'              => ['nullable'],
             'ids_group_commissions' => ['array'],
             'ids_group_commissions.*' => ['integer', 'exists:group_commission,id'],
             'profit_profile_id'     => ['nullable', 'integer', 'exists:profit_profiles,id'],
+            'confirm_preview'       => ['nullable'],
         ]);
 
         if ($validator->fails()) {
@@ -123,6 +138,22 @@ class DirectionExchangeProfitController extends Controller
                 'status'  => 1,
                 'message' => $validator->messages()->first(),
             ]);
+        }
+
+        $item->loadMissing(['bestchange_directions', 'currency1', 'currency2']);
+        $beforeTruth = AdminPricingOperatorSafety::truthPanel($item);
+        $preview = AdminPricingOperatorSafety::preview($item, [
+            'profit' => $request->input('profit'),
+        ]);
+
+        // Optional operator confirmation gate when client sends preview_required=1.
+        if ($request->boolean('preview_required') && !$request->boolean('confirm_preview')) {
+            return response()->json([
+                'status' => 1,
+                'code' => 'PREVIEW_CONFIRM_REQUIRED',
+                'message' => 'Confirm Position/Profit preview before save.',
+                'data' => $preview,
+            ], 422);
         }
 
         // Сохраняем группы комиссий
@@ -144,6 +175,7 @@ class DirectionExchangeProfitController extends Controller
 
         $profitBefore = $resolver->displayProfitPercent($item);
         $fixBefore = (string) ($item->fix_fee ?? '0');
+        $changeId = (string) Str::uuid();
 
         CommercialAdjustmentWriteGate::run('admin:DirectionExchangeProfitController', function () use ($item, $payload): void {
             $item->update($payload);
@@ -155,6 +187,7 @@ class DirectionExchangeProfitController extends Controller
 
         // BestChange: profit is applied in Calculator base. Rewrite course_value so
         // XML (export override = course_value) stays aligned with website/order.
+        // Ownership stays BestChange — manual_rate_value mirror is non-authoritative.
         if ($family === 'BESTCHANGE') {
             $commercialLabel = $this->refreshBestChangeCommercialCourse($item);
             $item->refresh();
@@ -164,6 +197,11 @@ class DirectionExchangeProfitController extends Controller
         }
 
         $pricing = $this->pricingContext($item, $resolver);
+        $item->loadMissing(['bestchange_directions', 'currency1', 'currency2']);
+        $convergence = AdminPricingOperatorSafety::convergence($item, [
+            'EXPECTED_NEW_CUSTOMER_RATE' => $preview['EXPECTED_NEW_CUSTOMER_RATE'] ?? null,
+        ]);
+
         RateWriteAuditLogger::record([
             'event' => 'admin_profit_change',
             'direction_id' => (int) $item->id,
@@ -176,18 +214,54 @@ class DirectionExchangeProfitController extends Controller
             'base' => $pricing['base'],
             'final_floating' => $pricing['final_floating'],
             'base_source' => $pricing['base_source'],
+            'job_run_id' => $changeId,
         ]);
+
+        AdminPricingFinancialAuditLogger::record([
+            'change_id' => $changeId,
+            'request_id' => $request->headers->get('X-Request-Id') ?? $changeId,
+            'event' => 'admin_profit_change',
+            'writer' => 'admin:DirectionExchangeProfitController',
+            'operator_id' => Auth::id(),
+            'operator_email' => Auth::user()->email ?? null,
+            'direction_id' => (int) $item->id,
+            'pair' => $beforeTruth['BESTCHANGE_PAIR'] ?? null,
+            'old_profit' => $profitBefore,
+            'new_profit' => $resolver->displayProfitPercent($item),
+            'old_fix_fee' => $fixBefore,
+            'new_fix_fee' => (string) ($item->fix_fee ?? '0'),
+            'old_owner' => $beforeTruth['OWNER'] ?? null,
+            'new_owner' => $family,
+            'old_position' => $beforeTruth['EFFECTIVE_POSITION'] ?? null,
+            'new_position' => $beforeTruth['EFFECTIVE_POSITION'] ?? null,
+            'before_base' => $beforeTruth['BASE'] ?? null,
+            'after_base' => $pricing['base'] ?? null,
+            'before_customer_rate' => $beforeTruth['CALCULATOR_FINAL_RATE'] ?? null,
+            'after_customer_rate' => $pricing['final_floating'] ?? null,
+            'ip' => $request->ip(),
+            'route' => 'direction_exchange.fees.profit.update',
+        ]);
+
         Log::info('admin_direction_profit_updated', [
             'direction_id' => (int) $item->id,
             'actor' => Auth::id(),
             'profit_after' => $resolver->displayProfitPercent($item),
+            'change_id' => $changeId,
         ]);
 
         return response()->json([
             'status'  => 0,
             'message' => __('Настройки прибыли направления успешно обновлены'),
+            'SAVE_ACCEPTED' => true,
+            'change_id' => $changeId,
             'exchange_rate' => $commercialLabel ?? $item->exchange_rate,
             'pricing' => $pricing,
+            'preview' => $preview,
+            'convergence' => $convergence,
+            'warnings' => array_values(array_unique(array_merge(
+                $beforeTruth['warnings'] ?? [],
+                $convergence['warnings'] ?? []
+            ))),
             'attributes' => [
                 'profit' => $resolver->displayProfitPercent($item),
                 'floating_fee' => $item->floating_fee,

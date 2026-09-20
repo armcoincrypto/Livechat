@@ -1,7 +1,7 @@
 /**
- * Admin pricing ownership / «Почему такой курс?» panel (Wave C / Wave E).
- * Activates on direction fees/profit routes. Russian owner language.
- * Wave E: collapsed by default; expand for full commercial breakdown.
+ * Admin pricing ownership / truth panel (operator safety).
+ * Activates on direction fees/profit routes.
+ * Labels: BASE / PROFIT / FINAL CUSTOMER RATE — course_value is commercial, not "BestChange rate".
  */
 (function (w, d) {
   'use strict';
@@ -20,7 +20,7 @@
 
   function isProfitScreen() {
     var s = (w.location.pathname || '') + (w.location.hash || '');
-    return /profit|fees\/profit|direction-edit-profit|pricing\/explain/i.test(s);
+    return /profit|fees\/profit|direction-edit-profit|pricing\/explain|pricing\/truth|courses/i.test(s);
   }
 
   function panelEl() {
@@ -29,10 +29,10 @@
     el = d.createElement('div');
     el.id = 'exs-pricing-ownership-panel';
     el.setAttribute('style',
-      'position:fixed;left:16px;bottom:16px;z-index:99998;max-width:420px;' +
+      'position:fixed;left:16px;bottom:16px;z-index:99998;max-width:460px;' +
       'padding:12px 14px;border:1px solid #cbd5e1;border-radius:10px;' +
       'background:#fff;color:#0f172a;font:12px/1.45 ui-sans-serif,system-ui,sans-serif;' +
-      'box-shadow:0 8px 24px rgba(15,23,42,.12);display:none;max-height:70vh;overflow:auto');
+      'box-shadow:0 8px 24px rgba(15,23,42,.12);display:none;max-height:75vh;overflow:auto');
     d.body.appendChild(el);
     return el;
   }
@@ -48,75 +48,86 @@
       '<strong style="text-align:right">' + esc(value == null || value === '' ? '—' : value) + '</strong></div>';
   }
 
+  function warnBlock(warnings) {
+    if (!warnings || !warnings.length) return '';
+    return '<div style="margin-top:8px;padding:8px;border:1px solid #f59e0b;background:#fffbeb;border-radius:6px;color:#92400e;font-size:11px">' +
+      warnings.map(function (w) { return '<div>• ' + esc(w) + '</div>'; }).join('') +
+      '</div>';
+  }
+
   function render(data) {
     lastPayload = data;
+    var truth = (data && data.data && (data.data.OWNER || data.data.BASE)) ? data.data : null;
     var a = (data && data.attributes) || {};
     var ra = (data && data.options && data.options.rateAuthority) || {};
-    var p = ra.pricing || a.pricing_explanation || (data && data.data) || {};
+    var p = (truth && truth.explain) || ra.pricing || a.pricing_explanation || (data && data.data) || {};
     var own = p.ownership || {};
     var pos = p.position || {};
     var com = p.commercial || {};
     var fresh = p.freshness || {};
     var layers = p.layers || {};
     var rates = p.customer_rates || {};
-    var sourceLabel = own.label || ra.rate_source_label || a.rate_source_label || '—';
-    var pairOverride = pos.pair_override == null || pos.pair_override === ''
-      ? 'нет'
-      : String(pos.pair_override);
+    var sourceLabel = (truth && truth.OWNER) || own.label || ra.rate_source_label || a.rate_source_label || '—';
+    var pairOverride = (truth && truth.CONFIGURED_POSITION != null)
+      ? String(truth.CONFIGURED_POSITION)
+      : (pos.pair_override == null || pos.pair_override === '' ? 'нет' : String(pos.pair_override));
     var el = panelEl();
     el.style.display = 'block';
 
+    var owner = (truth && truth.OWNER) || own.family || sourceLabel;
+    var base = (truth && truth.BASE) || p.base || (p.source_rate && p.source_rate.base) || a.base_rate || '—';
+    var profit = (truth && truth.PROFIT != null) ? truth.PROFIT : (com.explicit_profit_percent != null ? com.explicit_profit_percent : (a.profit != null ? a.profit : p.profit));
+    var finalRate = (truth && truth.CALCULATOR_FINAL_RATE) || rates.floating || a.final_floating_rate || p.final_floating || '—';
+    var stored = (truth && truth.STORED_COURSE_VALUE) || a.course_value || '—';
+    var effPos = (truth && truth.EFFECTIVE_POSITION != null) ? truth.EFFECTIVE_POSITION : (pos.effective != null ? pos.effective : a.effective_bestchange_position);
+    var warnings = (truth && truth.warnings) || [];
+
     var summary =
-      (p.mapping_authority_label ? row('Маппинг', p.mapping_authority_label) : '') +
-      row('Владелец цены', own.label || sourceLabel) +
-      row('Источник (exchanger)', (p.source_rate && p.source_rate.source_exchanger) || (p.external_position && p.external_position.source_competitor_name) || p.source_exchanger || '—') +
-      row('Позиция источника (BASE)', pos.effective != null ? ('#' + pos.effective) : (a.effective_bestchange_position != null ? ('#' + a.effective_bestchange_position) : (p.bestchange_position != null ? ('#' + p.bestchange_position) : '—'))) +
-      row('Внешняя цель Top-N', (function () {
-        var t = (p.external_position && (p.external_position.configured_external_target || p.external_position.external_target_rank))
-          || (p.coin_zelle_external_position && (p.coin_zelle_external_position.configured_external_target || p.coin_zelle_external_position.external_target_rank))
-          || pos.effective || a.effective_bestchange_position || p.bestchange_position;
-        return t != null && t !== '' ? ('Top ' + t) : '—';
-      })()) +
-      row('Текущий внешний ранг', (p.topn && p.topn.actual_rank != null) ? p.topn.actual_rank : (p.external_rank != null ? p.external_rank : '—')) +
-      row('Top-N статус', (p.topn && p.topn.status) || p.topn_status || '—') +
-      row('BASE', p.base || (p.source_rate && p.source_rate.base) || a.base_rate || '—') +
-      row('Прибыль', (com.explicit_profit_percent != null ? com.explicit_profit_percent : (a.profit != null ? a.profit : p.profit)) + '%') +
-      row('Fee mode / Fee', (function () {
-        var mode = (layers && layers.fee_mode) || (com.storage_field) || '—';
-        var fee = com.floating_fee != null ? com.floating_fee : (com.fix_fee != null ? com.fix_fee : p.fix_fee);
-        return mode + ' / ' + (fee != null ? fee : '—');
-      })()) +
-      row('Итоговый курс', rates.floating || a.final_floating_rate || p.final_floating || '—') +
-      row('Свежесть', fresh.state_label || a.freshness_label || p.source_status || '—');
+      row('OWNER', owner) +
+      row('RATE_MODE', (truth && truth.RATE_MODE) || '—') +
+      row('Источник курса', (truth && truth.SELECTED_EXCHANGER) || p.source_exchanger || own.label || sourceLabel) +
+      row('Эффективная позиция', effPos != null ? ('#' + effPos) : '—') +
+      row('CONFIGURED_POSITION', pairOverride) +
+      row('SELECTED_EXCHANGER', (truth && truth.SELECTED_EXCHANGER) || p.source_exchanger || '—') +
+      row('SELECTED_RATE_VALUE', (truth && truth.SELECTED_RATE_VALUE) || p.bestchange_rate || '—') +
+      row('BASE', base) +
+      row('PROFIT', (profit != null ? profit : '—') + '%') +
+      row('Прибыль', (profit != null ? profit : '—') + '%') +
+      row('FINAL CUSTOMER RATE', finalRate) +
+      row('Итоговый курс', finalRate) +
+      row('STORED_COURSE_VALUE', stored) +
+      row('PUBLIC_QUOTE_RATE', (truth && truth.PUBLIC_QUOTE_RATE) || finalRate) +
+      row('XML_RATE', (truth && truth.XML_RATE) || stored) +
+      row('FIX_FEE', (truth && truth.FIX_FEE != null) ? truth.FIX_FEE : (com.fix_fee != null ? com.fix_fee : p.fix_fee)) +
+      row('PRICING_HEALTH', (truth && (truth.PRICING_HEALTH_LABEL || truth.PRICING_HEALTH)) || fresh.state_label || a.freshness_label || '—') +
+      (truth && truth.manual_controls_non_authoritative
+        ? '<div style="margin-top:6px;color:#b45309;font-size:11px">Manual rate controls are non-authoritative for this OWNER. Ownership switch requires a deliberate action.</div>'
+        : '') +
+      warnBlock(warnings);
 
     var details =
+      row('BESTCHANGE_PAIR', (truth && truth.BESTCHANGE_PAIR)
+        ? ((truth.BESTCHANGE_PAIR.from || '') + ' → ' + (truth.BESTCHANGE_PAIR.to || ''))
+        : ((p.pair && (p.pair.from + ' → ' + p.pair.to)) || '—')) +
+      row('LAST_BESTCHANGE_UPDATE', (truth && truth.LAST_BESTCHANGE_UPDATE) || p.source_updated_at || fresh.human || '—') +
+      row('LAST_COURSE_UPDATE', (truth && truth.LAST_COURSE_UPDATE) || '—') +
       row('Почему назначен', own.reason || '—') +
       row('Глобальная позиция', pos.global != null ? pos.global : '—') +
       row('Переопределение пары', pairOverride) +
-      row('BASE (источник)', p.base || a.base_rate || '—') +
-      row('Корректировка прибыли', (com.explicit_profit_percent != null ? com.explicit_profit_percent : (a.profit != null ? a.profit : p.profit)) + '%') +
-      row(layers.is_floating_fee_additional ? 'Доп. корректировка (плав./floating_fee)' : 'Корректировка плавающего (от прибыли)',
-        layers.floating_adjustment_percent != null ? layers.floating_adjustment_percent + '%' : '—') +
-      row('Курс клиента (плавающий)', rates.floating || a.final_floating_rate || p.final_floating || '—') +
-      row('fix_fee (фикс. режим)', (com.fix_fee != null ? com.fix_fee : p.fix_fee) + '%') +
-      row('Курс клиента (фиксированный)', rates.fixed || a.final_fixed_rate || p.final_fixed || '—') +
-      row('Последнее обновление', fresh.human || a.freshness_human || p.source_updated_at || '—') +
-      (com.zero_profit_wording ? '<div style="margin-top:6px;color:#475569;font-size:11px">' + esc(com.zero_profit_wording) + '</div>' : '') +
       '<div style="margin-top:8px;color:#475569;font-size:11px">' +
-        esc(own.profit_survives_hint || a.profit_survives_hint || 'Коммерческая настройка (Прибыль) сохраняется при автообновлении курса.') +
+        esc('BASE = source book rate. PROFIT = commercial %. FINAL CUSTOMER RATE = client rate. STORED_COURSE_VALUE is commercial snapshot — not «BestChange rate».') +
       '</div>' +
-      '<div style="margin-top:6px;color:#64748b;font-size:11px">' +
-        esc('Порядок: BASE(position) → Прибыль% → floating_fee/fix_fee (по режиму) → Top-N adjustment (если eligible). Margin guard не даёт Top-N стереть коммерческий пол.') +
-      '</div>' +
+      (com.zero_profit_wording ? '<div style="margin-top:6px;color:#475569;font-size:11px">' + esc(com.zero_profit_wording) + '</div>' : '') +
       (layers.when_each_applies ? '<div style="margin-top:6px;color:#64748b;font-size:11px">' + esc(layers.when_each_applies) + '</div>' : '');
 
     el.innerHTML =
       '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">' +
-        '<div style="font-weight:700">Почему такой курс?</div>' +
+        '<div style="font-weight:700">Admin pricing truth</div>' +
         '<button type="button" data-exs-pricing-toggle="1" style="border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;padding:4px 8px;font:11px/1.2 ui-sans-serif,system-ui,sans-serif;cursor:pointer;color:#0f172a">' +
           (expanded ? 'Свернуть' : 'Подробнее') +
         '</button>' +
       '</div>' +
+      '<div style="font-weight:600;margin-bottom:4px;color:#334155">Почему такой курс?</div>' +
       summary +
       (expanded ? '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0">' + details + '</div>' : '');
 
@@ -129,13 +140,11 @@
     }
   }
 
-  function fetchProfit(id) {
-    var base = (w.adminConfig && (w.adminConfig.api_url || w.adminConfig.baseURL || w.adminConfig.url)) || '';
+  function fetchTruth(id) {
     var candidates = [
-      '/administrator/direction_exchange/' + id + '/fees/profit',
+      '/administrator/direction_exchange/' + id + '/pricing/truth',
       '/administrator/direction_exchange/' + id + '/pricing/explain',
-      '/admin/direction_exchange/' + id + '/fees/profit',
-      base.replace(/\/$/, '') + '/direction_exchange/' + id + '/fees/profit'
+      '/administrator/direction_exchange/' + id + '/fees/profit'
     ];
     var i = 0;
     function tryNext() {
@@ -161,7 +170,7 @@
     if (id && id !== lastId) {
       lastId = id;
       expanded = false;
-      fetchProfit(id);
+      fetchTruth(id);
     }
   }
 

@@ -1627,6 +1627,18 @@ class DirectionExchangeController extends Controller
                     if (!$isManual && array_key_exists('manual_rate_value', $responseData)) {
                         unset($responseData['manual_rate_value']);
                     }
+                    // Ownership switch must be deliberate — never piggyback on courses edit.
+                    if (array_key_exists('parser_source_name', $responseData)
+                        && (string) $responseData['parser_source_name'] !== (string) ($item->parser_source_name ?? '')
+                    ) {
+                        if (!$request->boolean('confirm_ownership_switch')) {
+                            return response()->json([
+                                'status' => 1,
+                                'code' => 'OWNERSHIP_SWITCH_REQUIRES_DELIBERATE_ACTION',
+                                'message' => 'Changing OWNER/parser_source_name requires confirm_ownership_switch=1.',
+                            ], 422);
+                        }
+                    }
                 }
 
                 $item->update($responseData);

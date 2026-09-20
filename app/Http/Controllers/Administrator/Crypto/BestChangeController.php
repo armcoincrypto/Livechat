@@ -12,6 +12,8 @@ use App\Models\DirectionExchange;
 use App\Models\GroupParserExchange;
 use App\Models\ParserFormulaRates;
 use App\Services\Rates\AdminBulkActionAuditLogger;
+use App\Services\Rates\AdminPricingFinancialAuditLogger;
+use App\Services\Rates\AdminPricingOperatorSafety;
 use App\Services\Rates\BestChangeBulkStatusGuard;
 use App\Settings\BestChangeConfig;
 use iEXPackages\BestChange\Facades\BestChangeFacade;
@@ -336,6 +338,23 @@ final class BestChangeController extends Controller
         if ($request->boolean('is_update')) {
             if ($request->boolean('change_position')) {
                 $beforePos = (string) $item->position_num;
+                $dir = DirectionExchange::query()
+                    ->with(['bestchange_directions', 'currency1:id,designation_xml', 'currency2:id,designation_xml'])
+                    ->find((int) $item->id_direction_exchange);
+                $beforeTruth = $dir ? AdminPricingOperatorSafety::truthPanel($dir) : null;
+                $preview = $dir ? AdminPricingOperatorSafety::preview($dir, [
+                    'position_num' => $request->input('position_num', '0'),
+                ]) : null;
+
+                if ($request->boolean('preview_required') && !$request->boolean('confirm_preview')) {
+                    return response()->json([
+                        'status' => 1,
+                        'code' => 'PREVIEW_CONFIRM_REQUIRED',
+                        'message' => 'Confirm Position preview before save.',
+                        'data' => $preview,
+                    ], 422);
+                }
+
                 $item->update([
                     'position_num' => ValueNormalizer::normalizePosition($request->input('position_num', '0')),
                 ]);
@@ -353,6 +372,7 @@ final class BestChangeController extends Controller
                         . '. Курс обновится на следующем RatesUpdate/compiler.';
                 }
 
+                $changeId = (string) Str::uuid();
                 AdminBulkActionAuditLogger::record([
                     'event' => 'bestchange_position_change',
                     'action' => 'set_position',
@@ -361,7 +381,7 @@ final class BestChangeController extends Controller
                     'admin_email' => Auth::user()->email ?? null,
                     'ip' => $request->ip(),
                     'session_id' => $request->hasSession() ? $request->session()->getId() : null,
-                    'request_id' => $request->headers->get('X-Request-Id'),
+                    'request_id' => $request->headers->get('X-Request-Id') ?? $changeId,
                     'route' => 'admin.crypto.bestchange.update',
                     'row_count' => 1,
                     'ids' => [(int) $item->id],
@@ -371,12 +391,56 @@ final class BestChangeController extends Controller
                     'user_agent' => (string) $request->userAgent(),
                 ]);
 
+                AdminPricingFinancialAuditLogger::record([
+                    'change_id' => $changeId,
+                    'request_id' => $request->headers->get('X-Request-Id') ?? $changeId,
+                    'event' => 'admin_position_change',
+                    'writer' => 'admin:BestChangeController',
+                    'operator_id' => Auth::id(),
+                    'operator_email' => Auth::user()->email ?? null,
+                    'direction_id' => (int) $item->id_direction_exchange,
+                    'pair' => $beforeTruth['BESTCHANGE_PAIR'] ?? null,
+                    'old_position' => $beforePos,
+                    'new_position' => (string) $item->position_num,
+                    'old_profit' => $beforeTruth['PROFIT'] ?? null,
+                    'new_profit' => $beforeTruth['PROFIT'] ?? null,
+                    'old_owner' => $beforeTruth['OWNER'] ?? null,
+                    'new_owner' => $beforeTruth['OWNER'] ?? null,
+                    'old_rate_mode' => $beforeTruth['RATE_MODE'] ?? null,
+                    'new_rate_mode' => $beforeTruth['RATE_MODE'] ?? null,
+                    'before_base' => $beforeTruth['BASE'] ?? null,
+                    'after_base' => $beforeTruth['BASE'] ?? null,
+                    'before_customer_rate' => $beforeTruth['CALCULATOR_FINAL_RATE'] ?? null,
+                    'after_customer_rate' => $beforeTruth['CALCULATOR_FINAL_RATE'] ?? null,
+                    'ip' => $request->ip(),
+                    'route' => 'admin.crypto.bestchange.update',
+                    'notes' => 'position_authoritative='.($affectsRate ? '1' : '0'),
+                ]);
+
+                $convergence = null;
+                if ($dir) {
+                    $dir->refresh();
+                    $dir->loadMissing(['bestchange_directions', 'currency1', 'currency2']);
+                    $convergence = AdminPricingOperatorSafety::convergence($dir);
+                }
+
                 return response()->json([
                     'status'  => 0,
                     'message' => $message,
+                    'SAVE_ACCEPTED' => true,
+                    'change_id' => $changeId,
                     'position_currently_authoritative' => $affectsRate,
                     'source_position' => (int) $item->position_num,
                     'external_target_position' => (int) $item->position_num,
+                    'preview' => $preview,
+                    'convergence' => $convergence,
+                    'warnings' => array_values(array_unique(array_merge(
+                        $beforeTruth['warnings'] ?? [],
+                        $convergence['warnings'] ?? [],
+                        $affectsRate
+                            ? ['Position saved — BASE/customer rate apply after BestChange/compiler convergence.']
+                            : []
+                    ))),
                 ]);
             }
 
@@ -439,6 +503,16 @@ final class BestChangeController extends Controller
             }
 
             if ($request->boolean('change_rate_mode')) {
+                // Deliberate rate-mode action — require explicit confirm so it cannot
+                // piggyback invisibly on ordinary position edits.
+                if (!$request->boolean('confirm_rate_mode_change')) {
+                    return response()->json([
+                        'status' => 1,
+                        'code' => 'RATE_MODE_CONFIRM_REQUIRED',
+                        'message' => 'Changing RATE_MODE requires confirm_rate_mode_change=1 (deliberate ownership/selector action).',
+                    ], 422);
+                }
+
                 $rateMode = (string) $request->input('rate_mode', '');
                 $allowedModes = ['position', 'median_top_n', 'weighted_avg_top_n'];
 
@@ -449,11 +523,27 @@ final class BestChangeController extends Controller
                     ]);
                 }
 
+                $beforeMode = (string) ($item->rate_mode ?? '');
                 $item->update(['rate_mode' => $rateMode]);
+
+                $changeId = AdminPricingFinancialAuditLogger::record([
+                    'event' => 'admin_rate_mode_change',
+                    'writer' => 'admin:BestChangeController',
+                    'operator_id' => Auth::id(),
+                    'operator_email' => Auth::user()->email ?? null,
+                    'direction_id' => (int) $item->id_direction_exchange,
+                    'old_rate_mode' => $beforeMode,
+                    'new_rate_mode' => $rateMode,
+                    'request_id' => $request->headers->get('X-Request-Id'),
+                    'ip' => $request->ip(),
+                    'route' => 'admin.crypto.bestchange.update',
+                ]);
 
                 return response()->json([
                     'status'  => 0,
                     'message' => 'Режим выбора курса обновлён',
+                    'SAVE_ACCEPTED' => true,
+                    'change_id' => $changeId,
                 ]);
             }
 

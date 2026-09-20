@@ -360,7 +360,12 @@ Route::prefix('frontend-api')->middleware(['frontend', 'force-json'])->group(fun
 
                 Route::get('pricing/health', [AdminPricingHealthController::class, 'show']);
                 Route::get('pricing/inventory', [AdminPricingHealthController::class, 'inventory']);
+                Route::post('pricing/mass-preview', [AdminPricingHealthController::class, 'massPreview']);
                 Route::get('direction_exchange/{id}/pricing/explain', [AdminPricingHealthController::class, 'explain']);
+                Route::get('direction_exchange/{id}/pricing/truth', [AdminPricingHealthController::class, 'truth']);
+                Route::post('direction_exchange/{id}/pricing/preview', [AdminPricingHealthController::class, 'preview']);
+                Route::get('direction_exchange/{id}/pricing/converge', [AdminPricingHealthController::class, 'converge']);
+                Route::post('direction_exchange/{id}/pricing/converge', [AdminPricingHealthController::class, 'converge']);
 
                 Route::get('direction_exchange/{id}/fees/profit', [DirectionExchangeProfitController::class, 'edit']);
                 Route::put('direction_exchange/{id}/fees/profit', [DirectionExchangeProfitController::class, 'update']);

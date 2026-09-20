@@ -6,13 +6,14 @@ namespace App\Http\Controllers\Administrator\Basic;
 
 use App\Http\Controllers\Controller;
 use App\Models\DirectionExchange;
+use App\Services\Rates\AdminPricingOperatorSafety;
 use App\Services\Rates\AdminPricingTransparency;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * Read-only pricing health + commercial inventory for admin transparency.
- * Does not mutate rates, profit, fees, ownership, or positions.
+ * Read-only pricing health + commercial inventory + operator safety surfaces.
+ * Preview / truth / convergence do not mutate rates, profit, fees, ownership, or positions.
  */
 final class AdminPricingHealthController extends Controller
 {
@@ -58,6 +59,93 @@ final class AdminPricingHealthController extends Controller
         return response()->json([
             'data' => AdminPricingTransparency::explain($item),
         ]);
+    }
+
+    /**
+     * Operator truth panel (Phase 1) — read-only.
+     */
+    public function truth(int $id): JsonResponse
+    {
+        $item = DirectionExchange::query()
+            ->with(['bestchange_directions', 'currency1:id,designation_xml', 'currency2:id,designation_xml'])
+            ->findOrFail($id);
+
+        return response()->json([
+            'data' => AdminPricingOperatorSafety::truthPanel($item),
+        ]);
+    }
+
+    /**
+     * Position/Profit change preview (Phase 2) — no DB write.
+     */
+    public function preview(Request $request, int $id): JsonResponse
+    {
+        $item = DirectionExchange::query()
+            ->with(['bestchange_directions', 'currency1:id,designation_xml', 'currency2:id,designation_xml'])
+            ->findOrFail($id);
+
+        $overrides = [
+            'profit' => $request->input('profit'),
+            'fix_fee' => $request->input('fix_fee'),
+            'floating_fee' => $request->input('floating_fee'),
+            'position_num' => $request->input('position_num'),
+            'rate_mode' => $request->input('rate_mode'),
+        ];
+
+        // Ownership / rate-mode must not silently switch via preview+save piggyback.
+        if ($request->filled('parser_source_name') || $request->filled('owner') || $request->boolean('promote_manual')) {
+            return response()->json([
+                'status' => 1,
+                'code' => 'OWNERSHIP_SWITCH_REQUIRES_DELIBERATE_ACTION',
+                'message' => 'OWNER/rate-mode/manual promotion cannot be previewed as a side-effect of Position/Profit. Use a deliberate ownership action.',
+            ], 422);
+        }
+
+        return response()->json([
+            'data' => AdminPricingOperatorSafety::preview($item, $overrides),
+        ]);
+    }
+
+    /**
+     * Post-save convergence probe (Phase 4) — read-only.
+     */
+    public function converge(Request $request, int $id): JsonResponse
+    {
+        $item = DirectionExchange::query()
+            ->with(['bestchange_directions', 'currency1:id,designation_xml', 'currency2:id,designation_xml'])
+            ->findOrFail($id);
+
+        $expected = $request->only([
+            'EXPECTED_NEW_CUSTOMER_RATE',
+            'FINAL_CUSTOMER_RATE',
+            'customer_rate',
+        ]);
+
+        return response()->json([
+            'data' => AdminPricingOperatorSafety::convergence($item, $expected !== [] ? $expected : null),
+        ]);
+    }
+
+    /**
+     * Mass-edit preview (Phase 7) — no DB write.
+     */
+    public function massPreview(Request $request): JsonResponse
+    {
+        $result = AdminPricingOperatorSafety::massPreview([
+            'template' => $request->input('template'),
+            'details' => $request->input('details', []),
+        ]);
+
+        if (empty($result['ok'])) {
+            return response()->json([
+                'status' => 1,
+                'code' => 'MASS_PREVIEW_BLOCKED',
+                'message' => $result['error'] ?? 'preview blocked',
+                'data' => $result,
+            ], 422);
+        }
+
+        return response()->json(['data' => $result]);
     }
 
     /**

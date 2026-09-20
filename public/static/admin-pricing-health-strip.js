@@ -79,7 +79,7 @@
     el.innerHTML =
       '<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">' +
         '<strong style="color:' + (healthy ? '#047857' : '#b45309') + '">' +
-          'Pricing Health: ' + (healthy ? 'PASS' : 'CHECK') +
+          (healthy ? 'Курсы в норме' : 'Pricing Health: CHECK') +
         '</strong>' +
         '<span>Active directions: <b>' + esc(activeDirs) + '</b></span>' +
         '<span>BestChange: <b>' + esc(o.BESTCHANGE) + '</b></span>' +

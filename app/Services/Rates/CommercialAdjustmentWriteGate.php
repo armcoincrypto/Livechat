@@ -66,6 +66,7 @@ final class CommercialAdjustmentWriteGate
         return [
             'admin:DirectionExchangeProfitController',
             'admin:DirectionExchangeController',
+            'admin:DirectionExchangeMassEditor',
             'zelle:ZelleUsdUsdtBenchmarkAuthority',
             'defaults:DirectionCreationDefaults',
             'legacy:RatesApplyUsdtRubCommercialTargetCommand',
