@@ -186,7 +186,9 @@ final class StartModeOperation extends Command
                 @unlink($cand);
             }
         }
-        RatesXmlMonitorGate::hide('operation:start_fail_closed:'.$reason);
+        // Fail-closed start is an intentional empty-feed policy (force), even if
+        // work-status briefly still reads online during a broken resume.
+        RatesXmlMonitorGate::hide('operation:start_fail_closed:'.$reason, forceEmptyPolicy: true);
         try {
             CoursesFacade::export($this)->store(isClear: true);
         } catch (\Throwable $e) {

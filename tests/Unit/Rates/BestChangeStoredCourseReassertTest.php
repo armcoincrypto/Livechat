@@ -111,7 +111,8 @@ final class BestChangeStoredCourseReassertTest extends TestCase
             dirname(__DIR__, 3) . '/app/Console/Commands/StatusRatesFilesCommand.php'
         );
         $this->assertStringContainsString("RatesXmlMonitorGate::show('scheme:files_online')", $src);
-        $this->assertStringContainsString("RatesXmlMonitorGate::show('scheme:files_online_post')", $src);
+        $this->assertStringContainsString("RatesXmlMonitorGate::show('scheme:files_online_finally')", $src);
+        $this->assertStringContainsString('RatesXmlPublicFeedHealth::assertOnlineInvariant', $src);
         $this->assertStringNotContainsString('@unlink(\App\Services\Rates\RatesXmlMonitorGate::FLAG_PATH)', $src);
     }
 }

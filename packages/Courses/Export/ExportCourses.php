@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace iEXPackages\Courses\Export;
 
 use App\Services\Rates\AtomicPublicXmlPublisher;
+use App\Services\Rates\RatesXmlMonitorGate;
+use App\Services\Rates\RatesXmlPublicFeedHealth;
 use iEXPackages\Courses\Export\Concerns\DefaultExport;
 use iEXPackages\Courses\Export\Concerns\ManagesAttributes;
 use Illuminate\Console\Command;
@@ -16,6 +18,9 @@ use Illuminate\Support\Facades\Log;
  *
  * Publication is atomic (temp + rename) so nginx cannot serve a truncated file
  * while scheme:files is rewriting currencies.xml.
+ *
+ * Online contract: never clear/empty the public feed while SITE_ONLINE+TECH_OFF.
+ * Failed/invalid candidates leave the previous public XML untouched.
  */
 final class ExportCourses
 {
@@ -53,17 +58,32 @@ final class ExportCourses
 
         // Fail-closed start: while pause flag is set, stage to .candidate so the
         // public empty feed stays empty until operation:start promotes + goes online.
-        $stageCandidate = \App\Services\Rates\RatesXmlMonitorGate::isHidden() && !$this->isClear;
+        $stageCandidate = RatesXmlMonitorGate::isHidden() && ! $this->isClear;
         if ($stageCandidate) {
             $filename = $filename.'.candidate';
         }
 
+        // Online full-feed contract: never replace a live full file with empty/near-empty.
+        if (! $stageCandidate && RatesXmlMonitorGate::mustKeepFullPublicFeed() && $items < 1) {
+            Log::critical('rates_xml_PUBLISH_REJECTED', [
+                'reason' => 'online_empty_candidate_refused',
+                'path' => $livePath,
+                'candidate_bytes' => strlen($xml),
+                'candidate_rows' => $items,
+            ]);
+            @file_put_contents($livePath.'.failed.'.gmdate('Ymd\THis\Z'), $xml);
+
+            return;
+        }
+
         // Collapse guard always vs the live path's last-good (not the candidate).
         if ($publisher->collapsesAgainstLastGood($livePath, $items)) {
-            Log::error('rates_xml_publish_refused_item_collapse', [
+            Log::error('rates_xml_PUBLISH_REJECTED', [
+                'reason' => 'item_collapse_vs_last_good',
                 'path' => $filename,
                 'live' => $livePath,
-                'new_items' => $items,
+                'candidate_rows' => $items,
+                'candidate_bytes' => strlen($xml),
             ]);
             @file_put_contents($filename.'.failed.'.gmdate('Ymd\THis\Z'), $xml);
 
@@ -75,13 +95,29 @@ final class ExportCourses
 
         $result = $publisher->publish($filename, $xml, [
             'min_items' => 1,
-            'backup' => !$stageCandidate,
-            'sync_legacy' => $isCanonicalCurrencies && !$stageCandidate,
+            'backup' => ! $stageCandidate,
+            'sync_legacy' => $isCanonicalCurrencies && ! $stageCandidate,
         ]);
 
-        if (!$result['published']) {
-            Log::error('rates_xml_publish_refused', $result);
+        if (! $result['published']) {
+            Log::error('rates_xml_PUBLISH_REJECTED', [
+                'reason' => $result['reason'] ?? 'publish_refused',
+                'path' => $filename,
+                'candidate_rows' => $items,
+                'candidate_bytes' => strlen($xml),
+            ] + $result);
             @file_put_contents($filename.'.failed.'.gmdate('Ymd\THis\Z'), $xml);
+
+            return;
+        }
+
+        if ($isCanonicalCurrencies && ! $stageCandidate) {
+            Log::info('rates_xml_publish_success', [
+                'path' => $livePath,
+                'rows' => $result['items'],
+                'bytes' => strlen($xml),
+            ]);
+            RatesXmlPublicFeedHealth::assertOnlineInvariant('export_put_success');
         }
     }
 
@@ -92,33 +128,27 @@ final class ExportCourses
 
     public function clear(string $filename): void
     {
-        // Ensure nginx 404 flag is set for the whole pause window.
-        \App\Services\Rates\RatesXmlMonitorGate::hide('scheme:files_clear');
+        // Online + tech-off: never expose EMPTY_RATES_XML. Keep last-known-good.
+        if (! RatesXmlMonitorGate::mayPublishEmptyFeed()) {
+            Log::critical('rates_xml_clear_blocked_site_online', [
+                'path' => $filename,
+                'reason' => 'SITE_ONLINE+TECH_OFF forbids empty monitor feed',
+                'kept_bytes' => is_file($filename) ? filesize($filename) : 0,
+                'kept_rows' => is_file($filename)
+                    ? substr_count((string) file_get_contents($filename), '<item>')
+                    : 0,
+            ]);
 
-        // Intentional pause (work_is_offline / operation:stop): publish a valid
-        // empty <rates/> document so BestChange/monitors see 0 pairs — not a
-        // truncated 0-byte file (which caused client timeouts historically).
-        $empty = \App\Services\Rates\RatesXmlMonitorGate::EMPTY_RATES_XML;
-
-        $publisher = new AtomicPublicXmlPublisher();
-        $isCanonicalCurrencies = str_contains($filename, '/static/exports/')
-            && str_ends_with($filename, 'currencies.xml');
-
-        $result = $publisher->publish($filename, $empty, [
-            'min_items' => 0,
-            'backup' => true,
-            'sync_legacy' => $isCanonicalCurrencies,
-        ]);
-
-        if (!$result['published']) {
-            Log::error('rates_xml_clear_publish_failed', $result);
             return;
         }
 
+        // Intentional pause: gate hide publishes empty to all public paths + flag.
+        RatesXmlMonitorGate::hide('scheme:files_clear');
+
         Log::warning('rates_xml_cleared_for_offline', [
             'path' => $filename,
-            'items' => $result['items'],
-            'reason' => 'work_is_offline',
+            'items' => 0,
+            'reason' => 'work_is_offline_or_tech_mode',
         ]);
     }
 

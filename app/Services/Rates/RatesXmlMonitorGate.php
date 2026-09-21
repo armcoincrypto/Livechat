@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace App\Services\Rates;
 
+use App\Support\WorkStatusFresh;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
- * Hide public rate XML from BestChange / monitors during technical pause.
+ * Hide public rate XML from BestChange / monitors during intentional pause.
  *
- * During pause: write empty valid <rates/> documents (HTTP 200, 0 items) and set
- * a flag file. On resume: clear the flag; scheme:files rebuilds currencies.xml;
- * currenciesbest is restored from the local BestChange parser dump when present.
+ * Contract (monitor reliability):
+ * - While SITE_ONLINE + TECHNICAL_MODE=OFF, public currencies.xml must stay full
+ *   (last-known-good or newly validated). NEVER publish EMPTY_RATES_XML.
+ * - Empty <rates/> is allowed only when WorkStatus is offline OR technical mode
+ *   is enabled OR the caller passes $forceEmptyPolicy (fail-closed start).
+ * - hide()/show() must not leave a sticky flag that diverges from the public file
+ *   while the site is online.
  */
 final class RatesXmlMonitorGate
 {
@@ -20,6 +26,23 @@ final class RatesXmlMonitorGate
 
     public const PARSER_OUTPUT_PATH = '/opt/bestchange_parser/data/output.xml';
 
+    /** @internal PHPUnit only — never set in production. */
+    private static ?string $flagPathOverride = null;
+
+    public static function flagPath(): string
+    {
+        return self::$flagPathOverride ?? self::FLAG_PATH;
+    }
+
+    /**
+     * @internal PHPUnit only.
+     */
+    public static function setFlagPathOverrideForTests(?string $path): void
+    {
+        self::$flagPathOverride = $path;
+    }
+
+    /** Exact monitor-visible empty document (historically ~177 bytes). */
     public const EMPTY_RATES_XML = '<?xml version="1.0"?>'
         . '<rates version="1"'
         . ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
@@ -42,13 +65,66 @@ final class RatesXmlMonitorGate
 
     public static function isHidden(): bool
     {
-        return is_file(self::FLAG_PATH);
+        return is_file(self::flagPath());
     }
 
-    public static function hide(string $reason = 'work_is_offline'): void
+    /**
+     * Online + technical mode OFF ⇒ public feed must remain full.
+     */
+    public static function mustKeepFullPublicFeed(): bool
     {
-        $dir = dirname(self::FLAG_PATH);
-        if (!is_dir($dir)) {
+        try {
+            if (WorkStatusFresh::isOffline()) {
+                return false;
+            }
+        } catch (Throwable) {
+            // Cannot read work status: fail closed to "keep full" (never empty by accident).
+            return true;
+        }
+
+        try {
+            if ((int) iEXSetting('is_enabled_technical_mode', 0) === 1) {
+                return false;
+            }
+        } catch (Throwable) {
+            // Treat unknown tech mode as OFF ⇒ keep full.
+        }
+
+        return true;
+    }
+
+    /**
+     * Empty monitor feed is allowed only for deliberate offline / tech / force policy.
+     */
+    public static function mayPublishEmptyFeed(bool $forceEmptyPolicy = false): bool
+    {
+        if ($forceEmptyPolicy) {
+            return true;
+        }
+
+        return ! self::mustKeepFullPublicFeed();
+    }
+
+    /**
+     * @param  bool  $forceEmptyPolicy  Intentional fail-closed / maintenance override.
+     *                                  Still refuses when false and site must keep full feed.
+     */
+    public static function hide(string $reason = 'work_is_offline', bool $forceEmptyPolicy = false): void
+    {
+        if (! self::mayPublishEmptyFeed($forceEmptyPolicy)) {
+            Log::critical('rates_xml_monitor_gate_hide_refused_online', [
+                'reason' => $reason,
+                'force' => $forceEmptyPolicy,
+                'site_online' => true,
+                'invariant' => 'SITE_ONLINE+TECH_OFF must keep full XML',
+            ]);
+
+            return;
+        }
+
+        $flag = self::flagPath();
+        $dir = dirname($flag);
+        if (! is_dir($dir)) {
             @mkdir($dir, 0755, true);
         }
 
@@ -57,8 +133,8 @@ final class RatesXmlMonitorGate
             'reason' => $reason,
             'at' => gmdate('c'),
         ], JSON_UNESCAPED_SLASHES);
-        @file_put_contents(self::FLAG_PATH, $payload === false ? "hidden\n" : $payload."\n");
-        @chmod(self::FLAG_PATH, 0644);
+        @file_put_contents($flag, $payload === false ? "hidden\n" : $payload."\n");
+        @chmod($flag, 0644);
 
         $publisher = new AtomicPublicXmlPublisher();
         foreach (self::publicRateXmlPaths() as $path) {
@@ -77,25 +153,36 @@ final class RatesXmlMonitorGate
                 'backup' => true,
                 'sync_legacy' => str_contains($path, '/static/exports/') && str_ends_with($path, 'currencies.xml'),
             ]);
-            if (!$result['published']) {
+            if (! $result['published']) {
                 Log::error('rates_xml_monitor_gate_clear_failed', ['path' => $path] + $result);
             }
         }
 
         Cache::forget('exchanger_client:tech_status_v1');
-        Log::warning('rates_xml_monitor_gate_hidden', ['reason' => $reason, 'flag' => self::FLAG_PATH]);
+        Log::warning('rates_xml_monitor_gate_hidden', ['reason' => $reason, 'flag' => $flag]);
     }
 
     public static function show(string $reason = 'work_is_online'): void
     {
-        if (is_file(self::FLAG_PATH)) {
-            @unlink(self::FLAG_PATH);
+        $flag = self::flagPath();
+        if (is_file($flag)) {
+            $ok = @unlink($flag);
+            if (! $ok || is_file($flag)) {
+                Log::critical('rates_xml_monitor_gate_show_unlink_failed', [
+                    'reason' => $reason,
+                    'flag' => $flag,
+                    'still_present' => is_file($flag),
+                ]);
+            }
         }
 
         self::restoreCurrenciesBestFromParser();
 
         Cache::forget('exchanger_client:tech_status_v1');
-        Log::info('rates_xml_monitor_gate_shown', ['reason' => $reason]);
+        Log::info('rates_xml_monitor_gate_shown', [
+            'reason' => $reason,
+            'flag_cleared' => ! is_file($flag),
+        ]);
     }
 
     /**
@@ -105,7 +192,7 @@ final class RatesXmlMonitorGate
     public static function restoreCurrenciesBestFromParser(): void
     {
         $src = self::PARSER_OUTPUT_PATH;
-        if (!is_file($src) || filesize($src) < 100) {
+        if (! is_file($src) || filesize($src) < 100) {
             Log::warning('rates_xml_monitor_gate_best_restore_skipped', ['src' => $src]);
 
             return;
@@ -113,13 +200,13 @@ final class RatesXmlMonitorGate
 
         $dest = public_path('static/exports/currenciesbest.xml');
         $tmp = $dest.'.tmp.'.getmypid();
-        if (!@copy($src, $tmp)) {
+        if (! @copy($src, $tmp)) {
             Log::error('rates_xml_monitor_gate_best_restore_copy_failed', ['src' => $src, 'dest' => $dest]);
 
             return;
         }
         @chmod($tmp, 0644);
-        if (!@rename($tmp, $dest)) {
+        if (! @rename($tmp, $dest)) {
             @unlink($tmp);
             Log::error('rates_xml_monitor_gate_best_restore_rename_failed', ['dest' => $dest]);
 
@@ -143,7 +230,7 @@ final class RatesXmlMonitorGate
     private static function writeEmptyFile(string $path): void
     {
         $dir = dirname($path);
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             @mkdir($dir, 0755, true);
         }
         $tmp = $path.'.tmp.'.getmypid();

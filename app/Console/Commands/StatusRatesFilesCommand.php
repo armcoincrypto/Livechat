@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\HistoryUpdatedData;
+use App\Services\Rates\RatesXmlMonitorGate;
+use App\Services\Rates\RatesXmlPublicFeedHealth;
 use App\Support\WorkStatusFresh;
 use iEXPackages\Courses\CoursesFacade;
 use Illuminate\Console\Command;
@@ -34,7 +36,7 @@ class StatusRatesFilesCommand extends Command
      */
     public function handle(): int
     {
-        if (!$this->option('skip-export')) {
+        if (! $this->option('skip-export')) {
             $ok = $this->updateCoursesFile();
             if ($ok === false) {
                 return self::FAILURE;
@@ -57,6 +59,16 @@ class StatusRatesFilesCommand extends Command
         $start = microtime(true);
         $forcePublish = (bool) $this->option('force-publish');
 
+        $lockFh = $this->acquireXmlPublishLock();
+        if ($lockFh === false) {
+            Log::warning('scheme_files_xml_publish_lock_busy', [
+                'path' => RatesXmlPublicFeedHealth::PUBLISH_LOCK_PATH,
+            ]);
+            $this->warn('XML publish lock busy — skipping export this tick (last-good remains).');
+
+            return true;
+        }
+
         try {
             $export = CoursesFacade::export($this);
 
@@ -64,26 +76,34 @@ class StatusRatesFilesCommand extends Command
             // Never use work_is_offline() here — inside Artisan::call() from admin HTTP
             // it can be frozen offline by WorkStatusMiddleware and wipe a just-started feed.
             if ($forcePublish) {
-                $export->store(isClear: false);
-                // force-publish is resume-path: drop any leftover monitor hide flag.
-                \App\Services\Rates\RatesXmlMonitorGate::show('scheme:files_force_publish');
+                try {
+                    $export->store(isClear: false);
+                } finally {
+                    // force-publish is resume-path: drop any leftover monitor hide flag.
+                    RatesXmlMonitorGate::show('scheme:files_force_publish');
+                    RatesXmlPublicFeedHealth::assertOnlineInvariant('scheme:files_force_publish');
+                }
             } else {
                 $isClear = WorkStatusFresh::isOffline();
                 if ($isClear) {
-                    \App\Services\Rates\RatesXmlMonitorGate::hide('scheme:files_offline');
+                    RatesXmlMonitorGate::hide('scheme:files_offline');
+                    $export->store(isClear: true);
                 } else {
-                    // Online ticks: clear sticky hide flag via official show()
-                    // (not raw unlink) so parser-best restore stays consistent.
-                    if (\App\Services\Rates\RatesXmlMonitorGate::isHidden()) {
-                        \App\Services\Rates\RatesXmlMonitorGate::show('scheme:files_online');
+                    // Online ticks: clear sticky hide flag BEFORE rebuild so put()
+                    // publishes to the live path (not .candidate).
+                    if (RatesXmlMonitorGate::isHidden()) {
+                        RatesXmlMonitorGate::show('scheme:files_online');
                     }
-                }
-                $export->store(isClear: $isClear);
-                // Race guard: a concurrent clear() can re-set the flag while the
-                // online publish runs; drop it again when the site is still online.
-                if (!$isClear && \App\Services\Rates\RatesXmlMonitorGate::isHidden()
-                    && !WorkStatusFresh::isOffline()) {
-                    \App\Services\Rates\RatesXmlMonitorGate::show('scheme:files_online_post');
+                    try {
+                        $export->store(isClear: false);
+                    } finally {
+                        // Guaranteed restoration: concurrent clear/hide cannot leave
+                        // a sticky flag while the site remains online.
+                        if (RatesXmlMonitorGate::isHidden() && ! WorkStatusFresh::isOffline()) {
+                            RatesXmlMonitorGate::show('scheme:files_online_finally');
+                        }
+                        RatesXmlPublicFeedHealth::assertOnlineInvariant('scheme:files_online_post');
+                    }
                 }
             }
 
@@ -94,11 +114,51 @@ class StatusRatesFilesCommand extends Command
 
             return true;
         } catch (\Throwable $exception) {
-            Log::error('Ошибка при обновлении файла курсов: ' . $exception->getMessage());
+            Log::error('Ошибка при обновлении файла курсов: '.$exception->getMessage());
             $this->error('Произошла ошибка при обновлении файла курсов.');
+            // Generator failure: never empty the public feed; keep last-good.
+            RatesXmlPublicFeedHealth::assertOnlineInvariant('scheme:files_exception');
 
             return $forcePublish ? false : true;
+        } finally {
+            $this->releaseXmlPublishLock($lockFh);
         }
+    }
+
+    /**
+     * @return resource|false
+     */
+    private function acquireXmlPublishLock()
+    {
+        $path = RatesXmlPublicFeedHealth::PUBLISH_LOCK_PATH;
+        $dir = dirname($path);
+        if (! is_dir($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+        $fh = @fopen($path, 'c+');
+        if ($fh === false) {
+            return false;
+        }
+        // Non-blocking: overlapping ticks keep last-good rather than racing.
+        if (! flock($fh, LOCK_EX | LOCK_NB)) {
+            fclose($fh);
+
+            return false;
+        }
+
+        return $fh;
+    }
+
+    /**
+     * @param  resource|false  $fh
+     */
+    private function releaseXmlPublishLock($fh): void
+    {
+        if ($fh === false) {
+            return;
+        }
+        flock($fh, LOCK_UN);
+        fclose($fh);
     }
 
     /**
@@ -117,7 +177,7 @@ class StatusRatesFilesCommand extends Command
 
             foreach ($rates->availableLanguage() as $locale => $value) {
                 $rates->setLocale($locale)->builder();
-                $this->info("Информация обновлена для " . strtoupper($locale));
+                $this->info('Информация обновлена для '.strtoupper($locale));
             }
 
             Cache::increment('dr_snapshot_id');
@@ -129,7 +189,7 @@ class StatusRatesFilesCommand extends Command
             $this->logHistory('export_exchange', $rates->getCountUpdateData(), $rates->getCountTotalUpdate(), $time);
 
         } catch (\Throwable $exception) {
-            Log::error('Ошибка при обновлении направлений: ' . $exception->getMessage());
+            Log::error('Ошибка при обновлении направлений: '.$exception->getMessage());
             $this->error('Произошла ошибка при обновлении направлений.');
         }
 
