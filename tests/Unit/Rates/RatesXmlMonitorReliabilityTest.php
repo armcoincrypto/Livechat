@@ -8,7 +8,6 @@ use App\Services\Rates\AtomicPublicXmlPublisher;
 use App\Services\Rates\RatesXmlMonitorGate;
 use App\Services\Rates\RatesXmlPublicFeedHealth;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 use iEXPackages\Courses\Export\ExportCourses;
 use Tests\TestCase;
 
