@@ -39,6 +39,8 @@ final class PaymentTransitionMetrics
                 'payment_detected_transition_failed' => 0,
                 'duplicate_payment_success_noop' => 0,
                 'payment_detector_transition_errors' => 0,
+                'duplicate_txid_cross_order' => 0,
+                'duplicate_txid_suppressed' => 0,
             ];
         }
         $decoded = json_decode((string) file_get_contents(self::path()), true);

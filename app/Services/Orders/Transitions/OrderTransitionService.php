@@ -16,9 +16,18 @@ use App\Enums\TaskStatusEnum;
  */
 final class OrderTransitionService
 {
-    /** Detector/callback/repair inbound statuses that may become PAID. */
+    /**
+     * Detector/callback/repair inbound statuses that may become PAID.
+     *
+     * PENDING_PAYMENT (2) and PROCESSING_PAYMENT (9) are required: confirmed
+     * inbound evidence routinely arrives while the order is still awaiting
+     * customer/operator advancement. Rejecting 2→7 caused invalid_paid_from_status
+     * with funds already observed (Wave2 forensic: status2+wallet>0).
+     */
     public const PAID_FROM = [
+        TaskStatusEnum::PENDING_PAYMENT->value,
         TaskStatusEnum::WAITING_HANDLE->value,
+        TaskStatusEnum::PROCESSING_PAYMENT->value,
         TaskStatusEnum::CHECK_PAYMENT->value,
         TaskStatusEnum::MERCHANT_CONFIRMATION->value,
     ];

@@ -139,7 +139,38 @@ final class OrderTransitionIntegrityTest extends TestCase
     {
         $this->assertTrue(OrderTransitionService::isPaidFrom(12));
         $this->assertTrue(OrderTransitionService::isPaidFrom(13));
-        $this->assertFalse(OrderTransitionService::isPaidFrom(2));
+        $this->assertTrue(OrderTransitionService::isPaidFrom(2));
+        $this->assertTrue(OrderTransitionService::isPaidFrom(9));
+        $this->assertTrue(OrderTransitionService::isPaidFrom(3));
+        $this->assertFalse(OrderTransitionService::isPaidFrom(1));
+        $this->assertFalse(OrderTransitionService::isPaidFrom(4));
+        $this->assertFalse(OrderTransitionService::isPaidFrom(5));
+    }
+
+    public function test_confirmed_wallet_from_pending_payment_pays_exactly_once(): void
+    {
+        $task = $this->insertTask(2);
+        $txid = 'w2txid'.bin2hex(random_bytes(8));
+        $service = new ConfirmedInboundPaidTransition();
+        $write = function () use ($task) {
+            $tx = TransactionFacade::find($task->id);
+            $tx->grantPaidWritePermit();
+            $tx->setStatus(7);
+        };
+        $first = $service->apply((int) $task->id, ['txid' => $txid, 'amount' => 10, 'confirmations' => 1], $write);
+        $this->assertSame('paid', $first['outcome']);
+        $this->assertSame(2, $first['from_status']);
+        $this->assertSame(7, (int) Task::query()->whereKey($task->id)->value('status'));
+
+        $second = $service->apply((int) $task->id, ['txid' => $txid, 'amount' => 10, 'confirmations' => 1], $write);
+        $this->assertSame('already_paid', $second['outcome']);
+        $this->assertSame(1, DB::table('tasks_status_log')->where('id_task', $task->id)->where('old_status', 2)->where('new_status', 7)->whereNull('deleted_at')->count());
+    }
+
+    public function test_pending_payment_enum_allows_paid(): void
+    {
+        $this->assertTrue(TaskStatusEnum::PENDING_PAYMENT->canTransitionTo(TaskStatusEnum::PAID));
+        $this->assertTrue(TaskStatusEnum::PROCESSING_PAYMENT->canTransitionTo(TaskStatusEnum::PAID));
     }
 
     public function test_row_lock_blocks_second_paid_writer(): void

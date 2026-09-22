@@ -207,6 +207,7 @@ enum TaskStatusEnum: int
                 self::CHECK_PAYMENT,
                 self::WAITING_HANDLE,
                 self::MERCHANT_CONFIRMATION,
+                self::PAID, // confirmed inbound may land before any intermediate advance
                 self::REJECTED,
                 self::CANCELED_BY_USER,
                 self::EXPIRED

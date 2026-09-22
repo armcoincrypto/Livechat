@@ -30,6 +30,48 @@ final class ConfirmedInboundPaidTransition
                 throw OrderTransitionException::transitionFailed('task missing');
             }
 
+            $from = (int) $task->status;
+            if ($from === TaskStatusEnum::PAID->value) {
+                // Persist refreshed wallet evidence even on idempotent retries.
+                $txidEarly = trim((string) ($walletValues['txid'] ?? ''));
+                if ($txidEarly !== '') {
+                    $otherPaid = (int) DB::table('wallet_transactions')
+                        ->whereNull('deleted_at')
+                        ->where('txid', $txidEarly)
+                        ->where('id_task', '!=', $taskId)
+                        ->distinct()
+                        ->count('id_task');
+                    if ($otherPaid > 0) {
+                        PaymentTransitionMetrics::increment('duplicate_txid_suppressed');
+                        Log::warning('duplicate_inbound_txid_ignored_already_paid', [
+                            'event' => 'duplicate_inbound_txid_already_paid',
+                            'task_id' => $taskId,
+                        ]);
+                    } else {
+                        WalletTransaction::updateOrCreate(
+                            ['id_task' => $taskId],
+                            [
+                                'amount' => $walletValues['amount'] ?? null,
+                                'confirmations' => (int) ($walletValues['confirmations'] ?? 1),
+                                'txid' => $txidEarly,
+                                'address' => $walletValues['address'] ?? null,
+                            ]
+                        );
+                    }
+                }
+                PaymentTransitionMetrics::increment('duplicate_payment_success_noop');
+                Log::info('duplicate_payment_success_noop', [
+                    'event' => 'already_paid',
+                    'task_id' => $taskId,
+                ]);
+
+                return [
+                    'outcome' => 'already_paid',
+                    'from_status' => $from,
+                    'to_status' => TaskStatusEnum::PAID->value,
+                ];
+            }
+
             $txid = trim((string) ($walletValues['txid'] ?? ''));
             if ($txid !== '') {
                 $other = (int) DB::table('wallet_transactions')
@@ -39,7 +81,8 @@ final class ConfirmedInboundPaidTransition
                     ->distinct()
                     ->count('id_task');
                 if ($other > 0) {
-                    PaymentTransitionMetrics::increment('payment_detected_transition_failed');
+                    // Cross-order collision must fail closed (one payment → one credit).
+                    PaymentTransitionMetrics::increment('duplicate_txid_cross_order');
                     Log::error('payment_detected_transition_failed', [
                         'event' => 'duplicate_inbound_txid',
                         'task_id' => $taskId,
@@ -56,21 +99,6 @@ final class ConfirmedInboundPaidTransition
                         'address' => $walletValues['address'] ?? null,
                     ]
                 );
-            }
-
-            $from = (int) $task->status;
-            if ($from === TaskStatusEnum::PAID->value) {
-                PaymentTransitionMetrics::increment('duplicate_payment_success_noop');
-                Log::info('duplicate_payment_success_noop', [
-                    'event' => 'already_paid',
-                    'task_id' => $taskId,
-                ]);
-
-                return [
-                    'outcome' => 'already_paid',
-                    'from_status' => $from,
-                    'to_status' => TaskStatusEnum::PAID->value,
-                ];
             }
 
             if (!OrderTransitionService::isPaidFrom($from)) {
