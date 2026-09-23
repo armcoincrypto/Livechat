@@ -197,6 +197,15 @@ if adv < 1000:
 PY
 fi
 
+# Rate-system freeze: candidate must ship predeploy gate + freeze config when present in tree.
+if [[ -f "$CANDIDATE_WT/config/rate_system_freeze.php" ]]; then
+  [[ -f "$CANDIDATE_WT/scripts/ops/rate_system_predeploy_gate.sh" ]] \
+    || { echo "FAIL rate_system_predeploy_gate.sh missing under ACTIVE freeze" >&2; exit 36; }
+  [[ -f "$CANDIDATE_WT/tests/fixtures/rates/golden_directions_freeze.json" ]] \
+    || { echo "FAIL golden_directions_freeze.json missing under ACTIVE freeze" >&2; exit 37; }
+  echo "RATE_SYSTEM_FREEZE_ARTIFACTS=PASS"
+fi
+
 python3 - "$REPORT_JSON" <<'PY'
 import json,sys
 r=json.load(open(sys.argv[1]))

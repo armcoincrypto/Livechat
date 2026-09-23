@@ -18,6 +18,9 @@ final class RatesXmlPublicFeedHealth
 {
     public const PUBLISH_LOCK_PATH = '/var/lock/exswaping-xml-publish.lock';
 
+    /** Public feed older than this (when online) triggers a freshness warning in logs. */
+    public const PUBLISH_AGE_WARN_SEC = 900;
+
     /**
      * @return array{
      *   path:string,
@@ -30,7 +33,10 @@ final class RatesXmlPublicFeedHealth
      *   technical_mode:bool,
      *   must_keep_full:bool,
      *   empty_rates_match:bool,
-     *   invariant_ok:bool
+     *   invariant_ok:bool,
+     *   mtime_unix:?int,
+     *   publish_age_sec:?int,
+     *   publish_age_sane:bool
      * }
      */
     public static function snapshot(?string $path = null): array
@@ -42,6 +48,9 @@ final class RatesXmlPublicFeedHealth
         $rows = $body !== '' ? substr_count($body, '<item>') : 0;
         $sha = $body !== '' ? hash('sha256', $body) : null;
         $emptyMatch = $exists && trim($body) === trim(RatesXmlMonitorGate::EMPTY_RATES_XML);
+        $mtime = $exists ? (int) filemtime($path) : null;
+        $age = $mtime !== null ? max(0, time() - $mtime) : null;
+        $ageSane = $age === null || $age <= self::PUBLISH_AGE_WARN_SEC;
 
         $siteOnline = true;
         $tech = false;
@@ -73,6 +82,9 @@ final class RatesXmlPublicFeedHealth
             'must_keep_full' => $mustKeep,
             'empty_rates_match' => $emptyMatch,
             'invariant_ok' => $invariantOk,
+            'mtime_unix' => $mtime,
+            'publish_age_sec' => $age,
+            'publish_age_sane' => $ageSane,
         ];
     }
 
@@ -90,6 +102,15 @@ final class RatesXmlPublicFeedHealth
                 'alert' => $snap['empty_rates_match'] || $snap['rows'] === 0
                     ? 'SITE_ONLINE_EMPTY_OR_177B_XML'
                     : 'SITE_ONLINE_STICKY_HIDE_FLAG',
+            ] + $snap);
+        }
+
+        if ($snap['must_keep_full'] && $snap['invariant_ok'] && ! ($snap['publish_age_sane'] ?? true)) {
+            Log::warning('rates_xml_publish_age_stale', [
+                'context' => $context,
+                'alert' => 'SITE_ONLINE_XML_PUBLISH_AGE',
+                'publish_age_sec' => $snap['publish_age_sec'] ?? null,
+                'warn_sec' => self::PUBLISH_AGE_WARN_SEC,
             ] + $snap);
         }
     }

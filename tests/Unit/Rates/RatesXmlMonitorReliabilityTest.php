@@ -153,6 +153,8 @@ final class RatesXmlMonitorReliabilityTest extends TestCase
         $this->assertArrayHasKey('gate_hidden', $snap);
         $this->assertArrayHasKey('must_keep_full', $snap);
         $this->assertArrayHasKey('invariant_ok', $snap);
+        $this->assertArrayHasKey('publish_age_sec', $snap);
+        $this->assertArrayHasKey('publish_age_sane', $snap);
         $this->assertFalse($snap['exists']);
         $this->assertSame(0, $snap['rows']);
 

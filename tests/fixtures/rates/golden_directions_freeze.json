@@ -1,0 +1,192 @@
+{
+  "schemaVersion": 1,
+  "freezeId": "RATE_SYSTEM_FREEZE_20260923",
+  "baseLiveSha": "495751972c085d9e95f6705b179c7b1ec613ee38",
+  "notes": "Structural golden contracts. Absolute BestChange customer rates drift with the book; pin owners/fields/margins only. Zelle floating_fee=-6 ⇒ multiplier 0.94 at benchmark BASE=1.",
+  "directions": [
+    {
+      "id": 1525,
+      "pair": "ZELLEUSD->USDTTRC20",
+      "owner": "ZELLE",
+      "parser_source_name": "ZELLE_USDTTRC20_BENCHMARK",
+      "base_source": "ZELLE_USDTTRC20_BENCHMARK",
+      "storage_field": "floating_fee",
+      "floating_fee": "-6",
+      "fix_fee": "-3",
+      "profit": "0",
+      "display_profit": "6",
+      "expected_floating_multiplier": "0.94",
+      "status": 1
+    },
+    {
+      "id": 1537,
+      "pair": "ZELLEUSD->USDTERC20",
+      "owner": "ZELLE",
+      "parser_source_name": "ZELLE_USDTTRC20_BENCHMARK",
+      "base_source": "ZELLE_USDTTRC20_BENCHMARK",
+      "storage_field": "floating_fee",
+      "floating_fee": "-6",
+      "fix_fee": "-3",
+      "profit": "0",
+      "display_profit": "6",
+      "expected_floating_multiplier": "0.94",
+      "status": 1
+    },
+    {
+      "id": 1552,
+      "pair": "ZELLEUSD->USDTSOL",
+      "owner": "ZELLE",
+      "parser_source_name": "ZELLE_USDTTRC20_BENCHMARK",
+      "base_source": "ZELLE_USDTTRC20_BENCHMARK",
+      "storage_field": "floating_fee",
+      "floating_fee": "-6",
+      "fix_fee": "-3",
+      "profit": "0",
+      "display_profit": "6",
+      "expected_floating_multiplier": "0.94",
+      "status": 1
+    },
+    {
+      "id": 1556,
+      "pair": "ZELLEUSD->USDTBEP20",
+      "owner": "ZELLE",
+      "parser_source_name": "ZELLE_USDTTRC20_BENCHMARK",
+      "base_source": "ZELLE_USDTTRC20_BENCHMARK",
+      "storage_field": "floating_fee",
+      "floating_fee": "-6",
+      "fix_fee": "-3",
+      "profit": "0",
+      "display_profit": "6",
+      "expected_floating_multiplier": "0.94",
+      "status": 1
+    },
+    {
+      "id": 1586,
+      "pair": "ZELLEUSD->USDTTON",
+      "owner": "ZELLE",
+      "parser_source_name": "ZELLE_USDTTRC20_BENCHMARK",
+      "base_source": "ZELLE_USDTTRC20_BENCHMARK",
+      "storage_field": "floating_fee",
+      "floating_fee": "-6",
+      "fix_fee": "-3",
+      "profit": "0",
+      "display_profit": "6",
+      "expected_floating_multiplier": "0.94",
+      "status": 1
+    },
+    {
+      "id": 3222,
+      "pair": "ZELLEUSD->USDTPOLYGON",
+      "owner": "ZELLE",
+      "parser_source_name": "ZELLE_USDTTRC20_BENCHMARK",
+      "base_source": "ZELLE_USDTTRC20_BENCHMARK",
+      "storage_field": "floating_fee",
+      "floating_fee": "-6",
+      "fix_fee": "-3",
+      "profit": "0",
+      "display_profit": "6",
+      "expected_floating_multiplier": "0.94",
+      "status": 1
+    },
+    {
+      "id": 16,
+      "pair": "BTC->USBUAH",
+      "owner": "BESTCHANGE",
+      "parser_source_name": "BestChange",
+      "base_source": "BestChange.position",
+      "storage_field": "profit",
+      "floating_fee": "0",
+      "status": 1
+    },
+    {
+      "id": 29,
+      "pair": "USDTTRC20->OSDBUAH",
+      "owner": "BESTCHANGE",
+      "parser_source_name": "BestChange",
+      "base_source": "BestChange.position",
+      "storage_field": "profit",
+      "floating_fee": "0",
+      "status": 1
+    },
+    {
+      "id": 34,
+      "pair": "USDTTRC20->USBUAH",
+      "owner": "BESTCHANGE",
+      "parser_source_name": "BestChange",
+      "base_source": "BestChange.position",
+      "storage_field": "profit",
+      "floating_fee": "0",
+      "status": 1
+    },
+    {
+      "id": 15,
+      "pair": "USDTTRC20->SBERRUB",
+      "owner": "BESTCHANGE",
+      "parser_source_name": "BestChange",
+      "base_source": "BestChange.position",
+      "storage_field": "profit",
+      "floating_fee": "0",
+      "status": 1
+    },
+    {
+      "id": 27,
+      "pair": "USDTTRC20->TCSBRUB",
+      "owner": "BESTCHANGE",
+      "parser_source_name": "BestChange",
+      "base_source": "BestChange.position",
+      "storage_field": "profit",
+      "floating_fee": "0",
+      "status": 1
+    },
+    {
+      "id": 1415,
+      "pair": "USDTTRC20->YAMRUB",
+      "owner": "BESTCHANGE",
+      "parser_source_name": "BestChange",
+      "base_source": "BestChange.position",
+      "storage_field": "profit",
+      "floating_fee": "0",
+      "status": 1
+    },
+    {
+      "id": 41,
+      "pair": "USDTTRC20->GRAM",
+      "owner": "BESTCHANGE",
+      "parser_source_name": "BestChange",
+      "base_source": "BestChange.position",
+      "storage_field": "profit",
+      "floating_fee": "0",
+      "status": 1
+    }
+  ],
+  "invariants": {
+    "bestchange": [
+      "position_selects_BASE",
+      "profit_applies_after_BASE",
+      "topn_must_never_erase_profit"
+    ],
+    "zelle": [
+      "outgoing_pribyl_maps_to_floating_fee",
+      "floating_uses_floating_fee",
+      "fixed_uses_floating_plus_fix_fee",
+      "zelle_usdt_six_rows_floating_fee_neg6",
+      "reverse_zelle_remain_bc_or_manual"
+    ],
+    "stored_course": [
+      "bestchange_stored_course_converges",
+      "no_stale_manual_rate_value_overwrite"
+    ],
+    "xml": [
+      "online_tech_off_never_empty_rates_xml",
+      "last_good_on_invalid_or_empty_candidate",
+      "partial_xml_never_public",
+      "offline_empty_deliberate_only"
+    ],
+    "ownership": [
+      "admin_profit_position_edits_do_not_silently_switch_owner"
+    ],
+    "economics": [
+      "public_quote_and_order_agree_with_canonical_calculator"
+    ]
+  }
+}
