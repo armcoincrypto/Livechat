@@ -10,7 +10,7 @@ declare(strict_types=1);
 return [
     'RATE_SYSTEM_FREEZE' => 'ACTIVE',
     'freeze_id' => 'RATE_SYSTEM_FREEZE_20260923',
-    'base_live_sha' => '495751972c085d9e95f6705b179c7b1ec613ee38',
+    'base_live_sha' => 'a402987f8f447d57c046d98f805cd65d223b44ec',
     'golden_fixture' => 'tests/fixtures/rates/golden_directions_freeze.json',
     'zelle_usdt_direction_ids' => [1525, 1537, 1552, 1556, 1586, 3222],
     'expected_zelle_floating_fee' => '-6',

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "freezeId": "RATE_SYSTEM_FREEZE_20260923",
-  "baseLiveSha": "495751972c085d9e95f6705b179c7b1ec613ee38",
+  "baseLiveSha": "a402987f8f447d57c046d98f805cd65d223b44ec",
   "notes": "Structural golden contracts. Absolute BestChange customer rates drift with the book; pin owners/fields/margins only. Zelle floating_fee=-6 ⇒ multiplier 0.94 at benchmark BASE=1.",
   "directions": [
     {
