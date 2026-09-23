@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Rates;
 
 use App\Models\DirectionExchange;
+use App\Services\Rates\AdminPricingTransparency;
 use App\Services\Rates\CanonicalDirectionRateCalculator;
 use App\Services\Rates\CommercialAdjustmentResolver;
 use App\Services\Rates\RateChannel;
@@ -20,7 +21,7 @@ final class AdminPricingTransparencyMathTest extends TestCase
     public function test_bestchange_profit_and_fix_fee_stacking_semantics(): void
     {
         $d = new DirectionExchange();
-        $d->id = 15;
+        $d->id = 900001; // must not be DERIVED-owned (id 15 is in derived baseline set)
         $d->parser_source_name = 'BestChange';
         $d->profit = '1';
         $d->floating_fee = '0';
@@ -96,5 +97,44 @@ final class AdminPricingTransparencyMathTest extends TestCase
         $this->assertStringContainsString('Явная прибыль: 0%', $src);
         $this->assertStringContainsString('Другие корректировки: активны', $src);
         $this->assertStringNotContainsString('без прибыли', $src);
+    }
+
+    /**
+     * Wave 3: BestChange FIXED must stack fix_fee on post-profit (course) base,
+     * not on the raw BestChange book (which would skip Прибыль).
+     */
+    public function test_bestchange_admin_fixed_stacks_fix_fee_on_course_not_raw_book(): void
+    {
+        $book = '100';
+        $profit = '1';
+        $course = '99'; // live persisted floating (book after 1% profit)
+        $fixFee = '-3';
+
+        [$floating, $fixed] = AdminPricingTransparency::bestChangeCustomerFinals(
+            directionId: 2,
+            sourceBookBase: $book,
+            courseValue: $course,
+            displayProfit: $profit,
+            fixFee: $fixFee,
+        );
+
+        $this->assertSame(0, bccomp($floating->finalRate, '99', 8));
+        // Correct: 99 * 0.97 = 96.03 — NOT 100 * 0.97 = 97
+        $this->assertSame(0, bccomp($fixed->finalRate, '96.03', 8));
+        $this->assertNotSame(0, bccomp($fixed->finalRate, '97', 8));
+    }
+
+    public function test_bestchange_admin_fixed_falls_back_to_book_times_profit_when_course_missing(): void
+    {
+        [$floating, $fixed] = AdminPricingTransparency::bestChangeCustomerFinals(
+            directionId: 2,
+            sourceBookBase: '100',
+            courseValue: '0',
+            displayProfit: '1',
+            fixFee: '-3',
+        );
+
+        $this->assertSame(0, bccomp($floating->finalRate, '99', 8));
+        $this->assertSame(0, bccomp($fixed->finalRate, '96.03', 8));
     }
 }

@@ -44,42 +44,19 @@ final class AdminPricingTransparency
         $floatingFee = (string) ($item->floating_fee ?? '0');
         $fixFee = (string) ($item->fix_fee ?? '0');
 
-        // Owner-facing finals must match live math. For BestChange, apply «Прибыль»
-        // to the source book explicitly (Canonical may also apply -profit when a
-        // derived config still lists the pair; do not rely on that side-effect).
+        // Owner-facing finals must match live Canonical math.
+        // BestChange: source_rate.base stays the book rate_value for explanation;
+        // customer floating prefers persisted course_value (profit + Top-N already
+        // applied by Calculator). FIXED stacks fix_fee on that floating base —
+        // never on the raw book (would skip Прибыль).
         if ($family === 'BESTCHANGE') {
-            $norm = new RateFeePercentNormalizer();
-            $floatAdj = bcmul($displayProfit, '-1', 8);
-            $floatingFinal = $norm->applyPercentToRate($base, $floatAdj, CanonicalDirectionRateCalculator::ROUNDING_SCALE);
-            $fixAdj = $norm->toPercentExpressionOrZero($fixFee)['percent'];
-            $fixedFinal = $norm->applyPercentToRate($base, $fixAdj, CanonicalDirectionRateCalculator::ROUNDING_SCALE);
-            $floating = new CalculatedDirectionRate(
+            [$floating, $fixed] = self::bestChangeCustomerFinals(
                 directionId: (int) $item->id,
-                baseRate: $base,
-                mode: RateMode::Floating,
-                adjustmentValue: $floatAdj,
-                adjustmentUnit: RateAdjustmentUnit::Percent,
-                finalRate: $floatingFinal,
-                roundingScale: CanonicalDirectionRateCalculator::ROUNDING_SCALE,
+                sourceBookBase: $base,
+                courseValue: (string) ($item->course_value ?? '0'),
+                displayProfit: $displayProfit,
+                fixFee: $fixFee,
                 sourceTimestamp: $health['updated_at'] ?? null,
-                channel: RateChannel::Website,
-                eligible: bccomp($floatingFinal, '0', 18) === 1,
-                reason: null,
-                feeClassification: 'percent',
-            );
-            $fixed = new CalculatedDirectionRate(
-                directionId: (int) $item->id,
-                baseRate: $base,
-                mode: RateMode::Fixed,
-                adjustmentValue: $fixAdj,
-                adjustmentUnit: RateAdjustmentUnit::Percent,
-                finalRate: $fixedFinal,
-                roundingScale: CanonicalDirectionRateCalculator::ROUNDING_SCALE,
-                sourceTimestamp: $health['updated_at'] ?? null,
-                channel: RateChannel::Website,
-                eligible: bccomp($fixedFinal, '0', 18) === 1,
-                reason: null,
-                feeClassification: 'percent',
             );
         } else {
             $floating = $calc->calculate($item, RateMode::Floating, RateChannel::Website, $base);
@@ -619,6 +596,66 @@ final class AdminPricingTransparency
         }
 
         return isset($health['source_name']) ? (string) $health['source_name'] : null;
+    }
+
+    /**
+     * BestChange customer finals for admin explain (no DB).
+     *
+     * @return array{0: CalculatedDirectionRate, 1: CalculatedDirectionRate}
+     */
+    public static function bestChangeCustomerFinals(
+        int $directionId,
+        string $sourceBookBase,
+        string $courseValue,
+        string $displayProfit,
+        string $fixFee,
+        ?string $sourceTimestamp = null,
+    ): array {
+        $norm = new RateFeePercentNormalizer();
+        $scale = CanonicalDirectionRateCalculator::ROUNDING_SCALE;
+        $floatAdj = bcmul($displayProfit, '-1', 8);
+        $fixAdj = $norm->toPercentExpressionOrZero($fixFee)['percent'];
+
+        $explainedFromBook = $norm->applyPercentToRate($sourceBookBase, $floatAdj, $scale);
+        $hasLiveCourse = is_numeric($courseValue) && bccomp($courseValue, '0', 18) === 1;
+        // Prefer persisted course (live customer floating). Fallback: book × (1 - profit/100).
+        $floatingFinal = $hasLiveCourse ? $courseValue : $explainedFromBook;
+        $floatingAdjShown = $hasLiveCourse ? '0' : $floatAdj;
+        $floatingBaseShown = $hasLiveCourse ? $courseValue : $sourceBookBase;
+
+        // FIXED = live floating base × (1 + fix_fee/100). Must not skip Прибыль.
+        $fixedFinal = $norm->applyPercentToRate($floatingFinal, $fixAdj, $scale);
+
+        $floating = new CalculatedDirectionRate(
+            directionId: $directionId,
+            baseRate: $floatingBaseShown,
+            mode: RateMode::Floating,
+            adjustmentValue: $floatingAdjShown,
+            adjustmentUnit: RateAdjustmentUnit::Percent,
+            finalRate: $floatingFinal,
+            roundingScale: $scale,
+            sourceTimestamp: $sourceTimestamp,
+            channel: RateChannel::Website,
+            eligible: bccomp($floatingFinal, '0', 18) === 1,
+            reason: null,
+            feeClassification: 'percent',
+        );
+        $fixed = new CalculatedDirectionRate(
+            directionId: $directionId,
+            baseRate: $floatingFinal,
+            mode: RateMode::Fixed,
+            adjustmentValue: $fixAdj,
+            adjustmentUnit: RateAdjustmentUnit::Percent,
+            finalRate: $fixedFinal,
+            roundingScale: $scale,
+            sourceTimestamp: $sourceTimestamp,
+            channel: RateChannel::Website,
+            eligible: bccomp($fixedFinal, '0', 18) === 1,
+            reason: null,
+            feeClassification: 'percent',
+        );
+
+        return [$floating, $fixed];
     }
 
     /** @return array<string,mixed> */
