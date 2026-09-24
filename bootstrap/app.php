@@ -117,6 +117,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
             'precognitive' => \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
             'allowed-ip-address-admin' => AllowedIdAddressesMiddleware::class,
+            'partner_accrual.admin' => \App\Http\Middleware\EnsurePartnerAccrualAdmin::class,
             'is_reading_mode' => \App\Http\Middleware\IsReadingModeMiddleware::class,
             'force-json' => \App\Http\Middleware\ForceJsonResponse::class,
             'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,

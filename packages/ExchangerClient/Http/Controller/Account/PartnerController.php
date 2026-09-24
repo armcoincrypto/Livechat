@@ -61,7 +61,7 @@ class PartnerController extends Controller
             'total_orders' =>  $response->count(),
         ];
 
-        return response()->json([
+        $payload = [
             'info' => $info,
             'user' => [
                 'referral_hash' => $user->referralLink->getHashAttribute(),
@@ -78,7 +78,19 @@ class PartnerController extends Controller
                 'is_referral_disable_involved_clients' => (int) iEXSetting('is_referral_disable_involved_clients', 0),
                 'is_referral_disable_profit_money' => (int) iEXSetting('is_referral_disable_profit_money', 0),
             ],
-        ]);
+        ];
+
+        // Wave C: optional monthly accrual visibility (fail-closed when feature OFF).
+        $history = new \App\Services\PartnerAccrual\PartnerAccrualHistoryService();
+        $payload['monthly_accrual'] = [
+            'feature_enabled' => (bool) config('partner_accrual.enabled', false),
+            'plan' => $history->partnerPlanVisibility((int) $user->id),
+            'executed_count' => $history->monthlyAccrualCount((int) $user->id),
+            'executed' => $history->executedAccrualsForUser((int) $user->id, 20),
+            'pending_schedule_visible' => false,
+        ];
+
+        return response()->json($payload);
     }
 
     /**
@@ -132,5 +144,30 @@ class PartnerController extends Controller
             ->where('bonus_number', '>', 0)->orderBy('id_task', 'desc');
 
         return new PartnerReferralsResources($response->simplePaginate(10));
+    }
+
+    /**
+     * Executed monthly partner accrual history (own user only).
+     * Pending future schedule is never returned.
+     */
+    public function accrualHistory(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
+    {
+        $userId = (int) $request->user()->id;
+        $history = new \App\Services\PartnerAccrual\PartnerAccrualHistoryService();
+
+        if (! config('partner_accrual.enabled')) {
+            return response()->json([
+                'feature_enabled' => false,
+                'data' => [],
+                'pending_schedule_visible' => false,
+            ]);
+        }
+
+        return response()->json([
+            'feature_enabled' => true,
+            'data' => $history->executedAccrualsForUser($userId, 50),
+            'pending_schedule_visible' => false,
+            'plan' => $history->partnerPlanVisibility($userId),
+        ]);
     }
 }

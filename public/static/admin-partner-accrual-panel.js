@@ -1,0 +1,337 @@
+/**
+ * Wave C — Partner Monthly Accrual admin panel (user detail).
+ * Backend-owned money; preview/create/pause/resume/cancel via API.
+ * Feature-flag fail-closed (503 FEATURE_DISABLED).
+ */
+(function (w, d) {
+  'use strict';
+  if (w.__exsPartnerAccrualPanel) return;
+  w.__exsPartnerAccrualPanel = true;
+
+  function adminPrefix() {
+    var cfg = w.adminConfig || {};
+    var p = cfg.adminPath || cfg.admin_path || '';
+    if (p) return String(p).replace(/\/$/, '');
+    var m = (w.location.pathname || '').match(/^\/([^/]+)\//);
+    return m ? '/' + m[1] : '/iexadmin';
+  }
+
+  function csrf() {
+    var m = d.querySelector('meta[name="csrf-token"]');
+    return m ? m.getAttribute('content') : '';
+  }
+
+  function userIdFromLocation() {
+    var m = (w.location.hash || '').match(/users\/(\d+)/i)
+      || (w.location.pathname || '').match(/users\/(\d+)/i);
+    return m ? m[1] : null;
+  }
+
+  function panelEl() {
+    var el = d.getElementById('exs-partner-accrual-panel');
+    if (el) return el;
+    el = d.createElement('section');
+    el.id = 'exs-partner-accrual-panel';
+    el.setAttribute('aria-label', 'Partner Monthly Accrual');
+    el.setAttribute('style',
+      'margin:12px 0 16px;padding:14px 16px;border:1px solid #94a3b8;border-radius:10px;' +
+      'background:#fff7ed;color:#0f172a;font:13px/1.45 ui-sans-serif,system-ui,sans-serif');
+    return el;
+  }
+
+  function place(el) {
+    if (el.parentNode && el.dataset.placed === '1') return;
+    var app = d.getElementById('app') || d.body;
+    var anchor = d.getElementById('exs-user-lifecycle-panel');
+    if (anchor && anchor.parentNode) {
+      anchor.parentNode.insertBefore(el, anchor.nextSibling);
+    } else {
+      var first = app.firstChild;
+      if (first) app.insertBefore(el, first);
+      else app.appendChild(el);
+    }
+    el.dataset.placed = '1';
+  }
+
+  function money(v) {
+    if (v === null || v === undefined || v === '') return '—';
+    var n = Number(String(v).replace(',', '.'));
+    if (!isFinite(n)) return String(v);
+    return n.toFixed(2);
+  }
+
+  function api(method, path, body) {
+    var opts = {
+      method: method,
+      credentials: 'same-origin',
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-TOKEN': csrf()
+      }
+    };
+    if (body !== undefined) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(body);
+    }
+    return fetch(adminPrefix() + path, opts).then(function (r) {
+      return r.json().then(function (j) { return { http: r.status, body: j }; });
+    });
+  }
+
+  function renderDisabled(el, msg) {
+    el.innerHTML =
+      '<div style="font-weight:700;margin-bottom:6px">Ежемесячное партнёрское начисление</div>' +
+      '<div style="color:#9a3412">' + (msg || 'Функция отключена (PARTNER_ACCRUAL_ENABLED=false)') + '</div>';
+  }
+
+  function renderSummary(el, data, userId) {
+    var plan = data.plan;
+    var elig = data.user_eligibility || {};
+    var bal = data.current_partner_balance || {};
+    var html = '';
+    html += '<div style="font-weight:700;margin-bottom:8px">Ежемесячное партнёрское начисление (USD)</div>';
+    html += '<div style="margin-bottom:8px;color:#475569;font-size:12px">' +
+      'Текущий партнёрский баланс: <b>' + money(bal.amount_display || bal.amount) + ' USD</b> — ' +
+      'не равен сумме плана. Ручные изменения баланса не меняют расписание начисления.</div>';
+    html += '<div style="margin-bottom:8px">Статус пользователя: <b>' + (elig.label || '—') + '</b></div>';
+
+    if (!plan) {
+      html += '<div style="margin-bottom:10px;color:#334155">Нет активного ежемесячного начисления</div>';
+    } else {
+      var recon = plan.reconciliation || {};
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:10px">';
+      html += cell('Статус', plan.status);
+      html += cell('Валюта', plan.currency_code);
+      html += cell('Бюджет', money(plan.total_display) + ' USD');
+      html += cell('Начислено', money(plan.credited_display) + ' USD');
+      html += cell('Остаток', money(plan.remaining_display) + ' USD');
+      html += cell('Период', (plan.start_date || '') + ' → ' + (plan.end_date || ''));
+      html += cell('Прогресс', (plan.progress_percent || '0') + '%');
+      html += cell('Просрочено', String(plan.overdue_installments || 0));
+      html += '</div>';
+      if (plan.next_installment) {
+        html += '<div style="margin-bottom:8px">Следующее: ' + plan.next_installment.scheduled_for +
+          ' / ' + money(plan.next_installment.amount_display) + ' USD</div>';
+      }
+      html += '<div style="margin-bottom:10px;padding:8px;border-radius:8px;background:' +
+        (recon.ok ? '#dcfce7' : '#fee2e2') + '">Сверка: <b>' + (recon.label || recon.status) + '</b></div>';
+      html += '<div style="margin-bottom:10px">' +
+        '<button type="button" data-act="detail" style="' + btn() + '">Расписание</button> ' +
+        '<button type="button" data-act="dryrun" style="' + btn() + '">Dry-run (без изменений)</button> ' +
+        (plan.status === 'ACTIVE' ? '<button type="button" data-act="pause" style="' + btnWarn() + '">Пауза</button> ' : '') +
+        (plan.status === 'PAUSED' ? '<button type="button" data-act="resume" style="' + btn() + '">Возобновить</button> ' : '') +
+        ((plan.status === 'ACTIVE' || plan.status === 'PAUSED')
+          ? '<button type="button" data-act="cancel" style="' + btnDanger() + '">Отменить</button>' : '') +
+        '</div>';
+      html += '<div id="exs-pa-detail" style="display:none;margin-top:8px;max-height:280px;overflow:auto;border:1px solid #e2e8f0;padding:8px"></div>';
+    }
+
+    if (elig.eligible && (!plan || plan.status === 'CANCELLED' || plan.status === 'COMPLETED')) {
+      html += createFormHtml();
+    } else if (!elig.eligible) {
+      html += '<div style="color:#991b1b;margin-top:8px">Начисление недоступно для заблокированных или деактивированных пользователей. Аккаунт не реактивируется.</div>';
+    }
+
+    html += '<div id="exs-pa-msg" style="margin-top:8px;color:#9a3412"></div>';
+    el.innerHTML = html;
+    bind(el, userId, plan);
+  }
+
+  function cell(k, v) {
+    return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:8px"><div style="font-size:11px;color:#64748b">' +
+      k + '</div><div style="font-weight:600">' + v + '</div></div>';
+  }
+
+  function btn() {
+    return 'cursor:pointer;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;background:#f8fafc;font-weight:600';
+  }
+  function btnWarn() {
+    return 'cursor:pointer;padding:6px 10px;border-radius:8px;border:1px solid #f59e0b;background:#fffbeb;font-weight:600';
+  }
+  function btnDanger() {
+    return 'cursor:pointer;padding:6px 10px;border-radius:8px;border:1px solid #ef4444;background:#fef2f2;font-weight:600;color:#991b1b';
+  }
+
+  function createFormHtml() {
+    return '<div style="margin-top:12px;padding-top:12px;border-top:1px dashed #fdba74">' +
+      '<div style="font-weight:700;margin-bottom:6px">Создать план (USD)</div>' +
+      '<label>Валюта <input value="USD" readonly style="width:70px;margin-left:6px"></label> ' +
+      '<label>Бюджет <input id="exs-pa-budget" type="text" inputmode="decimal" placeholder="300.00" style="width:100px;margin-left:6px"></label> ' +
+      '<label>С <input id="exs-pa-start" type="date" style="margin-left:6px"></label> ' +
+      '<label>По <input id="exs-pa-end" type="date" style="margin-left:6px"></label> ' +
+      '<button type="button" data-act="preview" style="' + btn() + '">Предпросмотр</button> ' +
+      '<button type="button" data-act="create" style="' + btn() + '" disabled id="exs-pa-create">Подтвердить</button>' +
+      '<div id="exs-pa-preview" style="margin-top:8px;font-size:12px;color:#334155"></div>' +
+      '</div>';
+  }
+
+  function setMsg(text) {
+    var m = d.getElementById('exs-pa-msg');
+    if (m) m.textContent = text || '';
+  }
+
+  function bind(el, userId, plan) {
+    el.onclick = function (ev) {
+      var t = ev.target;
+      if (!t || !t.getAttribute) return;
+      var act = t.getAttribute('data-act');
+      if (!act) return;
+      if (act === 'preview') doPreview(userId);
+      if (act === 'create') doCreate(userId);
+      if (act === 'detail' && plan) doDetail(plan.id);
+      if (act === 'dryrun') doDryRun(userId);
+      if (act === 'pause' && plan) {
+        if (!w.confirm('Приостановить будущие начисления? Уже начисленные средства не отменяются.')) return;
+        mutate('POST', '/account/users/partner-accrual/plans/' + plan.id + '/pause', {}, userId);
+      }
+      if (act === 'resume' && plan) {
+        if (!w.confirm('Возобновить план? Расписание не пересчитывается; пропущенные дни могут доначислиться после активации планировщика.')) return;
+        mutate('POST', '/account/users/partner-accrual/plans/' + plan.id + '/resume', {}, userId);
+      }
+      if (act === 'cancel' && plan) {
+        if (!w.confirm('Отменить все будущие неначисленные платежи? Уже начисленные средства остаются на балансе.')) return;
+        if (!w.confirm('Подтвердите отмену ещё раз.')) return;
+        mutate('POST', '/account/users/partner-accrual/plans/' + plan.id + '/cancel', { confirm: 'CANCEL' }, userId);
+      }
+    };
+  }
+
+  function doPreview(userId) {
+    var budget = (d.getElementById('exs-pa-budget') || {}).value;
+    var start = (d.getElementById('exs-pa-start') || {}).value;
+    var end = (d.getElementById('exs-pa-end') || {}).value;
+    api('POST', '/account/users/' + userId + '/partner-accrual/preview', {
+      total_amount: budget,
+      start_date: start,
+      end_date: end,
+      currency_code: 'USD'
+    }).then(function (res) {
+      var box = d.getElementById('exs-pa-preview');
+      var createBtn = d.getElementById('exs-pa-create');
+      if (res.http === 503) {
+        setMsg(res.body.message || 'FEATURE_DISABLED');
+        return;
+      }
+      if (res.body.status !== 0) {
+        setMsg(res.body.message || res.body.code || 'Ошибка предпросмотра');
+        if (createBtn) createBtn.disabled = true;
+        return;
+      }
+      var p = res.body.data;
+      var rows = (p.schedule || []).slice(0, 8).map(function (r) {
+        return r.scheduled_for + ': ' + money(r.amount_display);
+      }).join('<br>');
+      if (box) {
+        box.innerHTML =
+          '<b>Бюджет:</b> ' + money(p.total_display) + ' USD · ' +
+          '<b>Платежей:</b> ' + p.installment_count + ' · ' +
+          '<b>Сумма:</b> ' + money(p.sum_display) + ' USD · ' +
+          '<b>Средн./мин/макс:</b> ' + money(p.average_display) + ' / ' + money(p.min_display) + ' / ' + money(p.max_display) +
+          '<div style="margin-top:6px">' + rows + (p.schedule && p.schedule.length > 8 ? '<br>…' : '') + '</div>';
+      }
+      if (createBtn) createBtn.disabled = !p.exact_sum_ok;
+      setMsg(p.exact_sum_ok ? 'Предпросмотр готов. Сумма точна.' : 'Сумма не совпадает');
+    }).catch(function () { setMsg('Сеть/ошибка предпросмотра'); });
+  }
+
+  function doCreate(userId) {
+    if (!w.confirm('Создать активный план с сохранённым расписанием?')) return;
+    var budget = (d.getElementById('exs-pa-budget') || {}).value;
+    var start = (d.getElementById('exs-pa-start') || {}).value;
+    var end = (d.getElementById('exs-pa-end') || {}).value;
+    mutate('POST', '/account/users/' + userId + '/partner-accrual', {
+      total_amount: budget,
+      start_date: start,
+      end_date: end
+    }, userId);
+  }
+
+  function doDetail(planId) {
+    api('GET', '/account/users/partner-accrual/plans/' + planId).then(function (res) {
+      var box = d.getElementById('exs-pa-detail');
+      if (!box) return;
+      if (res.body.status !== 0) {
+        box.style.display = 'block';
+        box.textContent = res.body.message || 'Ошибка';
+        return;
+      }
+      var rows = (res.body.data.installments || []).map(function (i) {
+        return i.sequence + '. ' + i.scheduled_for + ' — ' + money(i.amount_display) + ' USD [' + i.status + ']';
+      }).join('<br>');
+      box.style.display = 'block';
+      box.innerHTML = '<div style="font-weight:600;margin-bottom:4px">Сохранённое расписание (без перегенерации)</div>' + rows;
+    });
+  }
+
+  function doDryRun(userId) {
+    api('GET', '/account/users/' + userId + '/partner-accrual/dry-run').then(function (res) {
+      if (res.body.status !== 0) {
+        setMsg(res.body.message || 'Dry-run ошибка');
+        return;
+      }
+      var data = res.body.data;
+      setMsg('Dry-run — без изменений баланса. Due=' + data.due_installments +
+        '; would_credit=' + data.would_credit_count + ' / ' + money(data.would_credit_total) + ' USD');
+    });
+  }
+
+  function mutate(method, path, body, userId) {
+    api(method, path, body).then(function (res) {
+      if (res.http === 503) {
+        setMsg(res.body.message || 'FEATURE_DISABLED');
+        return;
+      }
+      if (res.body.status !== 0) {
+        setMsg(res.body.message || res.body.code || 'Ошибка');
+        return;
+      }
+      setMsg(res.body.message || 'OK');
+      load(userId);
+    }).catch(function () { setMsg('Сеть/ошибка'); });
+  }
+
+  function load(userId) {
+    var el = panelEl();
+    place(el);
+    el.innerHTML = '<div style="font-weight:700">Ежемесячное партнёрское начисление</div><div>Загрузка…</div>';
+    api('GET', '/account/users/' + userId + '/partner-accrual').then(function (res) {
+      if (res.http === 503 || (res.body && res.body.code === 'FEATURE_DISABLED')) {
+        renderDisabled(el, res.body && res.body.message);
+        return;
+      }
+      if (res.http === 403) {
+        renderDisabled(el, 'Недостаточно прав');
+        return;
+      }
+      if (res.body.status !== 0) {
+        renderDisabled(el, res.body.message || 'Ошибка');
+        return;
+      }
+      renderSummary(el, res.body.data, userId);
+    }).catch(function () {
+      renderDisabled(el, 'Не удалось загрузить блок начисления');
+    });
+  }
+
+  function tick() {
+    var id = userIdFromLocation();
+    var el = d.getElementById('exs-partner-accrual-panel');
+    if (!id) {
+      if (el) el.style.display = 'none';
+      return;
+    }
+    if (el) el.style.display = '';
+    if (!el || el.dataset.userId !== String(id)) {
+      load(id);
+      var p = panelEl();
+      p.dataset.userId = String(id);
+    }
+  }
+
+  w.addEventListener('hashchange', tick);
+  w.addEventListener('popstate', tick);
+  if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', tick);
+  else tick();
+  setInterval(tick, 2500);
+})(window, document);

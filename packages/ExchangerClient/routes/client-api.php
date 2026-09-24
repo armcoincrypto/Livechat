@@ -123,6 +123,7 @@ Route::middleware(['auth'])->group(function ()
                 Route::get('/', 'index');
                 Route::put('/',  'updateRefName');
                 Route::get('/histories', 'histories');
+                Route::get('/accrual-history', 'accrualHistory');
             });
 
             // Партнерские выплаты

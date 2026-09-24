@@ -684,6 +684,23 @@ Route::prefix('frontend-api')->middleware(['frontend', 'force-json'])->group(fun
                         Route::delete('/{id}/delete_sessions', 'deleteActivitySessions')->middleware(['permission:admin_session_destroy']);
                     });
 
+                // Partner monthly accrual (Wave C) — fail-closed when feature disabled.
+                Route::controller(\App\Http\Controllers\Administrator\Account\PartnerAccrualController::class)
+                    ->group(function () {
+                        Route::middleware(['partner_accrual.admin:view'])->group(function () {
+                            Route::get('/{id}/partner-accrual', 'userSummary');
+                            Route::get('/partner-accrual/plans/{planId}', 'show')->whereNumber('planId');
+                            Route::get('/{id}/partner-accrual/dry-run', 'dryRunDue');
+                        });
+                        Route::middleware(['partner_accrual.admin:manage'])->group(function () {
+                            Route::post('/{id}/partner-accrual/preview', 'preview');
+                            Route::post('/{id}/partner-accrual', 'store');
+                            Route::post('/partner-accrual/plans/{planId}/pause', 'pause')->whereNumber('planId');
+                            Route::post('/partner-accrual/plans/{planId}/resume', 'resume')->whereNumber('planId');
+                            Route::post('/partner-accrual/plans/{planId}/cancel', 'cancel')->whereNumber('planId');
+                        });
+                    });
+
                 Route::prefix('google')->controller(GoogleAuthenticatorController::class)
                     ->middleware(['permission:admin_access_google_authentication'])->group(function () {
                         Route::get('/{id}', 'index');
