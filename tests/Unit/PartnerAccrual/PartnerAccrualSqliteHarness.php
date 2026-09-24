@@ -56,6 +56,7 @@ final class PartnerAccrualSqliteHarness
 
     public static function migrateMinimalSchema(): void
     {
+        Schema::dropIfExists('partner_accrual_plan_events');
         Schema::dropIfExists('partner_accrual_installments');
         Schema::dropIfExists('partner_accrual_plans');
         Schema::dropIfExists('user_balance_log');
@@ -120,6 +121,11 @@ final class PartnerAccrualSqliteHarness
             $table->text('error_message')->nullable();
             $table->json('metadata')->nullable();
             $table->unsignedInteger('version')->default(1);
+            $table->string('schedule_seed', 64)->nullable();
+            $table->decimal('min_installment', 20, 8)->nullable();
+            $table->decimal('max_installment', 20, 8)->nullable();
+            $table->unsignedSmallInteger('variance_percent')->nullable();
+            $table->timestamp('activated_at')->nullable();
             $table->timestamps();
         });
 
@@ -140,11 +146,32 @@ final class PartnerAccrualSqliteHarness
             $table->unique('idempotency_key');
         });
 
+        Schema::create('partner_accrual_plan_events', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('plan_id')->index();
+            $table->string('event_type', 64)->index();
+            $table->unsignedBigInteger('actor_admin_id')->nullable();
+            $table->json('payload')->nullable();
+            $table->timestamp('created_at')->useCurrent();
+        });
+
         DB::table('code_currency')->insert([
             'id' => 8,
             'name' => 'USD',
             'created_at' => now(),
             'updated_at' => now(),
+        ]);
+
+        // Fail-closed defaults for tests unless explicitly enabled.
+        config([
+            'partner_accrual.enabled' => false,
+            'partner_accrual.scheduler_enabled' => false,
+            'partner_accrual.allow_apply' => false,
+            'partner_accrual.business_timezone' => 'Europe/Moscow',
+            'partner_accrual.max_installments_per_run' => 50,
+            'partner_accrual.default_variance_percent' => 25,
+            'partner_accrual.minor_unit_scale' => 2,
+            'app.timezone' => 'Europe/Moscow',
         ]);
     }
 }

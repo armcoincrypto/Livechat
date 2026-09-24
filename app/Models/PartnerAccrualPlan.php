@@ -30,6 +30,11 @@ class PartnerAccrualPlan extends Model
         'error_message',
         'metadata',
         'version',
+        'schedule_seed',
+        'min_installment',
+        'max_installment',
+        'variance_percent',
+        'activated_at',
     ];
 
     protected $casts = [
@@ -39,19 +44,28 @@ class PartnerAccrualPlan extends Model
         'paused_at' => 'datetime',
         'cancelled_at' => 'datetime',
         'completed_at' => 'datetime',
+        'activated_at' => 'datetime',
         'metadata' => 'array',
         'version' => 'integer',
         'currency_code_id' => 'integer',
         'created_by_admin_id' => 'integer',
         'user_id' => 'integer',
+        'variance_percent' => 'integer',
         // Keep decimal amounts as strings — never cast to float.
         'total_amount' => 'string',
         'credited_amount' => 'string',
+        'min_installment' => 'string',
+        'max_installment' => 'string',
     ];
 
     public function installments(): HasMany
     {
         return $this->hasMany(PartnerAccrualInstallment::class, 'plan_id');
+    }
+
+    public function events(): HasMany
+    {
+        return $this->hasMany(PartnerAccrualPlanEvent::class, 'plan_id');
     }
 
     public function user()

@@ -372,5 +372,17 @@ class ExchangeSchedule
                 ->onOneServer()
                 ->withoutOverlapping(55);
         }
+
+        // Partner monthly accrual — fail-closed; OFF until Wave D activation.
+        if (filter_var(config('partner_accrual.scheduler_enabled'), FILTER_VALIDATE_BOOLEAN)
+            && filter_var(config('partner_accrual.enabled'), FILTER_VALIDATE_BOOLEAN)
+            && filter_var(config('partner_accrual.allow_apply'), FILTER_VALIDATE_BOOLEAN)
+        ) {
+            $schedule->command('partner-accrual:run --apply')
+                ->dailyAt('00:15')
+                ->timezone((string) config('partner_accrual.business_timezone', config('app.timezone', 'Europe/Moscow')))
+                ->onOneServer()
+                ->withoutOverlapping(50);
+        }
     }
 }
