@@ -42,6 +42,8 @@ class UserBalanceLog extends Model
         'id_manager',
         'type',
         'route_type',
+        'source',
+        'reference',
         'text',
         'from_balance',
         'to_balance',

@@ -490,42 +490,24 @@ class UserController extends Controller
             ]);
         }
 
-        $user = User::with('user_balance')->find($request->id);
+        // Absolute SET UX unchanged; row locking serializes vs partner accrual deltas.
+        $result = (new \App\Services\PartnerAccrual\AdminPartnerBalanceAbsoluteSet())->setAbsolute(
+            (int) $request->id,
+            (string) $request->balance,
+            (int) $request->user()->id
+        );
 
-        $newBalance = (float) $request->balance;
-        $currentBalance = $user->user_balance?->balance ?? 0;
-
-        if (!$user->user_balance) {
-            $user->user_balance()->create(['balance' => $newBalance]);
-            $logText = "Установлен начальный баланс: {$newBalance}";
-            $type = 1;
-        } elseif ($newBalance !== $currentBalance) {
-            $type = $newBalance > $currentBalance ? 1 : 0;
-            $action = $type ? 'увеличен' : 'уменьшен';
-            $logText = "Реферальный бонус {$action} с {$currentBalance} до {$newBalance}";
-
-            $user->user_balance->update(['balance' => $newBalance]);
-        } else {
+        if (! $result['changed']) {
             return response()->json([
                 'status' => 1,
-                'message' => 'Баланс не изменился'
+                'message' => $result['message'],
             ]);
         }
 
-        UserBalanceLog::create([
-            'id_manager' => $request->user()->id,
-            'id_user' => $user->id,
-            'route_type' => 1,
-            'type' => $type,
-            'text' => $logText,
-            'from_balance' => $currentBalance,
-            'to_balance' => $newBalance,
-        ]);
-
         return response()->json([
             'status' => 0,
-            'message' => 'Баланс успешно обновлён',
-            'balance' => $newBalance
+            'message' => $result['message'],
+            'balance' => (float) $result['to'],
         ]);
     }
 

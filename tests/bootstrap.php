@@ -16,5 +16,16 @@ spl_autoload_register(static function (string $class): void {
     }
 }, true, true);
 
+// Tests\\ namespace for this worktree (PHPUnit PHAR has no composer Tests map).
+spl_autoload_register(static function (string $class): void {
+    if (!str_starts_with($class, 'Tests\\')) {
+        return;
+    }
+    $path = dirname(__DIR__) . '/tests/' . str_replace('\\', '/', substr($class, 6)) . '.php';
+    if (is_file($path)) {
+        require_once $path;
+    }
+}, true, true);
+
 $app = require __DIR__ . '/../bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
