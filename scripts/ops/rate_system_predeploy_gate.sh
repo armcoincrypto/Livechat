@@ -193,6 +193,71 @@ if (is_array(\$ton)) {
     \$derivedBenchmark++;
 }
 
+// ---------------------------------------------------------------------------
+// GRAM Wave-1 DERIVED→BESTCHANGE registry persistence (permanent).
+// Fail if migration IDs re-enter derived registry / regain DERIVED ownership /
+// lose BestChange ownership / regain block_bestchange_overwrite via registry.
+// ---------------------------------------------------------------------------
+\$gramManifestPath = '$LIVE/resources/rates/gram-bestchange-migrated-ids.json';
+\$gramIds = [132,410,411,412,413,414,415,416,417,418,419,420,421,422,423,424,425,426];
+if (is_file(\$gramManifestPath)) {
+    \$gm = json_decode((string) file_get_contents(\$gramManifestPath), true);
+    if (is_array(\$gm) && ! empty(\$gm['direction_ids'])) {
+        \$gramIds = array_map('intval', \$gm['direction_ids']);
+    }
+}
+\$gramInRegistry = 0;
+\$gramBlockReintroduced = 0;
+\$gramDerivedOwner = 0;
+\$gramBestchangeOwner = 0;
+\$cfgDirs = (array) (\$auth->config()['directions'] ?? []);
+foreach (\$gramIds as \$gid) {
+    \$row = \$cfgDirs[(string) \$gid] ?? \$cfgDirs[\$gid] ?? null;
+    if (is_array(\$row)) {
+        \$gramInRegistry++;
+        echo "GRAM_ID_IN_DERIVED_REGISTRY id=\$gid\n";
+        if (! empty(\$row['ownership']['block_bestchange_overwrite'])) {
+            \$gramBlockReintroduced++;
+            echo "GRAM_BLOCK_BESTCHANGE_REINTRODUCED id=\$gid\n";
+        }
+    }
+    \$gd = DirectionExchange::query()->find(\$gid);
+    if (! \$gd) {
+        echo "GRAM_DIRECTION_MISSING id=\$gid\n";
+        \$unknown++;
+        continue;
+    }
+    \$ps = (string) (\$gd->parser_source_name ?? '');
+    if (\$ps === 'DERIVED_MARKET_BASELINE') {
+        \$gramDerivedOwner++;
+        echo "GRAM_DERIVED_OWNER id=\$gid\n";
+    }
+    if (\$ps === 'BestChange') {
+        \$gramBestchangeOwner++;
+    } else {
+        echo "GRAM_NOT_BESTCHANGE_OWNER id=\$gid parser=\$ps\n";
+        \$map++;
+    }
+}
+\$gramExpected = count(\$gramIds);
+echo "GRAM_IDS_IN_DERIVED_REGISTRY=\$gramInRegistry\n";
+echo "GRAM_DERIVED_OWNER_TOTAL=\$gramDerivedOwner\n";
+echo "GRAM_BESTCHANGE_OWNER_TOTAL=\$gramBestchangeOwner\n";
+echo "GRAM_BLOCK_BESTCHANGE_REINTRODUCED_TOTAL=\$gramBlockReintroduced\n";
+if (\$gramInRegistry !== 0) {
+    \$map += \$gramInRegistry;
+}
+if (\$gramDerivedOwner !== 0) {
+    \$map += \$gramDerivedOwner;
+}
+if (\$gramBestchangeOwner !== \$gramExpected) {
+    echo "GRAM_BESTCHANGE_OWNER_TOTAL_DEFECT expect=\$gramExpected got=\$gramBestchangeOwner\n";
+    \$map++;
+}
+if (\$gramBlockReintroduced !== 0) {
+    \$map += \$gramBlockReintroduced;
+}
+
 \$snap = RatesXmlPublicFeedHealth::snapshot();
 \$xmlFail = 0;
 if (! empty(\$snap['must_keep_full']) && empty(\$snap['invariant_ok'])) {

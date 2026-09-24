@@ -206,6 +206,18 @@ if [[ -f "$CANDIDATE_WT/config/rate_system_freeze.php" ]]; then
   echo "RATE_SYSTEM_FREEZE_ARTIFACTS=PASS"
 fi
 
+# GRAM Wave-1: stripped derived registry must ship; poison GRAM IDs cannot cut over.
+if [[ -f "$CANDIDATE_WT/scripts/ops/verify_derived_registry_artifact.sh" ]]; then
+  bash "$CANDIDATE_WT/scripts/ops/verify_derived_registry_artifact.sh" \
+    --source "$CANDIDATE_WT" \
+    --live "$LIVE_BACKEND" \
+    || { echo "FAIL derived registry GRAM exclusion / SHA mismatch" >&2; exit 38; }
+  echo "GRAM_DERIVED_REGISTRY_PERSISTENCE=PASS"
+elif [[ -f "$CANDIDATE_WT/resources/rates/gram-bestchange-migrated-ids.json" ]]; then
+  echo "FAIL verify_derived_registry_artifact.sh missing but GRAM manifest present" >&2
+  exit 38
+fi
+
 python3 - "$REPORT_JSON" <<'PY'
 import json,sys
 r=json.load(open(sys.argv[1]))

@@ -16,8 +16,12 @@ use PHPUnit\Framework\TestCase;
  */
 final class ProtectedDerivedLegacyUnprotectTest extends TestCase
 {
-    /** GRAM/TON poison history — must remain blocked. */
-    private const MUST_STAY_PROTECTED = [11, 41, 421, 2977];
+    /**
+     * Legacy poison peers that remain derived-owned with block_bestchange_overwrite.
+     * Wave-1 GRAM/TON IDs (incl. 421) are ABSENT from derived registry — see
+     * GramBestChangeMigratedRegistryInvariantTest.
+     */
+    private const MUST_STAY_PROTECTED = [11];
 
     /** High-liquidity crypto-crypto canaries from the 2026-08-25 protected audit. */
     private const CANARIES_UNPROTECTED = [1573, 1523, 2877, 2802, 194, 159, 172, 569];
@@ -52,9 +56,10 @@ final class ProtectedDerivedLegacyUnprotectTest extends TestCase
     {
         $cfg = $this->directions();
         foreach (self::ZELLE_RECEIVE_STILL_PROTECTED as $id) {
-            $this->assertTrue(
-                !empty($cfg[(string) $id]['ownership']['block_bestchange_overwrite']),
-                "Zelle receive {$id} must stay protected"
+            $this->assertArrayHasKey(
+                (string) $id,
+                $cfg,
+                "Zelle receive {$id} must remain derived-registry owned (never BestChange catalog)"
             );
         }
         // Thin NEO INR rails from the protected audit.

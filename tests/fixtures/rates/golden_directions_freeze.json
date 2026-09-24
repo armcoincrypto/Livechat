@@ -161,24 +161,31 @@
     {
       "id": 410,
       "pair": "GRAM->BTC",
-      "owner": "DERIVED",
-      "parser_source_name": "DERIVED_MARKET_BASELINE",
-      "base_source": "IMB.TONUSDT*inverse(BTCUSDT)*haircut",
+      "owner": "BESTCHANGE",
+      "parser_source_name": "BestChange",
+      "base_source": "BestChange.position",
       "storage_field": "profit",
       "floating_fee": "0",
       "profit": "1.5",
-      "status": 1
+      "status": 1,
+      "not_in_derived_registry": true,
+      "block_bestchange_overwrite": false,
+      "bc_link_active": true,
+      "golden_fixture": "GRAM_WAVE1_BESTCHANGE_PERMANENT"
     },
     {
       "id": 132,
       "pair": "GRAM->ETH",
-      "owner": "DERIVED",
-      "parser_source_name": "DERIVED_MARKET_BASELINE",
-      "base_source": "IMB.TONUSDT*inverse(ETHUSDT)*haircut",
+      "owner": "BESTCHANGE",
+      "parser_source_name": "BestChange",
+      "base_source": "BestChange.position",
       "storage_field": "profit",
       "floating_fee": "0",
       "profit": "1.5",
-      "status": 1
+      "status": 1,
+      "not_in_derived_registry": true,
+      "block_bestchange_overwrite": false,
+      "bc_link_active": true
     }
   ],
   "invariants": {

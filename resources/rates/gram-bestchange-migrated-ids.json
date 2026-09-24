@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "policy": "GRAM_TON_WAVE1_BESTCHANGE_OWNERSHIP_PERMANENT",
+  "certified_at_utc": "2026-09-25T00:00:00Z",
+  "notes": [
+    "These direction IDs were migrated DERIVED→BESTCHANGE in Wave 1.",
+    "They MUST NOT reappear in derived-market-baseline-directions.json.",
+    "block_bestchange_overwrite must never be reintroduced for them via derived registry.",
+    "Runtime ownership: parser_source_name=BestChange + bestchange_directions.status=1."
+  ],
+  "direction_ids": [
+    132, 410, 411, 412, 413, 414, 415, 416, 417, 418,
+    419, 420, 421, 422, 423, 424, 425, 426
+  ],
+  "golden_fixture_id": 410,
+  "expected_owner": "BestChange",
+  "expected_derived_registry_total_min": 1488,
+  "stripped_registry_sha256_live_ee851575": "8542cd51295f1975c510e2ab5b0dfca5e7ab0aaade5ebdb41cccdd64b82a1de5"
+}
