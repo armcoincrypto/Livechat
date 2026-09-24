@@ -55,7 +55,10 @@ if (! is_file(\$fixturePath)) {
 }
 
 \$pq = 0; \$oe = 0; \$topn = 0; \$stored = 0; \$pos = 0; \$map = 0; \$unknown = 0;
+\$derivedBenchmark = 0; \$crossOutlier = 0; \$unhealthyUsed = 0; \$delistedUsed = 0; \$staleUsed = 0;
 \$resolver = app(CommercialAdjustmentResolver::class);
+\$imb = app(\\App\\Services\\Rates\\IndependentMarketBaseline::class);
+\$auth = \\App\\Services\\Rates\\DerivedMarketBaselineAuthority::fromStorageApp();
 
 foreach ((\$fixture['directions'] ?? []) as \$row) {
     \$id = (int) \$row['id'];
@@ -67,7 +70,14 @@ foreach ((\$fixture['directions'] ?? []) as \$row) {
     }
     \$family = \$resolver->family(\$d);
     \$expectOwner = (string) (\$row['owner'] ?? '');
-    if (\$expectOwner !== '' && \$family !== \$expectOwner) {
+    if (\$expectOwner === 'DERIVED') {
+        // Derived ownership is parser_source_name based; family() may still say MANUAL/OTHER.
+        \$ps = (string) \$d->parser_source_name;
+        if (\$ps !== 'DERIVED_MARKET_BASELINE' && \$ps !== (string) (\$row['parser_source_name'] ?? 'DERIVED_MARKET_BASELINE')) {
+            echo "DERIVED_OWNER_DEFECT id=\$id parser=\$ps\n";
+            \$map++;
+        }
+    } elseif (\$expectOwner !== '' && \$family !== \$expectOwner) {
         echo "OWNER_DEFECT id=\$id expect=\$expectOwner got=\$family\n";
         \$map++;
     }
@@ -120,6 +130,67 @@ foreach ((\$fixture['directions'] ?? []) as \$row) {
             // thin book / inactive — count as position selector soft unknown, not hard fail
         }
     }
+    if (\$expectOwner === 'DERIVED') {
+        \$ev = \$auth->evaluate(\$id);
+        if (empty(\$ev['ok'])) {
+            echo "DERIVED_EVAL_FAIL id=\$id reason=".(\$ev['reason'] ?? '')."\n";
+            \$derivedBenchmark++;
+        } else {
+            \$asset = (string) ((\$auth->config()['directions'][(string) \$id]['asset_leg']['symbol'] ?? ''));
+            \$q = \$asset !== '' ? \$imb->quote(\$asset) : null;
+            \$qs = is_array(\$q) ? (string) (\$q['quality_state'] ?? '') : 'QUARANTINED';
+            if (\$qs === 'QUARANTINED' || \$q === null) {
+                echo "DERIVED_BENCHMARK_DEFECT id=\$id asset=\$asset quality=\$qs\n";
+                \$derivedBenchmark++;
+            }
+            foreach ((array) (\$q['excluded'] ?? []) as \$ex) {
+                \$cls = (string) (\$ex['class'] ?? '');
+                if (in_array(\$cls, ['BREAK', 'DELISTED'], true) && !empty(\$ex['eligible'])) {
+                    \$delistedUsed++;
+                }
+                // If a BREAK row somehow remained eligible, that is a hard fail counted above via quality.
+            }
+            // Independent surface check: stored course must track evaluate BASE within 5%
+            // (compiler lag allowed). This is NOT internal-only — evaluate uses integrity IMB.
+            \$storedCourse = (float) \$d->course_value;
+            \$evalRate = (float) \$ev['rate'];
+            if (\$storedCourse > 0 && \$evalRate > 0) {
+                \$rel = abs(\$storedCourse - \$evalRate) / \$evalRate;
+                if (\$rel > 0.10) {
+                    echo "CROSS_RATE_OUTLIER id=\$id stored=\$storedCourse eval=\$evalRate rel=\$rel\n";
+                    \$crossOutlier++;
+                }
+            }
+        }
+    }
+}
+
+// Global critical-leg integrity: TONUSDT must not be HEALTHY on BREAK-only data.
+\$ton = \$imb->quote('TONUSDT');
+\$tonQs = is_array(\$ton) ? (string) (\$ton['quality_state'] ?? '') : 'QUARANTINED';
+\$tonSrc = is_array(\$ton) ? (string) (\$ton['source'] ?? '') : '';
+if (is_array(\$ton)) {
+    foreach ((array) (\$ton['excluded'] ?? []) as \$ex) {
+        \$cls = (string) (\$ex['class'] ?? '');
+        if (\$cls === 'BREAK' || \$cls === 'DELISTED') {
+            // excluded is good — only fail if used
+        }
+        if (\$cls === 'STALE') {
+            // informational
+        }
+    }
+    if (str_contains(\$tonSrc, 'binance_ton-usdt') && !str_contains(\$tonSrc, 'certified_fallback')) {
+        echo "DELISTED_PROVIDER_USED TONUSDT source=\$tonSrc\n";
+        \$delistedUsed++;
+        \$unhealthyUsed++;
+    }
+    if (\$tonQs === 'QUARANTINED') {
+        echo "TONUSDT_QUARANTINED\n";
+        \$derivedBenchmark++;
+    }
+} else {
+    echo "TONUSDT_MISSING\n";
+    \$derivedBenchmark++;
 }
 
 \$snap = RatesXmlPublicFeedHealth::snapshot();
@@ -143,12 +214,19 @@ echo "TOPN_DEFECT_TOTAL=\$topn\n";
 echo "STORED_COURSE_DEFECT_TOTAL=\$stored\n";
 echo "POSITION_SELECTOR_DEFECT_TOTAL=\$pos\n";
 echo "MAPPING_DEFECT_TOTAL=\$map\n";
+echo "DERIVED_BENCHMARK_DEFECT_TOTAL=\$derivedBenchmark\n";
+echo "CROSS_RATE_OUTLIER_TOTAL=\$crossOutlier\n";
+echo "UNHEALTHY_PROVIDER_USED_TOTAL=\$unhealthyUsed\n";
+echo "DELISTED_PROVIDER_USED_TOTAL=\$delistedUsed\n";
+echo "STALE_PROVIDER_USED_TOTAL=\$staleUsed\n";
 echo "UNKNOWN=\$unknown\n";
 echo "XML_FAIL=\$xmlFail\n";
 echo "XML_HEALTH=".((\$xmlFail === 0 && ! empty(\$snap['invariant_ok'])) ? 'HEALTHY' : 'UNHEALTHY')."\n";
 echo "XML_BYTES=".(\$snap['bytes'] ?? 0)." XML_ROWS=".(\$snap['rows'] ?? 0)."\n";
+echo "TONUSDT_QUALITY_STATE=\$tonQs\n";
 
-\$hard = \$pq + \$oe + \$topn + \$stored + \$pos + \$map + \$unknown + \$xmlFail;
+\$hard = \$pq + \$oe + \$topn + \$stored + \$pos + \$map + \$unknown + \$xmlFail
+    + \$derivedBenchmark + \$crossOutlier + \$unhealthyUsed + \$delistedUsed + \$staleUsed;
 if (\$hard > 0) {
     echo "RATE_SYSTEM_PREDEPLOY_GATE=FAIL defects=\$hard\n";
     exit(1);

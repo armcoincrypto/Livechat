@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\Rates;
 
+use App\Services\Rates\ProviderIntegrity\CertifiedSymbolFallback;
+use App\Services\Rates\ProviderIntegrity\DerivedLegLastKnownGoodStore;
+use App\Services\Rates\ProviderIntegrity\ExchangeSymbolStatusRegistry;
+use App\Services\Rates\ProviderIntegrity\ProviderLegAggregator;
+use App\Services\Rates\ProviderIntegrity\ProviderQuoteClassifier;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -12,6 +17,9 @@ use Throwable;
  *
  * Never silently overwrites production course_value.
  * Uses existing parser_exchange rows when available; accepts injected quotes for tests.
+ *
+ * Provider integrity (P0): BREAK/delisted/stale/no-book quotes never enter the median.
+ * Distinct-provider aggregation + certified fallbacks + LKG TTL.
  *
  * Freshness policy (production target):
  * - crypto: <= 15 minutes
@@ -27,6 +35,12 @@ final class IndependentMarketBaseline
 
     public const SCALE = 18;
 
+    private readonly ProviderLegAggregator $aggregator;
+
+    private readonly CertifiedSymbolFallback $fallback;
+
+    private readonly DerivedLegLastKnownGoodStore $lkg;
+
     /**
      * @param array<string, array{rate:string, source:string, as_of:string}> $injected
      */
@@ -34,11 +48,48 @@ final class IndependentMarketBaseline
         private readonly array $injected = [],
         private readonly bool $allowDatabase = true,
         private readonly ?PeerRateSelector $selector = null,
+        private readonly bool $allowCertifiedFallback = true,
+        private readonly bool $allowLastKnownGood = true,
+        ?ProviderLegAggregator $aggregator = null,
+        ?CertifiedSymbolFallback $fallback = null,
+        ?DerivedLegLastKnownGoodStore $lkg = null,
+        ?ExchangeSymbolStatusRegistry $exchangeStatus = null,
     ) {
+        $registry = $exchangeStatus ?? new ExchangeSymbolStatusRegistry();
+        $this->aggregator = $aggregator ?? new ProviderLegAggregator(
+            classifier: new ProviderQuoteClassifier($registry),
+        );
+        $this->fallback = $fallback ?? new CertifiedSymbolFallback(
+            quoteFn: function (string $sym): ?array {
+                // Nested quotes for fallback crosses must not recurse into fallbacks.
+                $inner = new self(
+                    injected: $this->injected,
+                    allowDatabase: $this->allowDatabase,
+                    selector: $this->selector,
+                    allowCertifiedFallback: false,
+                    allowLastKnownGood: false,
+                );
+
+                return $inner->quote($sym);
+            },
+        );
+        $this->lkg = $lkg ?? new DerivedLegLastKnownGoodStore();
     }
 
     /**
-     * @return array{rate: string, source: string, as_of: string, age_seconds: int, sample_size?: int, divergence?: string|null}|null
+     * @return array{
+     *   rate: string,
+     *   source: string,
+     *   as_of: string,
+     *   age_seconds: int,
+     *   sample_size?: int,
+     *   divergence?: string|null,
+     *   quality_state?: string,
+     *   provider_count?: int,
+     *   distinct_providers?: list<string>,
+     *   excluded?: list<array<string,mixed>>,
+     *   selection_reason?: string
+     * }|null
      */
     public function quote(string $symbol): ?array
     {
@@ -59,6 +110,11 @@ final class IndependentMarketBaseline
                 'age_seconds' => $age,
                 'sample_size' => 1,
                 'divergence' => null,
+                'quality_state' => (string) ($q['quality_state'] ?? ProviderLegAggregator::QUALITY_HEALTHY),
+                'provider_count' => 1,
+                'distinct_providers' => [(string) ($q['source'] ?? 'injected')],
+                'excluded' => [],
+                'selection_reason' => 'injected',
             ];
         }
 
@@ -304,7 +360,19 @@ final class IndependentMarketBaseline
     }
 
     /**
-     * @return array{rate:string,source:string,as_of:string,age_seconds:int,sample_size:int,divergence:string|null}|null
+     * @return array{
+     *   rate:string,
+     *   source:string,
+     *   as_of:string,
+     *   age_seconds:int,
+     *   sample_size:int,
+     *   divergence:string|null,
+     *   quality_state:string,
+     *   provider_count:int,
+     *   distinct_providers:list<string>,
+     *   excluded:list<array<string,mixed>>,
+     *   selection_reason:string
+     * }|null
      */
     private function fromParserExchange(string $symbol): ?array
     {
@@ -321,24 +389,22 @@ final class IndependentMarketBaseline
             $isFiat = str_starts_with($symbol, 'USD') && !str_ends_with($symbol, 'USDT');
             $maxAge = $isFiat ? self::FIAT_MAX_AGE_SECONDS : self::CRYPTO_MAX_AGE_SECONDS;
 
-            $quotes = [];
+            $rows = [];
             foreach ($candidates as [$codeIn, $codeOut]) {
-                $rows = DB::table('parser_exchange')
-                    ->where('status', 1)
+                // Load enabled + disabled so integrity can classify BREAK rows that are still status=1
+                // and report excluded providers. Aggregation only keeps eligible.
+                $dbRows = DB::table('parser_exchange')
                     ->where('code_in', $codeIn)
                     ->where('code_out', $codeOut)
                     ->orderByDesc('updated_at')
-                    ->limit(8)
-                    ->get(['id', 'code', 'summa', 'updated_at']);
+                    ->limit(24)
+                    ->get(['id', 'code', 'summa', 'updated_at', 'status', 'code_in', 'code_out']);
 
-                foreach ($rows as $row) {
+                foreach ($dbRows as $row) {
                     $asOf = (string) ($row->updated_at ?? '');
                     if ($asOf === '') {
                         continue;
                     }
-                    // Prefer PHP/app-TZ age. If writers used MySQL NOW() under a
-                    // different session TZ (~1h host skew), fall back to MySQL age
-                    // only when PHP would falsely reject a DB-fresh row.
                     $phpAge = max(0, time() - strtotime($asOf));
                     $age = $phpAge;
                     if ($phpAge > $maxAge) {
@@ -357,73 +423,98 @@ final class IndependentMarketBaseline
                             // keep php age
                         }
                     }
-                    if ($age > $maxAge) {
-                        continue;
-                    }
-                    $rate = bcmul((string) $row->summa, '1', self::SCALE);
-                    if (bccomp($rate, '0', self::SCALE) !== 1) {
-                        continue;
-                    }
-                    $quotes[] = [
-                        'rate' => $rate,
-                        'source' => 'parser_exchange:' . (string) ($row->code ?? $row->id),
-                        'as_of' => $asOf,
+                    $rows[] = [
+                        'code' => (string) ($row->code ?? ''),
+                        'summa' => (string) ($row->summa ?? '0'),
+                        'status' => (int) ($row->status ?? 0),
                         'age_seconds' => $age,
+                        'as_of' => $asOf,
+                        'code_in' => (string) ($row->code_in ?? $codeIn),
+                        'code_out' => (string) ($row->code_out ?? $codeOut),
                     ];
                 }
             }
 
-            if ($quotes === []) {
-                return null;
+            $agg = $this->aggregator->aggregate($rows, $maxAge);
+            if ($agg['ok'] && is_string($agg['rate'])) {
+                $out = [
+                    'rate' => $agg['rate'],
+                    'source' => (string) $agg['source'],
+                    'as_of' => (string) $agg['as_of'],
+                    'age_seconds' => (int) $agg['age_seconds'],
+                    'sample_size' => (int) $agg['provider_count'],
+                    'divergence' => $agg['divergence'],
+                    'quality_state' => (string) $agg['quality_state'],
+                    'provider_count' => (int) $agg['provider_count'],
+                    'distinct_providers' => $agg['distinct_providers'],
+                    'excluded' => $agg['excluded'],
+                    'selection_reason' => (string) ($agg['reason'] ?? 'median'),
+                ];
+                if (in_array($out['quality_state'], [
+                    ProviderLegAggregator::QUALITY_HEALTHY,
+                    ProviderLegAggregator::QUALITY_DEGRADED_SINGLE,
+                ], true)) {
+                    $this->lkg->put($symbol, $out);
+                }
+
+                return $out;
             }
 
-            $rates = array_column($quotes, 'rate');
-            $selector = $this->selector ?? new PeerRateSelector();
-            $selection = $selector->selectValidPeerRate(
-                peerRates: $rates,
-                preferred: null,
-                maxMedianDeviation: self::PROVIDER_DIVERGENCE_FRACTION,
-                minSample: 1,
-            );
+            // Certified peer fallback (e.g. TONUSDT via BC GRAM book when CEX is BREAK).
+            if ($this->allowCertifiedFallback) {
+                $fb = $this->fallback->resolve($symbol);
+                if (is_array($fb) && !empty($fb['ok']) && is_string($fb['rate'] ?? null)) {
+                    $out = [
+                        'rate' => $fb['rate'],
+                        'source' => (string) $fb['source'],
+                        'as_of' => (string) $fb['as_of'],
+                        'age_seconds' => (int) $fb['age_seconds'],
+                        'sample_size' => (int) $fb['provider_count'],
+                        'divergence' => null,
+                        'quality_state' => (string) $fb['quality_state'],
+                        'provider_count' => (int) $fb['provider_count'],
+                        'distinct_providers' => $fb['distinct_providers'],
+                        'excluded' => $agg['excluded'],
+                        'selection_reason' => (string) ($fb['reason'] ?? 'certified_fallback'),
+                    ];
+                    if ($out['quality_state'] === ProviderLegAggregator::QUALITY_HEALTHY
+                        || $out['quality_state'] === ProviderLegAggregator::QUALITY_DEGRADED_FALLBACK) {
+                        $this->lkg->put($symbol, $out);
+                    }
 
-            // With minSample=1, selector always accepts when at least one valid rate.
-            // Prefer median when sample>=3 and reject if preferred outliers — here we use median.
-            $sorted = $rates;
-            sort($sorted, SORT_STRING);
-            $count = count($sorted);
-            $mid = intdiv($count, 2);
-            $median = $count % 2 === 1
-                ? $sorted[$mid]
-                : bcdiv(bcadd($sorted[$mid - 1], $sorted[$mid], self::SCALE), '2', self::SCALE);
-
-            // Reject provider set if max/min diverge too much when sample >= 2
-            $divergence = null;
-            if ($count >= 2) {
-                $lo = $sorted[0];
-                $hi = $sorted[$count - 1];
-                $divergence = bcdiv(bcsub($hi, $lo, self::SCALE), $median, self::SCALE);
-                if (bccomp($this->absBc($divergence), self::PROVIDER_DIVERGENCE_FRACTION, self::SCALE) === 1) {
-                    // Keep median but annotate; still usable for audit (do not auto-publish).
+                    return $out;
                 }
             }
 
-            $best = $quotes[0];
-            foreach ($quotes as $q) {
-                if ($q['rate'] === $median || bccomp($q['rate'], $median, 8) === 0) {
-                    $best = $q;
-                    break;
+            // Bounded LKG — never report HEALTHY.
+            if ($this->allowLastKnownGood) {
+                $ttl = $isFiat
+                    ? (int) (function_exists('config')
+                        ? config('rates_provider_integrity.lkg_ttl_fiat_seconds', self::FIAT_MAX_AGE_SECONDS)
+                        : self::FIAT_MAX_AGE_SECONDS)
+                    : (int) (function_exists('config')
+                        ? config('rates_provider_integrity.lkg_ttl_crypto_seconds', 3600)
+                        : 3600);
+                $lkg = $this->lkg->getFresh($symbol, $ttl);
+                if ($lkg !== null) {
+                    return [
+                        'rate' => $lkg['rate'],
+                        'source' => $lkg['source'],
+                        'as_of' => $lkg['as_of'],
+                        'age_seconds' => $lkg['age_seconds'],
+                        'sample_size' => 0,
+                        'divergence' => null,
+                        'quality_state' => ProviderLegAggregator::QUALITY_DEGRADED_SINGLE,
+                        'provider_count' => 0,
+                        'distinct_providers' => $lkg['source_set'],
+                        'excluded' => $agg['excluded'],
+                        'selection_reason' => 'last_known_good',
+                    ];
                 }
             }
 
-            return [
-                'rate' => $median,
-                'source' => $best['source'] . ($count > 1 ? '+median' : ''),
-                'as_of' => $best['as_of'],
-                'age_seconds' => min(array_column($quotes, 'age_seconds')),
-                'sample_size' => $count,
-                'divergence' => $divergence,
-                'selection_reason' => $selection['reason'] ?? 'median',
-            ];
+            // Quarantine — do not invent a rate; do not use BREAK medians.
+            return null;
         } catch (Throwable) {
             return null;
         }

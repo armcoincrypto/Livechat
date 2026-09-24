@@ -170,13 +170,23 @@ final class DerivedMarketBaselineAuthority
             ];
         }
         if ((int) ($asset['age_seconds'] ?? PHP_INT_MAX) > $cryptoMax) {
-            return [
-                'ok' => false,
-                'rate' => null,
-                'reason' => 'asset_leg_stale',
-                'components' => $components,
-                'authority' => 'DERIVED_MARKET_BASELINE',
-            ];
+            $assetSource = (string) ($asset['source'] ?? '');
+            $assetQuality = (string) ($asset['quality_state'] ?? '');
+            // Certified peer fallbacks (e.g. BestChange GRAM book for TONUSDT) refresh
+            // slower than CEX ticks; allow fiat-class freshness, never BREAK venues.
+            $allowFallbackAge = str_starts_with($assetSource, 'certified_fallback:')
+                || str_starts_with($assetSource, 'lkg:')
+                || str_contains($assetQuality, 'FALLBACK');
+            $effectiveMax = $allowFallbackAge ? max($cryptoMax, $fiatMax) : $cryptoMax;
+            if ((int) ($asset['age_seconds'] ?? PHP_INT_MAX) > $effectiveMax) {
+                return [
+                    'ok' => false,
+                    'rate' => null,
+                    'reason' => 'asset_leg_stale',
+                    'components' => $components,
+                    'authority' => 'DERIVED_MARKET_BASELINE',
+                ];
+            }
         }
         if ((int) ($fiat['age_seconds'] ?? PHP_INT_MAX) > $fiatMax) {
             return [
@@ -295,11 +305,13 @@ final class DerivedMarketBaselineAuthority
             $lastManual = (string) ($row->manual_rate_value ?? '0');
             $retainedRate = (float) $lastCourse > 0 ? $lastCourse : $lastManual;
             $hasRetained = (float) $retainedRate > 0;
+            // Provider-integrity quarantine: never silently report HEALTHY when legs fail.
+            // Retain last course for operator visibility, but mark error so gates/export can fail closed.
             $action['write'] = array_merge([
                 'parser_source_name' => (string) ($cfg['ownership']['parser_source_name'] ?? 'DERIVED_MARKET_BASELINE'),
-                'is_error_rate' => $hasRetained ? 0 : 1,
+                'is_error_rate' => 1,
                 'error_rate_text' => $hasRetained
-                    ? ('derived_baseline_retained:' . ($eval['reason'] ?? 'unavailable'))
+                    ? ('derived_baseline_quarantine:' . ($eval['reason'] ?? 'unavailable'))
                     : ('derived_baseline_' . ($eval['reason'] ?? 'unavailable')),
             ], $neutralize);
             if ($hasRetained) {

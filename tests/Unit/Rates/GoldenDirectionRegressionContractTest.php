@@ -23,19 +23,19 @@ final class GoldenDirectionRegressionContractTest extends TestCase
     public function test_golden_set_covers_required_ids(): void
     {
         $ids = array_map(static fn (array $d): int => (int) $d['id'], $this->fixture()['directions']);
-        foreach ([1525, 1537, 1552, 1556, 1586, 3222, 16, 29, 34, 15, 27, 1415, 41] as $need) {
+        foreach ([1525, 1537, 1552, 1556, 1586, 3222, 16, 29, 34, 15, 27, 1415, 41, 410, 132] as $need) {
             $this->assertContains($need, $ids, "missing golden id $need");
         }
     }
 
-    public function test_owners_cover_bestchange_and_zelle_families(): void
+    public function test_owners_cover_bestchange_zelle_and_derived_families(): void
     {
         $owners = array_unique(array_map(
             static fn (array $d): string => (string) $d['owner'],
             $this->fixture()['directions']
         ));
         sort($owners);
-        $this->assertSame(['BESTCHANGE', 'ZELLE'], $owners);
+        $this->assertSame(['BESTCHANGE', 'DERIVED', 'ZELLE'], $owners);
     }
 
     public function test_bestchange_rows_pin_profit_storage_and_zero_floating(): void
@@ -70,7 +70,7 @@ final class GoldenDirectionRegressionContractTest extends TestCase
     public function test_invariants_catalog_complete(): void
     {
         $inv = $this->fixture()['invariants'];
-        foreach (['bestchange', 'zelle', 'stored_course', 'xml', 'ownership', 'economics'] as $key) {
+        foreach (['bestchange', 'zelle', 'stored_course', 'xml', 'ownership', 'economics', 'derived_provider_integrity'] as $key) {
             $this->assertArrayHasKey($key, $inv);
             $this->assertNotEmpty($inv[$key]);
         }
