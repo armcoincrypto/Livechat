@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 # Compare local bestchange-codes.json critical IDs against live BestChange catalog.
-# Intended for ownership/migration certification — not a fail-closed production pricing gate.
-#
-# Usage:
-#   check_bestchange_catalog_freshness.sh [--live-app PATH] [--codes PATH] [--source WT]
-# Exit 0 when BESTCHANGE_CATALOG_STALE_CRITICAL_TOTAL=0
+# Ownership/migration certification aid — not a fail-closed production pricing gate.
 set -euo pipefail
 
 LIVE="${EXS_LIVE_APP:-/var/www/app_exswapin_usr/data/www/app.exswaping.com}"
@@ -27,76 +23,40 @@ CRIT="$SOURCE/resources/rates/bestchange-catalog-critical-codes.json"
 [[ -f "$CRIT" ]] || { echo "FAIL missing critical codes policy: $CRIT" >&2; exit 2; }
 [[ -f "$CODES" ]] || { echo "FAIL missing local codes: $CODES" >&2; exit 2; }
 
-sudo -u app_exswapin_usr /usr/bin/php8.4 - "$LIVE" "$CRIT" "$CODES" <<'PHP'
+TMP=$(mktemp /tmp/bc-catalog-freshness.XXXXXX.php)
+trap 'rm -f "$TMP"' EXIT
+cat >"$TMP" <<PHP
 <?php
-[$liveApp, $critPath, $codesPath] = array_slice($argv, 1);
-require $liveApp . '/vendor/autoload.php';
-$app = require $liveApp . '/bootstrap/app.php';
-$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-
-$crit = json_decode((string) file_get_contents($critPath), true);
-$local = json_decode((string) file_get_contents($codesPath), true) ?: [];
-$http = app(iEXPackages\BestChange\Contracts\BestChangeHttpClientInterface::class);
-$curr = $http->fetchCurrencies('en');
-$byId = [];
-foreach ($curr as $k => $v) {
-    if (is_array($v)) {
-        $byId[(int) ($v['id'] ?? $k)] = $v;
-    }
+require '$LIVE/vendor/autoload.php';
+\$app = require '$LIVE/bootstrap/app.php';
+\$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+\$crit = json_decode((string) file_get_contents('$CRIT'), true);
+\$local = json_decode((string) file_get_contents('$CODES'), true) ?: [];
+\$http = app(iEXPackages\BestChange\Contracts\BestChangeHttpClientInterface::class);
+\$curr = \$http->fetchCurrencies('en');
+\$byId = [];
+foreach (\$curr as \$k => \$v) {
+    if (is_array(\$v)) { \$byId[(int)(\$v['id'] ?? \$k)] = \$v; }
 }
-$stale = 0;
-$missingLocal = 0;
-$mismatch = 0;
-$details = [];
-foreach (($crit['critical_codes'] ?? []) as $id => $expect) {
-    $id = (int) $id;
-    $expect = strtoupper((string) $expect);
-    $live = $byId[$id] ?? null;
-    $loc = $local[(string) $id] ?? $local[$id] ?? null;
-    $liveCode = strtoupper((string) ($live['code'] ?? ''));
-    $locCode = is_array($loc) ? strtoupper((string) ($loc['code'] ?? '')) : '';
-    if ($live === null) {
-        $stale++;
-        $mismatch++;
-        $details[] = ['id' => $id, 'issue' => 'MISSING_LIVE_CODES', 'expect' => $expect];
-        continue;
-    }
-    if ($liveCode !== $expect) {
-        $stale++;
-        $mismatch++;
-        $details[] = ['id' => $id, 'issue' => 'CODE_LABEL_MISMATCH', 'expect' => $expect, 'live' => $liveCode];
-        continue;
-    }
-    if ($loc === null) {
-        $missingLocal++;
-        $details[] = [
-            'id' => $id,
-            'issue' => 'MISSING_LOCAL_CACHE',
-            'expect' => $expect,
-            'live' => $liveCode,
-            'severity' => 'cache_gap_not_live_defect',
-        ];
-        continue;
-    }
-    if ($locCode !== '' && $locCode !== $expect) {
-        $stale++;
-        $mismatch++;
-        $details[] = [
-            'id' => $id,
-            'issue' => 'STALE_ALIASES',
-            'expect' => $expect,
-            'local' => $locCode,
-            'live' => $liveCode,
-        ];
-    }
+\$stale = 0; \$missingLocal = 0; \$mismatch = 0; \$details = [];
+foreach ((\$crit['critical_codes'] ?? []) as \$id => \$expect) {
+    \$id = (int) \$id;
+    \$expect = strtoupper((string) \$expect);
+    \$live = \$byId[\$id] ?? null;
+    \$loc = \$local[(string)\$id] ?? \$local[\$id] ?? null;
+    \$liveCode = strtoupper((string)(\$live['code'] ?? ''));
+    \$locCode = is_array(\$loc) ? strtoupper((string)(\$loc['code'] ?? '')) : '';
+    if (\$live === null) { \$stale++; \$mismatch++; \$details[] = ['id'=>\$id,'issue'=>'MISSING_LIVE_CODES','expect'=>\$expect]; continue; }
+    if (\$liveCode !== \$expect) { \$stale++; \$mismatch++; \$details[] = ['id'=>\$id,'issue'=>'CODE_LABEL_MISMATCH','expect'=>\$expect,'live'=>\$liveCode]; continue; }
+    if (\$loc === null) { \$missingLocal++; \$details[] = ['id'=>\$id,'issue'=>'MISSING_LOCAL_CACHE','expect'=>\$expect,'live'=>\$liveCode,'severity'=>'cache_gap_not_live_defect']; continue; }
+    if (\$locCode !== '' && \$locCode !== \$expect) { \$stale++; \$mismatch++; \$details[] = ['id'=>\$id,'issue'=>'STALE_ALIASES','expect'=>\$expect,'local'=>\$locCode,'live'=>\$liveCode]; }
 }
-echo "BESTCHANGE_CATALOG_STALE_CRITICAL_TOTAL=$stale\n";
-echo "BESTCHANGE_CATALOG_LOCAL_CACHE_GAP_TOTAL=$missingLocal\n";
-echo "BESTCHANGE_CATALOG_MISMATCH_TOTAL=$mismatch\n";
-echo 'DETAILS=' . json_encode($details, JSON_UNESCAPED_UNICODE) . "\n";
-if ($stale !== 0) {
-    fwrite(STDERR, "FAIL catalog stale critical=$stale\n");
-    exit(1);
-}
+echo "BESTCHANGE_CATALOG_STALE_CRITICAL_TOTAL=\$stale\n";
+echo "BESTCHANGE_CATALOG_LOCAL_CACHE_GAP_TOTAL=\$missingLocal\n";
+echo "BESTCHANGE_CATALOG_MISMATCH_TOTAL=\$mismatch\n";
+echo 'DETAILS=' . json_encode(\$details, JSON_UNESCAPED_UNICODE) . "\n";
+if (\$stale !== 0) { fwrite(STDERR, "FAIL catalog stale critical=\$stale\n"); exit(1); }
 echo "PASS\n";
 PHP
+
+sudo -u app_exswapin_usr /usr/bin/php8.4 "$TMP"
