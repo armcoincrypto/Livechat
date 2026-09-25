@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "policy": "BESTCHANGE_CATALOG_CRITICAL_CODES_FOR_MIGRATION_CERT",
+  "notes": [
+    "Local storage/app/bestchange-codes.json is a CACHE/AUDIT aid, not sole migration authority.",
+    "Ownership/migration certification must confirm these codes against live BestChange catalog.",
+    "Harmless unused catalog drift must not fail normal production pricing."
+  ],
+  "source_class": "CACHE_AND_AUDIT",
+  "runtime_authority": "BestChange live currencies API / CatalogRepository",
+  "critical_codes": {
+    "292": "PAYTMINR",
+    "327": "UPIINR",
+    "308": "ZELLEUSD",
+    "89": "CASHUSD",
+    "105": "TCSBRUB",
+    "114": "BRBKZT",
+    "54": "CARDBYN",
+    "4": "BLRBBYN",
+    "80": "PPEUR",
+    "108": "CARDVND",
+    "117": "CARDARS",
+    "122": "ZENEUR",
+    "120": "ADVCEUR",
+    "209": "GRAM",
+    "177": "NEO",
+    "160": "ETC"
+  },
+  "known_stale_local_gaps_as_of_wave2d": [
+    "UPIINR=327",
+    "PAYTMINR=292",
+    "ZELLEUSD=308",
+    "CARDIDR=326"
+  ]
+}

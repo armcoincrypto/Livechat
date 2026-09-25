@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "policy": "PAYEER_NO_EXACT_BC_RAIL_DERIVED_EXCEPTION",
+  "certified_at_utc": "2026-09-26T00:00:00Z",
+  "notes": [
+    "Payeer e-wallet rails have no exact BestChange market code.",
+    "Ownership MUST remain DERIVED_MARKET_BASELINE.",
+    "Activating BestChange ownership or substituting near-fiat rails is forbidden."
+  ],
+  "local_codes": ["PRRUB", "PRUSD", "PREUR"],
+  "display_names": {
+    "PRRUB": "Payeer RUB",
+    "PRUSD": "Payeer USD",
+    "PREUR": "Payeer EUR"
+  },
+  "forbidden_bc_substitutions": {
+    "PRRUB": [
+      {"bc_id": 117, "bc_code": "CARDARS", "reason": "Bank card ARS is not Payeer RUB"},
+      {"bc_code": "SBERRUB", "reason": "Sberbank RUB is not Payeer"},
+      {"bc_code": "TCSBRUB", "reason": "T-Bank RUB is not Payeer"}
+    ],
+    "PRUSD": [
+      {"bc_id": 108, "bc_code": "CARDVND", "reason": "Bank card VND is not Payeer USD"},
+      {"bc_code": "PMUSD", "reason": "Perfect Money / MoneyGo USD is not Payeer"},
+      {"bc_code": "MNGUSD", "reason": "MoneyGo USD is not Payeer"},
+      {"bc_code": "USDTTRC20", "reason": "USDT is not Payeer USD"},
+      {"bc_code": "USDTPOLYGON", "reason": "USDT Polygon is not Payeer USD"}
+    ],
+    "PREUR": [
+      {"bc_id": 122, "bc_code": "ZENEUR", "reason": "ZEN EUR is not Payeer EUR"},
+      {"bc_id": 120, "bc_code": "ADVCEUR", "reason": "Advanced Cash EUR is not Payeer EUR"},
+      {"bc_code": "PMEUR", "reason": "Perfect Money EUR is not Payeer"}
+    ]
+  },
+  "required_ownership": "DERIVED_MARKET_BASELINE",
+  "max_active_wrong_bc_links": 0
+}

@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "policy": "WAVE2D_MAPPING_METADATA_REPAIR_KEEP_DERIVED",
+  "notes": [
+    "1482 and 1513 receive corrected BestChange currency IDs in this wave.",
+    "Ownership stays DERIVED_MARKET_BASELINE; BC link status stays inactive (0).",
+    "Do not migrate these until a later certified Wave after book/economics re-cert."
+  ],
+  "repairs": {
+    "1482": {
+      "pair": "USDCERC20->CASHUSD",
+      "from_bc_in": 23,
+      "from_bc_out": 10,
+      "to_bc_in": 23,
+      "to_bc_out": 89,
+      "to_exchange_in": "USDCERC20",
+      "to_exchange_out": "CASHUSD",
+      "keep_status": 0,
+      "keep_owner": "DERIVED_MARKET_BASELINE"
+    },
+    "1513": {
+      "pair": "CASHUSD->TCSBRUB",
+      "from_bc_in": 10,
+      "from_bc_out": 42,
+      "to_bc_in": 89,
+      "to_bc_out": 105,
+      "to_exchange_in": "CASHUSD",
+      "to_exchange_out": "TCSBRUB",
+      "keep_status": 0,
+      "keep_owner": "DERIVED_MARKET_BASELINE"
+    }
+  }
+}

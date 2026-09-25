@@ -324,6 +324,129 @@ if (\$w2BlockReintroduced !== 0) {
     \$map += \$w2BlockReintroduced;
 }
 
+// ---------------------------------------------------------------------------
+// Wave 2D NON-TON DERIVED→BESTCHANGE (2870 ETC→PAYTMINR) persistence.
+// ---------------------------------------------------------------------------
+\$w2dManifestPath = '$LIVE/resources/rates/wave2d-bestchange-migrated-ids.json';
+\$w2dIds = [2870];
+if (is_file(\$w2dManifestPath)) {
+    \$wm = json_decode((string) file_get_contents(\$w2dManifestPath), true);
+    if (is_array(\$wm) && ! empty(\$wm['direction_ids'])) {
+        \$w2dIds = array_map('intval', \$wm['direction_ids']);
+    }
+}
+\$w2dInRegistry = 0;
+\$w2dBlockReintroduced = 0;
+\$w2dDerivedOwner = 0;
+\$w2dBestchangeOwner = 0;
+foreach (\$w2dIds as \$wid) {
+    \$row = \$cfgDirs[(string) \$wid] ?? \$cfgDirs[\$wid] ?? null;
+    if (is_array(\$row)) {
+        \$w2dInRegistry++;
+        echo "WAVE2D_ID_IN_DERIVED_REGISTRY id=\$wid\n";
+        if (! empty(\$row['ownership']['block_bestchange_overwrite'])) {
+            \$w2dBlockReintroduced++;
+            echo "WAVE2D_BLOCK_BESTCHANGE_REINTRODUCED id=\$wid\n";
+        }
+    }
+    \$wd = DirectionExchange::query()->find(\$wid);
+    if (! \$wd) {
+        echo "WAVE2D_DIRECTION_MISSING id=\$wid\n";
+        \$unknown++;
+        continue;
+    }
+    \$ps = (string) (\$wd->parser_source_name ?? '');
+    if (\$ps === 'DERIVED_MARKET_BASELINE') {
+        \$w2dDerivedOwner++;
+        echo "WAVE2D_DERIVED_OWNER id=\$wid\n";
+    }
+    if (\$ps === 'BestChange') {
+        \$w2dBestchangeOwner++;
+    } else {
+        echo "WAVE2D_NOT_BESTCHANGE_OWNER id=\$wid parser=\$ps\n";
+        \$map++;
+    }
+    if (! \\App\\Services\\Rates\\BestChangeMarketBaseHealth::hasActiveLink((int) \$wid)) {
+        echo "WAVE2D_BC_LINK_INACTIVE id=\$wid\n";
+        \$map++;
+    }
+}
+\$w2dExpected = count(\$w2dIds);
+echo "WAVE2D_IDS_IN_DERIVED_REGISTRY=\$w2dInRegistry\n";
+echo "WAVE2D_DERIVED_OWNER_TOTAL=\$w2dDerivedOwner\n";
+echo "WAVE2D_BESTCHANGE_OWNER_TOTAL=\$w2dBestchangeOwner\n";
+echo "WAVE2D_BLOCK_BESTCHANGE_REINTRODUCED_TOTAL=\$w2dBlockReintroduced\n";
+if (\$w2dInRegistry !== 0) {
+    \$map += \$w2dInRegistry;
+}
+if (\$w2dDerivedOwner !== 0) {
+    \$map += \$w2dDerivedOwner;
+}
+if (\$w2dBestchangeOwner !== \$w2dExpected) {
+    echo "WAVE2D_BESTCHANGE_OWNER_TOTAL_DEFECT expect=\$w2dExpected got=\$w2dBestchangeOwner\n";
+    \$map++;
+}
+if (\$w2dBlockReintroduced !== 0) {
+    \$map += \$w2dBlockReintroduced;
+}
+
+// ---------------------------------------------------------------------------
+// Payeer no-exact-BC-rail: forbid ACTIVE BestChange links on substituted rails.
+// ---------------------------------------------------------------------------
+\$payeerPolPath = '$LIVE/resources/rates/payeer-no-bc-rail-policy.json';
+\$payeerWrongActive = 0;
+if (is_file(\$payeerPolPath)) {
+    \$pp = json_decode((string) file_get_contents(\$payeerPolPath), true) ?: [];
+    \$codes = \$pp['local_codes'] ?? ['PRRUB', 'PRUSD', 'PREUR'];
+    \$forbid = \$pp['forbidden_bc_substitutions'] ?? [];
+    \$payeerDirRows = \\Illuminate\\Support\\Facades\\DB::table('direction_exchange as d')
+        ->join('currencies as c1', 'c1.id', '=', 'd.id_currency1')
+        ->join('currencies as c2', 'c2.id', '=', 'd.id_currency2')
+        ->where('d.status', 1)
+        ->where(function (\$w) use (\$codes) {
+            \$w->whereIn('c1.designation_xml', \$codes)->orWhereIn('c2.designation_xml', \$codes);
+        })
+        ->get(['d.id', 'd.parser_source_name', 'c1.designation_xml as from_xml', 'c2.designation_xml as to_xml']);
+    foreach (\$payeerDirRows as \$pr) {
+        \$local = in_array(\$pr->to_xml, \$codes, true) ? \$pr->to_xml : (in_array(\$pr->from_xml, \$codes, true) ? \$pr->from_xml : null);
+        if (\$local === null) {
+            continue;
+        }
+        if ((string) \$pr->parser_source_name === 'BestChange') {
+            \$payeerWrongActive++;
+            echo "PAYEER_ACTIVE_BESTCHANGE_OWNER id={\$pr->id} local=\$local\n";
+            continue;
+        }
+        \$bc = \\Illuminate\\Support\\Facades\\DB::table('bestchange_directions')->where('id_direction_exchange', \$pr->id)->where('status', 1)->first();
+        if (! \$bc) {
+            continue;
+        }
+        \$outId = (int) (\$bc->id_currency_out ?? 0);
+        \$outCode = strtoupper((string) (\$bc->exchange_out ?? ''));
+        foreach ((\$forbid[\$local] ?? []) as \$row) {
+            if (! is_array(\$row)) {
+                continue;
+            }
+            \$hit = false;
+            if (isset(\$row['bc_id']) && (int) \$row['bc_id'] === \$outId) {
+                \$hit = true;
+            }
+            if (isset(\$row['bc_code']) && strtoupper((string) \$row['bc_code']) === \$outCode) {
+                \$hit = true;
+            }
+            if (\$hit) {
+                \$payeerWrongActive++;
+                echo "PAYEER_WRONG_BC_MAPPING_ACTIVE id={\$pr->id} local=\$local bc_out=\$outId/\$outCode\n";
+                break;
+            }
+        }
+    }
+}
+echo "PAYEER_WRONG_BC_MAPPING_ACTIVE_TOTAL=\$payeerWrongActive\n";
+if (\$payeerWrongActive !== 0) {
+    \$map += \$payeerWrongActive;
+}
+
 \$snap = RatesXmlPublicFeedHealth::snapshot();
 \$xmlFail = 0;
 if (! empty(\$snap['must_keep_full']) && empty(\$snap['invariant_ok'])) {

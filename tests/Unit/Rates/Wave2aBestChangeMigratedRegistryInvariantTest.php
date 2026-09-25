@@ -34,12 +34,14 @@ final class Wave2aBestChangeMigratedRegistryInvariantTest extends TestCase
         $data = json_decode((string) file_get_contents($this->registryPath()), true);
         $dirs = $data['directions'] ?? [];
         $this->assertArrayNotHasKey('2237', $dirs);
-        $this->assertSame(1487, count($dirs));
+        // Wave 2D also stripped 2870 → 1486 configured directions.
+        $this->assertSame(1486, count($dirs));
     }
 
     public function test_poison_registry_with_2237_fails_sha_contract(): void
     {
-        $expected = '525dc61e2403a480f04091f62016d567572132a149cceae34936f8c9b7e35955';
+        // SHA advances when later waves strip additional IDs (Wave 2D → 1486).
+        \$expected = 'ab3a961c2ed604c010c80d06098bc8394c3f1f529c334d0836794143ba8e7463';
         $raw = file_get_contents($this->registryPath());
         $this->assertSame($expected, hash('sha256', $raw));
 

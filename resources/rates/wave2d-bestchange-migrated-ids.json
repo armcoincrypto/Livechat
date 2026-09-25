@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "policy": "NON_TON_WAVE2D_BESTCHANGE_OWNERSHIP_PERMANENT",
+  "certified_at_utc": "2026-09-26T00:00:00Z",
+  "notes": [
+    "Wave 2D Part A: single-direction DERIVED\u2192BESTCHANGE migration for 2870 ETC\u2192PAYTMINR.",
+    "These IDs MUST NOT reappear in derived-market-baseline-directions.json.",
+    "block_bestchange_overwrite must never be reintroduced via derived registry.",
+    "Runtime ownership: parser_source_name=BestChange + bestchange_directions.status=1.",
+    "1482/1513 mapping repairs are metadata-only in this wave \u2014 ownership stays DERIVED.",
+    "Do not weaken GRAM Wave-1 or Wave 2A persistence guards."
+  ],
+  "direction_ids": [
+    2870
+  ],
+  "pairs": {
+    "2870": "ETC->PAYTMINR"
+  },
+  "expected_owner": "BestChange",
+  "expected_bc_out_id": 292,
+  "expected_bc_out_code": "PAYTMINR",
+  "base_live_sha": "37316ab9d962839b94beb7ff992a85ad1b928e13",
+  "stripped_registry_sha256_after_wave2d": "ab3a961c2ed604c010c80d06098bc8394c3f1f529c334d0836794143ba8e7463"
+}

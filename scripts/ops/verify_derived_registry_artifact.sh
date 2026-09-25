@@ -39,10 +39,12 @@ gram_ids = {str(i) for i in [
     419,420,421,422,423,424,425,426,
 ]}
 wave2a_ids = {"2237"}
-forbidden_ids = gram_ids | wave2a_ids
+wave2d_ids = {"2870"}
+forbidden_ids = gram_ids | wave2a_ids | wave2d_ids
 rel = "resources/rates/derived-market-baseline-directions.json"
 gram_manifest_rel = "resources/rates/gram-bestchange-migrated-ids.json"
 wave2a_manifest_rel = "resources/rates/wave2a-bestchange-migrated-ids.json"
+wave2d_manifest_rel = "resources/rates/wave2d-bestchange-migrated-ids.json"
 
 def load(root: str, check_ids):
     path = os.path.join(root, rel)
@@ -73,8 +75,18 @@ def require_wave2a_manifest(root: str):
     if mid != sorted(int(x) for x in wave2a_ids):
         raise SystemExit(f"FAIL Wave2A manifest IDs mismatch: {mid}")
 
+def require_wave2d_manifest(root: str):
+    path = os.path.join(root, wave2d_manifest_rel)
+    if not os.path.isfile(path):
+        raise SystemExit(f"FAIL missing Wave2D exclusion manifest: {path}")
+    man = json.loads(open(path).read())
+    mid = sorted(int(x) for x in (man.get("direction_ids") or []))
+    if mid != sorted(int(x) for x in wave2d_ids):
+        raise SystemExit(f"FAIL Wave2D manifest IDs mismatch: {mid}")
+
 require_gram_manifest(source)
 require_wave2a_manifest(source)
+require_wave2d_manifest(source)
 sp, ss, st, spre = load(source, forbidden_ids)
 print(f"SOURCE_REGISTRY_PATH={sp}")
 print(f"SOURCE_REGISTRY_SHA={ss}")
@@ -82,13 +94,14 @@ print(f"SOURCE_TOTAL_CONFIG_COUNT={st}")
 print(f"SOURCE_FORBIDDEN_MIGRATED_IDS_IN_DERIVED_REGISTRY={len(spre)}")
 if spre:
     print(f"SOURCE_FORBIDDEN_PRESENT={spre}")
-    raise SystemExit("FAIL SOURCE contains GRAM/Wave2A migrated IDs")
+    raise SystemExit("FAIL SOURCE contains GRAM/Wave2A/Wave2D migrated IDs")
 
 hashes = {"SOURCE": ss}
 
 if artifact:
     require_gram_manifest(artifact)
     require_wave2a_manifest(artifact)
+    require_wave2d_manifest(artifact)
     ap, ash, at, apre = load(artifact, forbidden_ids)
     print(f"ARTIFACT_REGISTRY_PATH={ap}")
     print(f"ARTIFACT_REGISTRY_SHA={ash}")
@@ -96,11 +109,11 @@ if artifact:
     print(f"ARTIFACT_FORBIDDEN_MIGRATED_IDS_IN_DERIVED_REGISTRY={len(apre)}")
     if apre:
         print(f"ARTIFACT_FORBIDDEN_PRESENT={apre}")
-        raise SystemExit("FAIL ARTIFACT contains GRAM/Wave2A migrated IDs")
+        raise SystemExit("FAIL ARTIFACT contains GRAM/Wave2A/Wave2D migrated IDs")
     hashes["ARTIFACT"] = ash
 
 if live:
-    # Live may predate Wave2A manifest; registry strip is mandatory for all forbidden IDs.
+    # Live may predate Wave2D manifest; registry strip is mandatory for all forbidden IDs.
     lp, lsh, lt, lpre = load(live, forbidden_ids)
     print(f"LIVE_REGISTRY_PATH={lp}")
     print(f"LIVE_REGISTRY_SHA={lsh}")
@@ -108,7 +121,7 @@ if live:
     print(f"LIVE_FORBIDDEN_MIGRATED_IDS_IN_DERIVED_REGISTRY={len(lpre)}")
     if lpre:
         print(f"LIVE_FORBIDDEN_PRESENT={lpre}")
-        raise SystemExit("FAIL LIVE contains GRAM/Wave2A migrated IDs")
+        raise SystemExit("FAIL LIVE contains GRAM/Wave2A/Wave2D migrated IDs")
     hashes["LIVE"] = lsh
 
 if expect:
