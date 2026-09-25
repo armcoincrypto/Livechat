@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "policy": "NON_TON_WAVE2A_BESTCHANGE_OWNERSHIP_PERMANENT",
+  "certified_at_utc": "2026-09-25T20:30:00Z",
+  "notes": [
+    "Wave 2A: single-direction DERIVED→BESTCHANGE migration.",
+    "These IDs MUST NOT reappear in derived-market-baseline-directions.json.",
+    "block_bestchange_overwrite must never be reintroduced via derived registry.",
+    "Runtime ownership: parser_source_name=BestChange + bestchange_directions.status=1.",
+    "Do not weaken GRAM Wave-1 persistence guards."
+  ],
+  "direction_ids": [2237],
+  "pairs": {
+    "2237": "NEO->CARDTJS"
+  },
+  "golden_fixture_id": 2237,
+  "expected_owner": "BestChange",
+  "base_live_sha": "80f18491dfaef7452b7d009aa9ef21db81c5c648",
+  "stripped_registry_sha256_after_wave2a": "525dc61e2403a480f04091f62016d567572132a149cceae34936f8c9b7e35955"
+}

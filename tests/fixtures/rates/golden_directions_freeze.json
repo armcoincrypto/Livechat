@@ -186,6 +186,21 @@
       "not_in_derived_registry": true,
       "block_bestchange_overwrite": false,
       "bc_link_active": true
+    },
+    {
+      "id": 2237,
+      "pair": "NEO->CARDTJS",
+      "owner": "BESTCHANGE",
+      "parser_source_name": "BestChange",
+      "base_source": "BestChange.position",
+      "storage_field": "profit",
+      "floating_fee": "0",
+      "profit": "1.5",
+      "status": 1,
+      "not_in_derived_registry": true,
+      "block_bestchange_overwrite": false,
+      "bc_link_active": true,
+      "golden_fixture": "WAVE2A_NEO_CARDTJS_BESTCHANGE_PERMANENT"
     }
   ],
   "invariants": {

@@ -258,6 +258,72 @@ if (\$gramBlockReintroduced !== 0) {
     \$map += \$gramBlockReintroduced;
 }
 
+// ---------------------------------------------------------------------------
+// Wave 2A NON-TON DERIVED→BESTCHANGE (2237 NEO→CARDTJS) persistence.
+// ---------------------------------------------------------------------------
+\$w2ManifestPath = '$LIVE/resources/rates/wave2a-bestchange-migrated-ids.json';
+\$w2Ids = [2237];
+if (is_file(\$w2ManifestPath)) {
+    \$wm = json_decode((string) file_get_contents(\$w2ManifestPath), true);
+    if (is_array(\$wm) && ! empty(\$wm['direction_ids'])) {
+        \$w2Ids = array_map('intval', \$wm['direction_ids']);
+    }
+}
+\$w2InRegistry = 0;
+\$w2BlockReintroduced = 0;
+\$w2DerivedOwner = 0;
+\$w2BestchangeOwner = 0;
+foreach (\$w2Ids as \$wid) {
+    \$row = \$cfgDirs[(string) \$wid] ?? \$cfgDirs[\$wid] ?? null;
+    if (is_array(\$row)) {
+        \$w2InRegistry++;
+        echo "WAVE2A_ID_IN_DERIVED_REGISTRY id=\$wid\n";
+        if (! empty(\$row['ownership']['block_bestchange_overwrite'])) {
+            \$w2BlockReintroduced++;
+            echo "WAVE2A_BLOCK_BESTCHANGE_REINTRODUCED id=\$wid\n";
+        }
+    }
+    \$wd = DirectionExchange::query()->find(\$wid);
+    if (! \$wd) {
+        echo "WAVE2A_DIRECTION_MISSING id=\$wid\n";
+        \$unknown++;
+        continue;
+    }
+    \$ps = (string) (\$wd->parser_source_name ?? '');
+    if (\$ps === 'DERIVED_MARKET_BASELINE') {
+        \$w2DerivedOwner++;
+        echo "WAVE2A_DERIVED_OWNER id=\$wid\n";
+    }
+    if (\$ps === 'BestChange') {
+        \$w2BestchangeOwner++;
+    } else {
+        echo "WAVE2A_NOT_BESTCHANGE_OWNER id=\$wid parser=\$ps\n";
+        \$map++;
+    }
+    if (! \\App\\Services\\Rates\\BestChangeMarketBaseHealth::hasActiveLink((int) \$wid)) {
+        echo "WAVE2A_BC_LINK_INACTIVE id=\$wid\n";
+        \$map++;
+    }
+}
+\$w2Expected = count(\$w2Ids);
+echo "WAVE2A_IDS_IN_DERIVED_REGISTRY=\$w2InRegistry\n";
+echo "WAVE2A_DERIVED_OWNER_TOTAL=\$w2DerivedOwner\n";
+echo "WAVE2A_BESTCHANGE_OWNER_TOTAL=\$w2BestchangeOwner\n";
+echo "WAVE2A_BLOCK_BESTCHANGE_REINTRODUCED_TOTAL=\$w2BlockReintroduced\n";
+if (\$w2InRegistry !== 0) {
+    \$map += \$w2InRegistry;
+}
+if (\$w2DerivedOwner !== 0) {
+    \$map += \$w2DerivedOwner;
+}
+if (\$w2BestchangeOwner !== \$w2Expected) {
+    echo "WAVE2A_BESTCHANGE_OWNER_TOTAL_DEFECT expect=\$w2Expected got=\$w2BestchangeOwner\n";
+    \$map++;
+}
+if (\$w2BlockReintroduced !== 0) {
+    \$map += \$w2BlockReintroduced;
+}
+
 \$snap = RatesXmlPublicFeedHealth::snapshot();
 \$xmlFail = 0;
 if (! empty(\$snap['must_keep_full']) && empty(\$snap['invariant_ok'])) {

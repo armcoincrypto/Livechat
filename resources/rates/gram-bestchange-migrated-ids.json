@@ -14,6 +14,7 @@
   ],
   "golden_fixture_id": 410,
   "expected_owner": "BestChange",
-  "expected_derived_registry_total_min": 1488,
-  "stripped_registry_sha256_live_ee851575": "8542cd51295f1975c510e2ab5b0dfca5e7ab0aaade5ebdb41cccdd64b82a1de5"
+  "expected_derived_registry_total_min": 1487,
+  "stripped_registry_sha256_live_ee851575": "8542cd51295f1975c510e2ab5b0dfca5e7ab0aaade5ebdb41cccdd64b82a1de5",
+  "stripped_registry_sha256_after_wave2a_2237": "525dc61e2403a480f04091f62016d567572132a149cceae34936f8c9b7e35955"
 }
