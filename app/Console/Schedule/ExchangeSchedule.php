@@ -229,9 +229,16 @@ class ExchangeSchedule
         $exportMinutes = (int) iEXSetting('grates_cron_timer', 1);
         $compilerWrapper = '/opt/exswaping-owned-ops/current/scripts/ops/run_backend_compiler.sh';
 
-        // Wave3: heavy compilers MUST runInBackground. Observed BC runtime ~220–250s;
-        // foreground execution pinned schedule:run across cron minutes (overlap pile-up).
-        // Self-overlap still prevented by withoutOverlapping + run_backend_compiler flock.
+        // Wave3: heavy compilers MUST runInBackground. Observed BC runtime ~780–845s
+        // (~13–14m). Foreground execution pinned schedule:run (overlap pile-up).
+        // Dual lock (BOTH_REQUIRED):
+        //   1) Laravel withoutOverlapping — schedule dispatch mutex (argument is MINUTES;
+        //      CacheEventMutex uses expiresAt*60). Hard single-writer is NOT this lock.
+        //   2) run_backend_compiler flock (bestchange-compiler.lock) — hard single-writer
+        //      across schedule + odd-minute competitors-only cron.
+        // Incident 2026-09-26: withoutOverlapping(300) => 300 MINUTES (5h) TTL. If
+        // schedule:finish missed after runInBackground, dispatch stayed silent for tens
+        // of minutes while upstream parser stayed fresh. Cap TTL just above max runtime.
         $courses = $schedule->exec("{$compilerWrapper} compiler:courses --isUpdate=0")
             ->onOneServer()
             ->withoutOverlapping(120)
@@ -239,12 +246,22 @@ class ExchangeSchedule
             ->appendOutputTo(storage_path('logs/compiler_courses.log'));
         self::applyMinuteCadence($courses, $ratesMinutes);
 
+        // withoutOverlapping(20) = 20 minutes = 1200s (Laravel unit = minutes).
+        // Covers observed ~14m runtime + headroom. Flock still blocks a second writer
+        // if this mutex expires while a live compiler PID remains.
         $bestchange = $schedule->exec("{$compilerWrapper} compiler:bestchange")
             ->onOneServer()
-            ->withoutOverlapping(300)
+            ->withoutOverlapping(20)
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/compiler_bestchange.log'));
         self::applyMinuteCadence($bestchange, $ratesMinutes);
+
+        // Close "silent skip" visibility: log due/dispatch/mutex/flock/heartbeat every minute.
+        $schedule->command('rates:bestchange-dispatch-watch --format=json')
+            ->everyMinute()
+            ->onOneServer()
+            ->withoutOverlapping(2)
+            ->appendOutputTo(storage_path('logs/bestchange_dispatch_watch.log'));
 
         // ZELLEUSD outgoing: refresh course_value from USDTTRC20→dest after BC peer updates.
         $zelle = $schedule->command('rates:zelleusd-usdt-preview --all --apply')
