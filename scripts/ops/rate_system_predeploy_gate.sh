@@ -447,6 +447,41 @@ if (\$payeerWrongActive !== 0) {
     \$map += \$payeerWrongActive;
 }
 
+// ---------------------------------------------------------------------------
+// 1513 KEEP_DERIVED city/liquidity block — forbid accidental BC ownership.
+// ---------------------------------------------------------------------------
+\$cityBlockPath = '$LIVE/resources/rates/keep-derived-city-liquidity-block.json';
+\$cityBlockViolations = 0;
+if (is_file(\$cityBlockPath)) {
+    \$cb = json_decode((string) file_get_contents(\$cityBlockPath), true) ?: [];
+    foreach ((\$cb['directions'] ?? []) as \$cid => \$crow) {
+        if (! is_array(\$crow) || empty(\$crow['auto_migration_blocked'])) {
+            continue;
+        }
+        \$cid = (int) \$cid;
+        \$cd = DirectionExchange::query()->find(\$cid);
+        if (! \$cd) {
+            echo "CITY_LIQUIDITY_BLOCK_DIRECTION_MISSING id=\$cid\n";
+            \$cityBlockViolations++;
+            continue;
+        }
+        \$ps = (string) (\$cd->parser_source_name ?? '');
+        if (\$ps !== (string) (\$crow['owner_required'] ?? 'DERIVED_MARKET_BASELINE')) {
+            echo "CITY_LIQUIDITY_BLOCK_OWNER_VIOLATION id=\$cid parser=\$ps\n";
+            \$cityBlockViolations++;
+        }
+        \$cbc = \\Illuminate\\Support\\Facades\\DB::table('bestchange_directions')->where('id_direction_exchange', \$cid)->where('status', 1)->first();
+        if (\$cbc) {
+            echo "CITY_LIQUIDITY_BLOCK_ACTIVE_BC id=\$cid\n";
+            \$cityBlockViolations++;
+        }
+    }
+}
+echo "CITY_LIQUIDITY_BLOCK_VIOLATIONS=\$cityBlockViolations\n";
+if (\$cityBlockViolations !== 0) {
+    \$map += \$cityBlockViolations;
+}
+
 \$snap = RatesXmlPublicFeedHealth::snapshot();
 \$xmlFail = 0;
 if (! empty(\$snap['must_keep_full']) && empty(\$snap['invariant_ok'])) {

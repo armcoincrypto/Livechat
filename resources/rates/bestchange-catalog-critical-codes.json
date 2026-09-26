@@ -26,10 +26,13 @@
     "177": "NEO",
     "160": "ETC"
   },
+  "refresh_command": "php artisan rates:refresh-bestchange-codes-cache --apply",
+  "migration_cert_helper": "scripts/ops/check_bestchange_catalog_freshness.sh --migration-cert",
   "known_stale_local_gaps_as_of_wave2d": [
     "UPIINR=327",
     "PAYTMINR=292",
     "ZELLEUSD=308",
     "CARDIDR=326"
-  ]
+  ],
+  "gaps_cleared_by": "rates:refresh-bestchange-codes-cache against live API + overrides"
 }

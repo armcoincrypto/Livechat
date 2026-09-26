@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "policy": "KEEP_DERIVED_CITY_LIQUIDITY_BLOCK",
+  "certified_at_utc": "2026-09-26T00:00:00Z",
+  "notes": [
+    "1513 mapping metadata is corrected (CASHUSD/89 → TCSBRUB/105).",
+    "Ownership MUST remain DERIVED_MARKET_BASELINE.",
+    "city_id=0 is intentional until a cash city with live BC liquidity is certified.",
+    "Future automation MUST NOT migrate 1513 merely because mapping IDs are correct."
+  ],
+  "directions": {
+    "1513": {
+      "pair": "CASHUSD->TCSBRUB",
+      "owner_required": "DERIVED_MARKET_BASELINE",
+      "bc_status_required": 0,
+      "bc_in": 89,
+      "bc_out": 105,
+      "city_id": 0,
+      "auto_migration_blocked": true,
+      "block_reasons": [
+        "CITY_ID_ZERO_INTENTIONAL",
+        "NO_CITY_LIQUIDITY_OBSERVED",
+        "MAPPING_FIXED_OWNERSHIP_NOT_AUTHORIZED"
+      ],
+      "class": "CITY/LIQUIDITY_BLOCK"
+    }
+  }
+}

@@ -2,10 +2,12 @@
   "schema_version": 1,
   "policy": "WAVE2D_MAPPING_METADATA_REPAIR_KEEP_DERIVED",
   "notes": [
-    "1482 and 1513 receive corrected BestChange currency IDs in this wave.",
+    "1482 and 1513 receive corrected BestChange currency IDs.",
     "Ownership stays DERIVED_MARKET_BASELINE; BC link status stays inactive (0).",
-    "Do not migrate these until a later certified Wave after book/economics re-cert."
+    "1482 may be migrated only after a separate READY_TO_MIGRATE certification + release.",
+    "1513 is explicitly auto-migration-blocked (city/liquidity)."
   ],
+  "direction_ids": [1482, 1513],
   "repairs": {
     "1482": {
       "pair": "USDCERC20->CASHUSD",
@@ -16,7 +18,9 @@
       "to_exchange_in": "USDCERC20",
       "to_exchange_out": "CASHUSD",
       "keep_status": 0,
-      "keep_owner": "DERIVED_MARKET_BASELINE"
+      "keep_owner": "DERIVED_MARKET_BASELINE",
+      "auto_migration_blocked": false,
+      "migration_requires": "separate_wave_READY_TO_MIGRATE_cert"
     },
     "1513": {
       "pair": "CASHUSD->TCSBRUB",
@@ -27,7 +31,9 @@
       "to_exchange_in": "CASHUSD",
       "to_exchange_out": "TCSBRUB",
       "keep_status": 0,
-      "keep_owner": "DERIVED_MARKET_BASELINE"
+      "keep_owner": "DERIVED_MARKET_BASELINE",
+      "auto_migration_blocked": true,
+      "block_policy": "resources/rates/keep-derived-city-liquidity-block.json"
     }
   }
 }
