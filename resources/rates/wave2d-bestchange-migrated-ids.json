@@ -1,24 +1,26 @@
 {
   "schema_version": 1,
   "policy": "NON_TON_WAVE2D_BESTCHANGE_OWNERSHIP_PERMANENT",
-  "certified_at_utc": "2026-09-26T00:00:00Z",
+  "certified_at_utc": "2026-09-26T01:00:00Z",
   "notes": [
-    "Wave 2D Part A: single-direction DERIVED\u2192BESTCHANGE migration for 2870 ETC\u2192PAYTMINR.",
+    "Wave 2D Part A: 2870 ETC→PAYTMINR DERIVED→BESTCHANGE.",
+    "Final 1482 USDCERC20→CASHUSD DERIVED→BESTCHANGE (city_id=19 certified cash city).",
     "These IDs MUST NOT reappear in derived-market-baseline-directions.json.",
     "block_bestchange_overwrite must never be reintroduced via derived registry.",
     "Runtime ownership: parser_source_name=BestChange + bestchange_directions.status=1.",
-    "1482/1513 mapping repairs are metadata-only in this wave \u2014 ownership stays DERIVED.",
+    "1513 remains DERIVED (city/liquidity auto-migration block).",
     "Do not weaken GRAM Wave-1 or Wave 2A persistence guards."
   ],
-  "direction_ids": [
-    2870
-  ],
+  "direction_ids": [2870, 1482],
   "pairs": {
-    "2870": "ETC->PAYTMINR"
+    "2870": "ETC->PAYTMINR",
+    "1482": "USDCERC20->CASHUSD"
   },
   "expected_owner": "BestChange",
-  "expected_bc_out_id": 292,
-  "expected_bc_out_code": "PAYTMINR",
-  "base_live_sha": "37316ab9d962839b94beb7ff992a85ad1b928e13",
-  "stripped_registry_sha256_after_wave2d": "ab3a961c2ed604c010c80d06098bc8394c3f1f529c334d0836794143ba8e7463"
+  "rails": {
+    "2870": {"bc_in": 160, "bc_out": 292, "bc_out_code": "PAYTMINR"},
+    "1482": {"bc_in": 23, "bc_out": 89, "bc_out_code": "CASHUSD", "city_id": 19}
+  },
+  "base_live_sha": "a1f279d31965d508baf134c6d7b07dcbd4d312ac",
+  "stripped_registry_sha256_after_1482": "9280c847fba5f4ea52c41ce248394d0289d2d68f32a4df2e53142388ec4acd20"
 }

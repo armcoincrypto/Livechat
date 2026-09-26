@@ -39,7 +39,7 @@ gram_ids = {str(i) for i in [
     419,420,421,422,423,424,425,426,
 ]}
 wave2a_ids = {"2237"}
-wave2d_ids = {"2870"}
+wave2d_ids = {"2870", "1482"}
 forbidden_ids = gram_ids | wave2a_ids | wave2d_ids
 rel = "resources/rates/derived-market-baseline-directions.json"
 gram_manifest_rel = "resources/rates/gram-bestchange-migrated-ids.json"

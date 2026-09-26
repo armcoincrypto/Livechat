@@ -7,7 +7,8 @@ namespace Tests\Unit\Rates;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Wave 2D: ETC→PAYTMINR (2870) must remain BestChange-owned and absent from derived registry.
+ * Wave 2D: 2870 ETC→PAYTMINR and 1482 USDCERC20→CASHUSD must remain BestChange-owned
+ * and absent from derived registry.
  */
 final class Wave2dBestChangeMigratedRegistryInvariantTest extends TestCase
 {
@@ -21,35 +22,38 @@ final class Wave2dBestChangeMigratedRegistryInvariantTest extends TestCase
         return dirname(__DIR__, 3).'/resources/rates/wave2d-bestchange-migrated-ids.json';
     }
 
-    public function test_manifest_lists_2870_only(): void
+    public function test_manifest_lists_2870_and_1482(): void
     {
         $man = json_decode((string) file_get_contents($this->manifestPath()), true);
         $this->assertIsArray($man);
-        $this->assertSame([2870], array_map('intval', $man['direction_ids'] ?? []));
+        $this->assertSame([2870, 1482], array_map('intval', $man['direction_ids'] ?? []));
         $this->assertSame('BestChange', $man['expected_owner'] ?? null);
-        $this->assertSame(292, (int) ($man['expected_bc_out_id'] ?? 0));
-        $this->assertSame('PAYTMINR', $man['expected_bc_out_code'] ?? null);
+        $this->assertSame(292, (int) ($man['rails']['2870']['bc_out'] ?? 0));
+        $this->assertSame(89, (int) ($man['rails']['1482']['bc_out'] ?? 0));
+        $this->assertSame(19, (int) ($man['rails']['1482']['city_id'] ?? 0));
     }
 
-    public function test_2870_absent_from_derived_registry(): void
+    public function test_migrated_ids_absent_from_derived_registry(): void
     {
         $data = json_decode((string) file_get_contents($this->registryPath()), true);
         $dirs = $data['directions'] ?? [];
         $this->assertArrayNotHasKey('2870', $dirs);
+        $this->assertArrayNotHasKey('1482', $dirs);
         $this->assertArrayNotHasKey('2237', $dirs);
-        $this->assertSame(1486, count($dirs));
+        $this->assertArrayHasKey('1513', $dirs);
+        $this->assertSame(1485, count($dirs));
     }
 
-    public function test_poison_registry_with_2870_fails_sha_contract(): void
+    public function test_poison_registry_with_1482_fails_sha_contract(): void
     {
-        \$expected = 'ab3a961c2ed604c010c80d06098bc8394c3f1f529c334d0836794143ba8e7463';
+        $expected = '9280c847fba5f4ea52c41ce248394d0289d2d68f32a4df2e53142388ec4acd20';
         $raw = file_get_contents($this->registryPath());
         $this->assertSame($expected, hash('sha256', $raw));
 
         $data = json_decode($raw, true);
-        $data['directions']['2870'] = [
-            'from' => 'ETC',
-            'to' => 'PAYTMINR',
+        $data['directions']['1482'] = [
+            'from' => 'USDCERC20',
+            'to' => 'CASHUSD',
             'ownership' => [
                 'parser_source_name' => 'DERIVED_MARKET_BASELINE',
                 'block_bestchange_overwrite' => true,
