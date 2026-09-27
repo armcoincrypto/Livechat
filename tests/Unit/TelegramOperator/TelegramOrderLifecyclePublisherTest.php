@@ -117,13 +117,34 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
             ->andReturn(['ok' => true, 'message_missing' => false]);
         $bot->shouldReceive('sendMessageResult')
             ->once()
-            ->withArgs(fn ($c, $t, $k, $r) => str_contains((string) $t, 'Клиент отметил оплату') && (int) $r === 101)
+            ->withArgs(function ($c, $t, $k, $r) {
+                return str_contains((string) $t, 'Клиент отметил оплату')
+                    && str_contains((string) $t, '🟡 Оператор:')
+                    && str_contains((string) $t, 'Проверьте поступление средств')
+                    && (int) $r === 101;
+            })
             ->andReturn(['ok' => true, 'message_id' => 601]);
 
         $stats = $this->publisher($bot, destinations: ['777001'])->publishPaid($task);
         $this->assertSame(1, $stats['edited']);
         $this->assertSame(0, $stats['skipped_stale']);
         $this->assertSame(1, $stats['attention_alert']);
+    }
+
+    public function test_paid_attention_alert_unclaimed_asks_to_claim(): void
+    {
+        $presenter = new TelegramOrderMessagePresenter();
+        $text = $presenter->renderPaidAttentionAlert([
+            'public_id' => '99',
+            'give_amount' => '400 USDT',
+            'receive_amount' => '100 RUB',
+            'give_ps' => 'USDTTRC20',
+            'receive_ps' => 'SBER',
+            'operator' => null,
+        ]);
+        $this->assertStringContainsString('💰 Клиент отметил оплату', $text);
+        $this->assertStringContainsString('🔴 Требуется взять заявку и проверить оплату', $text);
+        $this->assertStringNotContainsString('🟡 Оператор:', $text);
     }
 
     public function test_claim_after_paid_keeps_payment_visible_without_second_alert(): void
@@ -396,12 +417,9 @@ final class TelegramOrderLifecyclePublisherTest extends TestCase
         Config::set('telegram_operator.actions_enabled', false);
         $registry = app(TelegramOrderCardRegistry::class);
         $presenter = new TelegramOrderMessagePresenter();
-        $selector = Mockery::mock(\App\Services\Orders\TelegramNotificationSelector::class);
-        $selector->shouldReceive('enabledForEvent')->andReturn(collect([]));
-        $auth = Mockery::mock(\App\Services\TelegramOperator\TelegramOperatorAuthService::class);
-        $auth->shouldReceive('authorizedActionTelegramUserIds')->andReturn(
-            array_map('intval', $destinations)
-        );
+        $selector = new \App\Services\Orders\TelegramNotificationSelector();
+        $auth = new \App\Services\TelegramOperator\TelegramOperatorAuthService();
+        Config::set('telegram_operator.test_force_dm_ids', array_map('strval', $destinations));
 
         return new TelegramOrderLifecyclePublisher($bot, $registry, $presenter, $selector, $auth);
     }

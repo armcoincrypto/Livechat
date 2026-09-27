@@ -319,6 +319,7 @@ final class TelegramOrderMessagePresenter
 
     /**
      * Short operator-attention alert for customer "I paid" — not a second full card.
+     * Operator-critical fields only; claimed vs unclaimed next-action wording.
      */
     public function renderPaidAttentionAlert(array $payload): string
     {
@@ -329,11 +330,13 @@ final class TelegramOrderMessagePresenter
         $recvAmt = (string) ($payload['receive_amount'] ?? '');
         $operator = $this->nonEmpty((string) ($payload['operator'] ?? ''));
 
-        $lines = [
-            '💰 Клиент отметил оплату',
-            '',
-            'Заявка №'.$id,
-        ];
+        $lines = [];
+        if ($operator !== null) {
+            $lines[] = '🟡 Оператор: '.$operator;
+        }
+        $lines[] = '💰 Клиент отметил оплату';
+        $lines[] = '';
+        $lines[] = 'Заявка №'.$id;
         if ($giveAmt !== '' || $recvAmt !== '') {
             $lines[] = trim($giveAmt.($recvAmt !== '' ? ' → '.$recvAmt : ''));
         }
@@ -342,9 +345,10 @@ final class TelegramOrderMessagePresenter
         }
         $lines[] = '';
         if ($operator !== null) {
-            $lines[] = '👤 Оператор: '.$operator;
+            $lines[] = '🔎 Проверьте поступление средств';
+        } else {
+            $lines[] = '🔴 Требуется взять заявку и проверить оплату';
         }
-        $lines[] = '🔎 Требуется проверить оплату';
 
         return implode("\n", $lines);
     }

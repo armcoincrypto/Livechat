@@ -395,6 +395,27 @@ final class RateAuthorityDriftMonitor
             }
         }
 
+        // Technical Telegram is opt-in + dedicated OPS chat only (never order/traffic).
+        try {
+            $opsStats = app(\App\Services\Ops\TelegramOpsAlertRouter::class)
+                ->deliverRateAlertEvents($alertEvents);
+            $summary['TELEGRAM_OPS_DELIVERY'] = $opsStats;
+            $summary['OPS_TELEGRAM_CHAT_ID_CONFIGURED'] = app(\App\Services\Ops\TelegramOpsAlertRouter::class)->opsChatConfigured() ? 'YES' : 'NO';
+            $summary['RATE_TELEGRAM_ALERTS_ENABLED'] = app(\App\Services\Ops\TelegramOpsAlertRouter::class)->rateTelegramAlertsEnabled() ? 'YES' : 'NO';
+        } catch (\Throwable $e) {
+            Log::warning('telegram_ops_alert_router_failed', [
+                'exception_class' => $e::class,
+            ]);
+            $summary['TELEGRAM_OPS_DELIVERY'] = [
+                'attempted' => 0,
+                'sent' => 0,
+                'skipped' => count($alertEvents),
+                'blocked_reason' => 'ROUTER_EXCEPTION',
+            ];
+            $summary['OPS_TELEGRAM_CHAT_ID_CONFIGURED'] = 'NO';
+            $summary['RATE_TELEGRAM_ALERTS_ENABLED'] = 'NO';
+        }
+
         return [
             'generated_at' => now()->toIso8601String(),
             'summary' => $summary,
@@ -1264,7 +1285,9 @@ final class RateAuthorityDriftMonitor
             '',
             'CURRENT: '.($event['current_final'] ?? ''),
             'EXPECTED: '.($event['expected_final'] ?? ''),
-            'DIFF: '.(($event['diff_percent'] !== null) ? (sprintf('%+.2f%%', (float) $event['diff_percent'])) : 'n/a'),
+            'DIFF: '.((array_key_exists('diff_percent', $event) && $event['diff_percent'] !== null)
+                ? (sprintf('%+.2f%%', (float) $event['diff_percent']))
+                : 'n/a'),
             'REFERENCE: '.($event['reference_source'] ?? 'n/a'),
             '',
             'ROOT CAUSE: '.$root,

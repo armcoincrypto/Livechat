@@ -27,5 +27,15 @@ A direction may contribute to more than one fact counter. Alert `root_cause` use
 
 ## Telegram
 
-Rate-health alerts must not use the traffic/customer Telegram chat.  
-Required owner input: dedicated `OPS_TELEGRAM_CHAT_ID` (or approved ops destination). Until set: JSONL + application logs only.
+Rate-health alerts must not use the traffic/customer Telegram chat or order-operator DMs.
+
+| Key | Meaning |
+| --- | --- |
+| `OPS_TELEGRAM_CHAT_ID` | Dedicated private ops group/channel (required) |
+| `RATE_AUTHORITY_DRIFT_TELEGRAM_ALERTS` | Master switch (default `0`) |
+| `TELEGRAM_OPS_REUSE_OPERATOR_BOT` | Reuse `@exswapingnotyfbot` token resolver (default `1`) |
+
+Config: `config/telegram_ops.php` · Router: `App\Services\Ops\TelegramOpsAlertRouter`
+
+Until `OPS_TELEGRAM_CHAT_ID` is set **and** alerts enabled: JSONL + application logs only.  
+WATCH / non-customer-impact parser thin-book states never Telegram-spam.

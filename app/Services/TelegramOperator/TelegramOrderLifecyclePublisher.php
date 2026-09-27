@@ -244,79 +244,99 @@ final class TelegramOrderLifecyclePublisher
 
     /**
      * Exactly one short PAID attention alert per order (durable idempotency).
+     * Dedup key ≈ order_id + event_type(PAID_ATTENTION) — not time-based.
+     * Mutex + claim-before-send closes the race between queue retries / duplicate dispatch.
      */
     private function sendPaidAttentionAlertOnce(Task $task): int
     {
         $taskId = (int) $task->id;
-        if ($taskId <= 0 || $this->registry->paidAttentionAlertAlreadySent($taskId)) {
-            Log::info('telegram_order_card', [
-                'order' => (string) ($task->public_id ?? $taskId),
-                'task_id' => $taskId,
-                'state' => TelegramOrderMessagePresenter::LIFECYCLE_PAID,
-                'card_action' => null,
-                'attention_alert' => 'SKIP_DUP',
-                'attention_alert_result' => 'already_sent',
-                'message_id' => null,
-                'chat_id_suffix' => null,
-            ]);
-
+        if ($taskId <= 0) {
             return 0;
-        }
-
-        $destinations = $this->destinations();
-        if ($destinations === []) {
-            return 0;
-        }
-
-        $payload = $this->presenter->present($task, TelegramOrderMessagePresenter::LIFECYCLE_PAID);
-        $text = $this->presenter->renderPaidAttentionAlert($payload);
-        $cards = $this->registry->cards($taskId);
-        $byChat = [];
-        foreach ($cards as $card) {
-            $byChat[(string) $card['chat_id']] = (int) $card['message_id'];
         }
 
         $sent = 0;
-        foreach ($destinations as $chatId) {
-            $chatId = (string) $chatId;
-            if ($chatId === '') {
-                continue;
-            }
-            $replyTo = $byChat[$chatId] ?? null;
-            $result = $this->bot->sendMessageResult(
-                $chatId,
-                $text,
-                null,
-                ($replyTo !== null && $replyTo > 0) ? $replyTo : null
-            );
-            if ($result['ok']) {
-                $sent++;
+        $run = function () use ($task, $taskId, &$sent): void {
+            if ($this->registry->paidAttentionAlertAlreadySent($taskId)) {
                 Log::info('telegram_order_card', [
                     'order' => (string) ($task->public_id ?? $taskId),
                     'task_id' => $taskId,
                     'state' => TelegramOrderMessagePresenter::LIFECYCLE_PAID,
-                    'card_action' => 'EDIT',
-                    'attention_alert' => 'SEND',
-                    'attention_alert_result' => 'success',
-                    'message_id' => $replyTo,
-                    'alert_message_id' => $result['message_id'] ?? null,
-                    'chat_id_suffix' => substr($chatId, -4),
+                    'card_action' => null,
+                    'attention_alert' => 'SKIP_DUP',
+                    'attention_alert_result' => 'already_sent',
+                    'message_id' => null,
+                    'chat_id_suffix' => null,
+                    'dedup_key' => 'order:'.$taskId.':PAID_ATTENTION',
                 ]);
-            } else {
-                Log::warning('telegram_order_card', [
-                    'order' => (string) ($task->public_id ?? $taskId),
-                    'task_id' => $taskId,
-                    'state' => TelegramOrderMessagePresenter::LIFECYCLE_PAID,
-                    'attention_alert' => 'SEND',
-                    'attention_alert_result' => 'failed',
-                    'message_id' => $replyTo,
-                    'chat_id_suffix' => substr($chatId, -4),
-                ]);
-            }
-        }
 
-        if ($sent > 0) {
+                return;
+            }
+
+            $destinations = $this->destinations();
+            if ($destinations === []) {
+                return;
+            }
+
+            // Claim slot before network I/O so a concurrent worker cannot double-send.
             $this->registry->markPaidAttentionAlertSent($taskId);
+
+            $payload = $this->presenter->present($task, TelegramOrderMessagePresenter::LIFECYCLE_PAID);
+            $text = $this->presenter->renderPaidAttentionAlert($payload);
+            $cards = $this->registry->cards($taskId);
+            $byChat = [];
+            foreach ($cards as $card) {
+                $byChat[(string) $card['chat_id']] = (int) $card['message_id'];
+            }
+
+            foreach ($destinations as $chatId) {
+                $chatId = (string) $chatId;
+                if ($chatId === '') {
+                    continue;
+                }
+                $replyTo = $byChat[$chatId] ?? null;
+                $result = $this->bot->sendMessageResult(
+                    $chatId,
+                    $text,
+                    null,
+                    ($replyTo !== null && $replyTo > 0) ? $replyTo : null
+                );
+                if ($result['ok']) {
+                    $sent++;
+                    Log::info('telegram_order_card', [
+                        'order' => (string) ($task->public_id ?? $taskId),
+                        'task_id' => $taskId,
+                        'state' => TelegramOrderMessagePresenter::LIFECYCLE_PAID,
+                        'card_action' => 'EDIT',
+                        'attention_alert' => 'SEND',
+                        'attention_alert_result' => 'success',
+                        'message_id' => $replyTo,
+                        'alert_message_id' => $result['message_id'] ?? null,
+                        'chat_id_suffix' => substr($chatId, -4),
+                        'dedup_key' => 'order:'.$taskId.':PAID_ATTENTION',
+                    ]);
+                } else {
+                    Log::warning('telegram_order_card', [
+                        'order' => (string) ($task->public_id ?? $taskId),
+                        'task_id' => $taskId,
+                        'state' => TelegramOrderMessagePresenter::LIFECYCLE_PAID,
+                        'attention_alert' => 'SEND',
+                        'attention_alert_result' => 'failed',
+                        'message_id' => $replyTo,
+                        'chat_id_suffix' => substr($chatId, -4),
+                        'dedup_key' => 'order:'.$taskId.':PAID_ATTENTION',
+                    ]);
+                }
+            }
+        };
+
+        try {
+            Cache::lock('telegram_order_paid_alert_lock:'.$taskId, 20)->block(15, $run);
+        } catch (\Throwable $e) {
+            Log::warning('telegram_order_paid_alert_lock_failed', [
+                'task_id' => $taskId,
+                'exception_class' => $e::class,
+            ]);
+            $run();
         }
 
         return $sent;
@@ -414,8 +434,16 @@ final class TelegramOrderLifecyclePublisher
             FILTER_VALIDATE_BOOLEAN
         );
         if ($dmEnabled) {
-            foreach ($this->auth->authorizedActionTelegramUserIds() as $uid) {
-                $out[] = (string) $uid;
+            // Test-only seam (never set in production env): skip Spatie/DB authorize.
+            $force = config('telegram_operator.test_force_dm_ids');
+            if (is_array($force) && $force !== [] && app()->environment('testing')) {
+                foreach ($force as $uid) {
+                    $out[] = (string) $uid;
+                }
+            } else {
+                foreach ($this->auth->authorizedActionTelegramUserIds() as $uid) {
+                    $out[] = (string) $uid;
+                }
             }
         }
 
