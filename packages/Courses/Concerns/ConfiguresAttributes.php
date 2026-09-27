@@ -19,9 +19,10 @@ use Jenssegers\Agent\Facades\Agent;
  * - Собрать структуру направлений: [id_currency1 => [id_currency2 => id_currency2, ...]]
  * - Собрать сортировку направлений: ["id_currency1-id_currency2" => sorting_2]
  *
- * C3-A: public catalog adjacency must not advertise directions that fail the
- * shared CanonicalDirectionEligibility catalog prefilter (public duplicates,
- * non-positive course_value). Quote/order/XML already honor the same policy.
+ * C3-A: public catalog adjacency must not advertise directions that fail
+ * CanonicalDirectionEligibility CTX_CATALOG (quote+order eligible, currencies
+ * visible, positive course, not a public duplicate). Weak prefilter alone is
+ * insufficient — RubFamily quarantine / quote_allowed=false must hide the edge.
  *
  * Производительность:
  * - Без N+1 по направлениям: используем chunkById() по DirectionExchange.
@@ -84,6 +85,9 @@ trait ConfiguresAttributes
 
         $activeCurrencyMap = array_fill_keys($activeCurrencyIds, true);
 
+        // Full CTX_CATALOG gate (quote+order). Instantiated once — not per row.
+        $catalogEligibility = CanonicalDirectionEligibility::make();
+
         // 4) Основная выборка направлений — chunkById (без N+1)
         DirectionExchange::query()
             ->select([
@@ -101,13 +105,21 @@ trait ConfiguresAttributes
                 'is_hidden_not_device',
                 'device',
                 'course_value',
+                'profit',
+                'allow_export',
+                'parser_source_name',
+                'deleted_at',
+                'type_reserve',
+                'direction_reserve',
+                'floating_fee',
+                'fix_fee',
             ])
             ->where('status', 1)
             ->where('is_error_rate', 0)
             ->when($hasModes, function ($q) {
                 $q->whereHas('direction_modes', fn ($m) => $m->where('status', 1));
             })
-            ->chunkById(2000, function ($rows) use ($activeCurrencyMap, $nowHm, $locale, $device) {
+            ->chunkById(2000, function ($rows) use ($activeCurrencyMap, $nowHm, $locale, $device, $catalogEligibility) {
                 foreach ($rows as $direction) {
                     $directionId = (int) ($direction->id ?? 0);
 
@@ -130,6 +142,17 @@ trait ConfiguresAttributes
 
                     // Валюты должны быть активны
                     if (!isset($activeCurrencyMap[$c1], $activeCurrencyMap[$c2])) {
+                        continue;
+                    }
+
+                    // C3-A harden: never advertise a direction the quote/order surface rejects
+                    // (e.g. RubFamily QUARANTINE_REQUIRED → rate_unavailable while still selectable).
+                    $direction->loadMissing(['currency1', 'currency2']);
+                    $catalog = $catalogEligibility->evaluate(
+                        $direction,
+                        CanonicalDirectionEligibility::CTX_CATALOG,
+                    );
+                    if (empty($catalog['eligible'])) {
                         continue;
                     }
 

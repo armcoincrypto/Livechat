@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace App\Services\Rates;
 
+use App\Models\DirectionExchange;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Read-only owner-authority rate drift monitor.
  *
  * Compares each active direction's course_value to the expected final rate
  * from that direction's certified owner model (not a global market cross-check).
+ * Also detects PUBLIC_QUOTE_UNAVAILABLE: weak catalog prefilter passes but
+ * RateDirectionEligibility quote_allowed=false (customer-visible without rate).
  * Never mutates rates, ownership, profit, or positions.
  */
 final class RateAuthorityDriftMonitor
@@ -44,6 +48,8 @@ final class RateAuthorityDriftMonitor
 
     /** @var array<int, array<string,mixed>> */
     private array $bcHealthByDirection = [];
+
+    private ?RateDirectionEligibility $publicSurfaceEligibility = null;
 
     public function __construct(
         ?RateConfiguredExpectation $expectation = null,
@@ -243,6 +249,12 @@ final class RateAuthorityDriftMonitor
         foreach ($query->cursor() as $row) {
             $summary['RATE_TOTAL']++;
             $eval = $this->evaluateDirection($row);
+            $eval = $this->applyPublicQuoteUnavailableGate($eval, $row);
+            if (($eval['root_cause'] ?? null) === 'PUBLIC_QUOTE_UNAVAILABLE'
+                || ! empty($eval['public_quote_unavailable'])
+            ) {
+                $summary['PUBLIC_QUOTE_DEFECT_TOTAL']++;
+            }
             $directions[] = $eval;
             $sev = (string) $eval['severity'];
             $owner = (string) $eval['owner'];
@@ -922,12 +934,72 @@ final class RateAuthorityDriftMonitor
             str_contains($root, 'PROVIDER_BREAK'), str_contains($root, 'PROVIDER_UNAVAILABLE'),
             str_contains($root, 'MAPPING_MISMATCH'), str_contains($root, 'LINK_DISABLED') => 'PROVIDER_UNAVAILABLE',
             str_contains($root, 'OWNER_CHANGED'), str_contains($root, 'REGISTRY_REENTRY') => 'OWNERSHIP_INVARIANT',
+            $root === 'PUBLIC_QUOTE_UNAVAILABLE' => 'PUBLIC_QUOTE_UNAVAILABLE',
             str_contains($root, 'PUBLIC_QUOTE') => 'PUBLIC_QUOTE_DIVERGENCE',
             str_contains($root, 'ORDER_QUOTE') => 'ORDER_QUOTE_DIVERGENCE',
             str_contains($root, 'XML_') => 'XML_DIVERGENCE',
             $root === '' || $root === 'UNKNOWN' => 'UNKNOWN',
             default => 'AUTHORITY_PRICE_DRIFT',
         };
+    }
+
+    /**
+     * Detect catalog/deep-link advertisement without a usable public quote.
+     *
+     * Weak prefilter (positive course, not duplicate) + quote_allowed=false
+     * is exactly the customer defect certification found on the six RubFamily
+     * quarantine directions. Distinct from BOOK_STALE / PARSER_ERROR / drift.
+     *
+     * @param  array<string,mixed>  $eval
+     * @return array<string,mixed>
+     */
+    private function applyPublicQuoteUnavailableGate(array $eval, object $row): array
+    {
+        $id = (int) ($row->id ?? 0);
+        $course = $row->course_value ?? null;
+        if (! CanonicalDirectionEligibility::passesPublicCatalogPrefilter($id, $course)) {
+            return $eval;
+        }
+
+        try {
+            $direction = DirectionExchange::query()->with(['currency1', 'currency2'])->find($id);
+            if ($direction === null) {
+                return $eval;
+            }
+            $surface = $this->publicSurfaceEligibility()->evaluateDirection($direction);
+        } catch (Throwable) {
+            return $eval;
+        }
+
+        $quoteAllowed = ! empty($surface['quote_allowed']);
+        $orderAllowed = ! empty($surface['order_allowed']);
+        $eval['quote_allowed'] = $quoteAllowed;
+        $eval['order_allowed'] = $orderAllowed;
+        $eval['eligibility_classification'] = $surface['classification'] ?? null;
+
+        if ($quoteAllowed) {
+            return $eval;
+        }
+
+        // Customer-impacting: still weakly catalog-eligible / deep-linkable, no quote.
+        $eval['public_quote_unavailable'] = true;
+        $eval['prior_root_cause'] = $eval['root_cause'] ?? null;
+        $eval['root_cause'] = 'PUBLIC_QUOTE_UNAVAILABLE';
+        $eval['first_bad_stage'] = 'public_quote_eligibility';
+        $eval['severity'] = self::SEVERITY_WARNING;
+        $eval['public_impact'] = true;
+        // Soft-lane (is_enabled_exchange=0) must NOT hide this — selector/catalog can still advertise.
+        $eval['order_impact'] = $orderAllowed;
+        $eval['action'] = 'FIX_PUBLIC_AVAILABILITY_GATE';
+        $eval['alert_class'] = 'PUBLIC_QUOTE_UNAVAILABLE';
+        $eval['customer_impact'] = 'VISIBLE_WITHOUT_RATE';
+
+        return $eval;
+    }
+
+    private function publicSurfaceEligibility(): RateDirectionEligibility
+    {
+        return $this->publicSurfaceEligibility ??= RateDirectionEligibility::make();
     }
 
     /**
