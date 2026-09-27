@@ -185,12 +185,33 @@ final class BestChangeMarketBaseHealth
             'derived_reference' => null,
             'outlier_vs_derived' => false,
             'outlier_delta_percent' => null,
+            'explain_reason' => null,
+            'book_depth' => null,
+            'book_age_stale' => false,
+            'is_error_parser' => false,
         ];
 
         $base['link_status'] = (int) ($bc->status ?? 0);
         $base['position_num'] = isset($bc->position_num) ? (string) $bc->position_num : null;
         $base['rate_value'] = isset($bc->rate_value) ? (string) $bc->rate_value : null;
         $base['updated_at'] = isset($bc->updated_at) ? (string) $bc->updated_at : null;
+        $base['is_error_parser'] = (int) ($bc->is_error_parser ?? 0) === 1;
+
+        $age = self::ageSeconds($bc->updated_at ?? null);
+        $base['age_seconds'] = $age;
+        $base['book_age_stale'] = $age === null || $age > $maxAge;
+
+        if (isset($bc->explain_payload) && $bc->explain_payload !== null && $bc->explain_payload !== '') {
+            $exp = is_array($bc->explain_payload)
+                ? $bc->explain_payload
+                : (json_decode((string) $bc->explain_payload, true) ?: null);
+            if (is_array($exp)) {
+                $base['explain_reason'] = isset($exp['reason']) ? (string) $exp['reason'] : null;
+                if (isset($exp['available_offers']) && is_numeric($exp['available_offers'])) {
+                    $base['book_depth'] = (int) $exp['available_offers'];
+                }
+            }
+        }
 
         if ((int) ($bc->status ?? 0) !== 1) {
             $base['reason'] = 'link_inactive';
@@ -199,8 +220,12 @@ final class BestChangeMarketBaseHealth
             return $base;
         }
 
-        if ((int) ($bc->is_error_parser ?? 0) === 1) {
-            $base['reason'] = 'parser_error';
+        // Parser failure is independent of heartbeat age (fresh ingest can still be thin).
+        if ($base['is_error_parser']) {
+            $explain = (string) ($base['explain_reason'] ?? '');
+            $base['reason'] = $explain === 'position_insufficient_depth'
+                ? 'position_insufficient_depth'
+                : 'parser_error';
             $base['status'] = 'error';
 
             return $base;
@@ -214,9 +239,7 @@ final class BestChangeMarketBaseHealth
             return $base;
         }
 
-        $age = self::ageSeconds($bc->updated_at ?? null);
-        $base['age_seconds'] = $age;
-        if ($age === null || $age > $maxAge) {
+        if ($base['book_age_stale']) {
             $base['reason'] = 'stale';
             $base['status'] = 'stale';
 

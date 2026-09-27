@@ -134,6 +134,8 @@ final class RateAuthorityDriftMonitorContractTest extends TestCase
         $this->assertSame('AUTHORITY_PRICE_DRIFT', $fn->invoke($m, 'PROFIT_APPLICATION_MISMATCH'));
         $this->assertSame('OWNERSHIP_INVARIANT', $fn->invoke($m, 'REGISTRY_REENTRY'));
         $this->assertSame('PROVIDER_UNAVAILABLE', $fn->invoke($m, 'BESTCHANGE_MAPPING_MISMATCH'));
+        $this->assertSame('PROVIDER_UNAVAILABLE', $fn->invoke($m, 'BESTCHANGE_POSITION_INSUFFICIENT_DEPTH'));
+        $this->assertSame('PROVIDER_UNAVAILABLE', $fn->invoke($m, 'BESTCHANGE_PARSER_ERROR'));
     }
 
     public function test_systemic_collapse_below_threshold_passthrough(): void
@@ -196,7 +198,75 @@ final class RateAuthorityDriftMonitorContractTest extends TestCase
         $this->assertTrue($h['healthy']);
         $this->assertSame('healthy', $h['status']);
         $this->assertLessThan(900, (int) $h['age_seconds']);
+        $this->assertFalse($h['book_age_stale']);
         Carbon::setTestNow();
+    }
+
+    public function test_fresh_heartbeat_plus_position_insufficient_depth_not_book_stale(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-09-27 16:53:04', 'UTC'));
+        $bc = (object) [
+            'status' => 1,
+            'is_error_parser' => 1,
+            'rate_value' => '1.23',
+            'position_num' => '6',
+            'updated_at' => '2026-09-27 16:50:00', // fresh
+            'explain_payload' => json_encode([
+                'reason' => 'position_insufficient_depth',
+                'available_offers' => 5,
+                'requested_position' => 6,
+            ]),
+        ];
+        $h = BestChangeMarketBaseHealth::evaluateFromRow($bc, 2239, 1800, false);
+        $this->assertFalse($h['healthy']);
+        $this->assertFalse($h['book_age_stale']); // BOOK_STALE=NO
+        $this->assertTrue($h['is_error_parser']); // PARSER_ERROR=YES
+        $this->assertSame('position_insufficient_depth', $h['reason']);
+        $this->assertSame(5, $h['book_depth']);
+        Carbon::setTestNow();
+    }
+
+    public function test_operator_alert_bodies_are_class_specific(): void
+    {
+        $m = new RateAuthorityDriftMonitor();
+        $stale = $m->formatOperatorAlert([
+            'type' => 'OPEN',
+            'severity' => 'WARNING',
+            'direction_id' => 1,
+            'pair' => 'BTC→USDTTRC20',
+            'owner' => 'BESTCHANGE',
+            'root_cause' => 'BESTCHANGE_BOOK_STALE',
+            'alert_class' => 'AUTHORITY_DATA_STALE',
+            'reference_age_sec' => 2000,
+            'public_impact' => false,
+            'order_impact' => false,
+            'xml_impact' => false,
+            'action' => 'INVESTIGATE',
+        ]);
+        $this->assertStringContainsString('AUTHORITY DATA STALE', $stale);
+        $this->assertStringNotContainsString('RATE DRIFT', $stale);
+
+        $thin = $m->formatOperatorAlert([
+            'type' => 'OPEN',
+            'severity' => 'WATCH',
+            'direction_id' => 2239,
+            'pair' => 'NEO→CARDUZS',
+            'owner' => 'BESTCHANGE',
+            'root_cause' => 'BESTCHANGE_POSITION_INSUFFICIENT_DEPTH',
+            'position' => '6',
+            'book_depth' => 5,
+            'explain_reason' => 'position_insufficient_depth',
+            'book_age_stale' => false,
+            'first_bad_stage' => 'bestchange_position_depth',
+            'public_impact' => false,
+            'order_impact' => false,
+            'xml_impact' => false,
+            'action' => 'OBSERVE',
+        ]);
+        $this->assertStringContainsString('BESTCHANGE BOOK UNUSABLE', $thin);
+        $this->assertStringContainsString('position_insufficient_depth', $thin);
+        $this->assertStringContainsString('BOOK AGE STALE: NO', $thin);
+        $this->assertStringNotContainsString('RATE DRIFT', $thin);
     }
 
     public function test_bc_fixture_missing_inactive_thin_parser_error(): void

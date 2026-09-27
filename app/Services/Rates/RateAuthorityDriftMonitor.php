@@ -79,6 +79,7 @@ final class RateAuthorityDriftMonitor
                 'rate_value',
                 'position_num',
                 'updated_at',
+                'explain_payload',
             ]);
         foreach ($rows as $bc) {
             $dirId = (int) ($bc->id_direction_exchange ?? 0);
@@ -159,15 +160,33 @@ final class RateAuthorityDriftMonitor
             'UNKNOWN_TOTAL' => 0,
             'OWNERSHIP_INVARIANT_DEFECT_TOTAL' => 0,
             'PROVIDER_HEALTH_DEFECT_TOTAL' => 0,
+            // BESTCHANGE_STALE_TOTAL is an alias of BOOK_STALE only (not parser errors).
             'BESTCHANGE_STALE_TOTAL' => 0,
+            'BESTCHANGE_BOOK_STALE_TOTAL' => 0,
+            'BESTCHANGE_PARSER_ERROR_TOTAL' => 0,
+            'BESTCHANGE_POSITION_INSUFFICIENT_DEPTH_TOTAL' => 0,
+            'BESTCHANGE_POSITION_MISSING_TOTAL' => 0,
+            'BESTCHANGE_EMPTY_BOOK_TOTAL' => 0,
+            'BESTCHANGE_MAPPING_ERROR_TOTAL' => 0,
             'BOOK_AGE_MAX' => 0,
             'BOOK_AGE_GT_1800_TOTAL' => 0,
+            'ACTIONABLE_WARNING_TOTAL' => 0,
             'PUBLIC_QUOTE_DEFECT_TOTAL' => 0,
             'ORDER_ECONOMICS_DEFECT_TOTAL' => 0,
             'XML_RATE_DEFECT_TOTAL' => 0,
             'CRITICAL_IDS' => [],
             'WARNING_IDS' => [],
             'WATCH_IDS' => [],
+            'ACTIONABLE_WARNING_IDS' => [],
+            'OWNERSHIP_COUNT_DEFINITION' => 'ACTIVE_NONDELETED',
+            'OWNERSHIP_COUNT_DEFINITION_DOCUMENTED' => 'YES',
+            'OWNERSHIP_ACTIVE_NONDELETED' => [
+                'BESTCHANGE' => 0,
+                'DERIVED' => 0,
+                'ZELLE' => 0,
+                'MANUAL' => 0,
+                'OTHER' => 0,
+            ],
         ];
         $families = [];
         $open = [];
@@ -245,9 +264,43 @@ final class RateAuthorityDriftMonitor
                 }
             }
             $root = (string) ($eval['root_cause'] ?? '');
-            if ($root === 'BESTCHANGE_BOOK_STALE') {
-                $summary['BESTCHANGE_STALE_TOTAL']++;
-                $summary['PROVIDER_HEALTH_DEFECT_TOTAL']++;
+            $ownerBucket = $owner;
+            if (isset($summary['OWNERSHIP_ACTIVE_NONDELETED'][$ownerBucket])) {
+                $summary['OWNERSHIP_ACTIVE_NONDELETED'][$ownerBucket]++;
+            } else {
+                $summary['OWNERSHIP_ACTIVE_NONDELETED']['OTHER']++;
+            }
+
+            // Independent BC diagnostic counters (facts may both fire for one direction).
+            if ($owner === 'BESTCHANGE') {
+                $providerHit = false;
+                if (! empty($eval['book_age_stale'])) {
+                    $summary['BESTCHANGE_BOOK_STALE_TOTAL']++;
+                    $summary['BESTCHANGE_STALE_TOTAL']++; // alias: book-age only
+                    $providerHit = true;
+                }
+                if (! empty($eval['parser_error_fact']) || in_array($root, [
+                    'BESTCHANGE_PARSER_ERROR',
+                    'BESTCHANGE_POSITION_INSUFFICIENT_DEPTH',
+                ], true)) {
+                    $summary['BESTCHANGE_PARSER_ERROR_TOTAL']++;
+                    $providerHit = true;
+                }
+                if ($root === 'BESTCHANGE_POSITION_INSUFFICIENT_DEPTH') {
+                    $summary['BESTCHANGE_POSITION_INSUFFICIENT_DEPTH_TOTAL']++;
+                } elseif ($root === 'BESTCHANGE_MAPPING_MISMATCH') {
+                    $summary['BESTCHANGE_MAPPING_ERROR_TOTAL']++;
+                    $providerHit = true;
+                } elseif ($root === 'BESTCHANGE_BOOK_THIN') {
+                    $summary['BESTCHANGE_EMPTY_BOOK_TOTAL']++;
+                    $providerHit = true;
+                } elseif ($root === 'BESTCHANGE_POSITION_MISSING') {
+                    $summary['BESTCHANGE_POSITION_MISSING_TOTAL']++;
+                    $providerHit = true;
+                }
+                if ($providerHit) {
+                    $summary['PROVIDER_HEALTH_DEFECT_TOTAL']++;
+                }
             } elseif (str_starts_with($root, 'DERIVED_PROVIDER_') || $root === 'DERIVED_CROSS_RATE_BAD') {
                 $summary['PROVIDER_HEALTH_DEFECT_TOTAL']++;
             }
@@ -268,9 +321,16 @@ final class RateAuthorityDriftMonitor
                 foreach ($this->dedupeEvents($prevByKey, $key, $eval) as $ev) {
                     $alertEvents[] = $ev;
                 }
+                if (! empty($eval['public_impact']) || ! empty($eval['order_impact'])) {
+                    $summary['ACTIONABLE_WARNING_TOTAL']++;
+                    $summary['ACTIONABLE_WARNING_IDS'][] = (int) $eval['direction_id'];
+                }
             }
             // BESTCHANGE_BOOK_STALE WATCH rows are tracked via systemic global key only.
         }
+
+        // Document both ownership populations (do not equate them).
+        $summary['OWNERSHIP_STATUS1_INCLUDING_SOFT_DELETED'] = $this->ownershipStatus1IncludingSoftDeleted();
 
         // Collapse systemic BestChange book staleness BEFORE recovery so global open key exists.
         $collapsed = $this->collapseSystemicBestChangeStaleAlerts($alertEvents, $summary, $prevByKey);
@@ -439,20 +499,28 @@ final class RateAuthorityDriftMonitor
         $base['position'] = $health['position_num'] ?? null;
         $base['reference_age_sec'] = $health['age_seconds'] ?? null;
         $base['reference_source'] = 'bestchange_directions.rate_value';
+        $base['book_age_stale'] = (bool) ($health['book_age_stale'] ?? false);
+        $base['parser_error_fact'] = (bool) ($health['is_error_parser'] ?? false);
+        $base['book_depth'] = $health['book_depth'] ?? null;
+        $base['explain_reason'] = $health['explain_reason'] ?? null;
 
         if (!($health['healthy'] ?? false)) {
             $reason = (string) ($health['reason'] ?? 'unknown');
+            // First meaningful failure stage — do not collapse parser errors into book-age stale.
             $root = match ($reason) {
                 'stale' => 'BESTCHANGE_BOOK_STALE',
                 'link_missing' => 'BESTCHANGE_MAPPING_MISMATCH',
                 'link_inactive' => 'BC_LINK_DISABLED',
                 'non_positive_rate', 'invalid' => 'BESTCHANGE_BOOK_THIN',
-                'parser_error' => 'BESTCHANGE_BOOK_STALE',
-                default => 'BESTCHANGE_BOOK_STALE',
+                'position_insufficient_depth' => 'BESTCHANGE_POSITION_INSUFFICIENT_DEPTH',
+                'parser_error' => 'BESTCHANGE_PARSER_ERROR',
+                default => 'BESTCHANGE_PARSER_ERROR',
             };
             $stage = match ($reason) {
                 'link_missing', 'link_inactive' => 'bestchange_link',
                 'stale' => 'bestchange_book_age',
+                'position_insufficient_depth' => 'bestchange_position_depth',
+                'parser_error' => 'bestchange_parser_error',
                 default => 'bestchange_book',
             };
 
@@ -470,8 +538,11 @@ final class RateAuthorityDriftMonitor
                 $diff = $analysis['unexplained_deviation'] ?? null;
             }
 
+            // Fail-closed / non-orderable rows: operational diagnostic, not customer CRITICAL.
+            $sev = $exportOff ? self::SEVERITY_WATCH : self::SEVERITY_WARNING;
+
             return $this->finalize(array_merge($base, [
-                'severity' => $exportOff ? self::SEVERITY_WATCH : self::SEVERITY_WARNING,
+                'severity' => $sev,
                 'root_cause' => $root,
                 'first_bad_stage' => $stage,
                 'expected_final' => $expected,
@@ -825,6 +896,8 @@ final class RateAuthorityDriftMonitor
         return match (true) {
             str_contains($root, 'BOOK_STALE'), str_contains($root, 'AUTHORITY_STALE'), str_contains($root, 'STORED_COURSE_STALE'),
             str_contains($root, 'PROVIDER_STALE') => 'AUTHORITY_DATA_STALE',
+            str_contains($root, 'POSITION_INSUFFICIENT'), str_contains($root, 'PARSER_ERROR'),
+            str_contains($root, 'BOOK_THIN'), str_contains($root, 'POSITION_MISSING') => 'PROVIDER_UNAVAILABLE',
             str_contains($root, 'PROVIDER_BREAK'), str_contains($root, 'PROVIDER_UNAVAILABLE'),
             str_contains($root, 'MAPPING_MISMATCH'), str_contains($root, 'LINK_DISABLED') => 'PROVIDER_UNAVAILABLE',
             str_contains($root, 'OWNER_CHANGED'), str_contains($root, 'REGISTRY_REENTRY') => 'OWNERSHIP_INVARIANT',
@@ -834,6 +907,31 @@ final class RateAuthorityDriftMonitor
             $root === '' || $root === 'UNKNOWN' => 'UNKNOWN',
             default => 'AUTHORITY_PRICE_DRIFT',
         };
+    }
+
+    /**
+     * Non-canonical companion count: status=1 including soft-deleted rows.
+     * Do not compare to ACTIVE_NONDELETED as if identical.
+     *
+     * @return array{BESTCHANGE:int,DERIVED:int,ZELLE:int,MANUAL:int,OTHER:int}
+     */
+    private function ownershipStatus1IncludingSoftDeleted(): array
+    {
+        $out = ['BESTCHANGE' => 0, 'DERIVED' => 0, 'ZELLE' => 0, 'MANUAL' => 0, 'OTHER' => 0];
+        $rows = DB::table('direction_exchange')
+            ->where('status', 1)
+            ->selectRaw('parser_source_name, COUNT(*) AS c')
+            ->groupBy('parser_source_name')
+            ->pluck('c', 'parser_source_name');
+        foreach ($rows as $src => $c) {
+            $bucket = $this->normalizeOwner((string) $src);
+            if (! isset($out[$bucket])) {
+                $bucket = 'OTHER';
+            }
+            $out[$bucket] += (int) $c;
+        }
+
+        return $out;
     }
 
     private function normalizeOwner(string $raw): string
@@ -1106,6 +1204,57 @@ final class RateAuthorityDriftMonitor
             ]);
         }
 
+        $root = (string) ($event['root_cause'] ?? 'UNKNOWN');
+        if ($root === 'BESTCHANGE_BOOK_STALE' || ($event['alert_class'] ?? '') === 'AUTHORITY_DATA_STALE' && str_contains($root, 'STALE') && ! str_contains($root, 'PARSER')) {
+            return implode("\n", [
+                '⏱ AUTHORITY DATA STALE — '.($event['severity'] ?? 'WARNING'),
+                '',
+                'ID: '.($event['direction_id'] ?? ''),
+                'PAIR: '.($event['pair'] ?? ''),
+                'OWNER: '.($event['owner'] ?? ''),
+                '',
+                'LAST SUCCESSFUL INGEST AGE (sec): '.($event['reference_age_sec'] ?? $event['reference_age'] ?? 'n/a'),
+                'FRESHNESS THRESHOLD: 1800s (warning 1200s / target ~900s)',
+                'REFERENCE: '.($event['reference_source'] ?? 'bestchange_directions.updated_at'),
+                '',
+                'PUBLIC IMPACT: '.(($event['public_impact'] ?? false) ? 'YES' : 'NO'),
+                'ORDER IMPACT: '.(($event['order_impact'] ?? false) ? 'YES' : 'NO'),
+                'XML IMPACT: '.(($event['xml_impact'] ?? false) ? 'YES' : 'NO'),
+                '',
+                'ACTION: '.($event['action'] ?? 'INVESTIGATE'),
+                'NO AUTO RATE CHANGE.',
+            ]);
+        }
+
+        if (in_array($root, [
+            'BESTCHANGE_PARSER_ERROR',
+            'BESTCHANGE_POSITION_INSUFFICIENT_DEPTH',
+            'BESTCHANGE_BOOK_THIN',
+            'BESTCHANGE_MAPPING_MISMATCH',
+        ], true)) {
+            return implode("\n", [
+                '⚠ BESTCHANGE BOOK UNUSABLE — '.($event['severity'] ?? 'WARNING'),
+                '',
+                'ID: '.($event['direction_id'] ?? ''),
+                'PAIR: '.($event['pair'] ?? ''),
+                'OWNER: '.($event['owner'] ?? ''),
+                '',
+                'CONFIGURED POSITION: '.($event['position'] ?? 'n/a'),
+                'VALID DEPTH: '.($event['book_depth'] ?? 'n/a'),
+                'REASON: '.($event['explain_reason'] ?? $root),
+                'ROOT CAUSE: '.$root,
+                'FIRST BAD STAGE: '.($event['first_bad_stage'] ?? 'bestchange_parser'),
+                'BOOK AGE STALE: '.((! empty($event['book_age_stale'])) ? 'YES' : 'NO'),
+                '',
+                'PUBLIC IMPACT: '.(($event['public_impact'] ?? false) ? 'YES' : 'NO'),
+                'ORDER IMPACT: '.(($event['order_impact'] ?? false) ? 'YES' : 'NO'),
+                'XML IMPACT: '.(($event['xml_impact'] ?? false) ? 'YES' : 'NO'),
+                '',
+                'SAFE ACTION: '.($event['action'] ?? 'OBSERVE'),
+                'NO AUTO RATE CHANGE. NO AUTO POSITION CHANGE.',
+            ]);
+        }
+
         return implode("\n", [
             '🚨 RATE DRIFT — '.($event['severity'] ?? 'WARNING'),
             '',
@@ -1116,19 +1265,16 @@ final class RateAuthorityDriftMonitor
             'CURRENT: '.($event['current_final'] ?? ''),
             'EXPECTED: '.($event['expected_final'] ?? ''),
             'DIFF: '.(($event['diff_percent'] !== null) ? (sprintf('%+.2f%%', (float) $event['diff_percent'])) : 'n/a'),
+            'REFERENCE: '.($event['reference_source'] ?? 'n/a'),
             '',
-            'ROOT CAUSE:',
-            (string) ($event['root_cause'] ?? 'UNKNOWN'),
-            '',
-            'FIRST BAD STAGE:',
-            (string) ($event['first_bad_stage'] ?? 'unknown'),
+            'ROOT CAUSE: '.$root,
+            'FIRST BAD STAGE: '.($event['first_bad_stage'] ?? 'unknown'),
             '',
             'PUBLIC IMPACT: '.(($event['public_impact'] ?? false) ? 'YES' : 'NO'),
             'ORDER IMPACT: '.(($event['order_impact'] ?? false) ? 'YES' : 'NO'),
             'XML IMPACT: '.(($event['xml_impact'] ?? false) ? 'YES' : 'NO'),
             '',
-            'ACTION:',
-            (string) ($event['action'] ?? 'INVESTIGATE'),
+            'ACTION: '.($event['action'] ?? 'INVESTIGATE'),
             'NO AUTO RATE CHANGE.',
         ]);
     }
