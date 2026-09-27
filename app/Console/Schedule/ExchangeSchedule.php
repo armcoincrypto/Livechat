@@ -305,6 +305,15 @@ class ExchangeSchedule
             ->withoutOverlapping(5)
             ->appendOutputTo(storage_path('logs/rates_ownership_drift.log'));
 
+        // Owner-authority rate drift (read-only; never mutates economics).
+        // Per-job withoutOverlapping only — no global flock. Must not block BC/merchant.
+        $schedule->command('rates:authority-drift-monitor --format=summary')
+            ->everyFiveMinutes()
+            ->onOneServer()
+            ->withoutOverlapping(8)
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/rates_authority_drift_monitor.log'));
+
         $schedule->command('orders:waiting-deposit-health --format=json')
             ->everyFiveMinutes()
             ->onOneServer()
