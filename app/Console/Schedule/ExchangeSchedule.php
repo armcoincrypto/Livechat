@@ -63,7 +63,10 @@ class ExchangeSchedule
         // Автоматическое обновление карты сайта (каждый день)
         $schedule->command('update:sitemap')->daily();
 
-        // Обновление деталей мерчанта каждую минуту
+        // Inbound payment detector (NOT outbound merchant webhooks). Serial
+        // gateway HTTP over open auto-check tasks; often multi-minute.
+        // Must NOT hold cron schedule-run.lock via FD inheritance — see
+        // scripts/ops/run_schedule_run_once.sh (Wave3 lock hygiene).
         $schedule->command('merchant:webhook')
             ->everyMinute()
             ->withoutOverlapping(55)
