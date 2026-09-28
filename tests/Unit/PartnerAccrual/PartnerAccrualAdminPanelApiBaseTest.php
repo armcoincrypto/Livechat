@@ -62,9 +62,21 @@ final class PartnerAccrualAdminPanelApiBaseTest extends TestCase
     public function test_blade_includes_cache_busted_panel_script(): void
     {
         $blade = $this->bladeSource();
-        $this->assertStringContainsString(
-            'admin-partner-accrual-panel.js?v=20260928-frontend-api',
+        $this->assertMatchesRegularExpression(
+            '/admin-partner-accrual-panel\.js\?v=20260928-[a-z0-9-]+/',
             $blade
         );
+    }
+
+    public function test_panel_detects_vue_edit_user_query_param(): void
+    {
+        $src = $this->panelSource();
+        $this->assertStringContainsString("edit_user", $src);
+        $this->assertStringContainsString('URLSearchParams', $src);
+        $this->assertStringContainsString('.p-dialog .p-dialog-content', $src);
+        $this->assertStringContainsString('openedFromEditUserQuery', $src);
+        $this->assertStringContainsString('dialogContentEl', $src);
+        $this->assertStringContainsString('loadInFlight', $src);
+        $this->assertStringContainsString('lastSummary', $src);
     }
 }

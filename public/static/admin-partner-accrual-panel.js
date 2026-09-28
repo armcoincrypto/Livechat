@@ -10,6 +10,9 @@
 
   /** Bound preview state — invalidated when operator edits inputs. */
   var previewState = null; // { seed, fingerprint, exact_sum_ok }
+  var lastUserId = null;
+  var lastSummary = null;
+  var loadInFlight = null;
 
   function formFingerprint() {
     var budget = (d.getElementById('exs-pa-budget') || {}).value || '';
@@ -43,9 +46,24 @@
   }
 
   function userIdFromLocation() {
+    // Dedicated deep-link: /users/436 or #/.../users/436
     var m = (w.location.hash || '').match(/users\/(\d+)/i)
       || (w.location.pathname || '').match(/users\/(\d+)/i);
-    return m ? m[1] : null;
+    if (m) return m[1];
+    // Vue users list opens the editor as a right Dialog via ?edit_user=<id>
+    // (see users-XtT9HQo8.js). Without this, the panel never mounts on the
+    // standard "Редактирование пользователя" surface.
+    try {
+      var q = new URLSearchParams(w.location.search || '');
+      if (q.get('edit_user')) return String(q.get('edit_user'));
+      var hash = w.location.hash || '';
+      var qi = hash.indexOf('?');
+      if (qi >= 0) {
+        var hq = new URLSearchParams(hash.slice(qi + 1));
+        if (hq.get('edit_user')) return String(hq.get('edit_user'));
+      }
+    } catch (e) {}
+    return null;
   }
 
   function panelEl() {
@@ -60,17 +78,59 @@
     return el;
   }
 
+  function openedFromEditUserQuery() {
+    try {
+      if (new URLSearchParams(w.location.search || '').get('edit_user')) return true;
+      var hash = w.location.hash || '';
+      var qi = hash.indexOf('?');
+      if (qi >= 0 && new URLSearchParams(hash.slice(qi + 1)).get('edit_user')) return true;
+    } catch (e) {}
+    return false;
+  }
+
+  function dialogContentEl() {
+    var nodes = d.querySelectorAll('.p-dialog .p-dialog-content, .p-drawer .p-drawer-content');
+    var i;
+    for (i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      if (n.offsetParent !== null || (n.getClientRects && n.getClientRects().length)) return n;
+    }
+    return nodes.length ? nodes[nodes.length - 1] : null;
+  }
+
   function place(el) {
-    if (el.parentNode && el.dataset.placed === '1') return;
+    // Vue user editor is a right Dialog. Do not pin the panel to #app first —
+    // that leaves it outside (and behind) the modal. Re-place on every tick.
+    if (openedFromEditUserQuery()) {
+      var dialogContent = dialogContentEl();
+      if (!dialogContent) {
+        el.style.display = 'none';
+        return;
+      }
+      if (el.parentNode !== dialogContent) {
+        dialogContent.insertBefore(el, dialogContent.firstChild);
+      }
+      el.style.display = '';
+      el.dataset.placed = '1';
+      return;
+    }
     var app = d.getElementById('app') || d.body;
     var anchor = d.getElementById('exs-user-lifecycle-panel');
+    var targetParent;
+    var beforeNode = null;
     if (anchor && anchor.parentNode) {
-      anchor.parentNode.insertBefore(el, anchor.nextSibling);
+      targetParent = anchor.parentNode;
+      beforeNode = anchor.nextSibling;
     } else {
-      var first = app.firstChild;
-      if (first) app.insertBefore(el, first);
-      else app.appendChild(el);
+      targetParent = app;
+      beforeNode = app.firstChild;
     }
+    if (el.parentNode !== targetParent) {
+      if (beforeNode && beforeNode.parentNode === targetParent) targetParent.insertBefore(el, beforeNode);
+      else if (targetParent.firstChild) targetParent.insertBefore(el, targetParent.firstChild);
+      else targetParent.appendChild(el);
+    }
+    el.style.display = '';
     el.dataset.placed = '1';
   }
 
@@ -357,38 +417,61 @@
   function load(userId) {
     var el = panelEl();
     place(el);
+    if (lastSummary && String(lastUserId) === String(userId)) {
+      renderSummary(el, lastSummary, userId);
+      return;
+    }
+    if (loadInFlight === String(userId)) {
+      el.innerHTML = '<div style="font-weight:700">Ежемесячное партнёрское начисление</div><div>Загрузка…</div>';
+      return;
+    }
+    loadInFlight = String(userId);
     el.innerHTML = '<div style="font-weight:700">Ежемесячное партнёрское начисление</div><div>Загрузка…</div>';
     api('GET', '/account/users/' + userId + '/partner-accrual').then(function (res) {
+      loadInFlight = null;
+      var node = panelEl();
+      place(node);
       if (res.http === 503 || (res.body && res.body.code === 'FEATURE_DISABLED')) {
-        renderDisabled(el, res.body && res.body.message);
+        renderDisabled(node, res.body && res.body.message);
         return;
       }
       if (res.http === 403) {
-        renderDisabled(el, 'Недостаточно прав');
+        renderDisabled(node, 'Недостаточно прав');
         return;
       }
       if (res.body.status !== 0) {
-        renderDisabled(el, res.body.message || 'Ошибка');
+        renderDisabled(node, res.body.message || 'Ошибка');
         return;
       }
-      renderSummary(el, res.body.data, userId);
+      lastUserId = String(userId);
+      lastSummary = res.body.data;
+      renderSummary(node, lastSummary, userId);
     }).catch(function () {
-      renderDisabled(el, 'Не удалось загрузить блок начисления');
+      loadInFlight = null;
+      renderDisabled(panelEl(), 'Не удалось загрузить блок начисления');
     });
   }
 
   function tick() {
     var id = userIdFromLocation();
-    var el = d.getElementById('exs-partner-accrual-panel');
     if (!id) {
-      if (el) el.style.display = 'none';
+      var hidden = d.getElementById('exs-partner-accrual-panel');
+      if (hidden) hidden.style.display = 'none';
       return;
     }
-    if (el) el.style.display = '';
-    if (!el || el.dataset.userId !== String(id)) {
+    var el = panelEl();
+    place(el);
+    if (el.dataset.userId !== String(id)) {
+      lastSummary = null;
+      lastUserId = null;
+      el.dataset.userId = String(id);
       load(id);
-      var p = panelEl();
-      p.dataset.userId = String(id);
+      return;
+    }
+    if (lastSummary && String(lastUserId) === String(id)) {
+      if (el.innerHTML.indexOf('Загрузка') !== -1 || !el.innerText) {
+        renderSummary(el, lastSummary, id);
+      }
     }
   }
 
@@ -396,5 +479,5 @@
   w.addEventListener('popstate', tick);
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', tick);
   else tick();
-  setInterval(tick, 2500);
+  setInterval(tick, 800);
 })(window, document);
