@@ -113,6 +113,9 @@ trait ConfiguresAttributes
                 'direction_reserve',
                 'floating_fee',
                 'fix_fee',
+                // Required for CTX_CATALOG rate semantics: missing → treated as 0,
+                // zeroes commercial fee, falsely inflates RubFamily unexplained.
+                'is_type_rate',
             ])
             ->where('status', 1)
             ->where('is_error_rate', 0)

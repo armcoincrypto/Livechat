@@ -24,6 +24,48 @@ final class CanonicalDirectionEligibility
     public const CTX_ORDER = 'ORDER';
     public const CTX_BESTCHANGE_EXPORT = 'BESTCHANGE_EXPORT';
 
+    /**
+     * Columns that must be present on a DirectionExchange row (or select list)
+     * before CTX_CATALOG / rate-eligibility evaluation. Omitting is_type_rate
+     * caused false QUARANTINE_REQUIRED (commercial fee treated as disabled).
+     *
+     * @var list<string>
+     */
+    public const CTX_CATALOG_REQUIRED_PROJECTION_FIELDS = [
+        'id',
+        'id_currency1',
+        'id_currency2',
+        'status',
+        'deleted_at',
+        'course_value',
+        'profit',
+        'floating_fee',
+        'fix_fee',
+        'is_type_rate',
+        'parser_source_name',
+        'allow_export',
+        'is_error_rate',
+        'type_reserve',
+        'direction_reserve',
+    ];
+
+    /**
+     * @param  list<string>  $selectedFields
+     * @return list<string> missing required field names
+     */
+    public static function missingCatalogProjectionFields(array $selectedFields): array
+    {
+        $selected = array_fill_keys($selectedFields, true);
+        $missing = [];
+        foreach (self::CTX_CATALOG_REQUIRED_PROJECTION_FIELDS as $field) {
+            if (! isset($selected[$field])) {
+                $missing[] = $field;
+            }
+        }
+
+        return $missing;
+    }
+
     public function __construct(
         private readonly RateDirectionEligibility $eligibility,
     ) {

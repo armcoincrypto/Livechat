@@ -30,6 +30,7 @@ final class PublicQuoteUnavailableGateTest extends TestCase
         $this->assertStringContainsString('CanonicalDirectionEligibility::CTX_CATALOG', $src);
         $this->assertStringContainsString('catalogEligibility->evaluate', $src);
         $this->assertStringContainsString('never advertise a direction the quote/order surface rejects', $src);
+        $this->assertStringContainsString("'is_type_rate'", $src);
     }
 
     public function test_monitor_alert_class_for_public_quote_unavailable(): void
