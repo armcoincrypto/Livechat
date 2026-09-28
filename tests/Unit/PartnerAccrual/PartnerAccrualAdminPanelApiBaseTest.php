@@ -79,4 +79,21 @@ final class PartnerAccrualAdminPanelApiBaseTest extends TestCase
         $this->assertStringContainsString('loadInFlight', $src);
         $this->assertStringContainsString('lastSummary', $src);
     }
+
+    public function test_panel_csrf_follows_vue_axios_xsrf_cookie_pattern(): void
+    {
+        $src = $this->panelSource();
+        $this->assertStringContainsString('function applyCsrfHeaders', $src);
+        $this->assertStringContainsString("XSRF-TOKEN=", $src);
+        $this->assertStringContainsString('decodeURIComponent', $src);
+        $this->assertStringContainsString("headers['X-XSRF-TOKEN']", $src);
+        $this->assertStringContainsString("credentials: 'same-origin'", $src);
+        $this->assertStringContainsString('applyCsrfHeaders({', $src);
+        // Must not hard-wire only the stale SPA-shell meta token on every fetch.
+        $this->assertDoesNotMatchRegularExpression(
+            "/headers:\\s*\\{[\\s\\S]*'X-CSRF-TOKEN':\\s*csrf\\(\\)/",
+            $src,
+            'Panel must not send only meta X-CSRF-TOKEN (stales after SPA token rotation)'
+        );
+    }
 }

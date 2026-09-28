@@ -232,7 +232,8 @@ final class PartnerAccrualWaveCTest extends TestCase
         $this->assertStringContainsString('partner-accrual/preview', $js);
         $this->assertStringContainsString('Dry-run', $js);
         $this->assertStringContainsString("confirm: 'CANCEL'", $js);
-        $this->assertStringContainsString('X-CSRF-TOKEN', $js);
+        $this->assertStringContainsString('X-XSRF-TOKEN', $js);
+        $this->assertStringContainsString('applyCsrfHeaders', $js);
         $this->assertStringContainsString('FEATURE_DISABLED', $js);
     }
 

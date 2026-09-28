@@ -40,9 +40,28 @@
     return m ? '/' + m[1] : '/iexadmin';
   }
 
-  function csrf() {
+  /**
+   * Canonical iEX admin mutation CSRF (matches Vue Axios withXSRFToken):
+   * prefer fresh XSRF-TOKEN cookie → X-XSRF-TOKEN (URL-decoded).
+   * Meta csrf-token is rendered once with the SPA shell and goes stale after
+   * session/token rotation while the Dialog stays open — that caused Preview/Create 419.
+   * Do not send stale X-CSRF-TOKEN alongside a valid X-XSRF-TOKEN: Laravel prefers X-CSRF-TOKEN.
+   */
+  function applyCsrfHeaders(headers) {
+    try {
+      var parts = (d.cookie || '').split('; ');
+      var i;
+      for (i = 0; i < parts.length; i++) {
+        if (parts[i].indexOf('XSRF-TOKEN=') === 0) {
+          headers['X-XSRF-TOKEN'] = decodeURIComponent(parts[i].slice('XSRF-TOKEN='.length));
+          return headers;
+        }
+      }
+    } catch (e) {}
     var m = d.querySelector('meta[name="csrf-token"]');
-    return m ? m.getAttribute('content') : '';
+    var meta = m ? m.getAttribute('content') : '';
+    if (meta) headers['X-CSRF-TOKEN'] = meta;
+    return headers;
   }
 
   function userIdFromLocation() {
@@ -145,11 +164,10 @@
     var opts = {
       method: method,
       credentials: 'same-origin',
-      headers: {
+      headers: applyCsrfHeaders({
         'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': csrf()
-      }
+        'X-Requested-With': 'XMLHttpRequest'
+      })
     };
     if (body !== undefined) {
       opts.headers['Content-Type'] = 'application/json';
