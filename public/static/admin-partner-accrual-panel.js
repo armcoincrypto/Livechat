@@ -95,7 +95,7 @@
       opts.headers['Content-Type'] = 'application/json';
       opts.body = JSON.stringify(body);
     }
-    return fetch(adminPrefix() + path, opts).then(function (r) {
+    return fetch(adminPrefix() + '/frontend-api' + path, opts).then(function (r) {
       return r.json().then(function (j) { return { http: r.status, body: j }; });
     });
   }
