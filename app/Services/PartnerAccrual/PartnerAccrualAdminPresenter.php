@@ -220,6 +220,7 @@ final class PartnerAccrualAdminPresenter
             'sum_display' => PartnerAccrualMoneyPresenter::display($preview['sum']),
             'exact_sum_ok' => AccrualMoney::eq(AccrualMoney::of($preview['sum']), AccrualMoney::of($preview['total_amount'])),
             'schedule' => $schedule,
+            'schedule_seed' => (string) ($preview['schedule_seed'] ?? ''),
             'mutates_db' => false,
             'frontend_authoritative_money' => false,
         ];

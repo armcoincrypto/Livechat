@@ -55,6 +55,7 @@ final class PartnerAccrualWaveCTest extends TestCase
         config(['partner_accrual.enabled' => true]);
         $preview = new PartnerAccrualPlanPreviewService();
         $raw = $preview->preview([
+            'user_id' => 1,
             'total_amount' => '300.00',
             'start_date' => '2026-10-01',
             'end_date' => '2026-10-31',
@@ -62,6 +63,8 @@ final class PartnerAccrualWaveCTest extends TestCase
         ]);
         $fmt = $this->presenter->formatPreview($raw);
         $this->assertTrue($fmt['exact_sum_ok']);
+        $this->assertNotSame('', $fmt['schedule_seed']);
+        $this->assertStringStartsWith('v1.', $fmt['schedule_seed']);
         $this->assertSame('300.00', $fmt['total_display']);
         $this->assertSame('300.00', $fmt['sum_display']);
         $this->assertFalse($fmt['frontend_authoritative_money']);
@@ -124,6 +127,7 @@ final class PartnerAccrualWaveCTest extends TestCase
             'total_amount' => '10.00',
             'start_date' => '2026-10-01',
             'end_date' => '2026-10-05',
+            'schedule_seed' => str_repeat('a', 64),
         ]);
         $admin = $this->makeUser();
         $req->setUserResolver(fn () => $admin);

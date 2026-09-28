@@ -11,6 +11,7 @@ use App\Models\PartnerAccrualPlan;
 use App\Models\PartnerAccrualPlanEvent;
 use App\Models\User;
 use App\Services\PartnerAccrual\Exceptions\AccountingInvariantViolation;
+use App\Services\PartnerAccrual\Exceptions\InvalidScheduleSeed;
 use App\Services\PartnerAccrual\Exceptions\PlanNotActive;
 use Illuminate\Support\Facades\DB;
 
@@ -22,6 +23,7 @@ final class PartnerAccrualPlanLifecycleService
     public function __construct(
         private readonly PartnerAccrualPlanGenerator $generator = new PartnerAccrualPlanGenerator(),
         private readonly PartnerAccrualPlanGuard $guard = new PartnerAccrualPlanGuard(),
+        private readonly PartnerAccrualScheduleSeedBinder $seedBinder = new PartnerAccrualScheduleSeedBinder(),
     ) {}
 
     /**
@@ -48,12 +50,27 @@ final class PartnerAccrualPlanLifecycleService
         $currency = strtoupper(trim((string) ($input['currency_code'] ?? PartnerAccrualCurrency::V1_CODE)));
         PartnerAccrualCurrency::assertSupported($currency);
 
+        $token = isset($input['schedule_seed']) ? trim((string) $input['schedule_seed']) : '';
+        if ($token === '') {
+            throw InvalidScheduleSeed::message('required — preview then create with the returned schedule_seed');
+        }
+        $rngNonce = $this->seedBinder->resolveRngNonce($token, [
+            'user_id' => (int) $input['user_id'],
+            'total_amount' => (string) $input['total_amount'],
+            'start_date' => (string) $input['start_date'],
+            'end_date' => (string) $input['end_date'],
+            'currency_code' => $currency,
+            'variance_percent' => $input['variance_percent'] ?? null,
+            'min_installment' => $input['min_installment'] ?? null,
+            'max_installment' => $input['max_installment'] ?? null,
+        ]);
+
         $generated = $this->generator->generate([
             'total_amount' => $input['total_amount'],
             'start_date' => $input['start_date'],
             'end_date' => $input['end_date'],
             'currency_code' => $currency,
-            'schedule_seed' => $input['schedule_seed'] ?? null,
+            'schedule_seed' => $rngNonce,
             'min_installment' => $input['min_installment'] ?? null,
             'max_installment' => $input['max_installment'] ?? null,
             'variance_percent' => $input['variance_percent'] ?? null,

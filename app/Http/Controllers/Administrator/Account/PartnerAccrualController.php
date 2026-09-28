@@ -9,6 +9,7 @@ use App\Models\PartnerAccrualPlan;
 use App\Models\User;
 use App\Services\PartnerAccrual\Exceptions\CurrencyNotSupported;
 use App\Services\PartnerAccrual\Exceptions\GeneratorConstraintViolation;
+use App\Services\PartnerAccrual\Exceptions\InvalidScheduleSeed;
 use App\Services\PartnerAccrual\Exceptions\OverlappingPlanExists;
 use App\Services\PartnerAccrual\Exceptions\PartnerAccrualException;
 use App\Services\PartnerAccrual\PartnerAccrualAdminPresenter;
@@ -82,7 +83,7 @@ final class PartnerAccrualController extends Controller
             $formatted['end_date'] = (string) $request->input('end_date');
 
             return response()->json(['status' => 0, 'data' => $formatted]);
-        } catch (CurrencyNotSupported|GeneratorConstraintViolation $e) {
+        } catch (InvalidScheduleSeed|CurrencyNotSupported|GeneratorConstraintViolation $e) {
             return $this->fail($e->codeName(), $e->getMessage(), 422);
         }
     }
@@ -118,6 +119,15 @@ final class PartnerAccrualController extends Controller
             );
         }
 
+        $seed = trim((string) $request->input('schedule_seed', ''));
+        if ($seed === '' || strlen($seed) < 32) {
+            return $this->fail(
+                'INVALID_SCHEDULE_SEED',
+                'Invalid partner accrual schedule_seed: required — preview then create with the returned schedule_seed',
+                422
+            );
+        }
+
         try {
             $plan = $this->lifecycle->create([
                 'user_id' => $userId,
@@ -126,10 +136,12 @@ final class PartnerAccrualController extends Controller
                 'total_amount' => (string) $request->input('total_amount'),
                 'start_date' => (string) $request->input('start_date'),
                 'end_date' => (string) $request->input('end_date'),
+                'schedule_seed' => $seed,
                 'created_by_admin_id' => (int) $request->user()->id,
                 'metadata' => [
                     'created_via' => 'admin_partner_accrual',
                     'ip' => $request->ip(),
+                    'schedule_seed_bound' => true,
                 ],
             ], activate: true);
 
@@ -140,6 +152,8 @@ final class PartnerAccrualController extends Controller
             ], 201);
         } catch (OverlappingPlanExists $e) {
             return $this->fail($e->codeName(), $e->getMessage(), 409);
+        } catch (InvalidScheduleSeed $e) {
+            return $this->fail($e->codeName(), $e->getMessage(), 422);
         } catch (CurrencyNotSupported|GeneratorConstraintViolation $e) {
             return $this->fail($e->codeName(), $e->getMessage(), 422);
         } catch (PartnerAccrualException $e) {

@@ -8,6 +8,27 @@
   if (w.__exsPartnerAccrualPanel) return;
   w.__exsPartnerAccrualPanel = true;
 
+  /** Bound preview state — invalidated when operator edits inputs. */
+  var previewState = null; // { seed, fingerprint, exact_sum_ok }
+
+  function formFingerprint() {
+    var budget = (d.getElementById('exs-pa-budget') || {}).value || '';
+    var start = (d.getElementById('exs-pa-start') || {}).value || '';
+    var end = (d.getElementById('exs-pa-end') || {}).value || '';
+    return ['USD', String(budget).trim(), String(start).trim(), String(end).trim()].join('|');
+  }
+
+  function invalidatePreview(reason) {
+    previewState = null;
+    var createBtn = d.getElementById('exs-pa-create');
+    if (createBtn) createBtn.disabled = true;
+    var box = d.getElementById('exs-pa-preview');
+    if (box && reason) {
+      box.innerHTML = '<span style="color:#9a3412">' + reason + '</span>';
+    }
+  }
+
+
   function adminPrefix() {
     var cfg = w.adminConfig || {};
     var p = cfg.adminPath || cfg.admin_path || '';
@@ -86,6 +107,7 @@
   }
 
   function renderSummary(el, data, userId) {
+    previewState = null;
     var plan = data.plan;
     var elig = data.user_eligibility || {};
     var bal = data.current_partner_balance || {};
@@ -195,6 +217,17 @@
         mutate('POST', '/account/users/partner-accrual/plans/' + plan.id + '/cancel', { confirm: 'CANCEL' }, userId);
       }
     };
+    ['exs-pa-budget', 'exs-pa-start', 'exs-pa-end'].forEach(function (id) {
+      var node = d.getElementById(id);
+      if (!node || node.dataset.staleBound === '1') return;
+      node.dataset.staleBound = '1';
+      node.addEventListener('input', function () {
+        if (previewState) invalidatePreview('Параметры изменились — нужен новый предпросмотр');
+      });
+      node.addEventListener('change', function () {
+        if (previewState) invalidatePreview('Параметры изменились — нужен новый предпросмотр');
+      });
+    });
   }
 
   function doPreview(userId) {
@@ -219,6 +252,17 @@
         return;
       }
       var p = res.body.data;
+      if (!p.schedule_seed) {
+        previewState = null;
+        if (createBtn) createBtn.disabled = true;
+        setMsg('Предпросмотр без schedule_seed — создание запрещено');
+        return;
+      }
+      previewState = {
+        seed: String(p.schedule_seed),
+        fingerprint: formFingerprint(),
+        exact_sum_ok: !!p.exact_sum_ok
+      };
       var rows = (p.schedule || []).slice(0, 8).map(function (r) {
         return r.scheduled_for + ': ' + money(r.amount_display);
       }).join('<br>');
@@ -228,22 +272,41 @@
           '<b>Платежей:</b> ' + p.installment_count + ' · ' +
           '<b>Сумма:</b> ' + money(p.sum_display) + ' USD · ' +
           '<b>Средн./мин/макс:</b> ' + money(p.average_display) + ' / ' + money(p.min_display) + ' / ' + money(p.max_display) +
-          '<div style="margin-top:6px">' + rows + (p.schedule && p.schedule.length > 8 ? '<br>…' : '') + '</div>';
+          '<div style="margin-top:6px">' + rows + (p.schedule && p.schedule.length > 8 ? '<br>…' : '') + '</div>' +
+          '<div style="margin-top:6px;color:#64748b;font-size:11px">schedule_seed связан с этим предпросмотром</div>';
       }
       if (createBtn) createBtn.disabled = !p.exact_sum_ok;
-      setMsg(p.exact_sum_ok ? 'Предпросмотр готов. Сумма точна.' : 'Сумма не совпадает');
+      setMsg(p.exact_sum_ok ? 'Предпросмотр готов. Сумма точна. Можно подтвердить.' : 'Сумма не совпадает');
     }).catch(function () { setMsg('Сеть/ошибка предпросмотра'); });
   }
 
   function doCreate(userId) {
-    if (!w.confirm('Создать активный план с сохранённым расписанием?')) return;
+    if (!previewState || !previewState.seed) {
+      setMsg('Сначала выполните предпросмотр');
+      return;
+    }
+    if (previewState.fingerprint !== formFingerprint()) {
+      invalidatePreview('Параметры изменились — нужен новый предпросмотр');
+      setMsg('Устаревший предпросмотр. Сделайте Preview снова.');
+      return;
+    }
+    if (!previewState.exact_sum_ok) {
+      setMsg('Предпросмотр с неточной суммой нельзя подтвердить');
+      return;
+    }
+    if (!w.confirm('Создать активный план с ТОЧНО этим предпросмотренным расписанием?')) return;
     var budget = (d.getElementById('exs-pa-budget') || {}).value;
     var start = (d.getElementById('exs-pa-start') || {}).value;
     var end = (d.getElementById('exs-pa-end') || {}).value;
+    var seed = previewState.seed;
+    // Prevent double-submit with same UI state.
+    var createBtn = d.getElementById('exs-pa-create');
+    if (createBtn) createBtn.disabled = true;
     mutate('POST', '/account/users/' + userId + '/partner-accrual', {
       total_amount: budget,
       start_date: start,
-      end_date: end
+      end_date: end,
+      schedule_seed: seed
     }, userId);
   }
 

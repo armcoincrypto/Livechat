@@ -48,6 +48,8 @@ final class PartnerAccrualSqliteHarness
         }
 
         self::migrateMinimalSchema();
+        // Legacy Wave B/C fixtures pass raw RNG nonces; production create requires signed v1 tokens.
+        Config::set('partner_accrual.allow_unbound_schedule_seed', true);
 
         fwrite(STDOUT, "TEST_DB_NAME={$testDbName}\n");
         fwrite(STDOUT, "PRODUCTION_DB_NAME={$productionName}\n");
