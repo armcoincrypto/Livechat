@@ -16,9 +16,8 @@
 
   function formFingerprint() {
     var budget = (d.getElementById('exs-pa-budget') || {}).value || '';
-    var start = (d.getElementById('exs-pa-start') || {}).value || '';
-    var end = (d.getElementById('exs-pa-end') || {}).value || '';
-    return ['USD', String(budget).trim(), String(start).trim(), String(end).trim()].join('|');
+    // Period is server-derived (NEXT_FULL_CALENDAR_MONTH); amount is the only operator input.
+    return ['USD', String(budget).trim()].join('|');
   }
 
   function invalidatePreview(reason) {
@@ -253,13 +252,21 @@
     return 'cursor:pointer;padding:6px 10px;border-radius:8px;border:1px solid #ef4444;background:#fef2f2;font-weight:600;color:#991b1b';
   }
 
+  function formatRuDate(iso) {
+    if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso || '—';
+    var p = iso.split('-');
+    return p[2] + '.' + p[1] + '.' + p[0];
+  }
+
   function createFormHtml() {
     return '<div style="margin-top:12px;padding-top:12px;border-top:1px dashed #fdba74">' +
-      '<div style="font-weight:700;margin-bottom:6px">Создать план (USD)</div>' +
-      '<label>Валюта <input value="USD" readonly style="width:70px;margin-left:6px"></label> ' +
-      '<label>Бюджет <input id="exs-pa-budget" type="text" inputmode="decimal" placeholder="300.00" style="width:100px;margin-left:6px"></label> ' +
-      '<label>С <input id="exs-pa-start" type="date" style="margin-left:6px"></label> ' +
-      '<label>По <input id="exs-pa-end" type="date" style="margin-left:6px"></label> ' +
+      '<div style="font-weight:700;margin-bottom:6px">Создать ежемесячное начисление</div>' +
+      '<div style="margin-bottom:8px">' +
+      '<label style="display:inline-flex;align-items:center;gap:6px">Месячный бюджет ' +
+      '<input id="exs-pa-budget" type="text" inputmode="decimal" placeholder="300.00" style="width:110px">' +
+      '<span style="color:#64748b;font-weight:600">USD</span></label></div>' +
+      '<div id="exs-pa-period-hint" style="margin-bottom:8px;color:#475569;font-size:12px">' +
+      'Период будет выбран автоматически:<br>следующий полный календарный месяц</div>' +
       '<button type="button" data-act="preview" style="' + btn() + '">Предпросмотр</button> ' +
       '<button type="button" data-act="create" style="' + btn() + '" disabled id="exs-pa-create">Подтвердить</button>' +
       '<div id="exs-pa-preview" style="margin-top:8px;font-size:12px;color:#334155"></div>' +
@@ -295,7 +302,7 @@
         mutate('POST', '/account/users/partner-accrual/plans/' + plan.id + '/cancel', { confirm: 'CANCEL' }, userId);
       }
     };
-    ['exs-pa-budget', 'exs-pa-start', 'exs-pa-end'].forEach(function (id) {
+    ['exs-pa-budget'].forEach(function (id) {
       var node = d.getElementById(id);
       if (!node || node.dataset.staleBound === '1') return;
       node.dataset.staleBound = '1';
@@ -310,16 +317,17 @@
 
   function doPreview(userId) {
     var budget = (d.getElementById('exs-pa-budget') || {}).value;
-    var start = (d.getElementById('exs-pa-start') || {}).value;
-    var end = (d.getElementById('exs-pa-end') || {}).value;
+    if (!String(budget || '').trim()) {
+      setMsg('Укажите месячный бюджет');
+      return;
+    }
     api('POST', '/account/users/' + userId + '/partner-accrual/preview', {
       total_amount: budget,
-      start_date: start,
-      end_date: end,
       currency_code: 'USD'
     }).then(function (res) {
       var box = d.getElementById('exs-pa-preview');
       var createBtn = d.getElementById('exs-pa-create');
+      var hint = d.getElementById('exs-pa-period-hint');
       if (res.http === 503) {
         setMsg(res.body.message || 'FEATURE_DISABLED');
         return;
@@ -339,19 +347,25 @@
       previewState = {
         seed: String(p.schedule_seed),
         fingerprint: formFingerprint(),
-        exact_sum_ok: !!p.exact_sum_ok
+        exact_sum_ok: !!p.exact_sum_ok,
+        start_date: p.start_date || null,
+        end_date: p.end_date || null
       };
+      if (hint) {
+        hint.innerHTML =
+          '<b>Период начисления:</b> ' + formatRuDate(p.start_date) + ' – ' + formatRuDate(p.end_date);
+      }
       var rows = (p.schedule || []).slice(0, 8).map(function (r) {
         return r.scheduled_for + ': ' + money(r.amount_display);
       }).join('<br>');
       if (box) {
         box.innerHTML =
-          '<b>Бюджет:</b> ' + money(p.total_display) + ' USD · ' +
-          '<b>Платежей:</b> ' + p.installment_count + ' · ' +
-          '<b>Сумма:</b> ' + money(p.sum_display) + ' USD · ' +
-          '<b>Средн./мин/макс:</b> ' + money(p.average_display) + ' / ' + money(p.min_display) + ' / ' + money(p.max_display) +
-          '<div style="margin-top:6px">' + rows + (p.schedule && p.schedule.length > 8 ? '<br>…' : '') + '</div>' +
-          '<div style="margin-top:6px;color:#64748b;font-size:11px">schedule_seed связан с этим предпросмотром</div>';
+          '<div style="margin-bottom:4px"><b>Период:</b> ' + formatRuDate(p.start_date) + ' – ' + formatRuDate(p.end_date) + '</div>' +
+          '<div><b>Количество начислений:</b> ' + p.installment_count + '</div>' +
+          '<div><b>Итог:</b> ' + money(p.sum_display) + ' USD</div>' +
+          '<div style="margin-top:4px;color:#64748b">Средн./мин/макс: ' +
+          money(p.average_display) + ' / ' + money(p.min_display) + ' / ' + money(p.max_display) + '</div>' +
+          '<div style="margin-top:6px">' + rows + (p.schedule && p.schedule.length > 8 ? '<br>…' : '') + '</div>';
       }
       if (createBtn) createBtn.disabled = !p.exact_sum_ok;
       setMsg(p.exact_sum_ok ? 'Предпросмотр готов. Сумма точна. Можно подтвердить.' : 'Сумма не совпадает');
@@ -374,16 +388,13 @@
     }
     if (!w.confirm('Создать активный план с ТОЧНО этим предпросмотренным расписанием?')) return;
     var budget = (d.getElementById('exs-pa-budget') || {}).value;
-    var start = (d.getElementById('exs-pa-start') || {}).value;
-    var end = (d.getElementById('exs-pa-end') || {}).value;
     var seed = previewState.seed;
     // Prevent double-submit with same UI state.
     var createBtn = d.getElementById('exs-pa-create');
     if (createBtn) createBtn.disabled = true;
+    // Period is server-authoritative; do not send operator dates.
     mutate('POST', '/account/users/' + userId + '/partner-accrual', {
       total_amount: budget,
-      start_date: start,
-      end_date: end,
       schedule_seed: seed
     }, userId);
   }

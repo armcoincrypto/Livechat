@@ -14,6 +14,7 @@ use App\Services\PartnerAccrual\Exceptions\OverlappingPlanExists;
 use App\Services\PartnerAccrual\Exceptions\PartnerAccrualException;
 use App\Services\PartnerAccrual\PartnerAccrualAdminPresenter;
 use App\Services\PartnerAccrual\PartnerAccrualDueQuery;
+use App\Services\PartnerAccrual\PartnerAccrualPeriodResolver;
 use App\Services\PartnerAccrual\PartnerAccrualPlanLifecycleService;
 use App\Services\PartnerAccrual\PartnerAccrualPlanPreviewService;
 use App\Services\PartnerAccrual\PartnerAccrualRunner;
@@ -34,6 +35,7 @@ final class PartnerAccrualController extends Controller
         private readonly PartnerAccrualPlanLifecycleService $lifecycle = new PartnerAccrualPlanLifecycleService(),
         private readonly PartnerAccrualDueQuery $dueQuery = new PartnerAccrualDueQuery(),
         private readonly PartnerAccrualRunner $runner = new PartnerAccrualRunner(),
+        private readonly PartnerAccrualPeriodResolver $periodResolver = new PartnerAccrualPeriodResolver(),
     ) {}
 
     public function userSummary(int $userId): JsonResponse
@@ -57,10 +59,10 @@ final class PartnerAccrualController extends Controller
             return $deny;
         }
 
+        // Amount-only: start/end derived server-side (NEXT_FULL_CALENDAR_MONTH).
+        // Client-supplied dates are ignored — browser is not the period authority.
         $validator = Validator::make($request->all(), [
             'total_amount' => 'required|numeric|min:0.01',
-            'start_date' => 'required|date_format:Y-m-d',
-            'end_date' => 'required|date_format:Y-m-d|after_or_equal:start_date',
             'currency_code' => 'nullable|string|in:USD',
         ]);
         if ($validator->fails()) {
@@ -70,17 +72,22 @@ final class PartnerAccrualController extends Controller
             return $this->fail('CURRENCY_NOT_SUPPORTED', 'v1 поддерживает только USD', 422);
         }
 
+        $period = $this->periodResolver->nextFullCalendarMonth();
+
         try {
             $raw = $this->previewService->preview([
                 'user_id' => $userId,
                 'currency_code' => 'USD',
                 'total_amount' => (string) $request->input('total_amount'),
-                'start_date' => (string) $request->input('start_date'),
-                'end_date' => (string) $request->input('end_date'),
+                'start_date' => $period['start_date'],
+                'end_date' => $period['end_date'],
             ]);
             $formatted = $this->presenter->formatPreview($raw);
-            $formatted['start_date'] = (string) $request->input('start_date');
-            $formatted['end_date'] = (string) $request->input('end_date');
+            $formatted['start_date'] = $period['start_date'];
+            $formatted['end_date'] = $period['end_date'];
+            $formatted['period_mode'] = $period['period_mode'];
+            $formatted['period_timezone'] = $period['timezone'];
+            $formatted['business_date'] = $period['business_date'];
 
             return response()->json(['status' => 0, 'data' => $formatted]);
         } catch (InvalidScheduleSeed|CurrencyNotSupported|GeneratorConstraintViolation $e) {
@@ -96,8 +103,6 @@ final class PartnerAccrualController extends Controller
 
         $validator = Validator::make($request->all(), [
             'total_amount' => 'required|numeric|min:0.01',
-            'start_date' => 'required|date_format:Y-m-d',
-            'end_date' => 'required|date_format:Y-m-d|after_or_equal:start_date',
             // Explicitly reject installment payloads from client.
             'installments' => 'prohibited',
             'schedule' => 'prohibited',
@@ -128,20 +133,25 @@ final class PartnerAccrualController extends Controller
             );
         }
 
+        $period = $this->periodResolver->nextFullCalendarMonth();
+
         try {
             $plan = $this->lifecycle->create([
                 'user_id' => $userId,
                 'currency_code' => 'USD',
                 'currency_code_id' => 8,
                 'total_amount' => (string) $request->input('total_amount'),
-                'start_date' => (string) $request->input('start_date'),
-                'end_date' => (string) $request->input('end_date'),
+                'start_date' => $period['start_date'],
+                'end_date' => $period['end_date'],
                 'schedule_seed' => $seed,
                 'created_by_admin_id' => (int) $request->user()->id,
                 'metadata' => [
                     'created_via' => 'admin_partner_accrual',
                     'ip' => $request->ip(),
                     'schedule_seed_bound' => true,
+                    'period_mode' => $period['period_mode'],
+                    'period_timezone' => $period['timezone'],
+                    'business_date' => $period['business_date'],
                 ],
             ], activate: true);
 
