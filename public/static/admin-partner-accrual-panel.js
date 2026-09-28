@@ -184,7 +184,8 @@
   }
 
   function renderSummary(el, data, userId) {
-    previewState = null;
+    // Keep amount-only preview across Dialog remounts for the same user.
+    // Cleared explicitly on user change / invalidatePreview / successful create reload.
     var plan = data.plan;
     var elig = data.user_eligibility || {};
     var bal = data.current_partner_balance || {};
@@ -235,6 +236,24 @@
     html += '<div id="exs-pa-msg" style="margin-top:8px;color:#9a3412"></div>';
     el.innerHTML = html;
     bind(el, userId, plan);
+    restorePreviewUi();
+  }
+
+  function restorePreviewUi() {
+    if (!previewState || !previewState.seed) return;
+    var parts = String(previewState.fingerprint || '').split('|');
+    var budget = d.getElementById('exs-pa-budget');
+    if (budget && parts.length > 1 && parts[1]) budget.value = parts[1];
+    var hint = d.getElementById('exs-pa-period-hint');
+    if (hint && previewState.start_date) {
+      hint.innerHTML =
+        '<b>Период начисления:</b> ' + formatRuDate(previewState.start_date) + ' – ' + formatRuDate(previewState.end_date);
+    }
+    var box = d.getElementById('exs-pa-preview');
+    if (box && previewState.html) box.innerHTML = previewState.html;
+    var createBtn = d.getElementById('exs-pa-create');
+    if (createBtn) createBtn.disabled = !previewState.exact_sum_ok;
+    if (previewState.msg) setMsg(previewState.msg);
   }
 
   function cell(k, v) {
@@ -349,7 +368,9 @@
         fingerprint: formFingerprint(),
         exact_sum_ok: !!p.exact_sum_ok,
         start_date: p.start_date || null,
-        end_date: p.end_date || null
+        end_date: p.end_date || null,
+        html: null,
+        msg: null
       };
       if (hint) {
         hint.innerHTML =
@@ -358,17 +379,18 @@
       var rows = (p.schedule || []).slice(0, 8).map(function (r) {
         return r.scheduled_for + ': ' + money(r.amount_display);
       }).join('<br>');
-      if (box) {
-        box.innerHTML =
+      var previewHtml =
           '<div style="margin-bottom:4px"><b>Период:</b> ' + formatRuDate(p.start_date) + ' – ' + formatRuDate(p.end_date) + '</div>' +
           '<div><b>Количество начислений:</b> ' + p.installment_count + '</div>' +
           '<div><b>Итог:</b> ' + money(p.sum_display) + ' USD</div>' +
           '<div style="margin-top:4px;color:#64748b">Средн./мин/макс: ' +
           money(p.average_display) + ' / ' + money(p.min_display) + ' / ' + money(p.max_display) + '</div>' +
           '<div style="margin-top:6px">' + rows + (p.schedule && p.schedule.length > 8 ? '<br>…' : '') + '</div>';
-      }
+      if (box) box.innerHTML = previewHtml;
+      previewState.html = previewHtml;
       if (createBtn) createBtn.disabled = !p.exact_sum_ok;
-      setMsg(p.exact_sum_ok ? 'Предпросмотр готов. Сумма точна. Можно подтвердить.' : 'Сумма не совпадает');
+      previewState.msg = p.exact_sum_ok ? 'Предпросмотр готов. Сумма точна. Можно подтвердить.' : 'Сумма не совпадает';
+      setMsg(previewState.msg);
     }).catch(function () { setMsg('Сеть/ошибка предпросмотра'); });
   }
 
@@ -446,6 +468,9 @@
   function load(userId) {
     var el = panelEl();
     place(el);
+    if (String(lastUserId) !== String(userId)) {
+      previewState = null;
+    }
     if (lastSummary && String(lastUserId) === String(userId)) {
       renderSummary(el, lastSummary, userId);
       return;

@@ -155,7 +155,7 @@ final class PartnerAccrualAmountOnlyAutoMonthTest extends TestCase
     {
         $blade = (string) file_get_contents(dirname(__DIR__, 3).'/resources/views/admin-vue.blade.php');
         $this->assertMatchesRegularExpression(
-            '/admin-partner-accrual-panel\\.js\\?v=20260928-amount-only-month/',
+            '/admin-partner-accrual-panel\\.js\\?v=20260928-amount-only-month2/',
             $blade
         );
     }
