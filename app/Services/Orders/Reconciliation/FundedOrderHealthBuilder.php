@@ -13,7 +13,15 @@ final class FundedOrderHealthBuilder
     public function build(array $rows, array $detector): array
     {
         $metrics = \App\Services\Orders\Transitions\PaymentTransitionMetrics::snapshot();
-        $paid = array_values(array_filter($rows, fn ($r) => (int) $r['current_status'] === 7));
+        $paidAll = array_values(array_filter($rows, fn ($r) => (int) $r['current_status'] === 7));
+        $paidActive = array_values(array_filter(
+            $paidAll,
+            fn ($r) => (string) ($r['classification'] ?? '') !== FundedReconciliationClassifier::OWNER_CONFIRMED_HISTORICAL_SETTLEMENT
+        ));
+        $paidHistoricalOwner = array_values(array_filter(
+            $paidAll,
+            fn ($r) => (string) ($r['classification'] ?? '') === FundedReconciliationClassifier::OWNER_CONFIRMED_HISTORICAL_SETTLEMENT
+        ));
         $wh = array_values(array_filter($rows, fn ($r) => (int) $r['current_status'] === 3));
         $classes = [];
         foreach ($rows as $r) {
@@ -21,6 +29,7 @@ final class FundedOrderHealthBuilder
             $classes[$c] = ($classes[$c] ?? 0) + 1;
         }
 
+        $paid = $paidActive;
         $paidAges = array_map(fn ($r) => (int) $r['age_hours'] * 3600, $paid);
         $oldest = $paidAges === [] ? 0 : max($paidAges);
 
@@ -39,9 +48,16 @@ final class FundedOrderHealthBuilder
             return count(array_filter($paidRecent, fn ($r) => (int) $r['age_hours'] >= $hours));
         };
 
+        $activeMoneyAtRisk = count(array_filter(
+            $rows,
+            fn ($r) => (int) ($r['active_money_at_risk'] ?? 0) === 1
+                || FundedReconciliationClassifier::isActiveMoneyAtRisk($r, (string) ($r['classification'] ?? ''))
+        ));
+
         return [
             'generated_at' => now()->toIso8601String(),
             'paid_total' => count($paid),
+            'paid_total_including_owner_attested' => count($paidAll),
             'paid_recent' => count($paidRecent),
             'paid_oldest_seconds' => $oldest,
             'paid_over_1h' => $countPaidOver(1),
@@ -51,6 +67,9 @@ final class FundedOrderHealthBuilder
             'paid_recent_over_1h' => $countRecentOver(1),
             'paid_recent_over_6h' => $countRecentOver(6),
             'paid_recent_over_24h' => $countRecentOver(24),
+            'active_status7_backlog' => count($paid),
+            'active_money_at_risk_count' => $activeMoneyAtRisk,
+            'historical_owner_confirmed_settled' => count($paidHistoricalOwner),
             'waiting_handle_total' => count($wh),
             'waiting_handle_with_confirmed_funds' => $whConfirmed,
             'waiting_handle_with_payment_evidence' => $whEvidence,

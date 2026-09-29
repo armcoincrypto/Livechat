@@ -75,9 +75,18 @@ class OrderIdResource extends JsonResource
         } catch (\Throwable) {
         }
 
+        $hist = \App\Services\Orders\Archival\OwnerConfirmedHistoricalSettlement::fromOptParams(
+            is_array($detail->opt_params) ? $detail->opt_params : null
+        );
+
         return [
             'status' => $this->resource['detail']->status,
             'status_name' => $this->resource['detail']->task_status?->name,
+            'is_archive' => (int) ($detail->is_archive ?? 0),
+            'archived_at' => $detail->archived_at ? Carbon::parse($detail->archived_at)->format('c') : null,
+            'historical_resolution' => $hist,
+            'owner_confirmed_historical_settlement' => $hist !== null,
+            'resolution_label' => $hist !== null ? 'Owner-confirmed historical settlement' : null,
             'type_rate' => $this->resource['detail']->type_rate,
             'is_type_rate' => $this->resource['detail']->is_type_rate,
 

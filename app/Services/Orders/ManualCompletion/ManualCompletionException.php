@@ -78,6 +78,15 @@ final class ManualCompletionException extends RuntimeException
         return new self('route_id_mismatch', 'Order id mismatch', 422);
     }
 
+    public static function ownerConfirmedHistoricalLocked(): self
+    {
+        return new self(
+            'owner_confirmed_historical_settlement',
+            'Order is owner-confirmed historically settled; refuse completion/auto-settlement',
+            409,
+        );
+    }
+
     public function toJsonResponse()
     {
         $payload = [

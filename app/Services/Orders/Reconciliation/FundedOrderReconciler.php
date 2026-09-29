@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Orders\Reconciliation;
 
+use App\Services\Orders\Archival\OwnerConfirmedHistoricalSettlement;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -32,6 +33,8 @@ SELECT
   t.completed_at,
   t.started_at,
   t.is_bot,
+  t.is_archive,
+  t.archived_at,
   t.is_auto_check_pay,
   t.give_price,
   t.receiving_price,
@@ -72,8 +75,13 @@ ORDER BY t.id
             }
             $settlement = is_array($opt) ? ($opt['manual_settlement'] ?? null) : null;
             $arr['manual_settlement'] = is_array($settlement) ? ($settlement['reference'] ?? '1') : null;
+            $hist = OwnerConfirmedHistoricalSettlement::fromOptParams(is_array($opt) ? $opt : null);
+            $arr['historical_resolution'] = $hist !== null ? (string) ($hist['reference'] ?? '1') : null;
+            $arr['historical_resolution_type'] = $hist['resolution_type'] ?? null;
+            $arr['is_owner_confirmed_historical'] = $hist !== null ? 1 : 0;
             $arr['inbound_evidence'] = FundedReconciliationClassifier::inboundStrength($arr);
             $arr['classification'] = FundedReconciliationClassifier::classification($arr);
+            $arr['active_money_at_risk'] = FundedReconciliationClassifier::isActiveMoneyAtRisk($arr, $arr['classification']) ? 1 : 0;
             $arr['wh_detail'] = FundedReconciliationClassifier::waitingHandleDetail($arr);
             $arr['recommended_operator_action'] = FundedReconciliationClassifier::recommendedAction($arr['classification']);
             $arr['priority_group'] = FundedReconciliationClassifier::operatorPriorityGroup($arr, $arr['classification']);

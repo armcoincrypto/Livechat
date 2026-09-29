@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Orders\ManualCompletion;
 
 use App\Models\Task;
+use App\Services\Orders\Archival\OwnerConfirmedHistoricalSettlement;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 /**
@@ -42,6 +43,12 @@ final class ManualCompletionGuard
                 'source' => $source,
                 'from_status' => $from,
             ];
+        }
+
+        if (OwnerConfirmedHistoricalSettlement::isResolved(
+            is_array($task->opt_params) ? $task->opt_params : null
+        )) {
+            throw ManualCompletionException::ownerConfirmedHistoricalLocked();
         }
 
         if ($source === self::SOURCE_MANUAL) {

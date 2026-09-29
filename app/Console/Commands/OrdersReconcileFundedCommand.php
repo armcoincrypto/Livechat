@@ -61,6 +61,9 @@ final class OrdersReconcileFundedCommand extends Command
         } else {
             $this->line('rows='.count($rows));
             $this->line('paid_total='.$payloadHealth['paid_total']);
+            $this->line('active_status7_backlog='.($payloadHealth['active_status7_backlog'] ?? $payloadHealth['paid_total']));
+            $this->line('active_money_at_risk='.($payloadHealth['active_money_at_risk_count'] ?? 'n/a'));
+            $this->line('historical_owner_confirmed='.($payloadHealth['historical_owner_confirmed_settled'] ?? 0));
             $this->line('wh_confirmed='.$payloadHealth['waiting_handle_with_confirmed_funds']);
             $this->line('expired_with_funds='.$payloadHealth['expired_with_confirmed_funds']);
             $this->line('funded_wrong_status='.$payloadHealth['funded_wrong_status']);

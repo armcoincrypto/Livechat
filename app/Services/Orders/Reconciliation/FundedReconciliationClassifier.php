@@ -19,6 +19,8 @@ final class FundedReconciliationClassifier
 
     public const AMBIGUOUS = 'AMBIGUOUS';
 
+    public const OWNER_CONFIRMED_HISTORICAL_SETTLEMENT = 'OWNER_CONFIRMED_HISTORICAL_SETTLEMENT';
+
     public static function inboundStrength(array $row): string
     {
         $merchant = (int) ($row['has_merchant'] ?? 0) === 1;
@@ -52,6 +54,11 @@ final class FundedReconciliationClassifier
         $duplicate = (int) ($row['duplicate_inbound'] ?? 0) === 1;
         $ageHours = (int) ($row['age_hours'] ?? 0);
         $bot = (int) ($row['is_bot'] ?? 0) === 1;
+
+        // Owner-attested historical settlement — not active money-at-risk.
+        if (!empty($row['historical_resolution']) || (int) ($row['is_owner_confirmed_historical'] ?? 0) === 1) {
+            return self::OWNER_CONFIRMED_HISTORICAL_SETTLEMENT;
+        }
 
         if ($duplicate && $confirmed) {
             return 'MANUAL_REVIEW';
@@ -137,10 +144,25 @@ final class FundedReconciliationClassifier
             'CUSTOMER_CLAIM_ONLY' => 'await_or_verify_payment',
             'EXPIRED_NO_FUNDS' => 'no_funds_no_action',
             'WAITING_PAYMENT' => 'await_customer_payment',
-            'COMPLETED_CONSISTENT', 'HISTORICAL_LEGACY_COMPLETE' => 'none',
+            'COMPLETED_CONSISTENT', 'HISTORICAL_LEGACY_COMPLETE', self::OWNER_CONFIRMED_HISTORICAL_SETTLEMENT => 'none',
             'MANUAL_REVIEW', 'AMBIGUOUS' => 'manual_review',
             default => 'manual_review',
         };
+    }
+
+    public static function isActiveMoneyAtRisk(array $row, ?string $classification = null): bool
+    {
+        $c = $classification ?? self::classification($row);
+        if ($c === self::OWNER_CONFIRMED_HISTORICAL_SETTLEMENT) {
+            return false;
+        }
+
+        return in_array($c, [
+            'FUNDED_AWAITING_MANUAL_SETTLEMENT',
+            'BOT_FLAGGED_BUT_FUNDED',
+            'FUNDED_WRONG_STATUS',
+            'EXPIRED_WITH_FUNDS',
+        ], true);
     }
 
     public static function operatorPriorityGroup(array $row, string $classification): string

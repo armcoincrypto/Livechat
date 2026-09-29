@@ -69,6 +69,25 @@ final class FundedReconciliationClassifierTest extends TestCase
         $this->assertSame('CUSTOMER_CLAIM_ONLY', FundedReconciliationClassifier::classification($row));
     }
 
+    public function test_owner_confirmed_historical_is_not_active_money_at_risk(): void
+    {
+        $row = $this->row([
+            'status' => 7,
+            'has_wallet' => 1,
+            'wallet_txid' => 'abc123',
+            'historical_resolution' => 'historical-status7-owner-settlement-20260929:1',
+            'is_owner_confirmed_historical' => 1,
+        ]);
+        $this->assertSame(
+            FundedReconciliationClassifier::OWNER_CONFIRMED_HISTORICAL_SETTLEMENT,
+            FundedReconciliationClassifier::classification($row)
+        );
+        $this->assertFalse(FundedReconciliationClassifier::isActiveMoneyAtRisk($row));
+        $this->assertSame('none', FundedReconciliationClassifier::recommendedAction(
+            FundedReconciliationClassifier::OWNER_CONFIRMED_HISTORICAL_SETTLEMENT
+        ));
+    }
+
     private function row(array $over = []): array
     {
         return array_merge([
@@ -87,6 +106,8 @@ final class FundedReconciliationClassifierTest extends TestCase
             'in_amount_merchant' => null,
             'duplicate_inbound' => 0,
             'manual_settlement' => null,
+            'historical_resolution' => null,
+            'is_owner_confirmed_historical' => 0,
             'created_at' => '2026-08-01 00:00:00',
             'inbound_confirmed_at' => null,
         ], $over);
