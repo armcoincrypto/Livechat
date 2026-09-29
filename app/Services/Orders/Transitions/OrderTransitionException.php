@@ -55,4 +55,20 @@ final class OrderTransitionException extends RuntimeException
             sprintf('Completed order (status %d) cannot transition to %d.', $from, $to),
         );
     }
+
+    public static function failClosedInvalidFrom(int $from, int $to, string $reason): self
+    {
+        return new self(
+            'fail_closed_invalid_from_status',
+            sprintf('Fail-closed payment-destination transition (%s) cannot move %d → %d.', $reason, $from, $to),
+        );
+    }
+
+    public static function failClosedRestoreWithoutPark(int $from): self
+    {
+        return new self(
+            'fail_closed_restore_without_park',
+            sprintf('Fail-closed restore to PENDING refused from status %d without park marker.', $from),
+        );
+    }
 }

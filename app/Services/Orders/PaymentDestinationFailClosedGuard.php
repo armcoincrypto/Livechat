@@ -6,6 +6,7 @@ namespace App\Services\Orders;
 
 use App\Enums\TaskStatusEnum;
 use App\Models\Task;
+use App\Services\Orders\Transitions\FailClosedPaymentDestinationTransition;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -16,12 +17,20 @@ use Throwable;
  * Remote provider calls happen outside a DB transaction. Status is moved off
  * PENDING_PAYMENT before the issue attempt so a killed/timed-out request cannot
  * leave a payable order (order 5088 class of defect).
+ *
+ * Status mutations go through FailClosedPaymentDestinationTransition (canonical
+ * contract) — never Transaction::setStatus (would reset reserves / recount on
+ * temporary park) and never ad-hoc forceFill(status).
  */
 final class PaymentDestinationFailClosedGuard
 {
     public const FAILURE_EMPTY = 'empty_or_missing_destination';
 
     public const FAILURE_EXCEPTION = 'provider_or_issue_exception';
+
+    public function __construct(
+        private readonly FailClosedPaymentDestinationTransition $failClosedTransition = new FailClosedPaymentDestinationTransition(),
+    ) {}
 
     /**
      * @return array{reject: bool, restore_pending: bool}
@@ -66,7 +75,7 @@ final class PaymentDestinationFailClosedGuard
 
         if ($required && (int) $order->status === TaskStatusEnum::PENDING_PAYMENT->value) {
             // Not payable during the remote issue attempt (timeout-safe).
-            $order->forceFill(['status' => TaskStatusEnum::REJECTED->value])->save();
+            $this->failClosedTransition->parkNotPayable($order);
         }
 
         Log::info('payment_destination_issue_attempt', [
@@ -104,7 +113,7 @@ final class PaymentDestinationFailClosedGuard
         }
 
         if ($decision['restore_pending'] === true) {
-            $order->forceFill(['status' => TaskStatusEnum::PENDING_PAYMENT->value])->save();
+            $this->failClosedTransition->restorePending($order);
             if ($owner === PaymentDestinationRouter::OWNER_KOBBOPAY) {
                 Log::info('kobbopay_destination_request_success', [
                     'task_id' => $order->id,
@@ -136,13 +145,16 @@ final class PaymentDestinationFailClosedGuard
 
         if ((int) $order->status === TaskStatusEnum::PENDING_PAYMENT->value) {
             try {
-                $order->forceFill(['status' => TaskStatusEnum::REJECTED->value])->save();
+                $this->failClosedTransition->ensureRejected($order);
             } catch (Throwable $e) {
                 Log::error('order_abandon_status_failed', [
                     'task_id' => $order->id,
                     'message' => $e->getMessage(),
                 ]);
             }
+        } elseif ((int) $order->status === TaskStatusEnum::REJECTED->value) {
+            // Already parked pre-issue; confirm path is a noop for status.
+            $this->failClosedTransition->ensureRejected($order);
         }
 
         return [[

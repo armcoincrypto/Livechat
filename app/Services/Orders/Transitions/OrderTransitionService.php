@@ -127,4 +127,47 @@ final class OrderTransitionService
             TaskStatusEnum::CANCELED_BY_USER->value,
         ], true);
     }
+
+    /**
+     * Payment-destination fail-closed park/restore/confirm.
+     *
+     * Allowed:
+     * - PENDING_PAYMENT → REJECTED (pre-issue park / confirm reject)
+     * - REJECTED → PENDING_PAYMENT only with fail-closed park marker (restore)
+     */
+    public static function assertFailClosedTransition(
+        int $from,
+        int $to,
+        string $reason,
+        \App\Models\Task $task
+    ): void {
+        if ($from === $to) {
+            return;
+        }
+
+        if ($to === TaskStatusEnum::REJECTED->value) {
+            if ($from !== TaskStatusEnum::PENDING_PAYMENT->value) {
+                throw OrderTransitionException::failClosedInvalidFrom($from, $to, $reason);
+            }
+            // Not funded; ordinary termination permit path.
+            self::assertTerminationAllowed($from, $to, []);
+
+            return;
+        }
+
+        if ($to === TaskStatusEnum::PENDING_PAYMENT->value) {
+            if ($from !== TaskStatusEnum::REJECTED->value) {
+                throw OrderTransitionException::failClosedInvalidFrom($from, $to, $reason);
+            }
+            $opt = is_array($task->opt_params) ? $task->opt_params : [];
+            $marker = $opt[\App\Services\Orders\Transitions\FailClosedPaymentDestinationTransition::OPT_KEY] ?? null;
+            if (! is_array($marker)) {
+                throw OrderTransitionException::failClosedRestoreWithoutPark($from);
+            }
+
+            return;
+        }
+
+        throw OrderTransitionException::failClosedInvalidFrom($from, $to, $reason);
+    }
 }
