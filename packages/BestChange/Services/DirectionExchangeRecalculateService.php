@@ -4,8 +4,10 @@ declare(strict_types=1);
 namespace iEXPackages\BestChange\Services;
 
 use App\Models\DirectionExchange;
+use App\Services\Rates\BestChangeMarketBaseHealth;
 use iEXPackages\Calculator\CalculatorFacade;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -19,6 +21,9 @@ use Illuminate\Support\Facades\Log;
  * - Загружаем обе системы “комиссий выбора” (если калькулятор использует обе):
  *   - selectorFees (belongsToMany SelectorFee)
  *   - direction_exchange_selector_fees (hasMany DirectionExchangeSelectorFee)
+ * - Class-A2 (2026-09-29): per chunkById batch, preload bestchange_directions once
+ *   (status DESC, id ASC — same preference as BestChangeMarketBaseHealth::evaluate)
+ *   and evaluateFromRow(..., withDerivedOutlier: true). Does NOT cache marketForDirection.
  */
 final class DirectionExchangeRecalculateService
 {
@@ -86,6 +91,27 @@ final class DirectionExchangeRecalculateService
             $successUpdates = [];
             $errorUpdates = [];
 
+            // A2e: one SELECT for the chunk instead of per-direction evaluate() SELECTs.
+            // Row preference matches BestChangeMarketBaseHealth::evaluate (status DESC, id ASC).
+            $bcByDirectionId = [];
+            $chunkIds = [];
+            foreach ($exchanges as $exchange) {
+                $chunkIds[] = (int) $exchange->id;
+            }
+            if ($chunkIds !== []) {
+                $bcRows = DB::table('bestchange_directions')
+                    ->whereIn('id_direction_exchange', $chunkIds)
+                    ->orderByDesc('status')
+                    ->orderBy('id')
+                    ->get();
+                foreach ($bcRows as $bcRow) {
+                    $dirId = (int) ($bcRow->id_direction_exchange ?? 0);
+                    if ($dirId > 0 && ! isset($bcByDirectionId[$dirId])) {
+                        $bcByDirectionId[$dirId] = $bcRow;
+                    }
+                }
+            }
+
             foreach ($exchanges as $exchange) {
                 try {
                     $directionId = (int) $exchange->id;
@@ -101,7 +127,16 @@ final class DirectionExchangeRecalculateService
                         continue;
                     }
 
-                    $health = \App\Services\Rates\BestChangeMarketBaseHealth::evaluate($directionId);
+                    if (isset($bcByDirectionId[$directionId])) {
+                        $health = BestChangeMarketBaseHealth::evaluateFromRow(
+                            $bcByDirectionId[$directionId],
+                            $directionId,
+                            null,
+                            withDerivedOutlier: true
+                        );
+                    } else {
+                        $health = BestChangeMarketBaseHealth::evaluate($directionId);
+                    }
                     if (!$health['healthy']) {
                         continue;
                     }
