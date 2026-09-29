@@ -9,9 +9,11 @@ use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
- * compiler:courses can copy a stale manual_rate_value back onto course_value
- * for BestChange-owned rows whose profit is already 0. Public Calculator
- * ignores that mirror and keeps the live BestChange rate.
+ * compiler:courses can leave course_value / manual_rate_value out of sync with
+ * live bestchange_directions.rate_value for BestChange-owned rows whose profit
+ * is already 0. Public Calculator often ignores that stale mirror and keeps the
+ * live BestChange rate — the authority-drift monitor still flags
+ * PROFIT_APPLICATION_MISMATCH against stored course_value.
  *
  * This reassert runs after the courses compiler. It does not change profit,
  * position, mapping, ownership, or the Top-N profit floor.
@@ -28,8 +30,38 @@ final class BestChangeStoredCourseReassert
     public const MIRROR_REASSERT_MAX_AGE_SECONDS = 7200;
 
     /**
+     * True when a zero-profit BestChange row's stored course diverges from the
+     * live BestChange rate_value by more than RELATIVE_GAP (either side).
+     *
+     * Covers both classic course==manual << rate mirrors and diverged
+     * course/manual pairs (e.g. CARDBYN 3187) that still trip
+     * PROFIT_APPLICATION_MISMATCH with profit=0.
+     */
+    public static function needsZeroProfitCourseReassert(
+        string $course,
+        string $rate,
+        string $profit,
+    ): bool {
+        if (!self::isZero($profit) || !self::isPositive($rate) || !self::isPositive($course)) {
+            return false;
+        }
+        $courseN = self::norm($course);
+        $rateN = self::norm($rate);
+        $delta = bcsub($courseN, $rateN, 12);
+        if (bccomp($delta, '0', 12) < 0) {
+            $delta = bcsub('0', $delta, 12);
+        }
+        $gap = bcdiv($delta, $rateN, 12);
+
+        return bccomp($gap, self::RELATIVE_GAP, 12) === 1;
+    }
+
+    /**
      * True when a zero-profit BestChange row is holding a manual mirror
      * strictly below the live BestChange rate_value.
+     *
+     * @deprecated Prefer needsZeroProfitCourseReassert(); kept for unit coverage
+     *             of the original mirror predicate.
      */
     public static function isStaleManualMirror(
         string $course,
@@ -108,9 +140,8 @@ final class BestChangeStoredCourseReassert
             if ($derived->owns($id) || (int) $row->id_currency1 === $zelleId) {
                 continue;
             }
-            if (!self::isStaleManualMirror(
+            if (!self::needsZeroProfitCourseReassert(
                 (string) $row->course_value,
-                (string) $row->manual_rate_value,
                 (string) $row->rate_value,
                 (string) $row->profit,
             )) {

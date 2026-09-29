@@ -19,6 +19,54 @@ final class BestChangeStoredCourseReassertTest extends TestCase
             '7502213.1528800996',
             '0',
         ));
+        $this->assertTrue(BestChangeStoredCourseReassert::needsZeroProfitCourseReassert(
+            '7083021.4256975',
+            '7502213.1528800996',
+            '0',
+        ));
+    }
+
+    public function test_cardbyn_3187_diverged_course_is_selected(): void
+    {
+        // Live evidence 2026-09-29: USDTPOLYGON→CARDBYN course≃2.881 vs BC≃2.6867
+        // (≈7.23%) with profit=0 and course≠manual — prior mirror predicate missed it.
+        $this->assertFalse(BestChangeStoredCourseReassert::isStaleManualMirror(
+            '2.881031126637655519',
+            '2.915708',
+            '2.686700000080708468',
+            '0',
+        ));
+        $this->assertTrue(BestChangeStoredCourseReassert::needsZeroProfitCourseReassert(
+            '2.881031126637655519',
+            '2.686700000080708468',
+            '0',
+        ));
+    }
+
+    public function test_cardbyn_2281_sub_percent_drift_is_not_selected(): void
+    {
+        // TRX→CARDBYN ~0.07% — below RELATIVE_GAP; monitor severity OK.
+        $this->assertFalse(BestChangeStoredCourseReassert::needsZeroProfitCourseReassert(
+            '0.915262985030462011',
+            '0.914617752933629582',
+            '0',
+        ));
+    }
+
+    public function test_adjacent_cardbyn_and_cash_usd_gaps_follow_gap_rule(): void
+    {
+        // Adjacent CARDBYN (USDT SOL→BYN card) course below BC by ~18%.
+        $this->assertTrue(BestChangeStoredCourseReassert::needsZeroProfitCourseReassert(
+            '2.18999999997041',
+            '2.68999999997041',
+            '0',
+        ));
+        // Cash USD→USDT large gap, profit 0.
+        $this->assertTrue(BestChangeStoredCourseReassert::needsZeroProfitCourseReassert(
+            '0.954644824393084552',
+            '0.689655657550876346',
+            '0',
+        ));
     }
 
     public function test_profit_position_and_unrelated_gaps_are_not_selected(): void
@@ -29,8 +77,19 @@ final class BestChangeStoredCourseReassertTest extends TestCase
             '46.07009',
             '0.4',
         ));
+        $this->assertFalse(BestChangeStoredCourseReassert::needsZeroProfitCourseReassert(
+            '45.885766874751985357',
+            '46.07009',
+            '0.4',
+        ));
+        // course==manual above rate: classic mirror predicate false; gap rule true.
         $this->assertFalse(BestChangeStoredCourseReassert::isStaleManualMirror(
             '1.5984',
+            '1.5984',
+            '1.366',
+            '0',
+        ));
+        $this->assertTrue(BestChangeStoredCourseReassert::needsZeroProfitCourseReassert(
             '1.5984',
             '1.366',
             '0',
@@ -38,6 +97,11 @@ final class BestChangeStoredCourseReassertTest extends TestCase
         $this->assertFalse(BestChangeStoredCourseReassert::isStaleManualMirror(
             '2.19',
             '0',
+            '2.69',
+            '0',
+        ));
+        $this->assertTrue(BestChangeStoredCourseReassert::needsZeroProfitCourseReassert(
+            '2.19',
             '2.69',
             '0',
         ));
