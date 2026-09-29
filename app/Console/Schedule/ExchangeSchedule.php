@@ -221,6 +221,38 @@ class ExchangeSchedule
     }
 
     /**
+     * True when a live BestChange compiler owns the scoped lock (owner pid alive).
+     *
+     * Read-only: does NOT flock bestchange-compiler.lock (avoids racing the writer).
+     * Used to defer non-customer-critical heavy jobs while BC occupies the 3-core host.
+     * Customer/payment jobs must never call this gate.
+     */
+    public static function bestchangeCompilerBusy(): bool
+    {
+        $dir = (string) (getenv('EXS_LOCK_BESTCHANGE_OWNERS') ?: '/var/lock/build/owners/bestchange');
+        if (! is_dir($dir)) {
+            return false;
+        }
+        foreach (glob(rtrim($dir, '/').'/*.owner') ?: [] as $ownerFile) {
+            $base = basename((string) $ownerFile);
+            $pid = (int) strtok($base, '.');
+            if ($pid > 1 && @file_exists('/proc/'.$pid)) {
+                return true;
+            }
+            // Fallback: pid= line inside owner payload.
+            $body = @file_get_contents((string) $ownerFile);
+            if (is_string($body) && preg_match('/^pid=(\d+)/m', $body, $m)) {
+                $pid = (int) $m[1];
+                if ($pid > 1 && @file_exists('/proc/'.$pid)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Обновление курсов, схем и цен (основной компилятор курсов).
      *
      * @param Schedule $schedule
@@ -231,6 +263,11 @@ class ExchangeSchedule
         $ratesMinutes = (int) iEXSetting('cron_interval_minutes_update_rates', 1);
         $exportMinutes = (int) iEXSetting('grates_cron_timer', 1);
         $compilerWrapper = '/opt/exswaping-owned-ops/current/scripts/ops/run_backend_compiler.sh';
+        // H1 host-contention isolation (FEATURE_AGENT candidate): defer noncritical
+        // CPU/DB heavies while compiler:bestchange holds its owner lock. Does not
+        // alter BC flock / withoutOverlapping / runInBackground / FD hygiene.
+        // POST_BC_XML_REFRESH still invokes scheme:files directly after BC completes.
+        $whenBcIdle = static fn (): bool => ! self::bestchangeCompilerBusy();
 
         // Wave3: heavy compilers MUST runInBackground. Observed BC runtime ~780–845s
         // (~13–14m). Foreground execution pinned schedule:run (overlap pile-up).
@@ -267,10 +304,12 @@ class ExchangeSchedule
             ->appendOutputTo(storage_path('logs/bestchange_dispatch_watch.log'));
 
         // ZELLEUSD outgoing: refresh course_value from USDTTRC20→dest after BC peer updates.
+        // H1: defer while BC busy (rates freshness, not payment path).
         $zelle = $schedule->command('rates:zelleusd-usdt-preview --all --apply')
             ->onOneServer()
             ->withoutOverlapping(120)
             ->runInBackground()
+            ->when($whenBcIdle)
             ->appendOutputTo(storage_path('logs/zelle_usdt_benchmark.log'));
         self::applyMinuteCadence($zelle, $ratesMinutes);
 
@@ -283,19 +322,24 @@ class ExchangeSchedule
             ->onOneServer()
             ->withoutOverlapping(9)
             ->runInBackground()
+            ->when($whenBcIdle)
             ->appendOutputTo(storage_path('logs/derived_baseline_refresh.log'));
 
         // Проверка и обновление файлов курсов / public XML exports
+        // H1: scheduled scheme:files collides with BC on CPU (separate flock by design).
+        // Skip schedule ticks while BC busy; POST_BC_XML_REFRESH still runs after BC.
         $scheme = $schedule->exec("{$compilerWrapper} scheme:files")
             ->onOneServer()
             ->withoutOverlapping(10)
-            ->runInBackground();
+            ->runInBackground()
+            ->when($whenBcIdle);
         self::applyMinuteCadence($scheme, $exportMinutes);
         // Read-only rate pipeline health (non-zero exit on critical conditions).
         $schedule->command('rates:health --format=json')
             ->everyFiveMinutes()
             ->onOneServer()
             ->withoutOverlapping(5)
+            ->when($whenBcIdle)
             ->appendOutputTo(storage_path('logs/rates_health.log'));
 
         // Ownership drift detector (read-only alerts; never auto-repairs rates).
@@ -303,6 +347,7 @@ class ExchangeSchedule
             ->everyFiveMinutes()
             ->onOneServer()
             ->withoutOverlapping(5)
+            ->when($whenBcIdle)
             ->appendOutputTo(storage_path('logs/rates_ownership_drift.log'));
 
         // Owner-authority rate drift (read-only; never mutates economics).
@@ -312,6 +357,7 @@ class ExchangeSchedule
             ->onOneServer()
             ->withoutOverlapping(8)
             ->runInBackground()
+            ->when($whenBcIdle)
             ->appendOutputTo(storage_path('logs/rates_authority_drift_monitor.log'));
 
         $schedule->command('orders:waiting-deposit-health --format=json')
