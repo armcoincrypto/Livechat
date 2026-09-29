@@ -267,8 +267,8 @@ class ReferralEngine
 
                 if (!ReferralMath::isZero($amount)) {
                     $this->safeDecrement($balance, 'hold_balance', $amount);
-                    $balance->increment('balance', (float) $amount);
-                    $balance->increment('referral_total_profit', (float) $amount);
+                    $this->safeIncrement($balance, 'balance', $amount);
+                    $this->safeIncrement($balance, 'referral_total_profit', $amount);
                 }
 
                 $log->update([
@@ -409,10 +409,10 @@ class ReferralEngine
                 $balance = $this->getOrCreatePartnerBalance((int) $context->partner->id);
 
                 if ($status === 'pending') {
-                    $balance->increment('hold_balance', (float) $amount);
+                    $this->safeIncrement($balance, 'hold_balance', $amount);
                 } else {
-                    $balance->increment('balance', (float) $amount);
-                    $balance->increment('referral_total_profit', (float) $amount);
+                    $this->safeIncrement($balance, 'balance', $amount);
+                    $this->safeIncrement($balance, 'referral_total_profit', $amount);
                 }
 
                 $this->audit->info('credit_success', 'Начислен реферальный бонус', [
@@ -561,20 +561,65 @@ class ReferralEngine
     }
 
     /**
-     * Защита: не уходим в минус.
+     * Exact-decimal credit into a legacy FLOAT/DOUBLE balance column.
+     * Row-locked RMW (Partner Accrual pattern) — never Laravel increment(float).
+     */
+    private function safeIncrement(UserBalance $balance, string $field, string $amount): void
+    {
+        $amount = ReferralMath::norm($amount);
+        if (ReferralMath::isZero($amount)) {
+            return;
+        }
+
+        $locked = $this->lockPartnerBalanceRow($balance);
+        $current = ReferralMath::fromLegacyStorage($locked->{$field} ?? '0');
+        $next = ReferralMath::add($current, $amount);
+
+        // Persist decimal string; MySQL FLOAT/DOUBLE coercion is the sole legacy boundary.
+        $locked->{$field} = $next;
+        $locked->save();
+
+        $balance->{$field} = $locked->{$field};
+    }
+
+    /**
+     * Exact-decimal debit; never goes below zero. Row-locked RMW.
      */
     private function safeDecrement(UserBalance $balance, string $field, string $amount): void
     {
-        $current = ReferralMath::norm((string) ($balance->{$field} ?? '0'));
+        $amount = ReferralMath::norm($amount);
+        if (ReferralMath::isZero($amount)) {
+            return;
+        }
+
+        $locked = $this->lockPartnerBalanceRow($balance);
+        $current = ReferralMath::fromLegacyStorage($locked->{$field} ?? '0');
         $next = ReferralMath::sub($current, $amount);
 
         if (ReferralMath::cmp($next, '0') === -1) {
             $next = '0';
         }
 
-        // set напрямую — точнее, чем decrement(float)
-        $balance->{$field} = $next;
-        $balance->save();
+        $locked->{$field} = $next;
+        $locked->save();
+
+        $balance->{$field} = $locked->{$field};
+    }
+
+    private function lockPartnerBalanceRow(UserBalance $balance): UserBalance
+    {
+        $id = (int) ($balance->getKey() ?? 0);
+        if ($id > 0) {
+            /** @var UserBalance|null $locked */
+            $locked = UserBalance::query()->whereKey($id)->lockForUpdate()->first();
+            if ($locked !== null) {
+                return $locked;
+            }
+        }
+
+        $created = $this->getOrCreatePartnerBalance((int) $balance->id_user);
+
+        return UserBalance::query()->whereKey($created->getKey())->lockForUpdate()->firstOrFail();
     }
 
 

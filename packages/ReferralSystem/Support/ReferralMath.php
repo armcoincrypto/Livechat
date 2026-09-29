@@ -133,9 +133,32 @@ final class ReferralMath
         return $v === '' ? '0' : $v;
     }
 
+    /**
+     * Read a legacy FLOAT/DOUBLE (or string) balance column into exact decimal money.
+     * Mirrors Partner Accrual AccrualMoney::fromLegacyBalance at Referral SCALE.
+     */
+    public static function fromLegacyStorage(mixed $v, ?int $scale = null): string
+    {
+        $scale ??= self::SCALE;
+
+        if ($v === null || $v === '') {
+            return self::norm('0', $scale);
+        }
+
+        if (is_float($v) || is_int($v)) {
+            return self::norm(sprintf('%.8F', (float) $v), $scale);
+        }
+
+        return self::norm((string) $v, $scale);
+    }
+
     private static function sanitize(string|int|float|null $v): string
     {
         if ($v === null || $v === '') return '0';
+        // Avoid PHP float stringification footguns (scientific notation / binary drift).
+        if (is_float($v) || is_int($v)) {
+            return sprintf('%.8F', (float) $v);
+        }
         $s = (string) $v;
         $s = str_replace([' ', ','], ['', '.'], trim($s));
         if ($s === '' || !is_numeric($s)) return '0';
