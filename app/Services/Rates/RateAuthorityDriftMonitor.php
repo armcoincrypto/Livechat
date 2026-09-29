@@ -177,7 +177,11 @@ final class RateAuthorityDriftMonitor
             'BOOK_AGE_MAX' => 0,
             'BOOK_AGE_GT_1800_TOTAL' => 0,
             'ACTIONABLE_WARNING_TOTAL' => 0,
+            // PUBLIC_QUOTE_DEFECT_TOTAL is a legacy umbrella (historically = unavailable).
+            // Prefer PUBLIC_QUOTE_UNAVAILABLE_TOTAL vs REAL_PUBLIC_QUOTE_DEFECT_TOTAL.
             'PUBLIC_QUOTE_DEFECT_TOTAL' => 0,
+            'PUBLIC_QUOTE_UNAVAILABLE_TOTAL' => 0,
+            'REAL_PUBLIC_QUOTE_DEFECT_TOTAL' => 0,
             'ORDER_ECONOMICS_DEFECT_TOTAL' => 0,
             'XML_RATE_DEFECT_TOTAL' => 0,
             'CRITICAL_IDS' => [],
@@ -253,6 +257,13 @@ final class RateAuthorityDriftMonitor
             if (($eval['root_cause'] ?? null) === 'PUBLIC_QUOTE_UNAVAILABLE'
                 || ! empty($eval['public_quote_unavailable'])
             ) {
+                // Expected fail-closed catalog/quote mismatch — not a live API quote break.
+                $summary['PUBLIC_QUOTE_UNAVAILABLE_TOTAL']++;
+                $summary['PUBLIC_QUOTE_DEFECT_TOTAL']++; // legacy alias (do not treat as REAL_*)
+            } elseif (($eval['alert_class'] ?? null) === 'PUBLIC_QUOTE'
+                || str_starts_with((string) ($eval['root_cause'] ?? ''), 'PUBLIC_QUOTE_')
+            ) {
+                $summary['REAL_PUBLIC_QUOTE_DEFECT_TOTAL']++;
                 $summary['PUBLIC_QUOTE_DEFECT_TOTAL']++;
             }
             $directions[] = $eval;

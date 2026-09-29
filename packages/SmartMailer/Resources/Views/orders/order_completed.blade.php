@@ -28,7 +28,7 @@
 <div class="order-block-list__wrapper">
 @foreach($tasks_fields['many'] as $value)
 <div class="order-block-list__subtitle">{{ $value['field_name'] }}</div>
-<div class="order-block-list__value-2">{{ $value['field_value'] }}</div>
+<div class="order-block-list__value-2">{{ \iEXPackages\SmartMailer\Support\MailFieldValue::display($value['field_value'] ?? null, __('smart-mailer::messages.not_specified')) }}</div>
 @endforeach
 </div>
 @endif
@@ -51,7 +51,7 @@
 @foreach($tasks_fields['currency_in'] as $item)
 <div class="order-block-list__subtitle">{{ $item['field_name'] }}</div>
 <div class="order-block-list__value-2">
-{{ $item['field_value'] ?? __('smart-mailer::messages.not_specified') }}
+{{ \iEXPackages\SmartMailer\Support\MailFieldValue::display($item['field_value'] ?? null, __('smart-mailer::messages.not_specified')) }}
 </div>
 @endforeach
 @endif
@@ -74,7 +74,7 @@
 @foreach($tasks_fields['currency_out'] as $item)
 <div class="order-block-list__subtitle">{{ $item['field_name'] }}</div>
 <div class="order-block-list__value-2">
-{{ $item['field_value'] ?? __('smart-mailer::messages.not_specified') }}
+{{ \iEXPackages\SmartMailer\Support\MailFieldValue::display($item['field_value'] ?? null, __('smart-mailer::messages.not_specified')) }}
 </div>
 @endforeach
 @endif
