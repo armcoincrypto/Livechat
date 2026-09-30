@@ -221,35 +221,15 @@ class ExchangeSchedule
     }
 
     /**
-     * True when a live BestChange compiler owns the scoped lock (owner pid alive).
+     * True when an actual compiler:bestchange run is active.
      *
-     * Read-only: does NOT flock bestchange-compiler.lock (avoids racing the writer).
-     * Used to defer non-customer-critical heavy jobs while BC occupies the 3-core host.
+     * H1 observation signal only — delegates to BestchangeCompilerBusySignal.
+     * Does NOT flock bestchange-compiler.lock / change shared-lock concurrency.
      * Customer/payment jobs must never call this gate.
      */
     public static function bestchangeCompilerBusy(): bool
     {
-        $dir = (string) (getenv('EXS_LOCK_BESTCHANGE_OWNERS') ?: '/var/lock/build/owners/bestchange');
-        if (! is_dir($dir)) {
-            return false;
-        }
-        foreach (glob(rtrim($dir, '/').'/*.owner') ?: [] as $ownerFile) {
-            $base = basename((string) $ownerFile);
-            $pid = (int) strtok($base, '.');
-            if ($pid > 1 && @file_exists('/proc/'.$pid)) {
-                return true;
-            }
-            // Fallback: pid= line inside owner payload.
-            $body = @file_get_contents((string) $ownerFile);
-            if (is_string($body) && preg_match('/^pid=(\d+)/m', $body, $m)) {
-                $pid = (int) $m[1];
-                if ($pid > 1 && @file_exists('/proc/'.$pid)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return BestchangeCompilerBusySignal::isBusy();
     }
 
     /**
@@ -263,9 +243,10 @@ class ExchangeSchedule
         $ratesMinutes = (int) iEXSetting('cron_interval_minutes_update_rates', 1);
         $exportMinutes = (int) iEXSetting('grates_cron_timer', 1);
         $compilerWrapper = '/opt/exswaping-owned-ops/current/scripts/ops/run_backend_compiler.sh';
-        // H1 host-contention isolation (FEATURE_AGENT candidate): defer noncritical
-        // CPU/DB heavies while compiler:bestchange holds its owner lock. Does not
-        // alter BC flock / withoutOverlapping / runInBackground / FD hygiene.
+        // H1 host-contention isolation: defer noncritical CPU/DB heavies while an
+        // actual compiler:bestchange process is active (not compiler:courses, which
+        // shares bestchange-compiler.lock / owners/bestchange). Does not alter BC
+        // flock / withoutOverlapping / runInBackground / FD hygiene.
         // POST_BC_XML_REFRESH still invokes scheme:files directly after BC completes.
         $whenBcIdle = static fn (): bool => ! self::bestchangeCompilerBusy();
 
