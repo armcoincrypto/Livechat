@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Telegram;
 
+use App\Jobs\Telegram\Concerns\TelegramNotificationReliability;
 use App\Models\TelegramNotification;
 use App\Models\User;
 use App\Notifications\Telegram\TelegramAdminAuthorization;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Notification;
 class TelegramAdminAuthorizationInJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use TelegramNotificationReliability;
 
     /**
      * Create a new job instance.
@@ -37,7 +39,7 @@ class TelegramAdminAuthorizationInJob implements ShouldQueue
             $notifications = TelegramNotification::where('status', 1)->where('ext_params->is_allowed_admin', 1)->get();
             foreach ($notifications as $notification) {
                 Notification::route('telegram', $notification->id_channel)
-                    ->notify(new TelegramAdminAuthorization($notification, $this->user));
+                    ->notifyNow(new TelegramAdminAuthorization($notification, $this->user));
             }
 
         } catch (\Exception $exception) {

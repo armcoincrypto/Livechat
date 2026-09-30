@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Telegram;
 
+use App\Jobs\Telegram\Concerns\TelegramNotificationReliability;
 use App\Models\TelegramNotification;
 use App\Models\User;
 use App\Notifications\Telegram\TelegramAdminGoogleAuthNotification;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Notification;
 class TelegramAdminTextActionJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use TelegramNotificationReliability;
 
     /**
      * Create a new job instance.
@@ -37,7 +39,7 @@ class TelegramAdminTextActionJob implements ShouldQueue
             $notifications = TelegramNotification::where('status', 1)->where('ext_params->is_google2fa', 1)->get();
             foreach ($notifications as $notification) {
                 Notification::route('telegram', $notification->id_channel)
-                    ->notify(new TelegramAdminGoogleAuthNotification($this->message, $this->user, $notification));
+                    ->notifyNow(new TelegramAdminGoogleAuthNotification($this->message, $this->user, $notification));
             }
 
         } catch (\Exception $exception) {

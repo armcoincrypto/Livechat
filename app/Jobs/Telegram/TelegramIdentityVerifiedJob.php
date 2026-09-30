@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Jobs\Telegram;
 
+use App\Jobs\Telegram\Concerns\TelegramNotificationReliability;
 use App\Models\KycProviderSession;
 use App\Models\User;
 use App\Notifications\TelegramIdentityVerified;
 use App\Services\TelegramOperator\TelegramOperatorAuthService;
+use App\Services\TelegramOperator\TelegramProviderErrorClassifier;
 use App\Services\TelegramOperator\TelegramSecretRedactor;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -32,13 +34,7 @@ use Throwable;
 class TelegramIdentityVerifiedJob implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
-    public int $tries = 3;
-
-    /** @var list<int> */
-    public array $backoff = [10, 30, 90];
-
-    public int $timeout = 20;
+    use TelegramNotificationReliability;
 
     public int $uniqueFor = 86400;
 
@@ -108,8 +104,16 @@ class TelegramIdentityVerifiedJob implements ShouldQueue, ShouldBeUnique
                     'destination' => 'operator_private_chat',
                     'chat_id_suffix' => substr($chat, -3),
                     'error' => $safe,
+                    'http_status' => TelegramProviderErrorClassifier::httpStatus($e),
+                    'permanent' => TelegramProviderErrorClassifier::isPermanent($e),
                 ]);
-                throw new RuntimeException('Telegram identity notice failed: '.$safe);
+                $wrapped = new RuntimeException('Telegram identity notice failed: '.$safe, 0, $e);
+                $this->telegramFailPermanentOrRetry($wrapped, [
+                    'user_id' => $this->userId,
+                    'session_pk' => $this->sessionPk,
+                ]);
+
+                return;
             }
         }
     }
@@ -117,5 +121,14 @@ class TelegramIdentityVerifiedJob implements ShouldQueue, ShouldBeUnique
     public function sentCacheKey(string $chatId): string
     {
         return 'telegram_identity_verified_sent:'.$this->userId.':'.$this->sessionPk.':'.$chatId;
+    }
+
+    public function failed(?Throwable $exception): void
+    {
+        $this->telegramLogDead($exception, [
+            'user_id' => $this->userId,
+            'session_pk' => $this->sessionPk,
+            'event' => 'identity_verified',
+        ]);
     }
 }

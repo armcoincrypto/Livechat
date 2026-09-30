@@ -2,11 +2,13 @@
 
 namespace App\Jobs\Telegram;
 
+use App\Jobs\Telegram\Concerns\TelegramNotificationReliability;
 use App\Models\Task;
 use App\Notifications\TelegramNewOrder;
 use App\Services\Orders\TelegramNotificationSelector;
 use App\Services\TelegramOperator\TelegramOrderLifecyclePublisher;
 use App\Services\TelegramOperator\TelegramOperatorAuthService;
+use App\Services\TelegramOperator\TelegramProviderErrorClassifier;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,13 +23,7 @@ use Throwable;
 class TelegramOrderJob implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
-    public int $tries = 3;
-
-    /** @var list<int> */
-    public array $backoff = [10, 30, 90];
-
-    public int $timeout = 20;
+    use TelegramNotificationReliability;
 
     public int $uniqueFor = 120;
 
@@ -252,10 +248,10 @@ class TelegramOrderJob implements ShouldQueue, ShouldBeUnique
 
     public function failed(?Throwable $exception): void
     {
-        Log::error('telegram_order_notify_dead', [
-            'order_id' => $this->order->id,
+        $this->telegramLogDead($exception, [
+            'order_id' => $this->order->id ?? null,
             'notification_type' => $this->param,
-            'exception_class' => $exception ? $exception::class : null,
+            'permanent' => $exception ? TelegramProviderErrorClassifier::isPermanent($exception) : null,
         ]);
     }
 }

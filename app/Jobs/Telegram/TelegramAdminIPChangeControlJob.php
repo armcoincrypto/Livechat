@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Telegram;
 
+use App\Jobs\Telegram\Concerns\TelegramNotificationReliability;
 use App\Models\TelegramNotification;
 use App\Notifications\Telegram\TelegramIPChangeControlAdmin;
 use Illuminate\Bus\Queueable;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Notification;
 class TelegramAdminIPChangeControlJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use TelegramNotificationReliability;
 
     /**
      * Create a new job instance.
@@ -36,7 +38,7 @@ class TelegramAdminIPChangeControlJob implements ShouldQueue
             $notifications = TelegramNotification::where('status', 1)->where('ext_params->is_admin_ip_change', 1)->get();
             foreach ($notifications as $notification) {
                 Notification::route('telegram', $notification->id_channel)
-                    ->notify(new TelegramIPChangeControlAdmin($this->user, $notification));
+                    ->notifyNow(new TelegramIPChangeControlAdmin($this->user, $notification));
             }
 
         } catch (\Exception $exception) {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace iEXPackages\SmartMailer;
@@ -9,13 +10,27 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Абстрактный базовый класс для всех задач пакета SmartMailer.
+ *
+ * Bounded retry / timeout so transient SMTP failures do not retry forever.
+ * deleteWhenMissingModels avoids ModelNotFoundException retry storms.
  */
 abstract class SmartQueueableJob implements ShouldQueue, SmartQueueableInterface
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public int $tries = 3;
+
+    /** @var list<int> */
+    public array $backoff = [10, 30, 90];
+
+    public int $timeout = 60;
+
+    public bool $deleteWhenMissingModels = true;
 
     /**
      * Метод, вызываемый перед выполнением задачи.
@@ -52,5 +67,15 @@ abstract class SmartQueueableJob implements ShouldQueue, SmartQueueableInterface
         } finally {
             $this->afterHandle();
         }
+    }
+
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('smartmailer_job_dead', [
+            'job' => static::class,
+            'exception_class' => $exception ? $exception::class : null,
+            'attempt' => method_exists($this, 'attempts') ? $this->attempts() : null,
+            'disposition' => 'exhausted',
+        ]);
     }
 }

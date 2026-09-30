@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Telegram;
 
+use App\Jobs\Telegram\Concerns\TelegramNotificationReliability;
 use App\Models\Task;
 use App\Models\TelegramNotification;
 use App\Notifications\Telegram\TelegramAdminStopServiceNotification;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Notification;
 class TelegramAdminStopServiceJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use TelegramNotificationReliability;
 
     /**
      * Create a new job instance.
@@ -39,7 +41,7 @@ class TelegramAdminStopServiceJob implements ShouldQueue
         foreach ($notifications as $notification)
         {
             Notification::route('telegram', $notification->id_channel)
-                ->notify(new TelegramAdminStopServiceNotification($notification));
+                ->notifyNow(new TelegramAdminStopServiceNotification($notification));
         }
     }
 }
