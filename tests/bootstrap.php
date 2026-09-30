@@ -37,5 +37,18 @@ spl_autoload_register(static function (string $class): void {
     }
 }, true, true);
 
+// Isolate unit tests from live APP_ENV so telegram_operator.test_force_dm_ids works.
+// Do NOT force array cache here — LanguageCatalog boots against the real store; tests
+// must not Cache::flush() redis. Prefer unique fake task ids instead.
+foreach (['APP_ENV' => 'testing'] as $key => $value) {
+    putenv($key.'='.$value);
+    $_ENV[$key] = $value;
+    $_SERVER[$key] = $value;
+}
+
 $app = require __DIR__ . '/../bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+
+// Re-assert after Dotenv may have loaded production .env values.
+$app['env'] = 'testing';
+\Illuminate\Support\Facades\Config::set('app.env', 'testing');

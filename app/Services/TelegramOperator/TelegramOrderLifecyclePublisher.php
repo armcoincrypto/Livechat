@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Log;
 /**
  * One operational Telegram card per order destination (operator DMs).
  * NEW = compact SEND; later lifecycle states EDIT the stored message.
- * PAID also emits exactly one short attention alert (not a second full card).
+ * PAID always EDITs the authoritative card; a separate attention alert is
+ * MODEL_C conditional (see TelegramOrderMessagePresenter::paidAttentionAlertDecision).
  * Channel destinations are intentionally excluded from order-card ownership.
  */
 final class TelegramOrderLifecyclePublisher
@@ -35,9 +36,10 @@ final class TelegramOrderLifecyclePublisher
     }
 
     /**
-     * EDIT the permanent card, then SEND one short PAID attention alert.
+     * EDIT the permanent card on PAID; SEND a short attention alert only when
+     * MODEL_C exceptional conditions match (paid-after-claim / frozen).
      *
-     * @return array{sent: int, edited: int, recovered: int, skipped_stale: int, attention_alert: int}
+     * @return array{sent: int, edited: int, recovered: int, skipped_stale: int, attention_alert: int, attention_alert_skip_reason?: string}
      */
     public function publishPaid(Task $task): array
     {
@@ -51,7 +53,26 @@ final class TelegramOrderLifecyclePublisher
 
             return $stats;
         }
+
+        $decision = $this->presenter->paidAttentionAlertDecision($fresh);
+        if (! $decision['send']) {
+            Log::info('telegram_order_card', [
+                'order' => (string) ($fresh->public_id ?? $fresh->id ?? ''),
+                'task_id' => (int) ($fresh->id ?? 0),
+                'state' => TelegramOrderMessagePresenter::LIFECYCLE_PAID,
+                'card_action' => 'EDIT',
+                'attention_alert' => 'SKIP_POLICY',
+                'attention_alert_result' => $decision['reason'],
+                'dedup_key' => 'order:'.(int) ($fresh->id ?? 0).':PAID_ATTENTION',
+            ]);
+            $stats['attention_alert'] = 0;
+            $stats['attention_alert_skip_reason'] = $decision['reason'];
+
+            return $stats;
+        }
+
         $stats['attention_alert'] = $this->sendPaidAttentionAlertOnce($fresh);
+        $stats['attention_alert_skip_reason'] = null;
 
         return $stats;
     }

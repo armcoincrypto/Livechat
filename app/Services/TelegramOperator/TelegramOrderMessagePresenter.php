@@ -318,8 +318,46 @@ final class TelegramOrderMessagePresenter
     }
 
     /**
+     * MODEL_C — whether to SEND a separate PAID attention alert.
+     *
+     * Always: main card is EDITed on PAID elsewhere (payment state visible on card).
+     * Separate alert ONLY for exceptional, proven signals (OR):
+     * - PAID_AFTER_CLAIM: operator already assigned (active OrderOperatorAssignment
+     *   or edit_data_manager) when PAID publishes — edit of an in-work card is easy to miss
+     * - FROZEN_HIGH_RISK: task.is_frozen is truthy
+     *
+     * Evaluated / NOT used as alert triggers (no reliable publish-path signal):
+     * - mere unclaimed (this is the normal paid path → SEPARATE_ALERT=NO)
+     * - operator acknowledgment absent (no durable ack field)
+     * - payment verification overdue (no overdue timer on this path)
+     *
+     * @return array{send: bool, reason: string}
+     */
+    public function paidAttentionAlertDecision(Task $task): array
+    {
+        if ($this->isFrozenManualAttention($task)) {
+            return ['send' => true, 'reason' => 'FROZEN_HIGH_RISK'];
+        }
+        if ($this->operatorLabel($task) !== null) {
+            return ['send' => true, 'reason' => 'PAID_AFTER_CLAIM'];
+        }
+
+        return ['send' => false, 'reason' => 'NORMAL_UNCLAIMED_PAID'];
+    }
+
+    private function isFrozenManualAttention(Task $task): bool
+    {
+        try {
+            return (bool) ($task->is_frozen ?? false);
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    /**
      * Short operator-attention alert for customer "I paid" — not a second full card.
      * Operator-critical fields only; claimed vs unclaimed next-action wording.
+     * Sent only when paidAttentionAlertDecision() says send=true (MODEL_C).
      */
     public function renderPaidAttentionAlert(array $payload): string
     {
