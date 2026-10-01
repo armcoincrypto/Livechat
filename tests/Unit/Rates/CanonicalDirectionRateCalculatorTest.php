@@ -158,6 +158,45 @@ final class CanonicalDirectionRateCalculatorTest extends TestCase
         $this->assertSame(0, bccomp($export->finalRate, '99', 18));
     }
 
+    public function test_xml_matches_website_when_type_rate_disabled(): void
+    {
+        $direction = new DirectionExchange();
+        $direction->id = 1028;
+        $direction->is_type_rate = 0;
+        $direction->floating_fee = '0';
+        $direction->fix_fee = '0';
+        $direction->profit = '0.5';
+        $direction->parser_source_name = 'DERIVED_MARKET_BASELINE';
+
+        $calc = CanonicalDirectionRateCalculator::make();
+        $export = $calc->calculateForExport($direction, '0.649204');
+        $website = $calc->calculate($direction, RateMode::Floating, RateChannel::Website, '0.649204');
+        $legacyBestchange = $calc->calculate($direction, RateMode::Floating, RateChannel::Bestchange, '0.649204');
+
+        $this->assertSame(0, bccomp($export->finalRate, '0.649204', 18));
+        $this->assertSame(0, bccomp($export->finalRate, $website->finalRate, 18));
+        $this->assertSame(0, bccomp($legacyBestchange->finalRate, '0.649204', 18));
+        $this->assertNotSame(0, bccomp('0.645958', $export->finalRate, 18));
+    }
+
+    public function test_xml_export_channel_uses_website_semantics(): void
+    {
+        $direction = new DirectionExchange();
+        $direction->id = 1101;
+        $direction->is_type_rate = 0;
+        $direction->floating_fee = '-1';
+        $direction->fix_fee = '0';
+        $direction->profit = '0';
+
+        $calc = CanonicalDirectionRateCalculator::make();
+        $export = $calc->calculateForExport($direction, '100');
+        $website = $calc->websiteCoursePayload($direction, '100');
+
+        $this->assertSame(0, bccomp($export->finalRate, '100', 18));
+        $this->assertSame(0, bccomp($website['floating_rate'], '100', 18));
+        $this->assertSame($website['floating_rate'], $website['rate']);
+    }
+
     public function test_derived_profit_zero_falls_back_to_floating_fee(): void
     {
         $direction = new DirectionExchange();

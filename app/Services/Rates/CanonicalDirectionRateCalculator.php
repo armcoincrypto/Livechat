@@ -23,7 +23,8 @@ use Throwable;
  * ZELLEUSD outgoing (owner-approved):
  *   FLOATING → benchmark × (1 + floating_fee/100)  (or -profit when profit ≠ 0)
  *   FIXED    → benchmark × (1 + floating_fee/100) × (1 + fix_fee/100)
- *   XML      → always FLOATING (never includes the additional fix_fee step)
+ *   XML      → same FLOATING commercial rate as website/order
+ *             (never includes the additional fix_fee step)
  *
  * Default public / order mode: FLOATING.
  */
@@ -53,8 +54,10 @@ final class CanonicalDirectionRateCalculator
             $baseRate = $this->resolveBaseRate($direction);
         }
 
-        $typeRateEnabled = (int) ($direction->is_type_rate ?? 0) === 1
-            || $channel === RateChannel::Bestchange;
+        // Website / order / XML share the same commercial FLOATING contract:
+        // fees apply only when is_type_rate=1. XML must not invent a second
+        // BestChange-only fee path — monitors must show the customer offer.
+        $typeRateEnabled = (int) ($direction->is_type_rate ?? 0) === 1;
 
         // ZELLE FIXED compounds floating commercial adjustment then additional fix_fee.
         // Non-ZELLE FIXED remains fix_fee alone (platform-wide legacy semantics).
@@ -71,8 +74,8 @@ final class CanonicalDirectionRateCalculator
             ? ($direction->fix_fee ?? '0')
             : $this->resolveFloatingFeePercent($direction);
 
-        // When type_rate is disabled, still expose fixed/floating as base (0% fee)
-        // for API symmetry. BestChange always applies floating commercial % (see calculateForExport).
+        // When type_rate is disabled, expose floating as unresolved commercial base
+        // (0% fee) for website, order, and XML symmetry.
         if (!$typeRateEnabled) {
             $rawFee = '0';
         }
@@ -210,15 +213,20 @@ final class CanonicalDirectionRateCalculator
     }
 
     /**
-     * BestChange XML always exports the canonical FLOATING rate.
-     * file_rate_source remains an eligibility gate in the exporter; it does not select fix_fee.
+     * Public XML exports the same FLOATING commercial rate as website/order.
+     *
+     * Does not use fix_fee. file_rate_source remains an eligibility gate in the
+     * exporter; it does not select fee mode. When $baseRateOverride is null,
+     * resolveBaseRate() matches websiteCoursePayload (CalculatorFacade / ZELLE
+     * benchmark / derived course). Passing course_value would keep XML on a
+     * different base than the customer offer.
      */
     public function calculateForExport(DirectionExchange $direction, ?string $baseRateOverride = null): CalculatedDirectionRate
     {
         return $this->calculate(
             $direction,
             RateMode::Floating,
-            RateChannel::Bestchange,
+            RateChannel::Website,
             $baseRateOverride,
         );
     }

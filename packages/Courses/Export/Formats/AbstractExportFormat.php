@@ -65,11 +65,11 @@ abstract class AbstractExportFormat
     }
 
     /**
-     * Applies BestChange floating-rate policy when file_rate_source is set.
+     * Applies the website/order FLOATING commercial rate when file_rate_source is set.
      *
-     * Release A revised: XML out = canonical floating_rate (floating_fee percent).
-     * Never uses fix_fee. file_rate_source remains the historical eligibility gate
-     * (must be floating|fix); mode selection is always FLOATING.
+     * XML out = CanonicalDirectionRateCalculator website floating result
+     * (resolveBaseRate + fee only if is_type_rate=1). Never uses fix_fee.
+     * file_rate_source remains the historical eligibility gate (must be floating|fix).
      */
     protected function applyFileRateSourceSimple(CalculatorMathService $mathValue, DirectionExchange $rate): void
     {
@@ -84,8 +84,17 @@ abstract class AbstractExportFormat
 
         $before = (string) $mathValue->getSumma();
         try {
+            // No-city rows start at course_value. Use resolveBaseRate() so XML
+            // matches website/order (fixes stored-course vs CalculatorFacade).
+            // City rows have already mutated $before — keep that base so
+            // add_comm / city profit are not discarded.
+            $course = trim((string) ($rate->course_value ?? '0'));
+            $baseOverride = (is_numeric($course) && bccomp($before, $course, 18) !== 0)
+                ? $before
+                : null;
+
             $canonical = \App\Services\Rates\CanonicalDirectionRateCalculator::make()
-                ->calculateForExport($rate, $before);
+                ->calculateForExport($rate, $baseOverride);
 
             if (!$canonical->eligible || bccomp($canonical->finalRate, '0', 18) !== 1) {
                 // Keep pre-fee rate so the pair is not dropped from public XML.
