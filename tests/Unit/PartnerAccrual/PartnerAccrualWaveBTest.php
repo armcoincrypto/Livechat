@@ -52,6 +52,12 @@ final class PartnerAccrualWaveBTest extends TestCase
         $this->credit = new PartnerAccrualCreditService();
     }
 
+    protected function tearDown(): void
+    {
+        PartnerAccrualSqliteHarness::restoreDefaultConnection();
+        parent::tearDown();
+    }
+
     public function test_300_usd_31_day_exact_sum_and_print_schedule(): void
     {
         $g = $this->generator->generate([

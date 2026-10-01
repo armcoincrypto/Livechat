@@ -7,5 +7,15 @@
     </testsuites>
     <php>
         <env name="APP_ENV" value="testing" force="true"/>
+        <!-- Deterministic test key; never use production APP_KEY in unit bootstrap. -->
+        <env name="APP_KEY" value="base64:dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleXRlc3Q=" force="true"/>
+        <env name="APP_LOCALE" value="ru" force="true"/>
+        <env name="APP_FALLBACK_LOCALE" value="en" force="true"/>
+        <env name="DB_CONNECTION" value="mysql" force="true"/>
+        <env name="DB_DATABASE" value="exswaping_phpunit_20260920" force="true"/>
+        <env name="DB_USERNAME" value="exswaping_phpunit" force="true"/>
+        <env name="DB_PASSWORD" value="exswaping_phpunit_dummy" force="true"/>
+        <env name="DB_HOST" value="127.0.0.1" force="true"/>
+        <env name="DB_PORT" value="3306" force="true"/>
     </php>
 </phpunit>

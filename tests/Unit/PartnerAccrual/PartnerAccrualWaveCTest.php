@@ -39,6 +39,12 @@ final class PartnerAccrualWaveCTest extends TestCase
         $this->history = new PartnerAccrualHistoryService();
     }
 
+    protected function tearDown(): void
+    {
+        PartnerAccrualSqliteHarness::restoreDefaultConnection();
+        parent::tearDown();
+    }
+
     public function test_feature_disabled_gate(): void
     {
         config(['partner_accrual.enabled' => false]);

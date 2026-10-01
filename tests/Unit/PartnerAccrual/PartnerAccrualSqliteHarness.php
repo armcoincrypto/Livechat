@@ -18,10 +18,14 @@ final class PartnerAccrualSqliteHarness
 {
     public const PRODUCTION_DB_NAME = 'app_exswapin';
 
+    private static ?string $previousDefault = null;
+
     public static function bootIsolated(): void
     {
         $productionName = self::PRODUCTION_DB_NAME;
         $configuredMysql = (string) (Config::get('database.connections.mysql.database') ?? '');
+
+        self::$previousDefault = (string) (Config::get('database.default') ?: 'mysql');
 
         Config::set('database.connections.partner_accrual_sqlite', [
             'driver' => 'sqlite',
@@ -54,6 +58,28 @@ final class PartnerAccrualSqliteHarness
         fwrite(STDOUT, "TEST_DB_NAME={$testDbName}\n");
         fwrite(STDOUT, "PRODUCTION_DB_NAME={$productionName}\n");
         fwrite(STDOUT, "ISOLATED=YES\n");
+    }
+
+    /**
+     * Restore the suite default connection so later Unit tests are not poisoned
+     * by the in-memory partner_accrual_sqlite connection.
+     */
+    public static function restoreDefaultConnection(): void
+    {
+        $previous = self::$previousDefault ?: 'mysql';
+        if ($previous === 'partner_accrual_sqlite') {
+            $previous = 'mysql';
+        }
+
+        Config::set('database.default', $previous);
+        DB::purge('partner_accrual_sqlite');
+        DB::setDefaultConnection($previous);
+        try {
+            DB::reconnect($previous);
+        } catch (\Throwable) {
+            // mysql may already be connected; ignore reconnect noise in unit bootstrap
+        }
+        self::$previousDefault = null;
     }
 
     public static function migrateMinimalSchema(): void

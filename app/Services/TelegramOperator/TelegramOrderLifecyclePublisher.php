@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Log;
 /**
  * One operational Telegram card per order destination (operator DMs).
  * NEW = compact SEND; later lifecycle states EDIT the stored message.
- * PAID always EDITs the authoritative card; a separate attention alert is
- * MAIN_CARD_ONLY exceptional (frozen/high-risk only — see paidAttentionAlertDecision).
+ * PAID always EDITs the authoritative card and SENDs exactly one short attention
+ * alert (normal or frozen/high-severity). Risk/freeze never suppresses the alert.
  * Channel destinations are intentionally excluded from order-card ownership.
  */
 final class TelegramOrderLifecyclePublisher
@@ -36,10 +36,10 @@ final class TelegramOrderLifecyclePublisher
     }
 
     /**
-     * EDIT the permanent card on PAID; SEND a short attention alert only when
-     * MAIN_CARD_ONLY exceptional conditions match (frozen/high-risk).
+     * EDIT the permanent card on PAID, then SEND exactly one short attention alert.
+     * Frozen/high-risk changes alert severity only — never suppresses the paid event.
      *
-     * @return array{sent: int, edited: int, recovered: int, skipped_stale: int, attention_alert: int, attention_alert_skip_reason?: string}
+     * @return array{sent: int, edited: int, recovered: int, skipped_stale: int, attention_alert: int, attention_alert_skip_reason?: string|null}
      */
     public function publishPaid(Task $task): array
     {
@@ -56,6 +56,7 @@ final class TelegramOrderLifecyclePublisher
 
         $decision = $this->presenter->paidAttentionAlertDecision($fresh);
         if (! $decision['send']) {
+            // Fail-closed policy hook: current decision always sends; keep path for safety.
             Log::info('telegram_order_card', [
                 'order' => (string) ($fresh->public_id ?? $fresh->id ?? ''),
                 'task_id' => (int) ($fresh->id ?? 0),
@@ -73,6 +74,7 @@ final class TelegramOrderLifecyclePublisher
 
         $stats['attention_alert'] = $this->sendPaidAttentionAlertOnce($fresh);
         $stats['attention_alert_skip_reason'] = null;
+        $stats['attention_alert_reason'] = $decision['reason'];
 
         return $stats;
     }

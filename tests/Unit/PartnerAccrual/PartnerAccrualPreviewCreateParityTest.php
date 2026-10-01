@@ -41,6 +41,12 @@ final class PartnerAccrualPreviewCreateParityTest extends TestCase
         $this->lifecycle = new PartnerAccrualPlanLifecycleService($this->generator, seedBinder: $this->binder);
     }
 
+    protected function tearDown(): void
+    {
+        PartnerAccrualSqliteHarness::restoreDefaultConnection();
+        parent::tearDown();
+    }
+
     private function user(): User
     {
         $id = DB::table('users')->insertGetId([

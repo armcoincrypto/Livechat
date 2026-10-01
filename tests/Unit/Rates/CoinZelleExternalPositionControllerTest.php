@@ -108,7 +108,7 @@ final class CoinZelleExternalPositionControllerTest extends TestCase
         $cfg->method('coinZelleOutlierSepBps')->willReturn($outlierSep);
         $cfg->method('externalTopNFamilies')->willReturn(['COIN_TO_ZELLE']);
         $cfg->method('externalTopNFamilyEnabled')->willReturnCallback(
-            static fn (string $f) use ($enabled): bool => $enabled && $f === 'COIN_TO_ZELLE'
+            static fn (string $f): bool => $enabled && $f === 'COIN_TO_ZELLE'
         );
         $cfg->method('externalTopNDirectionIds')->willReturn([]);
         $cfg->method('externalTopNMinBookDepth')->willReturn(3);

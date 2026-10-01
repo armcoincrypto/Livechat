@@ -154,7 +154,7 @@ $check('telegram_job_unique_per_user', str_contains($job, "telegram-identity-ver
 $check('telegram_uses_private_operator_chats', str_contains($job, 'authorizedActionTelegramUserIds')
     && str_contains($job, 'telegram_identity_verified_sent:')
     && !str_contains($job, 'id_channel')
-    && !str_contains($job, 'TelegramNotification'));
+    && !preg_match('/(?<![\w\\\\])TelegramNotification(?!Reliability)/', $job));
 $check('telegram_notice_uses_operator_token_only', str_contains($notice, 'resolve(null)')
     && str_contains($notice, 'TelegramBotTokenResolver')
     && str_contains($notice, 'operatorChatId')

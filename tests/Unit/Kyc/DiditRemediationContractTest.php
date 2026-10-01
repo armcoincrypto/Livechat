@@ -53,7 +53,8 @@ final class DiditRemediationContractTest extends TestCase
         $this->assertStringContainsString('authorizedActionTelegramUserIds', $job);
         $this->assertStringContainsString('telegram_identity_verified_sent:', $job);
         $this->assertStringNotContainsString('id_channel', $job);
-        $this->assertStringNotContainsString('TelegramNotification', $job);
+        // Trait TelegramNotificationReliability is allowed; the Notification channel class is not.
+        $this->assertDoesNotMatchRegularExpression('/(?<![\w\\\\])TelegramNotification(?!Reliability)/', $job);
 
         $notice = (string) file_get_contents(base_path('app/Notifications/TelegramIdentityVerified.php'));
         $this->assertStringContainsString('resolve(null)', $notice);

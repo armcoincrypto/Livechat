@@ -42,6 +42,12 @@ final class PartnerAccrualCreditServiceTest extends TestCase
         $this->reconcile = new PartnerAccrualReconciliationService();
     }
 
+    protected function tearDown(): void
+    {
+        PartnerAccrualSqliteHarness::restoreDefaultConnection();
+        parent::tearDown();
+    }
+
     public function test_usd_accepted_usdt_rejected(): void
     {
         $user = $this->makeUser();

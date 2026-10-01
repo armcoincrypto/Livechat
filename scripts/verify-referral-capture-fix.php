@@ -28,8 +28,8 @@ function check(bool $cond, string $msg): void
 }
 
 echo "=== Resolver unit script ===\n";
-passthru(PHP_BINARY . ' ' . escapeshellarg(__DIR__ . '/../tests/Unit/ReferralCaptureResolverTest.php'), $resolverExit);
-check($resolverExit === 0, 'ReferralCaptureResolverTest exit 0');
+passthru(PHP_BINARY . ' ' . escapeshellarg(__DIR__ . '/verify-referral-capture-resolver.php'), $resolverExit);
+check($resolverExit === 0, 'verify-referral-capture-resolver exit 0');
 
 echo "\n=== nginx ref preservation ===\n";
 $curlHeaders = shell_exec("curl -sI 'https://exswaping.com/ru/?ref=MLyn&cur_from=USDT' 2>/dev/null | head -1");

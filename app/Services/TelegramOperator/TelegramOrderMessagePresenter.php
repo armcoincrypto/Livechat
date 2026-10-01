@@ -128,6 +128,7 @@ final class TelegramOrderMessagePresenter
             $payload['lifecycle'] = $this->normalizeLifecycle($lifecycle, $task, $operator);
             $payload['completed_at'] = $this->completedAt($task, $payload['lifecycle']);
             $payload['customer_marked_paid'] = self::isCustomerMarkedPaidStatus((int) ($task->status ?? 0));
+            $payload['risk_frozen'] = $this->isFrozenManualAttention($task);
 
             return $payload;
         } catch (Throwable) {
@@ -152,6 +153,7 @@ final class TelegramOrderMessagePresenter
                 'lifecycle' => self::LIFECYCLE_NEW,
                 'completed_at' => null,
                 'customer_marked_paid' => false,
+                'risk_frozen' => false,
             ];
         }
     }
@@ -318,18 +320,12 @@ final class TelegramOrderMessagePresenter
     }
 
     /**
-     * MAIN_CARD_ONLY — whether to SEND a separate PAID attention alert.
+     * Whether to SEND a separate PAID attention alert.
      *
-     * Always: main card is EDITed on PAID elsewhere (payment state visible on card,
-     * including claimed/paid-after-claim operator identity on that card).
-     * Separate alert ONLY for exceptional, proven signals:
-     * - FROZEN_HIGH_RISK: task.is_frozen is truthy
-     *
-     * Explicitly NOT alert triggers (owner UX — main card is enough):
-     * - normal unclaimed paid
-     * - paid-after-claim / operator already assigned
-     * - operator acknowledgment absent (no durable ack field)
-     * - payment verification overdue (no overdue timer on this path)
+     * Always: main card is EDITed on PAID elsewhere.
+     * Always: every genuine customer PAID event also gets exactly one short alert
+     * (normal or frozen/high-severity). Risk/freeze classification remains orthogonal
+     * and is never treated as "no alert".
      *
      * @return array{send: bool, reason: string}
      */
@@ -339,7 +335,7 @@ final class TelegramOrderMessagePresenter
             return ['send' => true, 'reason' => 'FROZEN_HIGH_RISK'];
         }
 
-        return ['send' => false, 'reason' => 'NORMAL_PAID_MAIN_CARD_ONLY'];
+        return ['send' => true, 'reason' => 'NORMAL_PAID'];
     }
 
     private function isFrozenManualAttention(Task $task): bool
@@ -353,8 +349,8 @@ final class TelegramOrderMessagePresenter
 
     /**
      * Short operator-attention alert for customer "I paid" — not a second full card.
-     * Operator-critical fields only; claimed vs unclaimed next-action wording.
-     * Sent only when paidAttentionAlertDecision() says send=true (MODEL_C).
+     * Operator-critical fields only. Frozen/high-risk uses higher-severity wording;
+     * freeze never suppresses the alert and never authorizes payout.
      */
     public function renderPaidAttentionAlert(array $payload): string
     {
@@ -364,12 +360,13 @@ final class TelegramOrderMessagePresenter
         $giveAmt = (string) ($payload['give_amount'] ?? '');
         $recvAmt = (string) ($payload['receive_amount'] ?? '');
         $operator = $this->nonEmpty((string) ($payload['operator'] ?? ''));
+        $frozen = (bool) ($payload['risk_frozen'] ?? false);
 
         $lines = [];
         if ($operator !== null) {
             $lines[] = '🟡 Оператор: '.$operator;
         }
-        $lines[] = '💰 Клиент отметил оплату';
+        $lines[] = $frozen ? '⚠️💰 Клиент отметил оплату' : '💰 Клиент отметил оплату';
         $lines[] = '';
         $lines[] = 'Заявка №'.$id;
         if ($giveAmt !== '' || $recvAmt !== '') {
@@ -379,7 +376,9 @@ final class TelegramOrderMessagePresenter
             $lines[] = trim($givePs.($recvPs !== '' ? ' → '.$recvPs : ''));
         }
         $lines[] = '';
-        if ($operator !== null) {
+        if ($frozen) {
+            $lines[] = '🚫 Выплата заблокирована до ручной проверки';
+        } elseif ($operator !== null) {
             $lines[] = '🔎 Проверьте поступление средств';
         } else {
             $lines[] = '🔴 Требуется взять заявку и проверить оплату';
@@ -540,7 +539,7 @@ final class TelegramOrderMessagePresenter
         }
 
         $lines = [];
-        // Payment state and operator ownership must coexist.
+        // Payment, ownership, and risk are orthogonal dimensions.
         if ($paidMarked) {
             $lines[] = '💰 Клиент отметил оплату';
             $lines[] = '🔎 Требуется проверить оплату';
@@ -559,6 +558,10 @@ final class TelegramOrderMessagePresenter
             $lines[] = $owner;
         } elseif ($life === self::LIFECYCLE_CLAIMED) {
             $lines[] = '🟡 В работе';
+        }
+
+        if ((bool) ($payload['risk_frozen'] ?? false)) {
+            $lines[] = '⚠️ Риск: заморожено';
         }
 
         return implode("\n", $lines);
