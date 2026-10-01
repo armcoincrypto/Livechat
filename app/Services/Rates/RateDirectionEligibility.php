@@ -224,6 +224,7 @@ final class RateDirectionEligibility
             'id' => (int) $direction->id,
             'status' => (int) $direction->status,
             'allow_export' => (int) $direction->allow_export,
+            'is_error_rate' => (int) ($direction->is_error_rate ?? 0),
             'course_value' => (string) ($direction->course_value ?? ''),
             'profit' => (string) ($direction->profit ?? '0'),
             'deleted_at' => $direction->deleted_at,
@@ -368,6 +369,15 @@ final class RateDirectionEligibility
         $orderAllowed = (bool) $payload['eligible_for_order'];
         $exportAllowed = (bool) $payload['eligible_for_export'];
 
+        // Align BESTCHANGE_EXPORT eligibility with ManagesAttributes::builder()
+        // which hard-filters is_error_rate=1. Quote/order may still use retained
+        // last-good courses; XML export must not claim those rows as expected.
+        if ((int) ($direction->is_error_rate ?? 0) !== 0) {
+            $exportAllowed = false;
+            $reasons[] = 'is_error_rate_excluded_from_xml_builder';
+            $reasons = $this->uniqueReasons($reasons);
+        }
+
         $errorCode = null;
         if (!$quoteAllowed || !$orderAllowed || !$exportAllowed) {
             if (!$quoteAllowed || !$orderAllowed) {
@@ -463,6 +473,11 @@ final class RateDirectionEligibility
             $reasons[] = 'export_hard_disabled';
         }
 
+        $errorRate = (int) ($row['is_error_rate'] ?? 0) !== 0;
+        if ($errorRate) {
+            $reasons[] = 'is_error_rate_excluded_from_xml_builder';
+        }
+
         $q = $this->quarantine->evaluate($course, [
             'profit_percent' => (string) ($row['profit'] ?? '0'),
             'baseline' => isset($row['baseline']) ? (string) $row['baseline'] : null,
@@ -507,7 +522,7 @@ final class RateDirectionEligibility
         }
 
         $eligibleForQuote = $active && $q['allowed'] && !$quarantined && !$deprecated;
-        $eligibleForExport = $eligibleForQuote && $allowExport !== 2 && !$mappingBlocksExport;
+        $eligibleForExport = $eligibleForQuote && $allowExport !== 2 && !$mappingBlocksExport && !$errorRate;
         $eligibleForOrder = $eligibleForQuote && (array_key_exists('reserve_ok', $row) ? $reserveOk : true);
 
         return [

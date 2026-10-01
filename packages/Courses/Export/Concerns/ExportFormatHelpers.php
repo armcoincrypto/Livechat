@@ -85,6 +85,12 @@ trait ExportFormatHelpers
                 return false;
             }
 
+            // Match ManagesAttributes::builder() hard filter — error-flagged
+            // retained courses stay off the public XML expected set.
+            if ((int) ($rate->is_error_rate ?? 0) !== 0) {
+                return false;
+            }
+
             // Fail closed: non-positive / non-numeric courses must never be exported.
             $quarantine = new RateExportQuarantine();
             if (!$quarantine->isExportableCourse((string) $rate->course_value)) {
