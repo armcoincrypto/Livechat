@@ -318,16 +318,16 @@ final class TelegramOrderMessagePresenter
     }
 
     /**
-     * MODEL_C — whether to SEND a separate PAID attention alert.
+     * MAIN_CARD_ONLY — whether to SEND a separate PAID attention alert.
      *
-     * Always: main card is EDITed on PAID elsewhere (payment state visible on card).
-     * Separate alert ONLY for exceptional, proven signals (OR):
-     * - PAID_AFTER_CLAIM: operator already assigned (active OrderOperatorAssignment
-     *   or edit_data_manager) when PAID publishes — edit of an in-work card is easy to miss
+     * Always: main card is EDITed on PAID elsewhere (payment state visible on card,
+     * including claimed/paid-after-claim operator identity on that card).
+     * Separate alert ONLY for exceptional, proven signals:
      * - FROZEN_HIGH_RISK: task.is_frozen is truthy
      *
-     * Evaluated / NOT used as alert triggers (no reliable publish-path signal):
-     * - mere unclaimed (this is the normal paid path → SEPARATE_ALERT=NO)
+     * Explicitly NOT alert triggers (owner UX — main card is enough):
+     * - normal unclaimed paid
+     * - paid-after-claim / operator already assigned
      * - operator acknowledgment absent (no durable ack field)
      * - payment verification overdue (no overdue timer on this path)
      *
@@ -338,11 +338,8 @@ final class TelegramOrderMessagePresenter
         if ($this->isFrozenManualAttention($task)) {
             return ['send' => true, 'reason' => 'FROZEN_HIGH_RISK'];
         }
-        if ($this->operatorLabel($task) !== null) {
-            return ['send' => true, 'reason' => 'PAID_AFTER_CLAIM'];
-        }
 
-        return ['send' => false, 'reason' => 'NORMAL_UNCLAIMED_PAID'];
+        return ['send' => false, 'reason' => 'NORMAL_PAID_MAIN_CARD_ONLY'];
     }
 
     private function isFrozenManualAttention(Task $task): bool

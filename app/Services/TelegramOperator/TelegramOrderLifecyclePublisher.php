@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
  * One operational Telegram card per order destination (operator DMs).
  * NEW = compact SEND; later lifecycle states EDIT the stored message.
  * PAID always EDITs the authoritative card; a separate attention alert is
- * MODEL_C conditional (see TelegramOrderMessagePresenter::paidAttentionAlertDecision).
+ * MAIN_CARD_ONLY exceptional (frozen/high-risk only — see paidAttentionAlertDecision).
  * Channel destinations are intentionally excluded from order-card ownership.
  */
 final class TelegramOrderLifecyclePublisher
@@ -37,7 +37,7 @@ final class TelegramOrderLifecyclePublisher
 
     /**
      * EDIT the permanent card on PAID; SEND a short attention alert only when
-     * MODEL_C exceptional conditions match (paid-after-claim / frozen).
+     * MAIN_CARD_ONLY exceptional conditions match (frozen/high-risk).
      *
      * @return array{sent: int, edited: int, recovered: int, skipped_stale: int, attention_alert: int, attention_alert_skip_reason?: string}
      */
