@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Log;
 /**
  * One operational Telegram card per order destination (operator DMs).
  * NEW = compact SEND; later lifecycle states EDIT the stored message.
- * PAID EDITs the main card; separate short alert only for frozen/high-risk (MAIN_CARD_ONLY).
+ * PAID EDITs the main card; every genuine PAID also sends exactly one short alert
+ * (normal or frozen/high-severity). Alert ownership stays on publishPaid only.
  * Stale lifecycle + existing card → SKIP; stale + empty registry → publish authoritative once.
  * Channel destinations are intentionally excluded from order-card ownership.
  */
@@ -36,7 +37,8 @@ final class TelegramOrderLifecyclePublisher
     }
 
     /**
-     * EDIT the permanent card on PAID; separate alert only for frozen/high-risk.
+     * EDIT the permanent card on PAID; always send exactly one short attention alert
+     * (normal or frozen/high-severity). Recovery/empty-registry paths never own the alert.
      *
      * @return array{sent: int, edited: int, recovered: int, skipped_stale: int, attention_alert: int, attention_alert_skip_reason?: string|null}
      */
@@ -55,7 +57,7 @@ final class TelegramOrderLifecyclePublisher
 
         $decision = $this->presenter->paidAttentionAlertDecision($fresh);
         if (! $decision['send']) {
-            // MAIN_CARD_ONLY: normal/claimed paid skip separate alert.
+            // Fail-closed policy escape hatch only — normal/frozen PAID must send.
             Log::info('telegram_order_card', [
                 'order' => (string) ($fresh->public_id ?? $fresh->id ?? ''),
                 'task_id' => (int) ($fresh->id ?? 0),
