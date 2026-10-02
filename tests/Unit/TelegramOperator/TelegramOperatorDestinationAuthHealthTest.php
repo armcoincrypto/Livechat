@@ -205,8 +205,9 @@ final class TelegramOperatorDestinationAuthHealthTest extends TestCase
         Log::spy();
         $ids = $auth->authorizedActionTelegramUserIds('admin_orders_execute');
         $this->assertSame([6332166155], $ids);
-        Log::shouldHaveReceived('warning')
-            ->withArgs(fn ($msg) => $msg === TelegramOperatorDestinationHealth::EVENT_AUTH_RECOVERED)
+        // authorize() itself performs one supported cache heal before denying.
+        Log::shouldHaveReceived('info')
+            ->withArgs(fn ($msg) => $msg === 'telegram_operator_auth_cache_healed')
             ->once();
     }
 

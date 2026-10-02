@@ -79,17 +79,32 @@ final class TelegramOperatorAuthService
             return null;
         }
 
-        if (! $user->can($permission)) {
-            Log::warning('telegram_operator_auth_forbidden', [
+        if ($user->can($permission)) {
+            return $user;
+        }
+
+        // Linked operator failed can() — one supported Spatie cache heal then re-check.
+        // Destination routing already heals this way; callbacks must not stay denied on
+        // stale redis permission ids while the operator still holds the role permission.
+        $this->reloadPermissionRegistrar(forgetCache: true);
+        $user = $user->fresh() ?? $user;
+        if ($user->can($permission)) {
+            Log::info('telegram_operator_auth_cache_healed', [
                 'telegram_user_id' => $telegramUserId,
                 'user_id' => (int) $user->id,
                 'permission' => $permission,
             ]);
 
-            return null;
+            return $user;
         }
 
-        return $user;
+        Log::warning('telegram_operator_auth_forbidden', [
+            'telegram_user_id' => $telegramUserId,
+            'user_id' => (int) $user->id,
+            'permission' => $permission,
+        ]);
+
+        return null;
     }
 
     /**
