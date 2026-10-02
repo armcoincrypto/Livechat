@@ -28,7 +28,7 @@ final class RatesBestChangeDispatchWatchCommand extends Command
     public const HEARTBEAT_CRITICAL_SECONDS = 1800;
 
     /** Laravel withoutOverlapping unit for compiler:bestchange (minutes). */
-    public const BC_MUTEX_TTL_MINUTES = 20;
+    public const BC_MUTEX_TTL_MINUTES = 60;
 
     protected $signature = 'rates:bestchange-dispatch-watch
         {--format=json : json|text}

@@ -267,12 +267,12 @@ class ExchangeSchedule
             ->appendOutputTo(storage_path('logs/compiler_courses.log'));
         self::applyMinuteCadence($courses, $ratesMinutes);
 
-        // withoutOverlapping(20) = 20 minutes = 1200s (Laravel unit = minutes).
-        // Covers observed ~14m runtime + headroom. Flock still blocks a second writer
-        // if this mutex expires while a live compiler PID remains.
+        // withoutOverlapping(60) = 60 minutes = 3600s (Laravel unit = minutes).
+        // Observed runtime 2026-10-02: avg ~20.6m, max ~29.2m. Prior TTL 20 expired
+        // while PID still live; flock still blocked overlap. Cap TTL above max runtime.
         $bestchange = $schedule->exec("{$compilerWrapper} compiler:bestchange")
             ->onOneServer()
-            ->withoutOverlapping(20)
+            ->withoutOverlapping(60)
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/compiler_bestchange.log'));
         self::applyMinuteCadence($bestchange, $ratesMinutes);

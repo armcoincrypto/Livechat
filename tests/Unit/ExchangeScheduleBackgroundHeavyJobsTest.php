@@ -41,12 +41,12 @@ final class ExchangeScheduleBackgroundHeavyJobsTest extends TestCase
         }
 
         // Laravel withoutOverlapping($n) is MINUTES (CacheEventMutex: expiresAt * 60).
-        // Observed BC runtime ~780–845s (~13–14m); TTL must cover that with headroom,
-        // but must NOT be 300 minutes (5h) which caused multi-tens-of-minutes silent gaps.
+        // Observed BC runtime 2026-10-02: avg ~20.6m / max ~29.2m. TTL 60 covers that
+        // with headroom; must NOT be 300 minutes (5h) which caused silent gaps.
         $this->assertMatchesRegularExpression(
-            '/compiler:bestchange[\s\S]{0,500}withoutOverlapping\(\s*20\s*\)/',
+            '/compiler:bestchange[\s\S]{0,500}withoutOverlapping\(\s*60\s*\)/',
             $src,
-            'compiler:bestchange mutex TTL must be 20 minutes (not 300)'
+            'compiler:bestchange mutex TTL must be 60 minutes (not 300)'
         );
         $this->assertStringContainsString('rates:bestchange-dispatch-watch', $src);
         $this->assertDoesNotMatchRegularExpression(
