@@ -73,6 +73,21 @@ $app['env'] = 'testing';
 putenv('APP_KEY=base64:dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleXRlc3Q=');
 $_ENV['APP_KEY'] = 'base64:dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleXRlc3Q=';
 $_SERVER['APP_KEY'] = 'base64:dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleXRlc3Q=';
+
+// Process-env certification flags from shared/.env must not pin CertificationGate
+// ahead of per-test config() overrides (flagEnabled() reads getenv first).
+foreach (['EXS_ORDER_CERTIFICATION_ENABLED', 'EXS_ORDER_CERTIFICATION_TOKEN'] as $certEnvKey) {
+    putenv($certEnvKey);
+    unset($_ENV[$certEnvKey], $_SERVER[$certEnvKey]);
+}
+
+// Spatie permission id cache must not be served from production Redis while
+// the suite uses the isolated phpunit DB (stale ids → User::permission() empty).
+\Illuminate\Support\Facades\Config::set('permission.cache.store', 'array');
+if (class_exists(\Spatie\Permission\PermissionRegistrar::class) && $app->bound(\Spatie\Permission\PermissionRegistrar::class)) {
+    $app->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+}
+
 // Reset Encrypter singleton if already resolved against an empty key.
 if ($app->bound('encrypter')) {
     $app->forgetInstance('encrypter');

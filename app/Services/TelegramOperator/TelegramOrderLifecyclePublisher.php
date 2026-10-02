@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
  * One operational Telegram card per order destination (operator DMs).
  * NEW = compact SEND; later lifecycle states EDIT the stored message.
  * PAID EDITs the main card; separate short alert only for frozen/high-risk (MAIN_CARD_ONLY).
+ * Stale lifecycle + existing card → SKIP; stale + empty registry → publish authoritative once.
  * Channel destinations are intentionally excluded from order-card ownership.
  */
 final class TelegramOrderLifecyclePublisher
@@ -156,25 +157,51 @@ final class TelegramOrderLifecyclePublisher
 
         $run = function () use ($task, $taskId, $lifecycle, $allowSend, $compactNew, $allowRecover, $destinations, &$stats): void {
             $fresh = $task->fresh() ?? $task;
-            // Present from live DB so claim/paid both reflect payment + ownership.
-            $payload = $this->presenter->present($fresh, $lifecycle);
-            $operator = $this->nonEmptyString($payload['operator'] ?? null);
+            // Probe presenter for operator/status mapping; may re-present if we promote.
+            $probe = $this->presenter->present($fresh, $lifecycle);
+            $operator = $this->nonEmptyString($probe['operator'] ?? null);
             $authoritative = TelegramOrderMessagePresenter::lifecycleFromStatus((int) ($fresh->status ?? 0), $operator);
 
-            if ($this->shouldSkipAgainstAuthoritative($lifecycle, $authoritative)) {
-                $stats['skipped_stale']++;
-                $this->audit($fresh, $lifecycle, 'SKIP_STALE', null, null);
+            // Card existence must be observed inside telegram_order_card_lock.
+            $existing = $this->registry->cards($taskId);
+            $hasPermanentCard = $this->hasPermanentCard($existing);
 
-                return;
+            $effectiveLifecycle = $lifecycle;
+            $effectiveAllowSend = $allowSend;
+            $effectiveCompact = $compactNew;
+
+            if ($this->shouldSkipAgainstAuthoritative($lifecycle, $authoritative)) {
+                if ($hasPermanentCard) {
+                    $stats['skipped_stale']++;
+                    $this->audit($fresh, $lifecycle, 'SKIP_STALE', null, null);
+
+                    return;
+                }
+
+                // Stale request + empty registry: first card must be CURRENT authoritative state.
+                // Never SEND compact NEW when DB already PAID/CLAIMED/terminal.
+                $effectiveLifecycle = $authoritative;
+                $effectiveAllowSend = true;
+                $effectiveCompact = $authoritative === TelegramOrderMessagePresenter::LIFECYCLE_NEW;
+                Log::info('telegram_order_lifecycle_authoritative_empty_registry', [
+                    'task_id' => $taskId,
+                    'public_id' => (string) ($fresh->public_id ?? ''),
+                    'requested' => $lifecycle,
+                    'authoritative' => $authoritative,
+                ]);
             }
 
-            $text = $compactNew
+            $payload = $effectiveLifecycle === $lifecycle
+                ? $probe
+                : $this->presenter->present($fresh, $effectiveLifecycle);
+            $operator = $this->nonEmptyString($payload['operator'] ?? null) ?? $operator;
+
+            $text = $effectiveCompact
                 ? $this->presenter->renderCompactNew($payload)
                 : $this->presenter->renderText($payload);
-            $keyboard = $this->keyboardFor($lifecycle, $taskId, $operator !== null);
+            $keyboard = $this->keyboardFor($effectiveLifecycle, $taskId, $operator !== null);
             $publicId = (string) ($fresh->public_id ?? $taskId);
 
-            $existing = $this->registry->cards($taskId);
             $byChat = [];
             foreach ($existing as $card) {
                 $byChat[(string) $card['chat_id']] = [
@@ -194,15 +221,15 @@ final class TelegramOrderLifecyclePublisher
                 $priorLife = (string) ($prior['lifecycle'] ?? '');
 
                 if ($messageId !== null && $messageId > 0
-                    && $this->shouldSkipAgainstPrior($lifecycle, $priorLife)
+                    && $this->shouldSkipAgainstPrior($effectiveLifecycle, $priorLife)
                 ) {
                     $stats['skipped_stale']++;
-                    $this->audit($fresh, $lifecycle, 'SKIP_STALE', $chatId, $messageId);
+                    $this->audit($fresh, $effectiveLifecycle, 'SKIP_STALE', $chatId, $messageId);
                     continue;
                 }
 
                 // Create-vs-paid race: never regress an advanced card back to compact NEW.
-                if ($lifecycle === TelegramOrderMessagePresenter::LIFECYCLE_NEW
+                if ($effectiveLifecycle === TelegramOrderMessagePresenter::LIFECYCLE_NEW
                     && $messageId !== null
                     && $messageId > 0
                     && $this->lifecycleRank($priorLife) > $this->lifecycleRank(TelegramOrderMessagePresenter::LIFECYCLE_NEW)
@@ -214,48 +241,48 @@ final class TelegramOrderLifecyclePublisher
                 if ($messageId !== null && $messageId > 0) {
                     $edit = $this->bot->editMessageResult($chatId, $messageId, $text, $keyboard);
                     if ($edit['ok']) {
-                        $this->registry->remember($taskId, $chatId, $messageId, $lifecycle);
+                        $this->registry->remember($taskId, $chatId, $messageId, $effectiveLifecycle);
                         $stats['edited']++;
-                        $this->audit($fresh, $lifecycle, 'EDIT', $chatId, $messageId);
+                        $this->audit($fresh, $effectiveLifecycle, 'EDIT', $chatId, $messageId);
                         continue;
                     }
                     if (! ($edit['message_missing'] ?? false)) {
                         Log::warning('telegram_order_lifecycle_edit_failed', [
                             'task_id' => $taskId,
                             'public_id' => $publicId,
-                            'lifecycle' => $lifecycle,
+                            'lifecycle' => $effectiveLifecycle,
                             'chat_id_suffix' => substr($chatId, -4),
                             'destination_empty_class' => TelegramOperatorDestinationHealth::CLASS_BOT_SEND_FAILURE,
                         ]);
                         continue;
                     }
-                    if ($allowSend || $allowRecover || $lifecycle === TelegramOrderMessagePresenter::LIFECYCLE_PAID) {
+                    if ($effectiveAllowSend || $allowRecover || $effectiveLifecycle === TelegramOrderMessagePresenter::LIFECYCLE_PAID) {
                         $sent = $this->bot->sendMessageResult($chatId, $text, $keyboard);
                         if ($sent['ok'] && ($sent['message_id'] ?? 0) > 0) {
                             $newId = (int) $sent['message_id'];
-                            $this->registry->remember($taskId, $chatId, $newId, $lifecycle);
+                            $this->registry->remember($taskId, $chatId, $newId, $effectiveLifecycle);
                             $stats['recovered']++;
-                            $this->audit($fresh, $lifecycle, 'RECOVER', $chatId, $newId);
+                            $this->audit($fresh, $effectiveLifecycle, 'RECOVER', $chatId, $newId);
                         }
                     }
                     continue;
                 }
 
-                if (! $allowSend && $lifecycle !== TelegramOrderMessagePresenter::LIFECYCLE_NEW) {
+                if (! $effectiveAllowSend && $effectiveLifecycle !== TelegramOrderMessagePresenter::LIFECYCLE_NEW) {
                     continue;
                 }
 
                 $sent = $this->bot->sendMessageResult($chatId, $text, $keyboard);
                 if ($sent['ok'] && ($sent['message_id'] ?? 0) > 0) {
                     $newId = (int) $sent['message_id'];
-                    $this->registry->remember($taskId, $chatId, $newId, $lifecycle);
+                    $this->registry->remember($taskId, $chatId, $newId, $effectiveLifecycle);
                     $stats['sent']++;
-                    $this->audit($fresh, $lifecycle, 'SEND', $chatId, $newId);
+                    $this->audit($fresh, $effectiveLifecycle, 'SEND', $chatId, $newId);
                 } else {
                     Log::warning('telegram_order_lifecycle_send_failed', [
                         'task_id' => $taskId,
                         'public_id' => $publicId,
-                        'lifecycle' => $lifecycle,
+                        'lifecycle' => $effectiveLifecycle,
                         'chat_id_suffix' => substr($chatId, -4),
                         'destination_empty_class' => TelegramOperatorDestinationHealth::CLASS_BOT_SEND_FAILURE,
                     ]);
@@ -385,6 +412,20 @@ final class TelegramOrderLifecyclePublisher
         }
 
         return $sent;
+    }
+
+    /**
+     * @param  list<array{chat_id?: string, message_id?: int, lifecycle?: string}>  $cards
+     */
+    private function hasPermanentCard(array $cards): bool
+    {
+        foreach ($cards as $card) {
+            if ((int) ($card['message_id'] ?? 0) > 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function shouldSkipAgainstAuthoritative(string $requested, string $authoritative): bool
