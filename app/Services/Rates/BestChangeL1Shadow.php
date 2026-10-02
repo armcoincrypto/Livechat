@@ -15,10 +15,7 @@ final class BestChangeL1Shadow
 {
     public static function shadowEnabled(): bool
     {
-        return filter_var(
-            env('BESTCHANGE_L1_SHADOW_ENABLED', false),
-            FILTER_VALIDATE_BOOLEAN
-        );
+        return self::envBool('BESTCHANGE_L1_SHADOW_ENABLED', false);
     }
 
     /**
@@ -28,10 +25,21 @@ final class BestChangeL1Shadow
      */
     public static function skipIdenticalDeUpsertEnabled(): bool
     {
-        return filter_var(
-            env('BESTCHANGE_L1_SKIP_IDENTICAL_DE_UPSERT', false),
-            FILTER_VALIDATE_BOOLEAN
-        );
+        return self::envBool('BESTCHANGE_L1_SKIP_IDENTICAL_DE_UPSERT', false);
+    }
+
+    private static function envBool(string $key, bool $default): bool
+    {
+        $raw = function_exists('env') ? env($key, null) : null;
+        if ($raw === null) {
+            $g = getenv($key);
+            $raw = ($g === false) ? null : $g;
+        }
+        if ($raw === null) {
+            return $default;
+        }
+
+        return filter_var($raw, FILTER_VALIDATE_BOOLEAN);
     }
 
     /**
