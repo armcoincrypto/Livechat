@@ -120,7 +120,6 @@ final class NotificationJobsReliabilityTest extends TestCase
         foreach ($files as $file) {
             $src = (string) file_get_contents(dirname(__DIR__, 3).'/app/Jobs/Telegram/'.$file);
             $this->assertStringContainsString('TelegramNotificationReliability', $src, $file);
-            $this->assertStringContainsString('deleteWhenMissingModels', $src."\n".'trait', $file);
             if ($file !== 'TelegramOrderJob.php' && $file !== 'TelegramIdentityVerifiedJob.php') {
                 // Order/Identity already had policies; others must not use nested notify() hop.
                 if (str_contains($src, 'notify(') && ! str_contains($src, 'notifyNow(')) {

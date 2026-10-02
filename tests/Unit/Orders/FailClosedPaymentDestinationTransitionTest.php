@@ -152,14 +152,15 @@ final class FailClosedPaymentDestinationTransitionTest extends TestCase
 
     public function test_decide_helpers(): void
     {
-        $this->assertTrue(PaymentDestinationFailClosedGuard::destinationRequired('kobbopay'));
+        $owner = \App\Services\Orders\PaymentDestinationRouter::OWNER_KOBBOPAY;
+        $this->assertTrue(PaymentDestinationFailClosedGuard::destinationRequired($owner));
         $this->assertSame(
             ['reject' => true, 'restore_pending' => false],
-            PaymentDestinationFailClosedGuard::decide('kobbopay', false)
+            PaymentDestinationFailClosedGuard::decide($owner, false)
         );
         $this->assertSame(
             ['reject' => false, 'restore_pending' => true],
-            PaymentDestinationFailClosedGuard::decide('kobbopay', true)
+            PaymentDestinationFailClosedGuard::decide($owner, true)
         );
     }
 

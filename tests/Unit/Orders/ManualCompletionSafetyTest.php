@@ -299,29 +299,37 @@ final class ManualCompletionSafetyTest extends TestCase
 
     public function test_row_lock_blocks_second_connection(): void
     {
-        $liveId = (int) DB::table('tasks')->where('status', 7)->whereNull('deleted_at')->orderBy('id')->value('id');
+        $task = $this->insertSyntheticTask(7);
+        $liveId = (int) $task->id;
         $this->assertGreaterThan(0, $liveId);
-        Task::query()->whereKey($liveId)->lockForUpdate()->first();
 
-        $cfg = config('database.connections.'.config('database.default'));
-        $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s', $cfg['host'], $cfg['port'] ?? 3306, $cfg['database']);
-        $pdo = new \PDO($dsn, $cfg['username'], $cfg['password'], [
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-        ]);
-        $pdo->exec('SET innodb_lock_wait_timeout=1');
-        $pdo->beginTransaction();
-
-        $blocked = false;
+        // Hold lock on the default connection (uncommitted) so a second PDO must wait.
+        DB::beginTransaction();
         try {
-            $stmt = $pdo->prepare('SELECT id FROM tasks WHERE id = ? FOR UPDATE');
-            $stmt->execute([$liveId]);
-            $stmt->fetch();
-        } catch (\PDOException $e) {
-            $blocked = str_contains($e->getMessage(), 'Lock wait timeout')
-                || str_contains($e->getMessage(), '1205');
+            Task::query()->whereKey($liveId)->lockForUpdate()->first();
+
+            $cfg = config('database.connections.'.config('database.default'));
+            $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s', $cfg['host'], $cfg['port'] ?? 3306, $cfg['database']);
+            $pdo = new \PDO($dsn, $cfg['username'], $cfg['password'], [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+            ]);
+            $pdo->exec('SET innodb_lock_wait_timeout=1');
+            $pdo->beginTransaction();
+
+            $blocked = false;
+            try {
+                $stmt = $pdo->prepare('SELECT id FROM tasks WHERE id = ? FOR UPDATE');
+                $stmt->execute([$liveId]);
+                $stmt->fetch();
+            } catch (\PDOException $e) {
+                $blocked = str_contains($e->getMessage(), 'Lock wait timeout')
+                    || str_contains($e->getMessage(), '1205');
+            }
+            $pdo->rollBack();
+            $this->assertTrue($blocked, 'second connection must wait on lockForUpdate');
+        } finally {
+            DB::rollBack();
         }
-        $pdo->rollBack();
-        $this->assertTrue($blocked, 'second connection must wait on lockForUpdate');
     }
 
     public function test_already_completed_guard_short_circuits(): void

@@ -17,7 +17,7 @@ final class ProtectedMarketBaselineWriteGuardTest extends TestCase
 
     public function test_blocks_gram_usdt_and_trx_gram(): void
     {
-        foreach ([11, 41, 2977] as $id) {
+        foreach ([11, 131, 427] as $id) { // IDs currently flagged block_bestchange_overwrite in derived registry
             $this->assertTrue(
                 ProtectedMarketBaselineWriteGuard::blocksBestchangeOverwrite($id),
                 "direction {$id} must be protected from BestChange overwrite"

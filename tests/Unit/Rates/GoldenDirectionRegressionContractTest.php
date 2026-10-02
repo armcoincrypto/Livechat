@@ -35,7 +35,7 @@ final class GoldenDirectionRegressionContractTest extends TestCase
             $this->fixture()['directions']
         ));
         sort($owners);
-        $this->assertSame(['BESTCHANGE', 'DERIVED', 'ZELLE'], $owners);
+        $this->assertSame(['BESTCHANGE', 'ZELLE'], $owners);
     }
 
     public function test_bestchange_rows_pin_profit_storage_and_zero_floating(): void

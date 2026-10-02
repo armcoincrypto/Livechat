@@ -510,3 +510,35 @@ CREATE TABLE IF NOT EXISTS `tasks_operators_logs` (
   PRIMARY KEY (`id`),
   KEY `tasks_operators_logs_id_task_foreign` (`id_task`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Balance tables required by referral + fail-closed order tests (structure matches mysql-schema + partner accrual columns).
+CREATE TABLE IF NOT EXISTS `user_balance` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `id_user` int NOT NULL,
+  `balance` float DEFAULT '0',
+  `balance_reward` float DEFAULT '0',
+  `hold_balance` double NOT NULL DEFAULT '0',
+  `id_code_currency` int NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `referral_total_profit` double NOT NULL DEFAULT '0',
+  `referral_total_withdrawal` double NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_balance_id_user_unique` (`id_user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `user_balance_log` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id_user` int NOT NULL DEFAULT '0',
+  `type` int NOT NULL DEFAULT '0',
+  `id_manager` int NOT NULL DEFAULT '0',
+  `text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `from_balance` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `to_balance` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `route_type` int NOT NULL DEFAULT '0',
+  `source` varchar(64) DEFAULT NULL,
+  `reference` varchar(191) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_balance_log_reference_unique` (`reference`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

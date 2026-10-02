@@ -115,3 +115,7 @@ ALTER TABLE `verification_card` ADD COLUMN `card_number_last4` varchar(8) NULL D
 ALTER TABLE `verification_card` ADD COLUMN `identifier_key_version` tinyint unsigned NOT NULL DEFAULT 0;
 ALTER TABLE `verification_card` ADD COLUMN `language` varchar(191) NULL DEFAULT 'ru';
 ALTER TABLE `verification_card` ADD COLUMN `image_preview` varchar(191) NULL DEFAULT NULL;
+
+-- Idempotent balance-log attribution columns (partner accrual / referral).
+ALTER TABLE `user_balance_log` ADD COLUMN `source` varchar(64) DEFAULT NULL;
+ALTER TABLE `user_balance_log` ADD COLUMN `reference` varchar(191) DEFAULT NULL;

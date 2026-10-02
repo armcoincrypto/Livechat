@@ -58,7 +58,15 @@ final class AtomicPublicXmlPublisher
                 throw new RuntimeException('incomplete_temp_xml_write');
             }
             fflush($fh);
-            fsync($fh);
+            // Best-effort durability. Some filesystems/streams (tmp overlays, certain
+            // CI mounts) reject fsync; publish must still complete after a successful write.
+            if (function_exists('fsync')) {
+                try {
+                    @fsync($fh);
+                } catch (\Throwable) {
+                    // ignore — rename below remains the atomic visibility boundary
+                }
+            }
         } finally {
             fclose($fh);
         }

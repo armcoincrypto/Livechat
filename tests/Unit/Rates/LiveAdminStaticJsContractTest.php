@@ -23,8 +23,9 @@ final class LiveAdminStaticJsContractTest extends TestCase
     public function test_ownership_panel_surfaces_inactive_authority_label(): void
     {
         $js = $this->readPublicStatic('admin-pricing-ownership-panel.js');
-        $this->assertStringContainsString('mapping_authority_label', $js);
-        $this->assertStringContainsString('Top-N статус', $js);
+        $this->assertStringContainsString('exs-pricing-ownership-panel', $js);
+        $this->assertStringContainsString('rate_source_label', $js);
+        $this->assertStringContainsString('Источник курса', $js);
     }
 
     private function readPublicStatic(string $name): string

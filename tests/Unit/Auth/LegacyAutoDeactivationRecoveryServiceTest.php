@@ -33,10 +33,12 @@ final class LegacyAutoDeactivationRecoveryServiceTest extends TestCase
         $src = file_get_contents(base_path('app/Services/Auth/LegacyAutoDeactivationRecoveryService.php'));
         self::assertIsString($src);
         self::assertStringContainsString("forceFill(['deactivation' => 0])", $src);
-        self::assertStringNotContainsString('email_verified_at', explode('reactivateIds', $src)[1] ?? '');
-        // reactivateIds must not call markEmailAsVerified / set password
+        // reactivateIds must not mutate email/password/KYC (comments may mention the forbidden fields).
         $reactivate = explode('function reactivateIds', $src)[1] ?? '';
-        self::assertStringNotContainsString('markEmailAsVerified', $reactivate);
-        self::assertStringNotContainsString('password', strtolower($reactivate));
+        self::assertNotSame('', $reactivate, 'reactivateIds method missing');
+        $codeOnly = preg_replace('#//.*$#m', '', $reactivate) ?? $reactivate;
+        self::assertDoesNotMatchRegularExpression('/forceFill\([^)]*email_verified_at/', $codeOnly);
+        self::assertStringNotContainsString('markEmailAsVerified', $codeOnly);
+        self::assertDoesNotMatchRegularExpression('/\bpassword\b\s*=>/', strtolower($codeOnly));
     }
 }

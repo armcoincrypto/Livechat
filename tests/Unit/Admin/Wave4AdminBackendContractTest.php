@@ -84,6 +84,7 @@ final class Wave4AdminBackendContractTest extends TestCase
 
     public function test_unauthenticated_admin_json_is_401(): void
     {
+        Event::fake();
         Auth::logout();
         $request = Request::create('/iexadmin/frontend-api/vue/liveOrders', 'GET');
         $request->headers->set('Accept', 'application/json');
@@ -97,6 +98,7 @@ final class Wave4AdminBackendContractTest extends TestCase
 
     public function test_unauthorized_live_orders_is_403(): void
     {
+        Event::fake();
         $base = User::permission('allow_admin')->orderBy('id')->first() ?: User::permission('admin_tasks')->orderBy('id')->first();
         $this->assertNotNull($base);
         $user = Wave4DenyTasksUser::query()->whereKey($base->id)->first();
@@ -113,6 +115,7 @@ final class Wave4AdminBackendContractTest extends TestCase
 
     public function test_autopay_toggle_unauthorized_rejected_and_stays_off(): void
     {
+        Event::fake();
         $before = (int) iEXSetting('is_enabled_autopay_cron', 0);
         $this->assertSame(0, $before, 'autopay must remain OFF for this test');
 

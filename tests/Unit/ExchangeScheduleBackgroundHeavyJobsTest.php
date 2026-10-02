@@ -23,9 +23,16 @@ final class ExchangeScheduleBackgroundHeavyJobsTest extends TestCase
             'rates:zelleusd-usdt-preview',
             'merchant:webhook',
         ] as $needle) {
-            $pos = strpos($src, $needle);
+            // Prefer the schedule->exec/command registration site, not earlier comments.
+            $pos = strpos($src, "exec(\"{\$compilerWrapper} {$needle}\")");
+            if ($pos === false) {
+                $pos = strpos($src, "exec(\"{\$compilerWrapper} {$needle} ");
+            }
+            if ($pos === false) {
+                $pos = strrpos($src, $needle);
+            }
             $this->assertNotFalse($pos, "missing schedule entry for {$needle}");
-            $window = substr($src, $pos, 450);
+            $window = substr($src, max(0, $pos - 80), 550);
             $this->assertStringContainsString(
                 'runInBackground',
                 $window,

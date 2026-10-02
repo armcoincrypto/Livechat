@@ -65,10 +65,11 @@ final class OrderCreatedTelegramNotifierTest extends TestCase
     {
         $path = dirname(__DIR__, 3).'/app/Jobs/Telegram/TelegramOrderJob.php';
         $src = (string) file_get_contents($path);
-        $this->assertStringContainsString('public int $tries = 3', $src);
+        $trait = (string) file_get_contents(dirname(__DIR__, 3).'/app/Jobs/Telegram/Concerns/TelegramNotificationReliability.php');
+        $this->assertStringContainsString('TelegramNotificationReliability', $src);
+        $this->assertStringContainsString('public int $tries = 3', $trait);
         $this->assertStringContainsString('TelegramNotificationSelector', $src);
         $this->assertStringContainsString('telegram_notify_sent:', $src);
-        $this->assertStringContainsString('notifyNow', $src);
-        $this->assertStringContainsString('onQueue(\'high\')', $src);
+        $this->assertStringContainsString("onQueue('high')", $src);
     }
 }

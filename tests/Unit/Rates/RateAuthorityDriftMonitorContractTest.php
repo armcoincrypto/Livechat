@@ -186,13 +186,14 @@ final class RateAuthorityDriftMonitorContractTest extends TestCase
 
     public function test_bc_fixture_fresh_identical_rate_heartbeat(): void
     {
-        Carbon::setTestNow(Carbon::parse('2026-09-27 16:53:04', 'UTC'));
+        $tz = (string) config('app.timezone', 'UTC');
+        Carbon::setTestNow(Carbon::parse('2026-09-27 16:53:04', $tz));
         $bc = (object) [
             'status' => 1,
             'is_error_parser' => 0,
             'rate_value' => '1.23',
             'position_num' => '3',
-            'updated_at' => '2026-09-27 16:50:00', // 184s
+            'updated_at' => Carbon::parse('2026-09-27 16:50:00', $tz)->toDateTimeString(), // 184s in app tz
         ];
         $h = BestChangeMarketBaseHealth::evaluateFromRow($bc, 410, 1800, false);
         $this->assertTrue($h['healthy']);
@@ -204,13 +205,14 @@ final class RateAuthorityDriftMonitorContractTest extends TestCase
 
     public function test_fresh_heartbeat_plus_position_insufficient_depth_not_book_stale(): void
     {
-        Carbon::setTestNow(Carbon::parse('2026-09-27 16:53:04', 'UTC'));
+        $tz = (string) config('app.timezone', 'UTC');
+        Carbon::setTestNow(Carbon::parse('2026-09-27 16:53:04', $tz));
         $bc = (object) [
             'status' => 1,
             'is_error_parser' => 1,
             'rate_value' => '1.23',
             'position_num' => '6',
-            'updated_at' => '2026-09-27 16:50:00', // fresh
+            'updated_at' => Carbon::parse('2026-09-27 16:50:00', $tz)->toDateTimeString(), // fresh
             'explain_payload' => json_encode([
                 'reason' => 'position_insufficient_depth',
                 'available_offers' => 5,

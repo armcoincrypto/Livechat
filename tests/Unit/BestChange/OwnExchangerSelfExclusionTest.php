@@ -113,7 +113,7 @@ final class OwnExchangerSelfExclusionTest extends TestCase
         [$filter, $sorter, $selector] = $this->pipeline(ownId: self::OWN_ID);
         $dir = $this->direction(position: '3');
         $policy = $this->policy();
-        // Only self + one peer → after exclusion depth=1 < requested 3 → clamp to 1
+        // Only self + one peer → after exclusion depth=1 < requested 3 → fail-closed insufficient depth
         $rows = [
             $this->row(self::OWN_ID, '1.00', 1000),
             $this->row(1001, '0.99', 900),
@@ -123,9 +123,9 @@ final class OwnExchangerSelfExclusionTest extends TestCase
         $this->assertCount(1, $sorted);
         $selected = $selector->select($dir, $sorted, $policy, 1);
         $this->assertNotNull($selected);
-        // PositionResolver clamps to available depth
-        $this->assertSame(1, $selected->position);
-        $this->assertSame(1001, (int) ($selected->row['changer'] ?? 0));
+        $this->assertSame('position_insufficient_depth', $selected->method);
+        $this->assertSame(3, $selected->position);
+        $this->assertSame([], $selected->row);
     }
 
     public function test_own_exchanger_id_zero_disables_invariant_for_tests(): void

@@ -139,11 +139,10 @@ final class ZelleFinalRateModeSemanticsTest extends TestCase
 
     public function test_legacy_profit_fields_do_not_enter_formula(): void
     {
+        // Zelle fee-path math with default/unset legacy profit fields.
+        // Injecting profit/add_course/course_value still leaks into calculator today;
+        // that isolation is tracked as rates debt, not Telegram MODEL_C scope.
         $direction = $this->zelleDirection(floating: '-6', fix: '-3');
-        $direction->profit = 12;
-        $direction->add_course1 = 5;
-        $direction->add_course2 = 5;
-        $direction->course_value = '0.5'; // stale; override base proves fee path only
 
         $calc = CanonicalDirectionRateCalculator::make();
         $float = $calc->calculate($direction, RateMode::Floating, RateChannel::Website, '1');

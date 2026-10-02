@@ -29,7 +29,7 @@ final class BestChangeExternalTopNControllerTest extends TestCase
         $adj = $c->adjust($dir, '1.0015', $book, 4, 5, 5);
         $this->assertFalse($adj['applied']);
         $this->assertSame(BestChangeExternalTopNController::STATUS_BETTER_THAN_TARGET, $adj['status']);
-        $this->assertSame('1.0015', $adj['course']);
+        $this->assertSame(0, bccomp((string) $adj['course'], '1.0015', 18));
         $this->assertSame(2, $adj['actual_rank']);
     }
 

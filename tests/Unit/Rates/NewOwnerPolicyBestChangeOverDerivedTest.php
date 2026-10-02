@@ -19,11 +19,10 @@ final class NewOwnerPolicyBestChangeOverDerivedTest extends TestCase
     public function test_health_evaluate_source_no_longer_fails_closed_on_outlier(): void
     {
         $src = (string) file_get_contents(dirname(__DIR__, 3) . '/app/Services/Rates/BestChangeMarketBaseHealth.php');
-        $this->assertStringContainsString('outlier_vs_derived is a commercial/warning signal only', $src);
-        $this->assertStringContainsString('NEW OWNER POLICY', $src);
-        // Must not early-return unhealthy solely for outlier_vs_derived.
+        // Outlier vs derived is recorded but must not fail-close health by itself.
+        $this->assertStringContainsString("'outlier_vs_derived'", $src);
         $this->assertDoesNotMatchRegularExpression(
-            "/reason'\\s*=>\\s*'outlier_vs_derived'[\\s\\S]{0,120}return \\$base;/",
+            '/reason\'\s*=>\s*\'outlier_vs_derived\'[\s\S]{0,120}return \$base;/',
             $src
         );
         $this->assertSame(12.0, BestChangeMarketBaseHealth::DEFAULT_OUTLIER_MAX_PERCENT);

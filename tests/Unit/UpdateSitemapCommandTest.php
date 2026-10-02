@@ -13,7 +13,7 @@ use ReflectionClass;
  */
 final class UpdateSitemapCommandTest extends TestCase
 {
-    private const SITEMAP_PATH = __DIR__ . '/../../public/static/seo/sitemap.xml';
+    private const SITEMAP_PATH = __DIR__ . '/../Fixtures/seo/sitemap.xml';
 
     private const INDEX_TIER_PATH = __DIR__ . '/../../storage/app/seo/exchange_index_tier_ids.txt';
 

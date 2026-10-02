@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
+// Enable final-class mocking for intentional final production settings/services
+// (BestChangeConfig, BestChangeCatalogRepository, …). Does not alter production
+// source; strips `final` only while PHPUnit loads class files via file stream.
+require_once __DIR__ . '/Support/DG/BypassFinals.php';
+require_once __DIR__ . '/Support/DG/BypassFinals/NativeWrapper.php';
+require_once __DIR__ . '/Support/DG/BypassFinals/MutatingWrapper.php';
+\DG\BypassFinals::enable();
+
 // Prefer App\\ / iEXPackages\\ from this tree so phpunit still sees local classes
 // when vendor/ is reused from another worktree (PSR-4 otherwise points there).
 spl_autoload_register(static function (string $class): void {
@@ -70,3 +78,9 @@ if ($app->bound('encrypter')) {
     $app->forgetInstance('encrypter');
     $app->forgetInstance(\Illuminate\Contracts\Encryption\Encrypter::class);
 }
+
+// Snapshot real facade roots so Event::fake()/Notification::fake() in one test
+// cannot poison later Unit tests in the same process.
+$GLOBALS['__exs_phpunit_events'] = $app->bound('events') ? $app->make('events') : null;
+$GLOBALS['__exs_phpunit_mailer'] = $app->bound('mail.manager') ? $app->make('mail.manager') : null;
+
