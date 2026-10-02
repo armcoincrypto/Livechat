@@ -1,0 +1,14 @@
+{
+  "id": "tg-dest-harden-paid-restore-20261002",
+  "role": "RELEASE_COORDINATOR",
+  "baseSha": "a3e55b9ba77d729599a4d5a28f04c30934ec306b",
+  "branch": "feature/tg-dest-harden-paid-restore-20261002",
+  "worktree": "/opt/exswaping-owned-worktrees/tg-dest-harden-paid-restore-20261002",
+  "includes": [
+    "ee70fd5 Spatie permission-cache hardening",
+    "MAIN_CARD_ONLY paid policy restore (revert 7cb9b1e always-send)",
+    "post-cutover permission:cache-reset via switch_backend_release.sh",
+    "health monitor telegram destination auth probe"
+  ],
+  "paidPolicyRegressionSha": "7cb9b1e5c5eb125a391d612790315b653bef9223"
+}

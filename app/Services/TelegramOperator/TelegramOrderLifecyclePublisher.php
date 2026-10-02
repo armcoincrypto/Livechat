@@ -12,8 +12,7 @@ use Illuminate\Support\Facades\Log;
 /**
  * One operational Telegram card per order destination (operator DMs).
  * NEW = compact SEND; later lifecycle states EDIT the stored message.
- * PAID always EDITs the authoritative card and SENDs exactly one short attention
- * alert (normal or frozen/high-severity). Risk/freeze never suppresses the alert.
+ * PAID EDITs the main card; separate short alert only for frozen/high-risk (MAIN_CARD_ONLY).
  * Channel destinations are intentionally excluded from order-card ownership.
  */
 final class TelegramOrderLifecyclePublisher
@@ -36,8 +35,7 @@ final class TelegramOrderLifecyclePublisher
     }
 
     /**
-     * EDIT the permanent card on PAID, then SEND exactly one short attention alert.
-     * Frozen/high-risk changes alert severity only — never suppresses the paid event.
+     * EDIT the permanent card on PAID; separate alert only for frozen/high-risk.
      *
      * @return array{sent: int, edited: int, recovered: int, skipped_stale: int, attention_alert: int, attention_alert_skip_reason?: string|null}
      */
@@ -56,7 +54,7 @@ final class TelegramOrderLifecyclePublisher
 
         $decision = $this->presenter->paidAttentionAlertDecision($fresh);
         if (! $decision['send']) {
-            // Fail-closed policy hook: current decision always sends; keep path for safety.
+            // MAIN_CARD_ONLY: normal/claimed paid skip separate alert.
             Log::info('telegram_order_card', [
                 'order' => (string) ($fresh->public_id ?? $fresh->id ?? ''),
                 'task_id' => (int) ($fresh->id ?? 0),
