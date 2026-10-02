@@ -1,0 +1,10 @@
+{
+  "id": "tg-spatie-perm-cache-hardening-20261002",
+  "role": "FEATURE_AGENT",
+  "baseSha": "a3e55b9ba77d729599a4d5a28f04c30934ec306b",
+  "branch": "feature/tg-spatie-perm-cache-hardening-20261002",
+  "worktree": "/opt/exswaping-owned-worktrees/tg-spatie-perm-cache-20261002",
+  "scope": "Spatie permission-cache invalidation + Telegram operator destination auth health",
+  "noDeploy": true,
+  "paidPolicyUntouched": true
+}

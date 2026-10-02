@@ -6,10 +6,15 @@ namespace App\Services\TelegramOperator;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
  * Fail-closed mapping: telegram_user_id → authorized admin User.
  * Never trusts username/display name alone.
+ *
+ * Destination resolution re-evaluates Spatie permission state on each call
+ * (Horizon-safe) and performs one supported cache reset when links are
+ * configured but authorization returns empty — without bypassing can().
  */
 final class TelegramOperatorAuthService
 {
@@ -91,6 +96,10 @@ final class TelegramOperatorAuthService
      * Telegram user IDs allowed to receive actionable order DMs.
      * Fail closed: must be linked and hold the given permission.
      *
+     * Re-evaluates Spatie registrar state each call. If links are configured
+     * but authorization is empty, performs one supported permission-cache reset
+     * and re-checks (heals corrupt cache without bypassing can()).
+     *
      * @return list<int>
      */
     public function authorizedActionTelegramUserIds(?string $permission = null): array
@@ -100,14 +109,84 @@ final class TelegramOperatorAuthService
             'admin_orders_execute'
         );
 
+        $links = $this->links();
+        $this->reloadPermissionRegistrar(forgetCache: false);
+        $ids = $this->collectAuthorizedIds($links, $permission);
+
+        if ($links !== [] && $ids === []) {
+            // Supported Spatie reset — reload from DB; never skip can().
+            $this->reloadPermissionRegistrar(forgetCache: true);
+            $healed = $this->collectAuthorizedIds($links, $permission);
+            $health = app(TelegramOperatorDestinationHealth::class);
+
+            if ($healed !== []) {
+                $health->recordAuthRecovered([
+                    'permission' => $permission,
+                    'links' => $links,
+                    'authorized_ids' => $healed,
+                    'configured_link_count' => count($links),
+                    'authorized_count' => count($healed),
+                    'healed_from_cache' => true,
+                    'classification' => TelegramOperatorDestinationHealth::CLASS_OK,
+                ]);
+
+                return $healed;
+            }
+
+            $health->recordAuthEmpty([
+                'permission' => $permission,
+                'links' => $links,
+                'authorized_ids' => [],
+                'configured_link_count' => count($links),
+                'authorized_count' => 0,
+                'healed_from_cache' => false,
+                'classification' => TelegramOperatorDestinationHealth::CLASS_AUTHORIZATION_EMPTY,
+            ]);
+        }
+
+        return $ids;
+    }
+
+    /**
+     * @param  array<int, int>  $links
+     * @return list<int>
+     */
+    private function collectAuthorizedIds(array $links, string $permission): array
+    {
         $ids = [];
-        foreach (array_keys($this->links()) as $telegramUserId) {
+        foreach (array_keys($links) as $telegramUserId) {
             if ($this->authorize((int) $telegramUserId, $permission) !== null) {
                 $ids[] = (int) $telegramUserId;
             }
         }
 
         return $ids;
+    }
+
+    /**
+     * Horizon-safe Spatie permission re-evaluation.
+     * forgetCache=true uses the supported PermissionRegistrar::forgetCachedPermissions API.
+     */
+    public function reloadPermissionRegistrar(bool $forgetCache = false): void
+    {
+        if (! class_exists(PermissionRegistrar::class)) {
+            return;
+        }
+
+        try {
+            $registrar = app(PermissionRegistrar::class);
+            if ($forgetCache) {
+                $registrar->forgetCachedPermissions();
+            }
+            if (method_exists($registrar, 'clearPermissionsCollection')) {
+                $registrar->clearPermissionsCollection();
+            }
+        } catch (\Throwable $e) {
+            Log::warning('telegram_operator_permission_cache_reload_failed', [
+                'forget_cache' => $forgetCache,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function displayName(User $user): string

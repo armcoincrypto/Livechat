@@ -153,7 +153,8 @@ class HourlyMonitoringCommand extends Command
                         sprintf('Пользователь %s удален из группы %s', $user->name, $user->roles()->pluck('name')->implode(', '))
                     );
                     $user->update(['role_expired_at' => '']);
-                    $user->roles()->detach();
+                    $user->syncRoles([]);
+                    app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
                 }
             });
 

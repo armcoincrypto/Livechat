@@ -963,6 +963,9 @@ class UpdatingOldDataCommand extends Command
             'id_permissions_group' => 4,
         ]);
 
+        // Query-builder Permission::where()->delete()/update() skip model events;
+        // force supported Spatie permission cache reset before role remaps.
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
         //  Меняем роли
         foreach (Role::whereNull('title')->get() as $item) {

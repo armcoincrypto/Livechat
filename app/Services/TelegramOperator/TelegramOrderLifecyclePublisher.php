@@ -133,10 +133,25 @@ final class TelegramOrderLifecyclePublisher
         $stats = ['sent' => 0, 'edited' => 0, 'recovered' => 0, 'skipped_stale' => 0];
         $destinations = $this->destinations();
         if ($destinations === []) {
+            $emptyClass = $this->classifyEmptyDestinations();
             Log::warning('telegram_order_lifecycle_no_destination', [
                 'task_id' => $taskId,
                 'lifecycle' => $lifecycle,
+                'destination_empty_class' => $emptyClass,
             ]);
+            if ($emptyClass === TelegramOperatorDestinationHealth::CLASS_AUTHORIZATION_EMPTY) {
+                Log::error('telegram_order_lifecycle_destination_authorization_empty', [
+                    'task_id' => $taskId,
+                    'lifecycle' => $lifecycle,
+                    'destination_empty_class' => $emptyClass,
+                ]);
+            } elseif ($emptyClass === TelegramOperatorDestinationHealth::CLASS_NO_CONFIGURATION) {
+                Log::warning('telegram_order_lifecycle_destination_no_configuration', [
+                    'task_id' => $taskId,
+                    'lifecycle' => $lifecycle,
+                    'destination_empty_class' => $emptyClass,
+                ]);
+            }
 
             return $stats;
         }
@@ -212,6 +227,7 @@ final class TelegramOrderLifecyclePublisher
                             'public_id' => $publicId,
                             'lifecycle' => $lifecycle,
                             'chat_id_suffix' => substr($chatId, -4),
+                            'destination_empty_class' => TelegramOperatorDestinationHealth::CLASS_BOT_SEND_FAILURE,
                         ]);
                         continue;
                     }
@@ -237,6 +253,14 @@ final class TelegramOrderLifecyclePublisher
                     $this->registry->remember($taskId, $chatId, $newId, $lifecycle);
                     $stats['sent']++;
                     $this->audit($fresh, $lifecycle, 'SEND', $chatId, $newId);
+                } else {
+                    Log::warning('telegram_order_lifecycle_send_failed', [
+                        'task_id' => $taskId,
+                        'public_id' => $publicId,
+                        'lifecycle' => $lifecycle,
+                        'chat_id_suffix' => substr($chatId, -4),
+                        'destination_empty_class' => TelegramOperatorDestinationHealth::CLASS_BOT_SEND_FAILURE,
+                    ]);
                 }
             }
         };
@@ -471,6 +495,25 @@ final class TelegramOrderLifecyclePublisher
         }
 
         return array_values(array_unique(array_filter($out, static fn ($v) => $v !== '')));
+    }
+
+    /**
+     * Distinguish empty-destination causes for ops (never silent generic-only).
+     */
+    private function classifyEmptyDestinations(): string
+    {
+        $dmEnabled = filter_var(
+            config('telegram_operator.notify_operator_dms', true),
+            FILTER_VALIDATE_BOOLEAN
+        );
+        $links = $this->auth->links();
+        // Do not re-enter authorizedActionTelegramUserIds heal loop here — use links + dm flag.
+        // Authorization emptiness is already recorded by AuthService when applicable.
+        return app(TelegramOperatorDestinationHealth::class)->classifyEmptyDestinations(
+            $links,
+            [],
+            $dmEnabled
+        );
     }
 
     /**

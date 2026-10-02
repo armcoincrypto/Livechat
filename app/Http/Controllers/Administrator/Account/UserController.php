@@ -25,6 +25,7 @@ use Illuminate\Support\Str;
 use Jenssegers\Agent\Agent;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class UserController extends Controller
 {
@@ -340,7 +341,9 @@ class UserController extends Controller
             if ($user->id === $manager->id && empty($roles) && $user->roles()->count() === 1) {
                 return response()->json(['status' => 1, 'message' => '⚠️ Вы не можете отвязать последнюю роль от себя']);
             }
-            $user->roles()->sync($roles);
+            // Prefer Spatie syncRoles; always invalidate permission cache after pivot mutation.
+            $user->syncRoles($roles);
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
         }
 
         return response()->json([

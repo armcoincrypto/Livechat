@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RoleController extends Controller
 {
@@ -71,6 +72,7 @@ class RoleController extends Controller
             'name' => Str::lower(security_xss($request->name)),
             'title' => security_xss($request->title),
         ]);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         return response()->json([
             'status' => 0,
@@ -131,6 +133,8 @@ class RoleController extends Controller
             }
         }
 
+        // Belt-and-suspenders: Spatie APIs above should already reset; ensure registrar is clean.
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         return response()->json([
             'status' => 0,
@@ -160,7 +164,14 @@ class RoleController extends Controller
             }
 
 
-            $user->roles()->detach((int) $request->get('role_id'));
+            $roleId = (int) $request->get('role_id');
+            $detachRole = Role::find($roleId);
+            if ($detachRole !== null) {
+                $user->removeRole($detachRole);
+            } else {
+                $user->roles()->detach($roleId);
+            }
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
             return response()->json([
                 'status' => 0,
                 'message' => $user->name .' успешно отвязан от роли'
@@ -177,6 +188,7 @@ class RoleController extends Controller
         }
 
         $role->delete();
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         return response()->json([
             'status' => 0,
