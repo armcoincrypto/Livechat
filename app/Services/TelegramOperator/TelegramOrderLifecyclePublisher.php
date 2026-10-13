@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Log;
 /**
  * One operational Telegram card per order destination (operator DMs).
  * NEW = compact SEND; later lifecycle states EDIT the stored message.
- * PAID EDITs the main card; every genuine PAID also sends exactly one short alert
- * (normal or frozen/high-severity). Alert ownership stays on publishPaid only.
+ * PAID / CLAIMED / terminal: EDIT the same permanent card only.
+ * Secondary PAID attention alerts are disabled (MAIN_CARD_ONLY policy).
  * Stale lifecycle + existing card → SKIP; stale + empty registry → publish authoritative once.
  * Channel destinations are intentionally excluded from order-card ownership.
  */
@@ -37,8 +37,8 @@ final class TelegramOrderLifecyclePublisher
     }
 
     /**
-     * EDIT the permanent card on PAID; always send exactly one short attention alert
-     * (normal or frozen/high-severity). Recovery/empty-registry paths never own the alert.
+     * EDIT the permanent card on PAID. Secondary short PAID alerts are not sent
+     * (MAIN_CARD_ONLY). Recovery/empty-registry paths never own a secondary alert.
      *
      * @return array{sent: int, edited: int, recovered: int, skipped_stale: int, attention_alert: int, attention_alert_skip_reason?: string|null}
      */
@@ -57,7 +57,6 @@ final class TelegramOrderLifecyclePublisher
 
         $decision = $this->presenter->paidAttentionAlertDecision($fresh);
         if (! $decision['send']) {
-            // Fail-closed policy escape hatch only — normal/frozen PAID must send.
             Log::info('telegram_order_card', [
                 'order' => (string) ($fresh->public_id ?? $fresh->id ?? ''),
                 'task_id' => (int) ($fresh->id ?? 0),
@@ -73,6 +72,7 @@ final class TelegramOrderLifecyclePublisher
             return $stats;
         }
 
+        // Retained for fail-closed escape if policy ever re-enables a distinct alert class.
         $stats['attention_alert'] = $this->sendPaidAttentionAlertOnce($fresh);
         $stats['attention_alert_skip_reason'] = null;
         $stats['attention_alert_reason'] = $decision['reason'];

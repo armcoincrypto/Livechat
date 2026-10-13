@@ -322,20 +322,19 @@ final class TelegramOrderMessagePresenter
     /**
      * Whether to SEND a separate PAID attention alert.
      *
-     * Always: main card is EDITed on PAID elsewhere.
-     * Always: every genuine customer PAID event also gets exactly one short alert
-     * (normal or frozen/high-severity). Risk/freeze classification remains orthogonal
-     * and is never treated as "no alert".
+     * Final product policy: ONE order → ONE operational main card.
+     * PAID always EDITs that card; secondary short alerts are not sent.
+     * Frozen/high-risk wording stays on the main card (orthogonal risk lines).
      *
      * @return array{send: bool, reason: string}
      */
     public function paidAttentionAlertDecision(Task $task): array
     {
         if ($this->isFrozenManualAttention($task)) {
-            return ['send' => true, 'reason' => 'FROZEN_HIGH_RISK'];
+            return ['send' => false, 'reason' => 'FROZEN_MAIN_CARD_ONLY'];
         }
 
-        return ['send' => true, 'reason' => 'NORMAL_PAID'];
+        return ['send' => false, 'reason' => 'MAIN_CARD_ONLY'];
     }
 
     private function isFrozenManualAttention(Task $task): bool
@@ -348,9 +347,9 @@ final class TelegramOrderMessagePresenter
     }
 
     /**
-     * Short operator-attention alert for customer "I paid" — not a second full card.
-     * Operator-critical fields only. Frozen/high-risk uses higher-severity wording;
-     * freeze never suppresses the alert and never authorizes payout.
+     * Legacy short PAID attention renderer retained for fail-closed escape only.
+     * Product policy is MAIN_CARD_ONLY: paidAttentionAlertDecision always returns send=false.
+     * Frozen/high-risk wording lives on the permanent main card state lines.
      */
     public function renderPaidAttentionAlert(array $payload): string
     {
@@ -562,6 +561,9 @@ final class TelegramOrderMessagePresenter
 
         if ((bool) ($payload['risk_frozen'] ?? false)) {
             $lines[] = '⚠️ Риск: заморожено';
+            if ($paidMarked) {
+                $lines[] = '🚫 Выплата заблокирована до ручной проверки';
+            }
         }
 
         return implode("\n", $lines);
