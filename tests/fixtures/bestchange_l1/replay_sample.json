@@ -1,0 +1,2377 @@
+{
+  "directions": [
+    {
+      "bc_id": 1,
+      "course_value": "1244.919988985460844492",
+      "de_id": 6,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "1244.919988985460844492",
+      "rate_value_without_step": "1244.919988985460844492",
+      "source_name": "KeysTop",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000801657945",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000802461209",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000803264474",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000804067738",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000804871003",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 73,
+      "course_value": "0.096942002935045057",
+      "de_id": 73,
+      "parser_source_name": "BestChange",
+      "profit": "0.5",
+      "rate_value": "0.097426712949720282",
+      "rate_value_without_step": "0.097426712949720282",
+      "source_name": "Device",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "10.243597159180",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "10.253861284590",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "10.264125410000",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "10.274389535410",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "10.284653660820",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 122,
+      "course_value": "2.588952039000000000",
+      "de_id": 122,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "2.586326020052698089",
+      "rate_value_without_step": "2.586326020052698089",
+      "source_name": "BigBank",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.385875559486",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.386262208343",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.386648857200",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.387035506057",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.387422154914",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 195,
+      "course_value": "352.369710058403517593",
+      "de_id": 1054,
+      "parser_source_name": "BestChange",
+      "profit": "1",
+      "rate_value": "355.929000058993452114",
+      "rate_value_without_step": "355.929000058993452114",
+      "source_name": "BulldogExchange",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.002803929997",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.002806739546",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.002809549095",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.002812358644",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.002815168193",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 311,
+      "course_value": "0.008130754538592535",
+      "de_id": 719,
+      "parser_source_name": "BestChange",
+      "profit": "0.5",
+      "rate_value": "0.008171408311285498",
+      "rate_value_without_step": "0.008171408311285498",
+      "source_name": "CryptoChicken",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "122.133169948400",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "122.255547874200",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "122.377925800000",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "122.500303725800",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "122.622681651600",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 349,
+      "course_value": "1.215663906207686916",
+      "de_id": 673,
+      "parser_source_name": "BestChange",
+      "profit": "0.5",
+      "rate_value": "1.2217727700579768",
+      "rate_value_without_step": "1.2217727700579768",
+      "source_name": "LovanPay",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.816845836196",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.817664318998",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.818482801800",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.819301284602",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.820119767404",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 508,
+      "course_value": "3131.801271663504228664",
+      "de_id": 232,
+      "parser_source_name": "BestChange",
+      "profit": "0.4",
+      "rate_value": "3144.378786810747217534",
+      "rate_value_without_step": "3144.378786810747217534",
+      "source_name": "PocketBank",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000317391786",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000317709814",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000318027842",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000318345870",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000318663898",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 557,
+      "course_value": "777.283277968226632881",
+      "de_id": 312,
+      "parser_source_name": "BestChange",
+      "profit": "0.5",
+      "rate_value": "781.189224088669982794",
+      "rate_value_without_step": "781.189224088669982794",
+      "source_name": "ChangeNow",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.001277539384",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.001278819483",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.001280099583",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.001281379683",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.001282659782",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 612,
+      "course_value": "123682.551913164821826063",
+      "de_id": 380,
+      "parser_source_name": "BestChange",
+      "profit": "0.4",
+      "rate_value": "124179.26898912130705428",
+      "rate_value_without_step": "124179.26898912130705428",
+      "source_name": "XStable",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000008036768",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000008044821",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000008052874",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000008060927",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000008068980",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 672,
+      "course_value": "1.540082505123512813",
+      "de_id": 498,
+      "parser_source_name": "BestChange",
+      "profit": "0.5",
+      "rate_value": "1.547821613189460113",
+      "rate_value_without_step": "1.547821613189460113",
+      "source_name": "CryptoMonitor",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.644777144534",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.645423213817",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.646069283100",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.646715352383",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.647361421666",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 1407,
+      "course_value": "59.980757148309966362",
+      "de_id": 4,
+      "parser_source_name": "BestChange",
+      "profit": "0.5",
+      "rate_value": "60.282167988251222474",
+      "rate_value_without_step": "60.282167988251222474",
+      "source_name": "RateON",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.016555476243",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.016572064896",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.016588653550",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.016605242204",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.016621830857",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 1911,
+      "course_value": "44.969402987519802774",
+      "de_id": 1073,
+      "parser_source_name": "BestChange",
+      "profit": "0.4",
+      "rate_value": "45.150002999517874271",
+      "rate_value_without_step": "45.150002999517874271",
+      "source_name": "CryptoRoyal",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.022104095984",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.022126244377",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.022148392770",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.022170541163",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.022192689556",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 1948,
+      "course_value": "3.033238723172773899",
+      "de_id": 1110,
+      "parser_source_name": "BestChange",
+      "profit": "0.5",
+      "rate_value": "3.048481128816858189",
+      "rate_value_without_step": "3.048481128816858189",
+      "source_name": "RamonCash",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.327376144981",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.327704177191",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.328032209400",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.328360241609",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.328688273819",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 1985,
+      "course_value": "3.038423257405676802",
+      "de_id": 1148,
+      "parser_source_name": "BestChange",
+      "profit": "0.5",
+      "rate_value": "3.053691715985604826",
+      "rate_value_without_step": "3.053691715985604826",
+      "source_name": "Fswap",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.326817535240",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.327145007720",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.327472480200",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.327799952680",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.328127425160",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2033,
+      "course_value": "250920.339799315126682952",
+      "de_id": 1245,
+      "parser_source_name": "BestChange",
+      "profit": "",
+      "rate_value": "250920.339799315126682952",
+      "rate_value_without_step": "250920.339799315126682952",
+      "source_name": "LionChange",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000003977358",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000003981343",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000003985329",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000003989314",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000003993299",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2088,
+      "course_value": "0.982690000158547204",
+      "de_id": 1263,
+      "parser_source_name": "BestChange",
+      "profit": "",
+      "rate_value": "0.982690000158547204",
+      "rate_value_without_step": "0.982690000158547204",
+      "source_name": "RunToRam",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "1.015579684172",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "1.016597299086",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "1.017614914000",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "1.018632528914",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "1.019650143828",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2201,
+      "course_value": "1.049228865431909866",
+      "de_id": 1363,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "1.065206969981634381",
+      "rate_value_without_step": "1.065206969981634381",
+      "source_name": "BeeSwap",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.936907125211",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.937845909905",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.938784694600",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.939723479295",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.940662263989",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2235,
+      "course_value": "58.52215450536914893",
+      "de_id": 1393,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "59.413354827785938",
+      "rate_value_without_step": "59.413354827785938",
+      "source_name": "Drakkar",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.016797570225",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.016814401457",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.016831232690",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.016848063923",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.016864895155",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2323,
+      "course_value": "6.380879999364145308",
+      "de_id": 1518,
+      "parser_source_name": "BestChange",
+      "profit": "4",
+      "rate_value": "6.646749999337651362",
+      "rate_value_without_step": "6.646749999337651362",
+      "source_name": "WikiPays",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.150148568864",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.150299018332",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.150449467800",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.150599917268",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.150750366736",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2382,
+      "course_value": "136.238399994715693931",
+      "de_id": 1583,
+      "parser_source_name": "BestChange",
+      "profit": "",
+      "rate_value": "136.238399994715693931",
+      "rate_value_without_step": "136.238399994715693931",
+      "source_name": "Dmoney",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.007325394309",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.007332734384",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.007340074458",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.007347414532",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.007354754607",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2455,
+      "course_value": "1118.42504879444707055",
+      "de_id": 1729,
+      "parser_source_name": "BestChange",
+      "profit": "0.1",
+      "rate_value": "1119.544593387834905455",
+      "rate_value_without_step": "1119.544593387834905455",
+      "source_name": "CoinsBlack",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000891433897",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000892327118",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000893220338",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000894113558",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000895006779",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2492,
+      "course_value": "232739.679798933435743859",
+      "de_id": 1704,
+      "parser_source_name": "BestChange",
+      "profit": "2",
+      "rate_value": "237489.469182585138514141",
+      "rate_value_without_step": "237489.469182585138514141",
+      "source_name": "ECashExpert",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000004202292",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000004206502",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000004210713",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000004214924",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000004219134",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2530,
+      "course_value": "1044918.023831802636980875",
+      "de_id": 1871,
+      "parser_source_name": "BestChange",
+      "profit": "0.5",
+      "rate_value": "1050168.868172665966814949",
+      "rate_value_without_step": "1050168.868172665966814949",
+      "source_name": "BtcChange24",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000000950323",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000000951276",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000000952228",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000000953180",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000000954132",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2564,
+      "course_value": "5831.426191903753901092",
+      "de_id": 1847,
+      "parser_source_name": "BestChange",
+      "profit": "1",
+      "rate_value": "5890.329486771468586961",
+      "rate_value_without_step": "5890.329486771468586961",
+      "source_name": "BulldogExchange",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000169430250",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000169600020",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000169769790",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000169939560",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000170109330",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2602,
+      "course_value": "67788.734967219527471258",
+      "de_id": 1808,
+      "parser_source_name": "BestChange",
+      "profit": "0.5",
+      "rate_value": "68129.381876602540172118",
+      "rate_value_without_step": "68129.381876602540172118",
+      "source_name": "ВсемОбмен",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000014648599",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000014663277",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000014677955",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000014692633",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000014707311",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2637,
+      "course_value": "11766.741269032014545163",
+      "de_id": 1779,
+      "parser_source_name": "BestChange",
+      "profit": "0.8",
+      "rate_value": "11861.634343782272726978",
+      "rate_value_without_step": "11861.634343782272726978",
+      "source_name": "ExWm",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000084136804",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000084221109",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000084305414",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000084389720",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000084474025",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2739,
+      "course_value": "3.855810452915353869",
+      "de_id": 3178,
+      "parser_source_name": "BestChange",
+      "profit": "0.5",
+      "rate_value": "3.875186384839551627",
+      "rate_value_without_step": "3.875186384839551627",
+      "source_name": "MarketExchange",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.257535999792",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.257794051896",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.258052104000",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.258310156104",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.258568208208",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2771,
+      "course_value": "449.799350385550285829",
+      "de_id": 3204,
+      "parser_source_name": "BestChange",
+      "profit": "0.1",
+      "rate_value": "450.24959998553582165",
+      "rate_value_without_step": "450.24959998553582165",
+      "source_name": "KeysTop",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.002216548332",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.002218769323",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.002220990313",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.002223211303",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.002225432294",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2806,
+      "course_value": "0.001794947728892809",
+      "de_id": 3173,
+      "parser_source_name": "BestChange",
+      "profit": "2",
+      "rate_value": "0.001830846683470665",
+      "rate_value_without_step": "0.001830846683470665",
+      "source_name": "Sharky",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "545.102989240000",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "545.649184620000",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "546.195380000000",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "546.741575380000",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "547.287770760000",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2838,
+      "course_value": "30796536.52307688404586648",
+      "de_id": 2078,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "30796536.52307688404586648",
+      "rate_value_without_step": "30796536.52307688404586648",
+      "source_name": "Ant",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000000032406",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000000032439",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000000032471",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000000032504",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000000032536",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2870,
+      "course_value": "34.486313838566937754",
+      "de_id": 2033,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "34.486313838566937754",
+      "rate_value_without_step": "34.486313838566937754",
+      "source_name": "Drakkar",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.028939016349",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.028968013360",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.028997010370",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.029026007380",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.029055004391",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2902,
+      "course_value": "108244.158490000000000000",
+      "de_id": 2206,
+      "parser_source_name": "BestChange",
+      "profit": "6",
+      "rate_value": "108088.181111260941266395",
+      "rate_value_without_step": "108088.181111260941266395",
+      "source_name": "4esnok",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000009233202",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000009242454",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000009251705",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000009260957",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000009270209",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2934,
+      "course_value": "27.957890000000000000",
+      "de_id": 2362,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "27.915100001932059901",
+      "rate_value_without_step": "27.915100001932059901",
+      "source_name": "Криптомат",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.035751260068",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.035787082974",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.035822905880",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.035858728786",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.035894551692",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2966,
+      "course_value": "474.496119913080301346",
+      "de_id": 2558,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "474.496119913080301346",
+      "rate_value_without_step": "474.496119913080301346",
+      "source_name": "ExchangeForMe",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.002103283795",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.002105391294",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.002107498793",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.002109606292",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.002111713791",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 2998,
+      "course_value": "33.229000000000000000",
+      "de_id": 2193,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "33.183189995104158784",
+      "rate_value_without_step": "33.183189995104158784",
+      "source_name": "WxMoney",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.030075468939",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.030105604680",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.030135740420",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.030165876160",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.030196011901",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3030,
+      "course_value": "70.426943980472016972",
+      "de_id": 2405,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "70.426943980472016972",
+      "rate_value_without_step": "105.969900003985676297",
+      "source_name": "AllCash+sanity",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.014170712849",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.014184911960",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.014199111071",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.014213310182",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.014227509294",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3062,
+      "course_value": "0.250284443890503789",
+      "de_id": 2168,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "0.250284443890503789",
+      "rate_value_without_step": "0.250284443890503789",
+      "source_name": "TroyChange",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "3.987463161860",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "3.991458615930",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "3.995454070000",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "3.999449524070",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "4.003444978140",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3094,
+      "course_value": "167.345636499963482337",
+      "de_id": 2271,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "167.345636499963482337",
+      "rate_value_without_step": "167.345636499963482337",
+      "source_name": "Kingex",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.005963704945",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.005969680602",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.005975656258",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.005981631914",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.005987607571",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3126,
+      "course_value": "0.307790000000000000",
+      "de_id": 2315,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "0.307649999948299417",
+      "rate_value_without_step": "0.307649999948299417",
+      "source_name": "GoodObmen",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "3.243946043126",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "3.247196490063",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "3.250446937000",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "3.253697383937",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "3.256947830874",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3158,
+      "course_value": "32.448490000000000000",
+      "de_id": 2359,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "32.445501792732886812",
+      "rate_value_without_step": "32.445501792732886812",
+      "source_name": "First-BTC",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.030759271543",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.030790092457",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.030820913370",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.030851734283",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.030882555197",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3190,
+      "course_value": "619.747762829000000000",
+      "de_id": 286,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "619.086856123993003689",
+      "rate_value_without_step": "619.086856123993003689",
+      "source_name": "KeysTop",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.001612051670",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.001613666952",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.001615282234",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.001616897516",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.001618512798",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3222,
+      "course_value": "0.003322519000000000",
+      "de_id": 453,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "0.003318126887601714",
+      "rate_value_without_step": "0.003318126887601714",
+      "source_name": "Bitality",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "300.772102395800",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "301.073477247900",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "301.374852100000",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "301.676226952100",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "301.977601804200",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3254,
+      "course_value": "152.134116914829085677",
+      "de_id": 545,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "152.134116914829085677",
+      "rate_value_without_step": "152.134116914829085677",
+      "source_name": "CryptoGin",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.006560001269",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.006566574416",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.006573147564",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.006579720712",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.006586293859",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3286,
+      "course_value": "1.676444499000000000",
+      "de_id": 629,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "1.675681979265203015",
+      "rate_value_without_step": "1.675681979265203015",
+      "source_name": "CryptoMonitor",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.595578404703",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.596175176651",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.596771948600",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.597368720549",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.597965492497",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3318,
+      "course_value": "4153.45871123014969927",
+      "de_id": 833,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "4153.45871123014969927",
+      "rate_value_without_step": "4153.45871123014969927",
+      "source_name": "CryptoMonitor",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000240281671",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000240522434",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000240763198",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000241003961",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000241244724",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3350,
+      "course_value": "120.087908739000000000",
+      "de_id": 2766,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "118.885476185129854",
+      "rate_value_without_step": "118.885476185129854",
+      "source_name": "CryptoMonitor",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.008394633491",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.008403044948",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.008411456404",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.008419867860",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.008428279317",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3382,
+      "course_value": "35191.761290000000000000",
+      "de_id": 2800,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "35143.244243081839402689",
+      "rate_value_without_step": "35143.244243081839402689",
+      "source_name": "RocketChange",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000028398061",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000028426516",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000028454971",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000028483426",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000028511881",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3414,
+      "course_value": "0.645208798503337539",
+      "de_id": 2835,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "0.645208798503337539",
+      "rate_value_without_step": "0.645208798503337539",
+      "source_name": "BtcChange24",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "1.546786098260",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "1.548335984130",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "1.549885870000",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "1.551435755870",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "1.552985641740",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3447,
+      "course_value": "411.932890000000000000",
+      "de_id": 2869,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "411.667612066140565365",
+      "rate_value_without_step": "411.667612066140565365",
+      "source_name": "Ant",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.002424285931",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.002426715075",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.002429144219",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.002431573363",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.002434002507",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3479,
+      "course_value": "0.000000098556010067",
+      "de_id": 2927,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "0.000000098556010067",
+      "rate_value_without_step": "0.000000098556010067",
+      "source_name": "CryptoMonitor",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "10126221.620797585696",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "10136368.135447684675",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "10146514.650097781792",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "10156661.164747878909",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "10166807.679397977889",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3511,
+      "course_value": "1447843.350890000000000000",
+      "de_id": 2961,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "1439749.641497156168498724",
+      "rate_value_without_step": "1439749.641497156168498724",
+      "source_name": "Dynasty-Pay",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000000693176",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000000693871",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000000694565",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000000695260",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000000695954",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3543,
+      "course_value": "2.225422540065258949",
+      "de_id": 2998,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "2.225422540065258949",
+      "rate_value_without_step": "2.225422540065258949",
+      "source_name": "TroyChange",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.448454161865",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.448903514732",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.449352867600",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.449802220468",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.450251573335",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3575,
+      "course_value": "9.092147433123893807",
+      "de_id": 3032,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "9.092147433123893807",
+      "rate_value_without_step": "9.092147433123893807",
+      "source_name": "MarketExchange",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.109765048064",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.109875033082",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.109985018100",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.110095003118",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.110204988136",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3607,
+      "course_value": "0.001113929000000000",
+      "de_id": 3067,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "0.001111153541867183",
+      "rate_value_without_step": "0.001111153541867183",
+      "source_name": "Crypto-Dom",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "898.165701135201",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "899.065666767601",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "899.965632400001",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "900.865598032401",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "901.765563664801",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3639,
+      "course_value": "14.675346860198995023",
+      "de_id": 3100,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "14.675346860198995023",
+      "rate_value_without_step": "14.675346860198995023",
+      "source_name": "ObmenMoney",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.068005206930",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.068073348420",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.068141489910",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.068209631400",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.068277772890",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3676,
+      "course_value": "116.299000000000000000",
+      "de_id": 2238,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "116.162415997931515373",
+      "rate_value_without_step": "116.162415997931515373",
+      "source_name": "W-Box",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.008591419104",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.008600027741",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.008608636377",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.008617245013",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.008625853650",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3708,
+      "course_value": "138503.253491493441318111",
+      "de_id": 2145,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "138503.253491493441318111",
+      "rate_value_without_step": "138503.253491493441318111",
+      "source_name": "KeysTop",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000007205607",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000007212827",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000007220047",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000007227267",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000007234487",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3744,
+      "course_value": "609148.500160898048238498",
+      "de_id": 2375,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "609148.500160898048238498",
+      "rate_value_without_step": "609148.500160898048238498",
+      "source_name": "ECashExpert",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000001638353",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000001639994",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000001641636",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000001643277",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000001644919",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3776,
+      "course_value": "0.818181818330578512",
+      "de_id": 2722,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "0.818181818330578512",
+      "rate_value_without_step": "0.818181818330578512",
+      "source_name": "WorldChange",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "1.219777777556",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "1.220999999778",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "1.222222222000",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "1.223444444222",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "1.224666666444",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3809,
+      "course_value": "0.097055999964842434",
+      "de_id": 3135,
+      "parser_source_name": "BestChange",
+      "profit": "",
+      "rate_value": "0.097055999964842434",
+      "rate_value_without_step": "0.097055999964842434",
+      "source_name": "KZ007",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "10.282723379920",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "10.293026709960",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "10.303330040000",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "10.313633370040",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "10.323936700080",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3860,
+      "course_value": "10976.230490000000000000",
+      "de_id": 1987,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "10975.730499841088983531",
+      "rate_value_without_step": "10975.730499841088983531",
+      "source_name": "ObmenOne",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.000090927889",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.000091018999",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.000091110109",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.000091201219",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.000091292329",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3892,
+      "course_value": "908.588090000000000000",
+      "de_id": 2199,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "907.33495365330334734",
+      "rate_value_without_step": "907.33495365330334734",
+      "source_name": "NextBit",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.001099924560",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.001101026689",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.001102128818",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.001103230947",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.001104333076",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3925,
+      "course_value": "0.283796960020261332",
+      "de_id": 2561,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "0.283796960020261332",
+      "rate_value_without_step": "0.283796960020261332",
+      "source_name": "NextBit",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "3.516598627162",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "3.520122273081",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "3.523645919000",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "3.527169564919",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "3.530693210838",
+          "reserve": "50"
+        }
+      ]
+    },
+    {
+      "bc_id": 3960,
+      "course_value": "114.0800000015879936",
+      "de_id": 2920,
+      "parser_source_name": "BestChange",
+      "profit": "1.5",
+      "rate_value": "114.0800000015879936",
+      "rate_value_without_step": "114.0800000015879936",
+      "source_name": "CyberMoney",
+      "synthetic_raw_book": [
+        {
+          "changer": 1000,
+          "rate": "0.008748246844",
+          "reserve": "10"
+        },
+        {
+          "changer": 1001,
+          "rate": "0.008757012623",
+          "reserve": "20"
+        },
+        {
+          "changer": 1002,
+          "rate": "0.008765778401",
+          "reserve": "30"
+        },
+        {
+          "changer": 1003,
+          "rate": "0.008774544179",
+          "reserve": "40"
+        },
+        {
+          "changer": 1522,
+          "rate": "0.008783309958",
+          "reserve": "50"
+        }
+      ]
+    }
+  ],
+  "intent": "BESTCHANGE_REFRESH_INTENT=1_MINUTE",
+  "note": "Sanitized DE/BC economic snapshot + synthetic Top-N books derived from stored rates. Not live API books.",
+  "position_mode": "position",
+  "position_value": 3,
+  "schema": "bestchange_l1_replay_v1"
+}

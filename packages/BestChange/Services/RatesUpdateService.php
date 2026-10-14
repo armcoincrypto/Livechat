@@ -5,7 +5,9 @@ namespace iEXPackages\BestChange\Services;
 
 use App\Models\BestChangeDirection;
 use App\Services\AggregatedRatesService;
+use App\Services\Rates\BestChangeCompilerGenerationContext;
 use App\Services\Rates\BestChangeCurrencyCatalogGuard;
+use App\Services\Rates\BestChangeL1Shadow;
 use App\Services\Rates\PeerRateSelector;
 use App\Services\Rates\RateSanityGuard;
 use App\Settings\BestChangeConfig;
@@ -41,6 +43,10 @@ final class RatesUpdateService
             return new UpdateResult(0, 0, 0);
         }
 
+        $generationContext = app(BestChangeCompilerGenerationContext::class);
+        $generationContext->beginGeneration();
+        $updateRatesStartedMs = (int) floor(microtime(true) * 1000);
+
         try {
             // 1) каталоги
             $this->catalog->warmupAll(false);
@@ -57,6 +63,8 @@ final class RatesUpdateService
             $uniquePairs = count($pairKeys);
 
             if ($uniquePairs === 0) {
+                $generationContext->endGeneration();
+
                 return new UpdateResult(0, $totalDirections, 0);
             }
 
@@ -65,8 +73,25 @@ final class RatesUpdateService
                 $ratesMap = $this->httpClient->fetchRatesBatch($pairKeys);
             } catch (\Throwable) {
                 // Важно: не затираем курсы ошибкой сети
+                $generationContext->endGeneration();
+
                 return new UpdateResult(0, $totalDirections, $uniquePairs);
             }
+
+            // L1: publish generation-scoped raw books for shadow Top-N reuse.
+            // Authoritative withUpdateDirections still uses marketForDirection.
+            $bcIdToDeId = [];
+            foreach ($directions as $direction) {
+                $bcIdToDeId[(int) $direction->id] = (int) ($direction->id_direction_exchange ?? 0);
+            }
+            $generationContext->putBatchBooks($ratesMap, $directionToPairKey, $bcIdToDeId);
+            BestChangeL1Shadow::logGenerationMetrics([
+                'stage' => 'bc_update_rates_books_published',
+                'bc_update_rates_ms' => (int) floor(microtime(true) * 1000) - $updateRatesStartedMs,
+                'pair_count' => $generationContext->pairCount(),
+                'mapped_directions' => $generationContext->mappedDirectionCount(),
+                'shadow_enabled' => BestChangeL1Shadow::shadowEnabled() ? 1 : 0,
+            ]);
 
             // 6) exchangers map
             $exchangersMap = $this->buildExchangersMap();

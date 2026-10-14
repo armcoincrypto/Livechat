@@ -1,0 +1,7 @@
+{
+  "fixture": "tests/fixtures/bestchange_l1/replay_sample.json",
+  "fixture_gz": "tests/fixtures/bestchange_l1/replay_sample.json.gz",
+  "sha256": "e66e23ba287ad13f9241ac9f3e35c1da28b04f2eb2bddcdb68ddee1079f23ac3",
+  "direction_count": 64,
+  "pair_count_estimate": 64
+}

@@ -4,7 +4,10 @@ declare(strict_types=1);
 namespace iEXPackages\BestChange\Services;
 
 use App\Models\DirectionExchange;
+use App\Services\Rates\BestChangeCompilerGenerationContext;
+use App\Services\Rates\BestChangeL1Shadow;
 use App\Services\Rates\BestChangeMarketBaseHealth;
+use App\Services\Rates\BestChangeTopNBookHelper;
 use iEXPackages\Calculator\CalculatorFacade;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -34,6 +37,20 @@ final class DirectionExchangeRecalculateService
      */
     public function run(?callable $onError = null): void
     {
+        $recalcStartedMs = (int) floor(microtime(true) * 1000);
+        $metrics = [
+            'bc_direction_calc_count' => 0,
+            'bc_topn_lookup_count' => 0,
+            'bc_topn_network_fetch_count' => 0,
+            'bc_topn_shadow_compare_count' => 0,
+            'bc_topn_shadow_match' => 0,
+            'bc_topn_shadow_mismatch' => 0,
+            'bc_direction_upsert_count' => 0,
+            'bc_direction_upsert_skipped_identical' => 0,
+            'bc_shadow_production_writes' => 0,
+        ];
+        $shadowMismatchClasses = [];
+
         $zelleId = \App\Services\Rates\ZelleOutgoingRateWriteGuard::zelleCurrencyId();
         $baseQuery = DirectionExchange::query()
             ->where('status', 1)
@@ -85,7 +102,11 @@ final class DirectionExchangeRecalculateService
             ])
             ->orderBy('id');
 
-        $baseQuery->chunkById(500, function ($exchanges) use ($onError): void {
+        $generationContext = app(BestChangeCompilerGenerationContext::class);
+        $shadowEnabled = BestChangeL1Shadow::shadowEnabled();
+        $skipIdentical = BestChangeL1Shadow::skipIdenticalDeUpsertEnabled();
+
+        $baseQuery->chunkById(500, function ($exchanges) use ($onError, &$metrics, &$shadowMismatchClasses, $generationContext, $shadowEnabled, $skipIdentical): void {
             $now = Carbon::now()->toDateTimeString();
 
             $successUpdates = [];
@@ -113,6 +134,7 @@ final class DirectionExchangeRecalculateService
             }
 
             foreach ($exchanges as $exchange) {
+                $metrics['bc_direction_calc_count']++;
                 try {
                     $directionId = (int) $exchange->id;
 
@@ -187,6 +209,7 @@ final class DirectionExchangeRecalculateService
                         if ($topN->isEligible($exchange)) {
                             $book = [];
                             $sourcePos = null;
+                            $adj = null;
                             $bd = \App\Models\BestChangeDirection::query()
                                 ->where('id_direction_exchange', $directionId)
                                 ->where('status', 1)
@@ -194,18 +217,17 @@ final class DirectionExchangeRecalculateService
                                 ->first();
                             if ($bd) {
                                 $sourcePos = (int) ($bd->position_num ?: 0) ?: null;
-                                // Fresh rates handle per direction — do not reuse sortedRows.
+                                $metrics['bc_topn_lookup_count']++;
+                                // Authoritative path: fresh marketForDirection (unchanged).
                                 $market = app(\iEXPackages\BestChange\BestChange::class)
                                     ->rates()
                                     ->marketForDirection($bd);
+                                $metrics['bc_topn_network_fetch_count']++;
                                 $book = (is_object($market) && isset($market->rawRows) && is_array($market->rawRows))
                                     ? array_values($market->rawRows)
                                     : [];
                                 if ($book !== []) {
-                                    usort(
-                                        $book,
-                                        static fn ($a, $b) => bccomp((string) ($a['rate'] ?? '0'), (string) ($b['rate'] ?? '0'), 18)
-                                    );
+                                    $book = BestChangeTopNBookHelper::normalizeForTopN($book);
                                 }
                                 // Reject cross-pair books (presence pair must match BD currencies).
                                 $expectedPair = (int) $bd->id_currency_in.'-'.(int) $bd->id_currency_out;
@@ -220,17 +242,77 @@ final class DirectionExchangeRecalculateService
                                     ]);
                                     $book = [];
                                 }
+
+                                // L1 shadow: reuse generation batch book; compare; discard.
+                                if ($shadowEnabled) {
+                                    $batchRaw = $generationContext->rawRowsForDirectionExchange($directionId);
+                                    if (is_array($batchRaw)) {
+                                        $shadowBook = BestChangeTopNBookHelper::normalizeForTopN($batchRaw);
+                                        $exportDecimalsShadow = (int) ($exchange->currency2->number_format ?? 4);
+                                        $shadowAdj = $topN->adjust(
+                                            $exchange,
+                                            $courseValue,
+                                            $shadowBook,
+                                            max(0, $exportDecimalsShadow),
+                                            $sourcePos,
+                                            $sourcePos,
+                                        );
+                                        $authAdjPreview = $topN->adjust(
+                                            $exchange,
+                                            $courseValue,
+                                            $book,
+                                            max(0, $exportDecimalsShadow),
+                                            $sourcePos,
+                                            $sourcePos,
+                                        );
+                                        $adj = $authAdjPreview;
+                                        $authCourseShadow = (string) ($authAdjPreview['course'] ?? $courseValue);
+                                        $shadowCourse = (string) ($shadowAdj['course'] ?? $courseValue);
+                                        $booksEqual = BestChangeTopNBookHelper::topNRelevantEqual($book, $shadowBook);
+                                        $classified = BestChangeL1Shadow::classifyTopNMismatch(
+                                            $booksEqual,
+                                            $authCourseShadow,
+                                            $shadowCourse,
+                                            $authAdjPreview,
+                                            $shadowAdj,
+                                        );
+                                        $metrics['bc_topn_shadow_compare_count']++;
+                                        if ($classified['match']) {
+                                            $metrics['bc_topn_shadow_match']++;
+                                        } else {
+                                            $metrics['bc_topn_shadow_mismatch']++;
+                                            $cls = (string) $classified['class'];
+                                            $shadowMismatchClasses[$cls] = ($shadowMismatchClasses[$cls] ?? 0) + 1;
+                                            if (($shadowMismatchClasses[$cls] ?? 0) <= 3) {
+                                                Log::warning('bestchange_l1_shadow_mismatch', [
+                                                    'direction_exchange_id' => $directionId,
+                                                    'class' => $cls,
+                                                    'books_equal' => $booksEqual,
+                                                    'auth_course' => $authCourseShadow,
+                                                    'shadow_course' => $shadowCourse,
+                                                    'auth_reason' => $authAdjPreview['reason'] ?? null,
+                                                    'shadow_reason' => $shadowAdj['reason'] ?? null,
+                                                ]);
+                                            }
+                                        }
+                                        // Shadow never writes.
+                                        $metrics['bc_shadow_production_writes'] += 0;
+                                    }
+                                }
                             }
                             $exportDecimals = (int) ($exchange->currency2->number_format ?? 4);
                             // ADMIN_POSITION_CHANGE_DYNAMIC: external target follows position_num.
-                            $adj = $topN->adjust(
-                                $exchange,
-                                $courseValue,
-                                $book,
-                                max(0, $exportDecimals),
-                                $sourcePos,
-                                $sourcePos,
-                            );
+                            // Prefer already-computed auth preview from shadow block when present.
+                            if (! isset($adj) || ! is_array($adj)) {
+                                $adj = $topN->adjust(
+                                    $exchange,
+                                    $courseValue,
+                                    $book,
+                                    max(0, $exportDecimals),
+                                    $sourcePos,
+                                    $sourcePos,
+                                );
+                            }
                             // Hard sanity: never jump course by >2% vs BASE in one step.
                             if (!empty($adj['applied']) && is_numeric($adj['course'] ?? null) && (float) $adj['course'] > 0) {
                                 $ratio = bcdiv((string) $adj['course'], $courseValue, 18);
@@ -286,7 +368,7 @@ final class DirectionExchangeRecalculateService
                     }
 
                     $oldBase = (string) ($exchange->course_value ?? '');
-                    $successUpdates[] = [
+                    $newRow = [
                         'id'                 => $directionId,
                         'course_value'       => $courseValue,
                         'exchange_rate'      => $exchangeRateLabel,
@@ -295,6 +377,11 @@ final class DirectionExchangeRecalculateService
                         'parser_source_name' => 'BestChange',
                         'updated_at'         => $now,
                     ];
+                    if ($skipIdentical && self::deSemanticFieldsIdentical($exchange, $newRow)) {
+                        $metrics['bc_direction_upsert_skipped_identical']++;
+                    } else {
+                        $successUpdates[] = $newRow;
+                    }
                     if ($oldBase !== $courseValue) {
                         \App\Services\Rates\RateWriteAuditLogger::record([
                             'event' => 'base_change',
@@ -331,6 +418,7 @@ final class DirectionExchangeRecalculateService
             }
 
             if ($successUpdates !== []) {
+                $metrics['bc_direction_upsert_count'] += count($successUpdates);
                 DirectionExchange::upsert(
                     $successUpdates,
                     ['id'],
@@ -340,6 +428,7 @@ final class DirectionExchangeRecalculateService
 
             if ($errorUpdates !== []) {
                 // Важно: при ошибке НЕ затираем course_value/exchange_rate
+                $metrics['bc_direction_upsert_count'] += count($errorUpdates);
                 DirectionExchange::upsert(
                     $errorUpdates,
                     ['id'],
@@ -347,6 +436,53 @@ final class DirectionExchangeRecalculateService
                 );
             }
         });
+
+        BestChangeL1Shadow::logGenerationMetrics([
+            'stage' => 'bc_recalc_complete',
+            'bc_recalc_ms' => (int) floor(microtime(true) * 1000) - $recalcStartedMs,
+            'bc_topn_lookup_count' => $metrics['bc_topn_lookup_count'],
+            'bc_topn_network_fetch_count' => $metrics['bc_topn_network_fetch_count'],
+            'bc_direction_calc_count' => $metrics['bc_direction_calc_count'],
+            'bc_direction_upsert_count' => $metrics['bc_direction_upsert_count'],
+            'bc_direction_upsert_skipped_identical' => $metrics['bc_direction_upsert_skipped_identical'],
+            'bc_topn_shadow_compare_count' => $metrics['bc_topn_shadow_compare_count'],
+            'bc_topn_shadow_match' => $metrics['bc_topn_shadow_match'],
+            'bc_topn_shadow_mismatch' => $metrics['bc_topn_shadow_mismatch'],
+            'bc_shadow_production_writes' => $metrics['bc_shadow_production_writes'],
+            'shadow_mismatch_classes' => $shadowMismatchClasses,
+            'shadow_enabled' => $shadowEnabled ? 1 : 0,
+            'skip_identical_upsert' => $skipIdentical ? 1 : 0,
+            'generation_pairs' => $generationContext->pairCount(),
+        ]);
+    }
+
+    /**
+     * Semantic DE fields for identical-write skip (excludes heartbeat updated_at).
+     *
+     * @param  array<string, mixed>  $newRow
+     */
+    public static function deSemanticFieldsIdentical(DirectionExchange $exchange, array $newRow): bool
+    {
+        $oldCourse = (string) ($exchange->course_value ?? '');
+        $oldLabel = (string) ($exchange->exchange_rate ?? '');
+        $oldErr = (int) ($exchange->is_error_rate ?? 0);
+        $oldErrText = $exchange->error_rate_text;
+        $oldParser = (string) ($exchange->parser_source_name ?? '');
+
+        $newCourse = (string) ($newRow['course_value'] ?? '');
+        $newLabel = (string) ($newRow['exchange_rate'] ?? '');
+        $newErr = (int) ($newRow['is_error_rate'] ?? 0);
+        $newErrText = $newRow['error_rate_text'] ?? null;
+        $newParser = (string) ($newRow['parser_source_name'] ?? '');
+
+        $oldErrNorm = ($oldErrText === null || $oldErrText === '') ? null : (string) $oldErrText;
+        $newErrNorm = ($newErrText === null || $newErrText === '') ? null : (string) $newErrText;
+
+        return $oldCourse === $newCourse
+            && $oldLabel === $newLabel
+            && $oldErr === $newErr
+            && $oldErrNorm === $newErrNorm
+            && $oldParser === $newParser;
     }
 
     /**

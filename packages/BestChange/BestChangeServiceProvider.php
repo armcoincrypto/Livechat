@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace iEXPackages\BestChange;
 
 use App\Settings\BestChangeBlacklistConfig;
+use App\Services\Rates\BestChangeCompilerGenerationContext;
 use iEXPackages\BestChange\Blacklist\BestChangeBlacklistClient;
 use iEXPackages\BestChange\Console\BestchangeCacheCommand;
 use iEXPackages\BestChange\Console\BestchangeMarketReportConsole;
@@ -31,6 +32,8 @@ final class BestChangeServiceProvider extends ServiceProvider
         $this->app->bind(BestChangeHttpClientInterface::class, BestChangeHttpClient::class);
 
         $this->app->singleton(BestChangeCatalogRepository::class);
+
+        $this->app->singleton(BestChangeCompilerGenerationContext::class);
 
         $this->app->singleton(BestChange::class, fn () => new BestChange(
             (array) config('courses.bestchange', [])
