@@ -64,6 +64,8 @@ final class BestChangeL1TopNBookReuseParityTest extends TestCase
 
     private function mockConfig(): BestChangeConfig
     {
+        // Mock names must match live BestChangeConfig (post-f77 Top-N API).
+        // Old L1 branch used obsolete externalTopNMarginFloorBps aliases.
         $cfg = $this->createMock(BestChangeConfig::class);
         $cfg->method('externalTopNEnabled')->willReturn(true);
         $cfg->method('coinZelleExternalPositionEnabled')->willReturn(true);
@@ -74,8 +76,12 @@ final class BestChangeL1TopNBookReuseParityTest extends TestCase
         $cfg->method('externalTopNMinBookDepth')->willReturn(3);
         $cfg->method('coinZelleMinBookDepth')->willReturn(3);
         $cfg->method('coinZelleExternalPositionTarget')->willReturn(3);
-        $cfg->method('externalTopNMarginFloorBps')->willReturn(0);
-        $cfg->method('coinZelleMarginFloorBps')->willReturn(0);
+        $cfg->method('externalTopNMinSafeMarginVsBoundaryBps')->willReturn(0.0);
+        $cfg->method('coinZelleMinSafeMarginVsTop1Bps')->willReturn(0.0);
+        $cfg->method('externalTopNOutlierGuardEnabled')->willReturn(true);
+        $cfg->method('coinZelleOutlierGuardEnabled')->willReturn(true);
+        $cfg->method('externalTopNOutlierSepBps')->willReturn(200.0);
+        $cfg->method('coinZelleOutlierSepBps')->willReturn(200.0);
 
         return $cfg;
     }
