@@ -113,6 +113,24 @@
         html += row("Paid age", attrs.paid_age_human);
       }
     }
+    if (statusInt === 3) {
+      if (attrs.waiting_handle_age_human) {
+        html += row("Age since marked paid", attrs.waiting_handle_age_human);
+      }
+      if (attrs.claimed === false || attrs.claimed === 0) {
+        html += row("Claim", "unclaimed");
+      } else if (attrs.claimed === true || attrs.claimed === 1) {
+        html += row("Claim", "claimed");
+      }
+      if (attrs.claim_prompt) {
+        html +=
+          '<div style="margin:0 0 10px;padding:8px 10px;border-radius:8px;background:#fef2f2;border:1px solid #fca5a5;color:#991b1b">' +
+          "<strong>" + String(attrs.claim_prompt) + "</strong></div>";
+      }
+      if (attrs.payment_signal) {
+        html += row("Funds signal", String(attrs.payment_signal));
+      }
+    }
     if (attrs.assigned_operator) html += row("Оператор", attrs.assigned_operator);
     if (attrs.claimed_at) html += row("Принято", attrs.claimed_at);
     if (attrs.completed_by) html += row("Завершил", attrs.completed_by);

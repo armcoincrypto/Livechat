@@ -110,7 +110,7 @@ class OrderVueController extends Controller
 
         // Получаем последний ID
         $list = Task::query()->with(\App\Http\Resources\Admin\Orders\HistoricalOrderRelationConstraints::forLiveOrders())
-            ->select('id', 'public_id', 'created_at', 'is_frozen', 'status', 'id_direction_exchange', 'in_flow_funds', 'give_price', 'started_at', 'receiving_price')
+            ->select('id', 'public_id', 'created_at', 'updated_at', 'is_frozen', 'status', 'id_direction_exchange', 'in_flow_funds', 'give_price', 'started_at', 'receiving_price', 'register_tx')
             ->orderBy('id', 'desc')->where('is_frozen', 0)
             ->where('is_archive', '=', 0)
             ->whereIn('status', $liveStatus)->limit($liveLimit);
@@ -147,6 +147,21 @@ class OrderVueController extends Controller
 
             foreach ($orderGroup as $value) {
                 $orders[$key]['items'][] = \App\Http\Resources\Admin\Orders\LiveOrdersRowMapper::map($value, $user_id);
+            }
+
+            // Status 3 (waiting_handle): unclaimed oldest first — visibility only, no auto-claim.
+            if ((int) $key === 3) {
+                usort($orders[$key]['items'], static function (array $a, array $b): int {
+                    $aClaimed = ! empty($a['claimed']) || ! empty($a['operators']);
+                    $bClaimed = ! empty($b['claimed']) || ! empty($b['operators']);
+                    if ($aClaimed !== $bClaimed) {
+                        return $aClaimed ? 1 : -1;
+                    }
+                    $aAge = (int) ($a['waiting_handle_age_seconds'] ?? 0);
+                    $bAge = (int) ($b['waiting_handle_age_seconds'] ?? 0);
+
+                    return $bAge <=> $aAge;
+                });
             }
         }
 

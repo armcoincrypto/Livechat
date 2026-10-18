@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Admin\Orders;
 
+use App\Services\Orders\WaitingHandleAge;
 use Illuminate\Support\Carbon;
 
 /**
@@ -54,6 +55,23 @@ final class LiveOrdersRowMapper
             }
         }
 
+        $statusInt = (int) $value->status;
+        $claimed = $operators !== [];
+        $waitingAgeHuman = $statusInt === 3 ? WaitingHandleAge::human($value) : null;
+        $waitingAgeSeconds = $statusInt === 3 ? WaitingHandleAge::seconds($value) : null;
+        $waitingAgingLevel = $statusInt === 3 ? WaitingHandleAge::agingLevel($value) : null;
+        $claimPrompt = $statusInt === 3 ? WaitingHandleAge::claimPrompt($value) : null;
+        $paymentSignal = $statusInt === 3 ? WaitingHandleAge::paymentSignal($value) : null;
+
+        if ($claimPrompt !== null) {
+            $name = $name.' · '.$claimPrompt;
+        }
+
+        // Live Vue list only renders `created` — surface marked-paid age there for status 3.
+        $createdDisplay = $statusInt === 3 && $waitingAgeHuman !== null
+            ? $waitingAgeHuman.($claimed ? '' : ' · unclaimed')
+            : Carbon::parse($value->created_at)->diffForHumans();
+
         return [
             'auth_id' => $authUserId,
             'in_flow_funds' => $value->in_flow_funds ?? null,
@@ -62,18 +80,24 @@ final class LiveOrdersRowMapper
             'id' => $value->id,
             'public_id' => ($value->public_id ?? 0) > 0 ? $value->public_id : $value->id,
             'name' => $name,
-            'created' => Carbon::parse($value->created_at)->diffForHumans(),
+            'created' => $createdDisplay,
             'hidden' => false,
             'is_freeze_scam' => (isset($value->task_info) && (int) $value->task_info->is_freeze_scam === 1),
             'payment_in_name' => $paymentInName,
             'operators' => $operators,
-            'paid_age_human' => ((int) $value->status === 7)
+            'claimed' => $claimed,
+            'waiting_handle_age_human' => $waitingAgeHuman,
+            'waiting_handle_age_seconds' => $waitingAgeSeconds,
+            'waiting_handle_aging_level' => $waitingAgingLevel,
+            'claim_prompt' => $claimPrompt,
+            'payment_signal' => $paymentSignal,
+            'paid_age_human' => ($statusInt === 7)
                 ? \App\Services\Orders\PaidOrderAge::human($value)
                 : null,
-            'paid_aging_level' => ((int) $value->status === 7)
+            'paid_aging_level' => ($statusInt === 7)
                 ? \App\Services\Orders\PaidOrderAge::agingLevel($value)
                 : null,
-            'status_label' => \App\Services\Orders\OperatorStatusVocabulary::adminLabel((int) $value->status),
+            'status_label' => \App\Services\Orders\OperatorStatusVocabulary::adminLabel($statusInt),
         ];
     }
 

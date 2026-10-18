@@ -107,6 +107,19 @@ final class OrdersListRowMapper
                 'paid_aging_level' => ((int) $item->status === 7)
                     ? \App\Services\Orders\PaidOrderAge::agingLevel($item)
                     : null,
+                'claimed' => is_countable($operators) ? count($operators) > 0 : false,
+                'waiting_handle_age_human' => ((int) $item->status === 3)
+                    ? \App\Services\Orders\WaitingHandleAge::human($item)
+                    : null,
+                'waiting_handle_aging_level' => ((int) $item->status === 3)
+                    ? \App\Services\Orders\WaitingHandleAge::agingLevel($item)
+                    : null,
+                'claim_prompt' => ((int) $item->status === 3)
+                    ? \App\Services\Orders\WaitingHandleAge::claimPrompt($item)
+                    : null,
+                'payment_signal' => ((int) $item->status === 3)
+                    ? \App\Services\Orders\WaitingHandleAge::paymentSignal($item)
+                    : null,
                 'payment_evidence_present' => self::paymentEvidencePresent($item),
             ],
         ];
