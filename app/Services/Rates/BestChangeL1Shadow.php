@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\Log;
  * L1 BestChange optimization controls (shadow / skip-identical).
  *
  * Defaults OFF. Never owns customer rates. Shadow discards optimized results.
+ *
+ * Same-snapshot algorithmic equivalence uses a separate flag:
+ * BESTCHANGE_L1_SAME_SNAPSHOT_DIAGNOSTIC (see BestChangeL1SameSnapshotDiagnostic).
+ * Do not overload authority / shadow / skip-identical flags for that harness.
  */
 final class BestChangeL1Shadow
 {

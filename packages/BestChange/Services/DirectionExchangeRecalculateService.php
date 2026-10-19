@@ -5,6 +5,7 @@ namespace iEXPackages\BestChange\Services;
 
 use App\Models\DirectionExchange;
 use App\Services\Rates\BestChangeCompilerGenerationContext;
+use App\Services\Rates\BestChangeL1SameSnapshotDiagnostic;
 use App\Services\Rates\BestChangeL1Shadow;
 use App\Services\Rates\BestChangeMarketBaseHealth;
 use App\Services\Rates\BestChangeTopNBookHelper;
@@ -48,8 +49,16 @@ final class DirectionExchangeRecalculateService
             'bc_direction_upsert_count' => 0,
             'bc_direction_upsert_skipped_identical' => 0,
             'bc_shadow_production_writes' => 0,
+            'bc_same_snapshot_compare_count' => 0,
+            'bc_same_snapshot_match' => 0,
+            'bc_same_snapshot_mismatch' => 0,
+            'bc_same_snapshot_diagnostic_errors' => 0,
+            'bc_same_snapshot_extra_network_fetches' => 0,
+            'bc_same_snapshot_production_writes' => 0,
         ];
         $shadowMismatchClasses = [];
+        // Rotates sample cohort ~every 10 minutes across natural BC generations.
+        $sameSnapshotGenerationSalt = (int) floor(time() / 600);
 
         $zelleId = \App\Services\Rates\ZelleOutgoingRateWriteGuard::zelleCurrencyId();
         $baseQuery = DirectionExchange::query()
@@ -105,8 +114,9 @@ final class DirectionExchangeRecalculateService
         $generationContext = app(BestChangeCompilerGenerationContext::class);
         $shadowEnabled = BestChangeL1Shadow::shadowEnabled();
         $skipIdentical = BestChangeL1Shadow::skipIdenticalDeUpsertEnabled();
+        $sameSnapshotEnabled = BestChangeL1SameSnapshotDiagnostic::enabled();
 
-        $baseQuery->chunkById(500, function ($exchanges) use ($onError, &$metrics, &$shadowMismatchClasses, $generationContext, $shadowEnabled, $skipIdentical): void {
+        $baseQuery->chunkById(500, function ($exchanges) use ($onError, &$metrics, &$shadowMismatchClasses, $generationContext, $shadowEnabled, $skipIdentical, $sameSnapshotEnabled, $sameSnapshotGenerationSalt): void {
             $now = Carbon::now()->toDateTimeString();
 
             $successUpdates = [];
@@ -299,6 +309,23 @@ final class DirectionExchangeRecalculateService
                                         $metrics['bc_shadow_production_writes'] += 0;
                                     }
                                 }
+
+                                // Same-snapshot diagnostic: AUTHORITATIVE(book X) vs L1(book X).
+                                // Uses the authoritative normalized book only — no second fetch.
+                                // Never mutates $adj / customer course / persistence.
+                                if ($sameSnapshotEnabled) {
+                                    $exportDecimalsDiag = (int) ($exchange->currency2->number_format ?? 4);
+                                    BestChangeL1SameSnapshotDiagnostic::runFailSoft(
+                                        $topN,
+                                        $exchange,
+                                        $courseValue,
+                                        $book,
+                                        max(0, $exportDecimalsDiag),
+                                        $sourcePos,
+                                        $metrics,
+                                        $sameSnapshotGenerationSalt,
+                                    );
+                                }
                             }
                             $exportDecimals = (int) ($exchange->currency2->number_format ?? 4);
                             // ADMIN_POSITION_CHANGE_DYNAMIC: external target follows position_num.
@@ -452,6 +479,13 @@ final class DirectionExchangeRecalculateService
             'shadow_mismatch_classes' => $shadowMismatchClasses,
             'shadow_enabled' => $shadowEnabled ? 1 : 0,
             'skip_identical_upsert' => $skipIdentical ? 1 : 0,
+            'same_snapshot_diagnostic_enabled' => $sameSnapshotEnabled ? 1 : 0,
+            'bc_same_snapshot_compare_count' => $metrics['bc_same_snapshot_compare_count'],
+            'bc_same_snapshot_match' => $metrics['bc_same_snapshot_match'],
+            'bc_same_snapshot_mismatch' => $metrics['bc_same_snapshot_mismatch'],
+            'bc_same_snapshot_diagnostic_errors' => $metrics['bc_same_snapshot_diagnostic_errors'],
+            'bc_same_snapshot_extra_network_fetches' => $metrics['bc_same_snapshot_extra_network_fetches'],
+            'bc_same_snapshot_production_writes' => $metrics['bc_same_snapshot_production_writes'],
             'generation_pairs' => $generationContext->pairCount(),
         ]);
     }

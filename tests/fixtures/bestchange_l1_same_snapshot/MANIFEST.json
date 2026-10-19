@@ -1,0 +1,18 @@
+{
+  "purpose": "Offline same-snapshot Top-N equivalence fixtures (authoritative vs L1 on identical book X)",
+  "cases": [
+    "happy_path_depth5",
+    "fewer_rows_than_position",
+    "equal_rates",
+    "duplicate_exchangers",
+    "own_exchanger_filtered",
+    "reserve_noise_ignored",
+    "min_rate_zero_dropped",
+    "missing_fields",
+    "malformed_rows",
+    "ascending_descending_reorder",
+    "source_extra_keys",
+    "thin_book_fallback",
+    "already_at_target"
+  ]
+}
