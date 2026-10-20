@@ -1,22 +1,17 @@
-# Google + Yandex OAuth — Implementation Status (post-certification)
+# Google + Yandex OAuth — Implementation Status
 
-## Isolation
-- FE: `feature/oauth-google-yandex-20261020T200136Z` (PRE `a0e8b456…`)
-- BE: `feature/oauth-google-yandex-20261020T200136Z` (PRE `432d1992…`)
-- Live releases untouched.
+## SHAs
+- Live FE: `a0e8b4569f92ce4a95777321d0c3e3a1ff1d45aa`
+- Live BE: `e394ca14c86ed6013b890138643a6a757fe2f575`
+- OAuth FE branch HEAD: `f63164923e95609a93e44c19655f694dfbc8ed48`
+- OAuth BE branch HEAD (rebased onto live): `38ed2bb18ed9461c8404fbe242fbc97e4d79ef17`
 
-## Certification evidence (2026-10-20)
-- PHPUnit Auth/OAuth: **32 passed**, 116 assertions (isolated sqlite)
-- Migration isolated sqlite: OK + idempotent
-- Composer validate: OK
-- FE oauth contract tests: **5 passed**
-- FE full build/typecheck: skipped (RESOURCE_CONFLICT)
-- Production: NOT mutated; flags remain off
+## Tests
+- BE PHPUnit Auth/OAuth: 32 PASS (post-rebase)
+- FE oauth contracts: 5 PASS
+- MySQL isolated migration: PASS
+- FE production build: PENDING capacity
 
-## Hardening
-- Legacy Google subject fallback; deactivated denied
-- Link requires auth + password reauth; no email-only link
-- ReturnTo sanitizer; AuthAudit; concurrent subject conflict handling
-- Settings link UI (FE)
-
-See `RELEASE_CERTIFICATION.md` for deploy ordering and rollback.
+## Production
+- Not deployed; flags off; migration not applied
+- See PRODUCTION_DELIVERY_STATUS.md
