@@ -72,9 +72,21 @@ final class OAuthSqliteHarness
     public static function migrateMinimalSchema(): void
     {
         Schema::dropIfExists('user_oauth_identities');
+        Schema::dropIfExists('social_auth_system');
         Schema::dropIfExists('reward_programs');
         Schema::dropIfExists('banned');
         Schema::dropIfExists('users');
+
+        Schema::create('social_auth_system', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name')->nullable();
+            $table->string('alias')->nullable();
+            $table->string('client_id')->nullable();
+            $table->string('client_secret')->nullable();
+            $table->integer('sorting')->default(0);
+            $table->integer('status')->default(0);
+            $table->timestamps();
+        });
 
         Schema::create('reward_programs', function (Blueprint $table) {
             $table->increments('id');

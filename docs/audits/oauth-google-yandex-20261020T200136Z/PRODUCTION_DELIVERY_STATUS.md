@@ -82,3 +82,10 @@ NONE. No deploy, no migration apply, no flag enablement, no IdP console changes.
 - Env: omit/`false` `EXS_OAUTH_ENABLED`; FE `OWNED_AUTH_OAUTH_ENABLED` / `NEXT_PUBLIC_*` off
 - Symlink rollback via existing deploy `--rollback`
 - Do **not** DROP `user_oauth_identities` on rollback
+
+## Admin credential reuse (2026-10-21)
+- Source of truth: `social_auth_system.client_id` / `client_secret` via admin AuthSystemController.
+- OAuthConfigRepository reads live DB rows (status=1); no env credential overrides allowed.
+- Google/Yandex admin rows: SET + VALID_FORMAT (web/Yandex app id shapes).
+- Optional env override only for redirect URI (`EXS_OAUTH_*_REDIRECT_URI`); currently ABSENT → computed apex callbacks.
+- IdP console callback registration still owner-verified (not proven from DB alone).
