@@ -1,0 +1,10 @@
+{
+  "wave": 1,
+  "createdAtUtc": "2026-10-20T20:02:14Z",
+  "liveBackendSha": "432d199285b942e561cbbd55c179e11a0d1a6fd5",
+  "worktree": "/opt/exswaping-backend-worktrees/oauth-google-yandex-20261020T200136Z",
+  "branch": "feature/oauth-google-yandex-20261020T200136Z",
+  "preSha": "432d199285b942e561cbbd55c179e11a0d1a6fd5",
+  "gitCommonDir": "/var/lib/server-ops/repos/exswaping-backend/.git",
+  "liveReleaseUntouched": "/var/www/app_exswapin_usr/data/www/exswaping-backend-releases/20261018T121527Z-432d199285b9"
+}

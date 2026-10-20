@@ -63,6 +63,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([
         \iEXPackages\Rare\ProxiesFilter\Commands\Reload::class,
         \iEXPackages\Rare\ProxiesFilter\Commands\View::class,
+        \App\Console\Commands\OAuthIdentitiesBackfillCommand::class,
     ])
     ->withEvents(discover: app_path('Listeners'))
     ->withMiddleware(function (Middleware $middleware) {

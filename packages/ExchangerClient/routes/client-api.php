@@ -14,6 +14,7 @@ use iEXPackages\ExchangerClient\Http\Controller\Account\VerificationCardControll
 use iEXPackages\ExchangerClient\Http\Controller\Account\WalletsController;
 use iEXPackages\ExchangerClient\Http\Controller\Auth\LoginController;
 use iEXPackages\ExchangerClient\Http\Controller\Auth\LogoutController;
+use iEXPackages\ExchangerClient\Http\Controller\Auth\OAuthController;
 use iEXPackages\ExchangerClient\Http\Controller\Auth\RegisterController;
 use iEXPackages\ExchangerClient\Http\Controller\ContactController;
 use iEXPackages\ExchangerClient\Http\Controller\ConversionLiftController;
@@ -53,6 +54,20 @@ Route::middleware(['throttle:60,1'])->prefix('auth')->group(function () {
 
     Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware(['guest'])->name('password.email');
     Route::post('password/reset', [ResetPasswordController::class, 'reset'])->middleware(['guest'])->name('password.update');
+
+    // Google / Yandex OAuth (Architecture C) — feature-flagged via EXS_OAUTH_ENABLED.
+    Route::middleware(['throttle:20,1'])->prefix('oauth')->group(function () {
+        Route::get('/{provider}/redirect', [OAuthController::class, 'redirect'])
+            ->where('provider', 'google|yandex');
+        Route::get('/{provider}/callback', [OAuthController::class, 'callback'])
+            ->where('provider', 'google|yandex');
+
+        Route::middleware(['auth'])->group(function () {
+            Route::post('/reauth', [OAuthController::class, 'confirmReauth'])
+                ->middleware(['throttle:10,1']);
+            Route::get('/identities', [OAuthController::class, 'identities']);
+        });
+    });
 });
 
 // Сбросить пароль

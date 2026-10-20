@@ -260,6 +260,11 @@ class User extends Authenticatable implements BannableContract, HasLocalePrefere
         return $this->hasMany(Task::class, 'id_user', 'id');
     }
 
+    public function oauthIdentities(): HasMany
+    {
+        return $this->hasMany(UserOAuthIdentity::class, 'user_id', 'id');
+    }
+
     public function internalAccounts()
     {
         return $this->hasMany(InternalAccount::class, 'id_user', 'id');
