@@ -8,7 +8,8 @@ namespace App\Services\Rates;
  * In-memory market books for one compiler:bestchange generation.
  *
  * Populated by RatesUpdateService after fetchRatesBatch. Consumed by L1 shadow
- * Top-N reuse (never authoritative in this task). Cleared when generation ends.
+ * Top-N reuse and (when enabled in DirectionExchangeRecalculateService) as the
+ * authoritative Top-N book for the same generation. Cleared when generation ends.
  */
 final class BestChangeCompilerGenerationContext
 {

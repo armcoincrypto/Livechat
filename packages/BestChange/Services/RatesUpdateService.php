@@ -78,8 +78,8 @@ final class RatesUpdateService
                 return new UpdateResult(0, $totalDirections, $uniquePairs);
             }
 
-            // L1: publish generation-scoped raw books for shadow Top-N reuse.
-            // Authoritative withUpdateDirections still uses marketForDirection.
+            // L1: publish generation-scoped raw books for Top-N reuse in the same
+            // compiler:bestchange process (shadow compare and/or authoritative path).
             $bcIdToDeId = [];
             foreach ($directions as $direction) {
                 $bcIdToDeId[(int) $direction->id] = (int) ($direction->id_direction_exchange ?? 0);

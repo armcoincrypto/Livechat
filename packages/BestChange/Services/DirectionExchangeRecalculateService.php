@@ -43,6 +43,7 @@ final class DirectionExchangeRecalculateService
             'bc_direction_calc_count' => 0,
             'bc_topn_lookup_count' => 0,
             'bc_topn_network_fetch_count' => 0,
+            'bc_topn_book_reuse_count' => 0,
             'bc_topn_shadow_compare_count' => 0,
             'bc_topn_shadow_match' => 0,
             'bc_topn_shadow_mismatch' => 0,
@@ -231,22 +232,33 @@ final class DirectionExchangeRecalculateService
                             if ($bd) {
                                 $sourcePos = (int) ($bd->position_num ?: 0) ?: null;
                                 $metrics['bc_topn_lookup_count']++;
-                                // Authoritative path: fresh marketForDirection (unchanged).
-                                $market = app(\iEXPackages\BestChange\BestChange::class)
-                                    ->rates()
-                                    ->marketForDirection($bd);
-                                $metrics['bc_topn_network_fetch_count']++;
-                                $book = (is_object($market) && isset($market->rawRows) && is_array($market->rawRows))
-                                    ? array_values($market->rawRows)
-                                    : [];
-                                if ($book !== []) {
-                                    $book = BestChangeTopNBookHelper::normalizeForTopN($book);
+                                // Authoritative book: prefer generationContext snapshot from
+                                // RatesUpdateService::fetchRatesBatch (same process, singleton).
+                                // Fallback to marketForDirection when no compatible book exists.
+                                // Same Top-N policy / adjust() / calculator — no second engine.
+                                $expectedPair = (int) $bd->id_currency_in.'-'.(int) $bd->id_currency_out;
+                                $batchRaw = $generationContext->rawRowsForDirectionExchange($directionId);
+                                $market = null;
+                                if (is_array($batchRaw) && $batchRaw !== []) {
+                                    $book = BestChangeTopNBookHelper::normalizeForTopN($batchRaw);
+                                    $metrics['bc_topn_book_reuse_count']++;
+                                    $gotPair = $expectedPair;
+                                } else {
+                                    $market = app(\iEXPackages\BestChange\BestChange::class)
+                                        ->rates()
+                                        ->marketForDirection($bd);
+                                    $metrics['bc_topn_network_fetch_count']++;
+                                    $book = (is_object($market) && isset($market->rawRows) && is_array($market->rawRows))
+                                        ? array_values($market->rawRows)
+                                        : [];
+                                    if ($book !== []) {
+                                        $book = BestChangeTopNBookHelper::normalizeForTopN($book);
+                                    }
+                                    $gotPair = is_object($market) && isset($market->presence['pair'])
+                                        ? (string) $market->presence['pair']
+                                        : $expectedPair;
                                 }
                                 // Reject cross-pair books (presence pair must match BD currencies).
-                                $expectedPair = (int) $bd->id_currency_in.'-'.(int) $bd->id_currency_out;
-                                $gotPair = is_object($market) && isset($market->presence['pair'])
-                                    ? (string) $market->presence['pair']
-                                    : $expectedPair;
                                 if ($gotPair !== $expectedPair) {
                                     Log::warning('BestChangeExternalTopNController pair_mismatch', [
                                         'direction_exchange_id' => $directionId,
@@ -472,6 +484,7 @@ final class DirectionExchangeRecalculateService
             'bc_recalc_ms' => (int) floor(microtime(true) * 1000) - $recalcStartedMs,
             'bc_topn_lookup_count' => $metrics['bc_topn_lookup_count'],
             'bc_topn_network_fetch_count' => $metrics['bc_topn_network_fetch_count'],
+            'bc_topn_book_reuse_count' => $metrics['bc_topn_book_reuse_count'],
             'bc_direction_calc_count' => $metrics['bc_direction_calc_count'],
             'bc_direction_upsert_count' => $metrics['bc_direction_upsert_count'],
             'bc_direction_upsert_skipped_identical' => $metrics['bc_direction_upsert_skipped_identical'],
