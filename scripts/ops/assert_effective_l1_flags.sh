@@ -16,6 +16,8 @@ REQUIRE_SAME_SNAPSHOT="${REQUIRE_SAME_SNAPSHOT:-0}"
 REQUIRE_SHADOW="${REQUIRE_SHADOW:-0}"
 REQUIRE_SKIP="${REQUIRE_SKIP:-0}"
 REQUIRE_ENV_SYMLINK="${REQUIRE_ENV_SYMLINK:-1}"
+REQUIRE_SHARED_OWNER="${REQUIRE_SHARED_OWNER:-${BACKEND_USER}:${BACKEND_USER}}"
+REQUIRE_SHARED_MODE="${REQUIRE_SHARED_MODE:-640}"
 
 [[ -d "${BACKEND_ROOT}" && -f "${BACKEND_ROOT}/artisan" ]] || {
   echo "FAIL backend root missing: ${BACKEND_ROOT}" >&2
@@ -27,7 +29,30 @@ if [[ -f "${BACKEND_ROOT}/RELEASE.json" ]]; then
   backend_sha="$(python3 -c "import json; print(json.load(open('${BACKEND_ROOT}/RELEASE.json')).get('git_sha','unknown'))" 2>/dev/null || echo unknown)"
 fi
 
+fail=0
 env_path="${BACKEND_ROOT}/.env"
+shared_real="$(readlink -f "${SHARED_ENV}" 2>/dev/null || echo "${SHARED_ENV}")"
+
+if [[ ! -f "${SHARED_ENV}" ]]; then
+  echo "FAIL shared env missing: ${SHARED_ENV}" >&2
+  fail=1
+fi
+
+shared_owner="missing"
+shared_mode="missing"
+if [[ -f "${SHARED_ENV}" ]]; then
+  shared_owner="$(stat -c '%U:%G' "${SHARED_ENV}")"
+  shared_mode="$(stat -c '%a' "${SHARED_ENV}")"
+fi
+
+app_can_read=NO
+if sudo -u "${BACKEND_USER}" test -r "${SHARED_ENV}" 2>/dev/null; then
+  app_can_read=YES
+else
+  echo "FAIL app user cannot read shared env (${BACKEND_USER})" >&2
+  fail=1
+fi
+
 if [[ -L "${env_path}" ]]; then
   env_type="symlink"
   env_target="$(readlink -f "${env_path}" 2>/dev/null || readlink "${env_path}")"
@@ -51,11 +76,9 @@ require 'vendor/autoload.php';
 \$app = require 'bootstrap/app.php';
 \$app->make(Illuminate\\Contracts\\Console\\Kernel::class)->bootstrap();
 \$k = '${key}';
+\$g = getenv(\$k);
+if (\$g !== false) { echo filter_var(\$g, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false'; exit; }
 \$raw = function_exists('env') ? env(\$k, null) : null;
-if (\$raw === null) {
-  \$g = getenv(\$k);
-  \$raw = (\$g === false) ? null : \$g;
-}
 if (\$raw === null) { echo 'false'; exit; }
 echo filter_var(\$raw, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
 " 2>/dev/null
@@ -70,6 +93,9 @@ echo "backend_root=${BACKEND_ROOT}"
 echo "env_type=${env_type}"
 echo "env_target=${env_target}"
 echo "shared_env=${SHARED_ENV}"
+echo "shared_owner=${shared_owner}"
+echo "shared_mode=${shared_mode}"
+echo "app_user_can_read_env=${app_can_read}"
 echo "shared_same_snapshot=${shared_same}"
 echo "shared_full_shadow=${shared_shadow}"
 echo "shared_skip_identical=${shared_skip}"
@@ -78,7 +104,6 @@ echo "same_snapshot_diagnostic=${eff_same}"
 echo "full_shadow=${eff_shadow}"
 echo "skip_identical=${eff_skip}"
 
-fail=0
 want_bool() {
   local name="$1" got="$2" want="$3"
   local want_s
@@ -98,13 +123,27 @@ if [[ "${REQUIRE_ENV_SYMLINK}" == "1" ]]; then
     echo "FAIL env_type=${env_type} required=symlink (release-local .env divergence risk)" >&2
     fail=1
   fi
-  case "${env_target}" in
-    *exswaping-backend-shared/config/.env) ;;
-    *)
-      echo "FAIL env_target not shared config: ${env_target}" >&2
-      fail=1
-      ;;
-  esac
+  if [[ "${env_target}" != "${shared_real}" ]]; then
+    echo "FAIL env_target=${env_target} want=${shared_real}" >&2
+    fail=1
+  fi
+fi
+
+if [[ "${shared_owner}" != "${REQUIRE_SHARED_OWNER}" ]]; then
+  echo "FAIL shared_owner=${shared_owner} required=${REQUIRE_SHARED_OWNER}" >&2
+  fail=1
+fi
+if [[ "${shared_mode}" != "${REQUIRE_SHARED_MODE}" ]]; then
+  echo "FAIL shared_mode=${shared_mode} required=${REQUIRE_SHARED_MODE}" >&2
+  fail=1
+fi
+
+# requested (shared file) vs effective (process) mismatch
+req_same=false
+[[ "${shared_same}" == "true" ]] && req_same=true
+if [[ "${req_same}" == "true" && "${eff_same}" != "true" ]]; then
+  echo "FAIL L1_DIAGNOSTIC_FLAG_MISMATCH requested=true effective=${eff_same}" >&2
+  fail=1
 fi
 
 if [[ "${shared_same}" != "${live_same}" && "${env_type}" != "symlink" ]]; then

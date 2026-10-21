@@ -81,3 +81,29 @@ install -o "${owner}" -g "${group}" -m "${mode}" "${tmp}" "${SHARED_ENV}"
 
 echo "SET ${KEY}=${VALUE} shared=${SHARED_ENV} owner=${owner}:${group} mode=${mode}"
 grep -E "^${KEY}=" "${SHARED_ENV}" | tail -1
+
+if ! sudo -u "${BACKEND_USER}" test -r "${SHARED_ENV}"; then
+  echo "FAIL app user ${BACKEND_USER} cannot read shared env after write" >&2
+  exit 4
+fi
+
+# Verify effective value in compiler-equivalent context (unless skipped).
+if [[ "${EXSWAPING_SKIP_EFFECTIVE_VERIFY:-0}" != "1" ]]; then
+  PHP_BIN="${EXSWAPING_PHP_BIN:-/usr/bin/php8.4}"
+  eff="$(sudo -u "${BACKEND_USER}" -H -- "${PHP_BIN}" -r "
+chdir('${BACKEND_ROOT}');
+require 'vendor/autoload.php';
+\$app = require 'bootstrap/app.php';
+\$app->make(Illuminate\\Contracts\\Console\\Kernel::class)->bootstrap();
+\$g = getenv('${KEY}');
+if (\$g !== false) { echo filter_var(\$g, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false'; exit; }
+\$raw = function_exists('env') ? env('${KEY}', null) : null;
+if (\$raw === null) { echo 'false'; exit; }
+echo filter_var(\$raw, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+" 2>/dev/null || echo error)"
+  if [[ "${eff}" != "${VALUE}" ]]; then
+    echo "FAIL effective_verify key=${KEY} expected=${VALUE} got=${eff}" >&2
+    exit 5
+  fi
+  echo "EFFECTIVE_VERIFY=${KEY}=${eff}"
+fi
