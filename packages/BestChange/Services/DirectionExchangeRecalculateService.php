@@ -115,6 +115,9 @@ final class DirectionExchangeRecalculateService
         $shadowEnabled = BestChangeL1Shadow::shadowEnabled();
         $skipIdentical = BestChangeL1Shadow::skipIdenticalDeUpsertEnabled();
         $sameSnapshotEnabled = BestChangeL1SameSnapshotDiagnostic::enabled();
+        // Observability only: detect shared=.env true vs process-effective false
+        // (release-local .env divergence). Never changes pricing writes.
+        BestChangeL1SameSnapshotDiagnostic::assertAndLogFlagState();
 
         $baseQuery->chunkById(500, function ($exchanges) use ($onError, &$metrics, &$shadowMismatchClasses, $generationContext, $shadowEnabled, $skipIdentical, $sameSnapshotEnabled, $sameSnapshotGenerationSalt): void {
             $now = Carbon::now()->toDateTimeString();

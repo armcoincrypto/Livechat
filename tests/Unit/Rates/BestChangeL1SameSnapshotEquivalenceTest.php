@@ -48,6 +48,60 @@ final class BestChangeL1SameSnapshotEquivalenceTest extends TestCase
         $this->assertFalse(BestChangeL1SameSnapshotDiagnostic::enabled());
     }
 
+    public function test_inspect_flag_state_detects_shared_true_effective_false_mismatch(): void
+    {
+        $dir = sys_get_temp_dir().'/l1_flag_insp_'.bin2hex(random_bytes(4));
+        @mkdir($dir, 0750, true);
+        $shared = $dir.'/shared.env';
+        $live = $dir.'/live.env';
+        file_put_contents($shared, "BESTCHANGE_L1_SAME_SNAPSHOT_DIAGNOSTIC=true\n");
+        file_put_contents($live, "BESTCHANGE_L1_SAME_SNAPSHOT_DIAGNOSTIC=false\n");
+        putenv(BestChangeL1SameSnapshotDiagnostic::FLAG.'=false');
+        $_ENV[BestChangeL1SameSnapshotDiagnostic::FLAG] = 'false';
+
+        $state = BestChangeL1SameSnapshotDiagnostic::inspectFlagState($live, $shared);
+        $this->assertSame(1, $state['diagnostic_requested']);
+        $this->assertSame(0, $state['diagnostic_effective']);
+        $this->assertSame(1, $state['mismatch']);
+        $this->assertStringContainsString('release-local-file', $state['config_source']);
+
+        @unlink($shared);
+        @unlink($live);
+        @rmdir($dir);
+    }
+
+    public function test_inspect_flag_state_aligned_when_both_false(): void
+    {
+        $dir = sys_get_temp_dir().'/l1_flag_insp_'.bin2hex(random_bytes(4));
+        @mkdir($dir, 0750, true);
+        $shared = $dir.'/shared.env';
+        $live = $dir.'/live.env';
+        file_put_contents($shared, "BESTCHANGE_L1_SAME_SNAPSHOT_DIAGNOSTIC=false\n");
+        file_put_contents($live, "BESTCHANGE_L1_SAME_SNAPSHOT_DIAGNOSTIC=false\n");
+        putenv(BestChangeL1SameSnapshotDiagnostic::FLAG.'=false');
+        $_ENV[BestChangeL1SameSnapshotDiagnostic::FLAG] = 'false';
+
+        $state = BestChangeL1SameSnapshotDiagnostic::inspectFlagState($live, $shared);
+        $this->assertSame(0, $state['diagnostic_requested']);
+        $this->assertSame(0, $state['diagnostic_effective']);
+        $this->assertSame(0, $state['mismatch']);
+
+        @unlink($shared);
+        @unlink($live);
+        @rmdir($dir);
+    }
+
+    public function test_parse_env_file_bool_reads_last_assignment(): void
+    {
+        $path = sys_get_temp_dir().'/l1_env_parse_'.bin2hex(random_bytes(4)).'.env';
+        file_put_contents($path, "FOO=1\nBESTCHANGE_L1_SAME_SNAPSHOT_DIAGNOSTIC=false\nBESTCHANGE_L1_SAME_SNAPSHOT_DIAGNOSTIC=true\n");
+        $this->assertTrue(BestChangeL1SameSnapshotDiagnostic::parseEnvFileBool(
+            $path,
+            BestChangeL1SameSnapshotDiagnostic::FLAG
+        ));
+        @unlink($path);
+    }
+
     public function test_deterministic_sampling_rotates_by_salt(): void
     {
         $stride = BestChangeL1SameSnapshotDiagnostic::SAMPLE_STRIDE;

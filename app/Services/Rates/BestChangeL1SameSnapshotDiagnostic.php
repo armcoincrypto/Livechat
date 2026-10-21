@@ -48,6 +48,145 @@ final class BestChangeL1SameSnapshotDiagnostic
     }
 
     /**
+     * Observability: compare governance (shared .env) vs process-effective flag.
+     * Emits L1_DIAGNOSTIC_FLAG_MISMATCH when shared requests true but effective is false.
+     * Does not change pricing behavior.
+     *
+     * @return array{
+     *   diagnostic_requested: int,
+     *   diagnostic_effective: int,
+     *   config_source: string,
+     *   env_path: string,
+     *   shared_env_path: ?string,
+     *   mismatch: int
+     * }
+     */
+    public static function assertAndLogFlagState(?string $liveEnvPath = null, ?string $sharedEnvPath = null): array
+    {
+        $state = self::inspectFlagState($liveEnvPath, $sharedEnvPath);
+        self::logInfo('bestchange_l1_diagnostic_flag_assert', $state);
+        if ($state['mismatch'] === 1) {
+            self::logError('L1_DIAGNOSTIC_FLAG_MISMATCH', $state);
+        }
+
+        return $state;
+    }
+
+    /**
+     * @return array{
+     *   diagnostic_requested: int,
+     *   diagnostic_effective: int,
+     *   config_source: string,
+     *   env_path: string,
+     *   shared_env_path: ?string,
+     *   mismatch: int
+     * }
+     */
+    public static function inspectFlagState(?string $liveEnvPath = null, ?string $sharedEnvPath = null): array
+    {
+        $envPath = $liveEnvPath ?? (function_exists('base_path') ? base_path('.env') : '.env');
+        $shared = $sharedEnvPath ?? self::resolveSharedEnvPath($envPath);
+        $effective = self::enabled();
+        $liveFileVal = self::parseEnvFileBool($envPath, self::FLAG);
+        $sharedFileVal = $shared !== null ? self::parseEnvFileBool($shared, self::FLAG) : null;
+        // Governance source of truth is shared when present; else the live .env file.
+        $requested = $sharedFileVal ?? $liveFileVal ?? false;
+        $source = self::describeConfigSource($envPath, $shared);
+
+        return [
+            'diagnostic_requested' => $requested ? 1 : 0,
+            'diagnostic_effective' => $effective ? 1 : 0,
+            'config_source' => $source,
+            'env_path' => $envPath,
+            'shared_env_path' => $shared,
+            'mismatch' => ($requested && ! $effective) ? 1 : 0,
+        ];
+    }
+
+    public static function describeConfigSource(string $envPath, ?string $sharedEnvPath = null): string
+    {
+        if (is_link($envPath)) {
+            $target = readlink($envPath) ?: '';
+            $real = realpath($envPath) ?: $target;
+
+            return 'symlink->'.$real;
+        }
+        if (is_file($envPath)) {
+            $real = realpath($envPath) ?: $envPath;
+            if ($sharedEnvPath !== null && is_file($sharedEnvPath)) {
+                $sharedReal = realpath($sharedEnvPath) ?: $sharedEnvPath;
+                if ($real !== $sharedReal) {
+                    return 'release-local-file_diverged_from_shared:'.$real;
+                }
+            }
+
+            return 'release-local-file:'.$real;
+        }
+
+        return 'missing:'.$envPath;
+    }
+
+    public static function resolveSharedEnvPath(string $liveEnvPath): ?string
+    {
+        $override = getenv('EXSWAPING_BACKEND_SHARED_ENV');
+        if (is_string($override) && $override !== '' && is_file($override)) {
+            return $override;
+        }
+        if (is_link($liveEnvPath)) {
+            $real = realpath($liveEnvPath);
+
+            return $real !== false ? $real : null;
+        }
+        // Conventional layout: …/exswaping-backend-shared/config/.env
+        $candidate = dirname(dirname(dirname($liveEnvPath))).'/exswaping-backend-shared/config/.env';
+        if (is_file($candidate)) {
+            return $candidate;
+        }
+
+        return null;
+    }
+
+    public static function parseEnvFileBool(string $path, string $key): ?bool
+    {
+        if (! is_file($path) || ! is_readable($path)) {
+            return null;
+        }
+        $fh = fopen($path, 'rb');
+        if ($fh === false) {
+            return null;
+        }
+        $found = null;
+        while (($line = fgets($fh)) !== false) {
+            $line = trim($line);
+            if ($line === '' || str_starts_with($line, '#')) {
+                continue;
+            }
+            if (str_starts_with($line, 'export ')) {
+                $line = substr($line, 7);
+            }
+            $eq = strpos($line, '=');
+            if ($eq === false) {
+                continue;
+            }
+            $k = trim(substr($line, 0, $eq));
+            if ($k !== $key) {
+                continue;
+            }
+            $v = trim(substr($line, $eq + 1));
+            if (
+                (str_starts_with($v, '"') && str_ends_with($v, '"'))
+                || (str_starts_with($v, "'") && str_ends_with($v, "'"))
+            ) {
+                $v = substr($v, 1, -1);
+            }
+            $found = filter_var($v, FILTER_VALIDATE_BOOLEAN);
+        }
+        fclose($fh);
+
+        return $found;
+    }
+
+    /**
      * Stable rotating sample: covers different direction cohorts across generations.
      */
     public static function shouldSample(int $directionExchangeId, int $generationSalt = 0): bool
@@ -422,15 +561,57 @@ final class BestChangeL1SameSnapshotDiagnostic
 
     private static function envBool(string $key, bool $default): bool
     {
-        $raw = function_exists('env') ? env($key, null) : null;
-        if ($raw === null) {
-            $g = getenv($key);
-            $raw = ($g === false) ? null : $g;
+        // Prefer process environment (putenv/Dotenv) over Laravel env() helper,
+        // which can return a stale cached value after putenv changes in the same process.
+        $g = getenv($key);
+        if ($g !== false) {
+            return filter_var($g, FILTER_VALIDATE_BOOLEAN);
         }
+        if (array_key_exists($key, $_ENV)) {
+            return filter_var((string) $_ENV[$key], FILTER_VALIDATE_BOOLEAN);
+        }
+        if (array_key_exists($key, $_SERVER)) {
+            return filter_var((string) $_SERVER[$key], FILTER_VALIDATE_BOOLEAN);
+        }
+        $raw = function_exists('env') ? env($key, null) : null;
         if ($raw === null) {
             return $default;
         }
 
         return filter_var($raw, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    private static function logInfo(string $message, array $context): void
+    {
+        if (class_exists(Log::class)) {
+            try {
+                Log::info($message, $context);
+
+                return;
+            } catch (Throwable) {
+                // fall through
+            }
+        }
+        error_log($message.' '.json_encode($context));
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    private static function logError(string $message, array $context): void
+    {
+        if (class_exists(Log::class)) {
+            try {
+                Log::error($message, $context);
+
+                return;
+            } catch (Throwable) {
+                // fall through
+            }
+        }
+        error_log($message.' '.json_encode($context));
     }
 }
