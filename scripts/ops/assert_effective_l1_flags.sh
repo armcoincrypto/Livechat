@@ -15,6 +15,7 @@ BACKEND_USER="${EXSWAPING_BACKEND_USER:-app_exswapin_usr}"
 REQUIRE_SAME_SNAPSHOT="${REQUIRE_SAME_SNAPSHOT:-0}"
 REQUIRE_SHADOW="${REQUIRE_SHADOW:-0}"
 REQUIRE_SKIP="${REQUIRE_SKIP:-0}"
+REQUIRE_AUTHORITY="${REQUIRE_AUTHORITY:-0}"
 REQUIRE_ENV_SYMLINK="${REQUIRE_ENV_SYMLINK:-1}"
 REQUIRE_SHARED_OWNER="${REQUIRE_SHARED_OWNER:-${BACKEND_USER}:${BACKEND_USER}}"
 REQUIRE_SHARED_MODE="${REQUIRE_SHARED_MODE:-640}"
@@ -64,6 +65,7 @@ fi
 shared_same="$(grep -E '^BESTCHANGE_L1_SAME_SNAPSHOT_DIAGNOSTIC=' "${SHARED_ENV}" 2>/dev/null | tail -1 | cut -d= -f2- || echo missing)"
 shared_shadow="$(grep -E '^BESTCHANGE_L1_SHADOW_ENABLED=' "${SHARED_ENV}" 2>/dev/null | tail -1 | cut -d= -f2- || echo missing)"
 shared_skip="$(grep -E '^BESTCHANGE_L1_SKIP_IDENTICAL_DE_UPSERT=' "${SHARED_ENV}" 2>/dev/null | tail -1 | cut -d= -f2- || echo missing)"
+shared_authority="$(grep -E '^BESTCHANGE_L1_AUTHORITY_ENABLED=' "${SHARED_ENV}" 2>/dev/null | tail -1 | cut -d= -f2- || echo missing)"
 
 live_same="$(grep -E '^BESTCHANGE_L1_SAME_SNAPSHOT_DIAGNOSTIC=' "${env_path}" 2>/dev/null | tail -1 | cut -d= -f2- || echo missing)"
 
@@ -87,6 +89,7 @@ echo filter_var(\$raw, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
 eff_same="$(read_effective BESTCHANGE_L1_SAME_SNAPSHOT_DIAGNOSTIC || echo error)"
 eff_shadow="$(read_effective BESTCHANGE_L1_SHADOW_ENABLED || echo error)"
 eff_skip="$(read_effective BESTCHANGE_L1_SKIP_IDENTICAL_DE_UPSERT || echo error)"
+eff_authority="$(read_effective BESTCHANGE_L1_AUTHORITY_ENABLED || echo error)"
 
 echo "backend_sha=${backend_sha}"
 echo "backend_root=${BACKEND_ROOT}"
@@ -103,6 +106,8 @@ echo "live_file_same_snapshot=${live_same}"
 echo "same_snapshot_diagnostic=${eff_same}"
 echo "full_shadow=${eff_shadow}"
 echo "skip_identical=${eff_skip}"
+echo "shared_l1_authority=${shared_authority:-missing}"
+echo "l1_authority_enabled=${eff_authority}"
 
 want_bool() {
   local name="$1" got="$2" want="$3"
@@ -117,6 +122,7 @@ want_bool() {
 want_bool same_snapshot_diagnostic "${eff_same}" "${REQUIRE_SAME_SNAPSHOT}"
 want_bool full_shadow "${eff_shadow}" "${REQUIRE_SHADOW}"
 want_bool skip_identical "${eff_skip}" "${REQUIRE_SKIP}"
+want_bool l1_authority_enabled "${eff_authority}" "${REQUIRE_AUTHORITY}"
 
 if [[ "${REQUIRE_ENV_SYMLINK}" == "1" ]]; then
   if [[ "${env_type}" != "symlink" ]]; then

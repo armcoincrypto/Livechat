@@ -5,6 +5,7 @@ namespace iEXPackages\BestChange\Services;
 
 use App\Models\DirectionExchange;
 use App\Services\Rates\BestChangeCompilerGenerationContext;
+use App\Services\Rates\BestChangeL1Authority;
 use App\Services\Rates\BestChangeL1SameSnapshotDiagnostic;
 use App\Services\Rates\BestChangeL1Shadow;
 use App\Services\Rates\BestChangeMarketBaseHealth;
@@ -44,6 +45,8 @@ final class DirectionExchangeRecalculateService
             'bc_topn_lookup_count' => 0,
             'bc_topn_network_fetch_count' => 0,
             'bc_topn_book_reuse_count' => 0,
+            'bc_l1_authority_enabled' => 0,
+            'bc_l1_authority_fallback_count' => 0,
             'bc_topn_shadow_compare_count' => 0,
             'bc_topn_shadow_match' => 0,
             'bc_topn_shadow_mismatch' => 0,
@@ -116,11 +119,13 @@ final class DirectionExchangeRecalculateService
         $shadowEnabled = BestChangeL1Shadow::shadowEnabled();
         $skipIdentical = BestChangeL1Shadow::skipIdenticalDeUpsertEnabled();
         $sameSnapshotEnabled = BestChangeL1SameSnapshotDiagnostic::enabled();
+        $l1AuthorityEnabled = BestChangeL1Authority::enabled();
+        $metrics['bc_l1_authority_enabled'] = $l1AuthorityEnabled ? 1 : 0;
         // Observability only: detect shared=.env true vs process-effective false
         // (release-local .env divergence). Never changes pricing writes.
         BestChangeL1SameSnapshotDiagnostic::assertAndLogFlagState();
 
-        $baseQuery->chunkById(500, function ($exchanges) use ($onError, &$metrics, &$shadowMismatchClasses, $generationContext, $shadowEnabled, $skipIdentical, $sameSnapshotEnabled, $sameSnapshotGenerationSalt): void {
+        $baseQuery->chunkById(500, function ($exchanges) use ($onError, &$metrics, &$shadowMismatchClasses, $generationContext, $shadowEnabled, $skipIdentical, $sameSnapshotEnabled, $sameSnapshotGenerationSalt, $l1AuthorityEnabled): void {
             $now = Carbon::now()->toDateTimeString();
 
             $successUpdates = [];
@@ -232,18 +237,24 @@ final class DirectionExchangeRecalculateService
                             if ($bd) {
                                 $sourcePos = (int) ($bd->position_num ?: 0) ?: null;
                                 $metrics['bc_topn_lookup_count']++;
-                                // Authoritative book: prefer generationContext snapshot from
-                                // RatesUpdateService::fetchRatesBatch (same process, singleton).
-                                // Fallback to marketForDirection when no compatible book exists.
+                                // Authoritative book source:
+                                // - BESTCHANGE_L1_AUTHORITY_ENABLED=true → prefer generationContext
+                                //   snapshot from RatesUpdateService::fetchRatesBatch (no duplicate
+                                //   network fetch). Fail-soft to marketForDirection when unavailable.
+                                // - flag false (default) → historical marketForDirection path.
                                 // Same Top-N policy / adjust() / calculator — no second engine.
                                 $expectedPair = (int) $bd->id_currency_in.'-'.(int) $bd->id_currency_out;
                                 $batchRaw = $generationContext->rawRowsForDirectionExchange($directionId);
                                 $market = null;
-                                if (is_array($batchRaw) && $batchRaw !== []) {
+                                $useL1Book = $l1AuthorityEnabled && is_array($batchRaw) && $batchRaw !== [];
+                                if ($useL1Book) {
                                     $book = BestChangeTopNBookHelper::normalizeForTopN($batchRaw);
                                     $metrics['bc_topn_book_reuse_count']++;
                                     $gotPair = $expectedPair;
                                 } else {
+                                    if ($l1AuthorityEnabled) {
+                                        $metrics['bc_l1_authority_fallback_count']++;
+                                    }
                                     $market = app(\iEXPackages\BestChange\BestChange::class)
                                         ->rates()
                                         ->marketForDirection($bd);
@@ -485,6 +496,8 @@ final class DirectionExchangeRecalculateService
             'bc_topn_lookup_count' => $metrics['bc_topn_lookup_count'],
             'bc_topn_network_fetch_count' => $metrics['bc_topn_network_fetch_count'],
             'bc_topn_book_reuse_count' => $metrics['bc_topn_book_reuse_count'],
+            'bc_l1_authority_enabled' => $metrics['bc_l1_authority_enabled'],
+            'bc_l1_authority_fallback_count' => $metrics['bc_l1_authority_fallback_count'],
             'bc_direction_calc_count' => $metrics['bc_direction_calc_count'],
             'bc_direction_upsert_count' => $metrics['bc_direction_upsert_count'],
             'bc_direction_upsert_skipped_identical' => $metrics['bc_direction_upsert_skipped_identical'],
@@ -495,6 +508,7 @@ final class DirectionExchangeRecalculateService
             'shadow_mismatch_classes' => $shadowMismatchClasses,
             'shadow_enabled' => $shadowEnabled ? 1 : 0,
             'skip_identical_upsert' => $skipIdentical ? 1 : 0,
+            'l1_authority_enabled' => $l1AuthorityEnabled ? 1 : 0,
             'same_snapshot_diagnostic_enabled' => $sameSnapshotEnabled ? 1 : 0,
             'bc_same_snapshot_compare_count' => $metrics['bc_same_snapshot_compare_count'],
             'bc_same_snapshot_match' => $metrics['bc_same_snapshot_match'],
