@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use App\Models\HistoryUpdatedData;
 use App\Services\Rates\RatesXmlMonitorGate;
 use App\Services\Rates\RatesXmlPublicFeedHealth;
+use App\Services\Rates\SchemeFilesScheduledSkipGate;
 use App\Support\WorkStatusFresh;
 use iEXPackages\Courses\CoursesFacade;
 use Illuminate\Console\Command;
@@ -36,13 +37,72 @@ class StatusRatesFilesCommand extends Command
      */
     public function handle(): int
     {
+        $gate = app(SchemeFilesScheduledSkipGate::class);
+        $xmlPath = public_path('static/exports/currencies.xml');
+
+        $decision = $gate->evaluate([
+            'invocation' => SchemeFilesScheduledSkipGate::processInvocation(),
+            'force_publish' => (bool) $this->option('force-publish'),
+            'skip_export' => (bool) $this->option('skip-export'),
+            'xml_path' => $xmlPath,
+        ]);
+
+        if ($decision['skip'] === true) {
+            $this->info('scheme:files scheduled skip — complete inputs unchanged ('.$decision['reason'].')');
+            Log::info('scheme_files_scheduled_skip', [
+                'reason' => $decision['reason'],
+                'fingerprint' => $decision['fingerprint'],
+            ]);
+            // History row keeps ops visibility without implying a full rebuild cost.
+            $this->logHistory('export_files', 0, 0, 0.0);
+            $this->logHistory('export_exchange', 0, 0, 0.0);
+
+            return self::SUCCESS;
+        }
+
+        if ($decision['enabled'] === true) {
+            Log::info('scheme_files_scheduled_skip_bypass', [
+                'reason' => $decision['reason'],
+            ]);
+        }
+
+        $exportOk = true;
         if (! $this->option('skip-export')) {
             $ok = $this->updateCoursesFile();
             if ($ok === false) {
+                $gate->recordFailure('xml_export_failed');
+
                 return self::FAILURE;
             }
+            $exportOk = $ok !== false;
         }
-        $this->updateExchangeDirections();
+
+        $directionsOk = $this->updateExchangeDirections();
+
+        if ($exportOk && $directionsOk) {
+            try {
+                $fp = $decision['fingerprint'] ?? $gate->computeInputFingerprint();
+                $xmlMeta = [];
+                if (is_file($xmlPath)) {
+                    $xml = (string) file_get_contents($xmlPath);
+                    $xmlMeta = [
+                        'xml_sha256' => hash('sha256', $xml),
+                        'xml_items' => substr_count($xml, '<item>'),
+                        'xml_bytes' => strlen($xml),
+                        'dr_snapshot_id' => Cache::get('dr_snapshot_id'),
+                    ];
+                }
+                $gate->recordSuccess((string) $fp, $xmlMeta);
+            } catch (\Throwable $e) {
+                // Fail-open for next tick: do not leave a false success meta.
+                $gate->recordFailure('success_meta_failed:'.$e->getMessage());
+                Log::warning('scheme_files_skip_meta_record_failed', [
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        } else {
+            $gate->recordFailure($directionsOk ? 'export_partial' : 'directions_failed');
+        }
 
         return self::SUCCESS;
     }
@@ -164,7 +224,7 @@ class StatusRatesFilesCommand extends Command
     /**
      * Обновление направлений обмена.
      */
-    private function updateExchangeDirections(): void
+    private function updateExchangeDirections(): bool
     {
         $this->comment('');
         $this->comment('---------------------');
@@ -188,12 +248,15 @@ class StatusRatesFilesCommand extends Command
 
             $this->logHistory('export_exchange', $rates->getCountUpdateData(), $rates->getCountTotalUpdate(), $time);
 
+            return true;
         } catch (\Throwable $exception) {
             Log::error('Ошибка при обновлении направлений: '.$exception->getMessage());
             $this->error('Произошла ошибка при обновлении направлений.');
-        }
 
-        $this->comment('---------------------');
+            return false;
+        } finally {
+            $this->comment('---------------------');
+        }
     }
 
     /**
