@@ -229,4 +229,46 @@ final class SchemeFilesScheduledSkipGateTest extends TestCase
         $d = SchemeFilesScheduledSkipGate::decideFromFacts($f);
         $this->assertFalse($d['skip']);
     }
+
+    public function test_cs_created_at_alone_is_not_a_skip_blocker(): void
+    {
+        // Proof contract: fingerprint equality ignores wall-clock stamps.
+        // Changing only cs.created_at cannot alter XML/rates inputs; skip remains valid
+        // when complete input fp matches. (created_at is written only during rebuild.)
+        $f = $this->baseOkFacts();
+        $d = SchemeFilesScheduledSkipGate::decideFromFacts($f);
+        $this->assertTrue($d['skip']);
+        $this->assertSame('unchanged_complete_inputs', $d['reason']);
+    }
+
+    public function test_time_window_boundary_change_forces_full_export(): void
+    {
+        // Time-window open-mask is part of computeInputFingerprint(); a new fp
+        // simulates crossing from_on_time/to_on_time.
+        $f = $this->baseOkFacts();
+        $f['fingerprint'] = 'time-window-open-mask-changed';
+        $d = SchemeFilesScheduledSkipGate::decideFromFacts($f);
+        $this->assertFalse($d['skip']);
+        $this->assertSame('fingerprint_changed', $d['reason']);
+    }
+
+    public function test_publication_metadata_sha_drift_forces_full_export(): void
+    {
+        $f = $this->baseOkFacts();
+        $f['output_fail'] = 'xml_sha_drift';
+        $d = SchemeFilesScheduledSkipGate::decideFromFacts($f);
+        $this->assertFalse($d['skip']);
+        $this->assertSame('xml_sha_drift', $d['reason']);
+    }
+
+    public function test_monitor_or_offline_uncertainty_fails_open(): void
+    {
+        $f = $this->baseOkFacts();
+        $f['offline_failed'] = true;
+        $this->assertFalse(SchemeFilesScheduledSkipGate::decideFromFacts($f)['skip']);
+
+        $f = $this->baseOkFacts();
+        $f['monitor_failed'] = true;
+        $this->assertFalse(SchemeFilesScheduledSkipGate::decideFromFacts($f)['skip']);
+    }
 }
