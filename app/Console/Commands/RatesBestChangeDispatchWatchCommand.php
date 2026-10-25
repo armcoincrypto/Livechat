@@ -240,7 +240,11 @@ final class RatesBestChangeDispatchWatchCommand extends Command
         } catch (\Throwable) {
             $minutes = 30;
         }
-        $expression = ExchangeSchedule::cronExpressionForMinutes($minutes);
+        // Must match ExchangeSchedule BC registration (cadence + admission offset).
+        $expression = ExchangeSchedule::cronExpressionForMinutesWithOffset(
+            $minutes,
+            ExchangeSchedule::BESTCHANGE_ADMISSION_OFFSET_MINUTES
+        );
         $computed = 'framework'.DIRECTORY_SEPARATOR.'schedule-'.sha1($expression.$command);
 
         // Prefer a live schedule:finish mutex if it matches the BC wrapper command.
