@@ -379,17 +379,30 @@ final class RateDirectionEligibility
         }
 
         // BestChange-owned public surface: require authoritative book freshness.
-        // Does not alter Zelle / DERIVED / MANUAL ownership selection (SourceChecks).
-        // Does not rewrite course_value; blocks NEW quote/order when book is stale.
+        // Single authority: BestChangeMarketBaseHealth (no duplicate freshness logic).
+        // Does not alter Zelle / DERIVED / MANUAL ownership (parser_source_name gate).
+        // Does not rewrite course_value; blocks NEW quote/order when book is unhealthy.
+        // Fail closed on evaluation errors — never advertise stale BC as actionable.
         if ($this->isBestChangeRuntimeOwner($direction)) {
-            $health = BestChangeMarketBaseHealth::evaluate((int) $direction->id);
-            if (($health['healthy'] ?? false) !== true) {
-                $quoteAllowed = false;
-                $orderAllowed = false;
-                $reason = (string) ($health['reason'] ?? $health['status'] ?? 'stale');
-                $reasons[] = 'bestchange_book_'.$reason;
-                $reasons = $this->uniqueReasons($reasons);
+            try {
+                $health = $this->bestChangeBookHealth($direction);
+            } catch (Throwable $e) {
+                $health = [
+                    'healthy' => false,
+                    'status' => 'unavailable',
+                    'reason' => 'health_eval_failed',
+                ];
             }
+            $gated = self::applyBestChangeBookHealthToSurface(
+                true,
+                $health,
+                $quoteAllowed,
+                $orderAllowed,
+                $reasons,
+            );
+            $quoteAllowed = $gated['quote_allowed'];
+            $orderAllowed = $gated['order_allowed'];
+            $reasons = $gated['reasons'];
         }
 
         $errorCode = null;
@@ -648,13 +661,62 @@ final class RateDirectionEligibility
 
     /**
      * True when the direction currently publishes under BestChange ownership.
-     * Zelle / DERIVED parser labels are excluded by parser_source_name inequality.
+     * Zelle / DERIVED / MANUAL parser labels are excluded by parser_source_name.
      */
+    /**
+     * Pure surface applicator — single freshness authority for quote/order.
+     *
+     * @param  array<string,mixed>  $health  from BestChangeMarketBaseHealth
+     * @param  list<string>  $reasons
+     * @return array{quote_allowed:bool,order_allowed:bool,reasons:list<string>}
+     */
+    public static function applyBestChangeBookHealthToSurface(
+        bool $isBestChangeOwner,
+        array $health,
+        bool $quoteAllowed,
+        bool $orderAllowed,
+        array $reasons,
+    ): array {
+        if (! $isBestChangeOwner) {
+            return [
+                'quote_allowed' => $quoteAllowed,
+                'order_allowed' => $orderAllowed,
+                'reasons' => $reasons,
+            ];
+        }
+        if (($health['healthy'] ?? false) === true) {
+            return [
+                'quote_allowed' => $quoteAllowed,
+                'order_allowed' => $orderAllowed,
+                'reasons' => $reasons,
+            ];
+        }
+        $reason = (string) ($health['reason'] ?? $health['status'] ?? 'stale');
+        if ($reason === '') {
+            $reason = 'stale';
+        }
+        $reasons[] = 'bestchange_book_'.$reason;
+        $reasons = array_values(array_unique($reasons));
+
+        return [
+            'quote_allowed' => false,
+            'order_allowed' => false,
+            'reasons' => $reasons,
+        ];
+    }
+
     private function isBestChangeRuntimeOwner(object $direction): bool
     {
         if ((string) ($direction->parser_source_name ?? '') !== 'BestChange') {
             return false;
         }
+
+        if (isset($direction->bestchange_directions) && $direction->bestchange_directions !== null) {
+            return BestChangeMarketBaseHealth::isActiveStatus(
+                $direction->bestchange_directions->status ?? 0
+            );
+        }
+
         $id = (int) ($direction->id ?? 0);
         if ($id <= 0) {
             return false;
@@ -663,7 +725,26 @@ final class RateDirectionEligibility
         try {
             return BestChangeMarketBaseHealth::hasActiveLink($id);
         } catch (Throwable) {
-            return false;
+            // Fail closed: treat as BC-owned so missing health cannot bypass.
+            return true;
         }
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function bestChangeBookHealth(object $direction): array
+    {
+        $id = (int) ($direction->id ?? 0);
+        if (isset($direction->bestchange_directions) && $direction->bestchange_directions !== null) {
+            return BestChangeMarketBaseHealth::evaluateFromRow(
+                $direction->bestchange_directions,
+                $id,
+                BestChangeMarketBaseHealth::DEFAULT_MAX_AGE_SECONDS,
+                false
+            );
+        }
+
+        return BestChangeMarketBaseHealth::evaluate($id);
     }
 }

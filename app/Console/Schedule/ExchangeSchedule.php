@@ -17,6 +17,19 @@ class ExchangeSchedule
     public const BESTCHANGE_WITHOUT_OVERLAPPING_MINUTES = 15;
 
     /**
+     * Minutes after the rates-cadence boundary when BC is admitted.
+     * Clears same-minute courses (*\/30 at :00/:30) and odd-minute
+     * competitors-only (1-59/2) so BC is not lock-starved at the boundary.
+     */
+    public const BESTCHANGE_ADMISSION_OFFSET_MINUTES = 2;
+
+    /**
+     * Competitors-only cron minutes that must not start inside the BC admission
+     * window. Documented for ops crontab alignment (3-57/2).
+     */
+    public const COMPETITORS_CRON_EXPRESSION = '3-57/2 * * * *';
+
+    /**
      * Регистрирует все cron-задачи обменника.
      *
      * Точка входа, вызываемая из app.php через withSchedule().
@@ -256,6 +269,29 @@ class ExchangeSchedule
     }
 
     /**
+     * Cron expression for a minute cadence shifted by a fixed offset.
+     * Example: minutes=30, offset=2 → "2,32 * * * *".
+     */
+    public static function cronExpressionForMinutesWithOffset(int $minutes, int $offsetMinutes): string
+    {
+        $minutes = $minutes <= 0 ? 1 : $minutes;
+        $offsetMinutes = max(0, min($offsetMinutes, max(0, $minutes - 1)));
+        if ($offsetMinutes === 0) {
+            return self::cronExpressionForMinutes($minutes);
+        }
+
+        $parts = [];
+        for ($m = $offsetMinutes; $m < 60; $m += $minutes) {
+            $parts[] = (string) $m;
+        }
+        if ($parts === []) {
+            return self::cronExpressionForMinutes($minutes);
+        }
+
+        return implode(',', $parts).' * * * *';
+    }
+
+    /**
      * True when an actual compiler:bestchange run is active.
      *
      * H1 observation signal only — delegates to BestchangeCompilerBusySignal.
@@ -291,22 +327,27 @@ class ExchangeSchedule
         //      CacheEventMutex uses expiresAt*60). Hard single-writer is NOT this lock.
         //   2) run_backend_compiler flock (bestchange-compiler.lock) — hard single-writer
         //      across schedule + odd-minute competitors-only cron.
-        // Wave1 (2026-10-25): register BC BEFORE courses so both due ticks give BC first
-        // flock admission. Shared flock + DE serialization with courses preserved.
-        // withoutOverlapping TTL is a FALLBACK only — schedule:finish must release on
-        // completion. Post-L1 wrapper hold ~340–376s; TTL 15m (>max hold, <30m cadence
-        // setting) so a missed finish cannot skip the next due tick (was 60m → P50≈60m).
+        // Wave1 (2026-10-25): register BC BEFORE courses (dispatch order).
+        // Wave2 (P0 flock): BC is admitted on an OFFSET cron (default +2m from the
+        // rates boundary) so it does not share the :00/:30 instant with courses or
+        // land inside odd-minute competitors-only holds. Courses keep the operator
+        // cadence; whenBcIdle defers courses while artisan compiler:bestchange lives.
+        // withoutOverlapping TTL remains a FALLBACK only (15m > post-L1 hold, <30m cadence).
         $bestchange = $schedule->exec("{$compilerWrapper} compiler:bestchange")
             ->onOneServer()
             ->withoutOverlapping(self::BESTCHANGE_WITHOUT_OVERLAPPING_MINUTES)
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/compiler_bestchange.log'));
-        self::applyMinuteCadence($bestchange, $ratesMinutes);
+        $bestchange->cron(self::cronExpressionForMinutesWithOffset(
+            $ratesMinutes,
+            self::BESTCHANGE_ADMISSION_OFFSET_MINUTES
+        ));
 
         $courses = $schedule->exec("{$compilerWrapper} compiler:courses --isUpdate=0")
             ->onOneServer()
             ->withoutOverlapping(120)
             ->runInBackground()
+            ->when($whenBcIdle)
             ->appendOutputTo(storage_path('logs/compiler_courses.log'));
         self::applyMinuteCadence($courses, $ratesMinutes);
 

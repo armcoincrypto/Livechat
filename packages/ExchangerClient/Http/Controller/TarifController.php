@@ -5,7 +5,9 @@ namespace iEXPackages\ExchangerClient\Http\Controller;
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use App\Models\DirectionExchange;
+use App\Services\Rates\RateDirectionEligibility;
 use Illuminate\Support\Carbon;
+use Throwable;
 
 class TarifController extends Controller
 {
@@ -85,7 +87,18 @@ class TarifController extends Controller
         });
 
         $array = [];
+        $eligibility = RateDirectionEligibility::make();
         foreach ($data as $item) {
+            // Do not advertise BestChange-owned stale course_value as an actionable tariff.
+            try {
+                $surface = $eligibility->evaluateDirection($item);
+                if (empty($surface['quote_allowed'])) {
+                    continue;
+                }
+            } catch (Throwable) {
+                continue;
+            }
+
             [$in, $out] = explode(' = ', $item->exchange_rate);
 
             if ($item->currency1->visible_code_currency == 0) {
