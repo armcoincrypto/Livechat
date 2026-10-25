@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Rates;
 
 use App\Console\Commands\RatesBestChangeDispatchWatchCommand;
+use App\Console\Schedule\ExchangeSchedule;
 use PHPUnit\Framework\TestCase;
 
 final class BestChangeDispatchWatchContractTest extends TestCase
@@ -14,22 +15,37 @@ final class BestChangeDispatchWatchContractTest extends TestCase
         $this->assertSame(900, RatesBestChangeDispatchWatchCommand::HEARTBEAT_TARGET_SECONDS);
         $this->assertSame(1200, RatesBestChangeDispatchWatchCommand::HEARTBEAT_WARNING_SECONDS);
         $this->assertSame(1800, RatesBestChangeDispatchWatchCommand::HEARTBEAT_CRITICAL_SECONDS);
-        $this->assertSame(60, RatesBestChangeDispatchWatchCommand::BC_MUTEX_TTL_MINUTES);
-        $this->assertSame(3600, RatesBestChangeDispatchWatchCommand::BC_MUTEX_TTL_MINUTES * 60);
-        // Mutex TTL must exceed observed max compiler runtime; heartbeat critical (30m)
-        // remains an independent book-freshness SLO and is no longer a TTL ceiling.
-        $this->assertGreaterThan(
+        $this->assertSame(
+            ExchangeSchedule::BESTCHANGE_WITHOUT_OVERLAPPING_MINUTES,
+            RatesBestChangeDispatchWatchCommand::BC_MUTEX_TTL_MINUTES
+        );
+        // Wave1: mutex TTL is a finish fallback (< rates cadence), independent of book SLO.
+        $this->assertSame(15, RatesBestChangeDispatchWatchCommand::BC_MUTEX_TTL_MINUTES);
+        $this->assertLessThan(
             RatesBestChangeDispatchWatchCommand::HEARTBEAT_CRITICAL_SECONDS,
             RatesBestChangeDispatchWatchCommand::BC_MUTEX_TTL_MINUTES * 60
         );
     }
 
-    public function test_mutex_ttl_covers_observed_runtime_ceiling(): void
+    public function test_mutex_name_uses_cadence_expression_not_stale_every_minute_hint(): void
     {
-        // Observed max 2026-10-02 ≈ 1754s (~29.2m); keep ceiling with margin.
-        $observedMaxRuntimeSec = 1754;
+        $wrapper = '/opt/exswaping-owned-ops/current/scripts/ops/run_backend_compiler.sh';
+        $command = $wrapper.' compiler:bestchange';
+        $staleEveryMinute = 'framework/schedule-'.sha1('* * * * *'.$command);
+        $thirty = 'framework/schedule-'.sha1(ExchangeSchedule::cronExpressionForMinutes(30).$command);
+
+        $this->assertSame('framework/schedule-b764b2e2eab9d758d93f4bef3cf925f00c02be28', $staleEveryMinute);
+        $this->assertSame('framework/schedule-9311b9f95b58be393fe0b1db8fc97ddfcca25c9b', $thirty);
+        $this->assertNotSame($staleEveryMinute, $thirty);
+        $this->assertSame('*/30 * * * *', ExchangeSchedule::cronExpressionForMinutes(30));
+    }
+
+    public function test_mutex_ttl_covers_post_l1_wrapper_hold_not_legacy_30m_runtime(): void
+    {
+        // Post-L1 wrapper hold ~340–376s; TTL 15m must remain above that.
+        $observedPostL1HoldSec = 376;
         $this->assertGreaterThan(
-            $observedMaxRuntimeSec,
+            $observedPostL1HoldSec,
             RatesBestChangeDispatchWatchCommand::BC_MUTEX_TTL_MINUTES * 60
         );
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Console\Schedule\ExchangeSchedule;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -27,8 +28,11 @@ final class RatesBestChangeDispatchWatchCommand extends Command
 
     public const HEARTBEAT_CRITICAL_SECONDS = 1800;
 
-    /** Laravel withoutOverlapping unit for compiler:bestchange (minutes). */
-    public const BC_MUTEX_TTL_MINUTES = 60;
+    /**
+     * Laravel withoutOverlapping unit for compiler:bestchange (minutes).
+     * Kept in sync with ExchangeSchedule::BESTCHANGE_WITHOUT_OVERLAPPING_MINUTES.
+     */
+    public const BC_MUTEX_TTL_MINUTES = ExchangeSchedule::BESTCHANGE_WITHOUT_OVERLAPPING_MINUTES;
 
     protected $signature = 'rates:bestchange-dispatch-watch
         {--format=json : json|text}
@@ -94,13 +98,26 @@ final class RatesBestChangeDispatchWatchCommand extends Command
                 $mutexState = 'HELD';
             }
         } elseif ($flock['held']) {
-            $decision = 'EVENT_SKIPPED';
-            $skipReason = 'FLOCK_HELD';
+            $holder = $this->classifyFlockHolder();
+            if ($holder === 'POST_BC') {
+                $decision = 'POST_BC_RUNNING';
+                $skipReason = 'FLOCK_HELD_POST_BC';
+            } elseif ($holder === 'COURSES' || $holder === 'COMPETITORS' || $holder === 'OTHER_COMPILER') {
+                $decision = 'EVENT_SKIPPED';
+                $skipReason = 'FLOCK_HELD_'.$holder;
+            } else {
+                $decision = 'EVENT_SKIPPED';
+                $skipReason = 'FLOCK_HELD';
+            }
         }
 
         $severity = 'OK';
         if ($heartbeatAge !== null && $heartbeatAge >= self::HEARTBEAT_CRITICAL_SECONDS) {
             $severity = 'CRITICAL';
+            if ($decision === 'EVENT_DUE_DISPATCHABLE') {
+                $decision = 'MISSED_GENERATION_SUSPECTED';
+                $skipReason = 'HEARTBEAT_CRITICAL_WHILE_DISPATCHABLE';
+            }
         } elseif ($heartbeatAge !== null && $heartbeatAge >= self::HEARTBEAT_WARNING_SECONDS) {
             $severity = 'WARNING';
         } elseif ($decision === 'MUTEX_STALE_SUSPECTED') {
@@ -215,16 +232,71 @@ final class RatesBestChangeDispatchWatchCommand extends Command
 
     private function resolveMutexName(): string
     {
-        // Prefer the live schedule mutex hash observed in production process lists.
-        $hint = 'framework/schedule-b764b2e2eab9d758d93f4bef3cf925f00c02be28';
-        if ($this->redisLockExists($hint) || Cache::store()->has($hint)) {
-            return $hint;
-        }
-
         $wrapper = '/opt/exswaping-owned-ops/current/scripts/ops/run_backend_compiler.sh';
         $command = $wrapper.' compiler:bestchange';
-        // Laravel prefixes php artisan exec differently; keep hash of expression+command when possible.
-        return 'framework'.DIRECTORY_SEPARATOR.'schedule-'.sha1('* * * * *'.$command);
+        $minutes = 30;
+        try {
+            $minutes = (int) iEXSetting('cron_interval_minutes_update_rates', 30);
+        } catch (\Throwable) {
+            $minutes = 30;
+        }
+        $expression = ExchangeSchedule::cronExpressionForMinutes($minutes);
+        $computed = 'framework'.DIRECTORY_SEPARATOR.'schedule-'.sha1($expression.$command);
+
+        // Prefer a live schedule:finish mutex if it matches the BC wrapper command.
+        $live = $this->discoverLiveBestchangeMutexName();
+        if ($live !== null) {
+            return $live;
+        }
+
+        return $computed;
+    }
+
+    private function discoverLiveBestchangeMutexName(): ?string
+    {
+        $p = Process::fromShellCommandline(
+            "ps -eo cmd --no-headers | awk '/schedule:finish \"framework\\/schedule-/ && /compiler:bestchange/ {print; exit}'"
+        );
+        $p->run();
+        $out = trim($p->getOutput());
+        if ($out === '') {
+            return null;
+        }
+        if (preg_match('#framework/schedule-[a-f0-9]{40}#', $out, $m) === 1) {
+            return $m[0];
+        }
+
+        return null;
+    }
+
+    /**
+     * Best-effort flock holder classification for observability only.
+     */
+    private function classifyFlockHolder(): string
+    {
+        $p = Process::fromShellCommandline(
+            "ps -eo pid,cmd --no-headers | awk '/run_backend_compiler.sh|artisan compiler:/ && !/awk/ {print}'"
+        );
+        $p->run();
+        $out = $p->getOutput();
+        if (str_contains($out, 'artisan compiler:bestchange')) {
+            return 'BESTCHANGE';
+        }
+        // Wrapper still holds flock after artisan exits during POST_BC_XML_REFRESH.
+        if (str_contains($out, 'compiler:bestchange')) {
+            return 'POST_BC';
+        }
+        if (str_contains($out, 'compiler:courses')) {
+            return 'COURSES';
+        }
+        if (str_contains($out, 'competitors-only')) {
+            return 'COMPETITORS';
+        }
+        if (str_contains($out, 'run_backend_compiler.sh')) {
+            return 'OTHER_COMPILER';
+        }
+
+        return 'UNKNOWN';
     }
 
     private function redisLockExists(string $name): bool

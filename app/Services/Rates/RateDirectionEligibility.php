@@ -378,6 +378,20 @@ final class RateDirectionEligibility
             $reasons = $this->uniqueReasons($reasons);
         }
 
+        // BestChange-owned public surface: require authoritative book freshness.
+        // Does not alter Zelle / DERIVED / MANUAL ownership selection (SourceChecks).
+        // Does not rewrite course_value; blocks NEW quote/order when book is stale.
+        if ($this->isBestChangeRuntimeOwner($direction)) {
+            $health = BestChangeMarketBaseHealth::evaluate((int) $direction->id);
+            if (($health['healthy'] ?? false) !== true) {
+                $quoteAllowed = false;
+                $orderAllowed = false;
+                $reason = (string) ($health['reason'] ?? $health['status'] ?? 'stale');
+                $reasons[] = 'bestchange_book_'.$reason;
+                $reasons = $this->uniqueReasons($reasons);
+            }
+        }
+
         $errorCode = null;
         if (!$quoteAllowed || !$orderAllowed || !$exportAllowed) {
             if (!$quoteAllowed || !$orderAllowed) {
@@ -630,5 +644,26 @@ final class RateDirectionEligibility
         }
 
         return $uniq;
+    }
+
+    /**
+     * True when the direction currently publishes under BestChange ownership.
+     * Zelle / DERIVED parser labels are excluded by parser_source_name inequality.
+     */
+    private function isBestChangeRuntimeOwner(object $direction): bool
+    {
+        if ((string) ($direction->parser_source_name ?? '') !== 'BestChange') {
+            return false;
+        }
+        $id = (int) ($direction->id ?? 0);
+        if ($id <= 0) {
+            return false;
+        }
+
+        try {
+            return BestChangeMarketBaseHealth::hasActiveLink($id);
+        } catch (Throwable) {
+            return false;
+        }
     }
 }

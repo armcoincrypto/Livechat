@@ -231,6 +231,31 @@ class ExchangeSchedule
     }
 
     /**
+     * Cron expression Laravel Scheduling uses for a given minute cadence.
+     * Must match Event::mutexName() hashing (expression + normalized command).
+     */
+    public static function cronExpressionForMinutes(int $minutes): string
+    {
+        [$kind, $value] = self::resolveMinuteCadence($minutes);
+        if ($kind === 'cron') {
+            return $value;
+        }
+
+        return match ($value) {
+            'everyMinute' => '* * * * *',
+            'everyTwoMinutes' => '*/2 * * * *',
+            'everyThreeMinutes' => '*/3 * * * *',
+            'everyFourMinutes' => '*/4 * * * *',
+            'everyFiveMinutes' => '*/5 * * * *',
+            'everyTenMinutes' => '*/10 * * * *',
+            'everyFifteenMinutes' => '*/15 * * * *',
+            'everyThirtyMinutes' => '*/30 * * * *',
+            'hourly' => '0 * * * *',
+            default => '* * * * *',
+        };
+    }
+
+    /**
      * True when an actual compiler:bestchange run is active.
      *
      * H1 observation signal only — delegates to BestchangeCompilerBusySignal.
