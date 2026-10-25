@@ -45,7 +45,14 @@ final class BestChangeDispatchWatchContractTest extends TestCase
         $this->assertNotSame($staleEveryMinute, $thirty);
         $this->assertNotSame($thirty, $admitted);
         $this->assertSame('*/30 * * * *', ExchangeSchedule::cronExpressionForMinutes(30));
-        $this->assertSame('2,32 * * * *', ExchangeSchedule::cronExpressionForMinutesWithOffset(30, 2));
+        $this->assertSame(
+            '4,34 * * * *',
+            ExchangeSchedule::cronExpressionForMinutesWithOffset(
+                30,
+                ExchangeSchedule::BESTCHANGE_ADMISSION_OFFSET_MINUTES
+            )
+        );
+        $this->assertSame(4, ExchangeSchedule::BESTCHANGE_ADMISSION_OFFSET_MINUTES);
     }
 
     public function test_mutex_ttl_covers_post_l1_wrapper_hold_not_legacy_30m_runtime(): void

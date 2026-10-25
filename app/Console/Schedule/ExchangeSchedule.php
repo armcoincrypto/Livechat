@@ -18,10 +18,13 @@ class ExchangeSchedule
 
     /**
      * Minutes after the rates-cadence boundary when BC is admitted.
-     * Clears same-minute courses (*\/30 at :00/:30) and odd-minute
-     * competitors-only (1-59/2) so BC is not lock-starved at the boundary.
+     * Wave2 evidence (2026-10-25): courses P95 finish ≈116s / max ≈135s past
+     * :00/:30; competitors-only is 3-57/2 (holds P95 ≈34s); generate_prices is
+     * everyFiveMinutes (*\/5). Offset 4 → cron 4,34 sits after courses and after
+     * the :03/:33 competitor tick, and avoids :05/:35 (competitors + generate_prices).
+     * Blind 5,35 is NOT eligible (deterministic collision).
      */
-    public const BESTCHANGE_ADMISSION_OFFSET_MINUTES = 2;
+    public const BESTCHANGE_ADMISSION_OFFSET_MINUTES = 4;
 
     /**
      * Competitors-only cron minutes that must not start inside the BC admission
@@ -270,7 +273,7 @@ class ExchangeSchedule
 
     /**
      * Cron expression for a minute cadence shifted by a fixed offset.
-     * Example: minutes=30, offset=2 → "2,32 * * * *".
+     * Example: minutes=30, offset=4 → "4,34 * * * *".
      */
     public static function cronExpressionForMinutesWithOffset(int $minutes, int $offsetMinutes): string
     {
@@ -328,11 +331,12 @@ class ExchangeSchedule
         //   2) run_backend_compiler flock (bestchange-compiler.lock) — hard single-writer
         //      across schedule + odd-minute competitors-only cron.
         // Wave1 (2026-10-25): register BC BEFORE courses (dispatch order).
-        // Wave2 (P0 flock): BC is admitted on an OFFSET cron (default +2m from the
-        // rates boundary) so it does not share the :00/:30 instant with courses or
-        // land inside odd-minute competitors-only holds. Courses keep the operator
-        // cadence; whenBcIdle defers courses while artisan compiler:bestchange lives.
-        // withoutOverlapping TTL remains a FALLBACK only (15m > post-L1 hold, <30m cadence).
+        // Wave2 geometry: BC admitted on OFFSET cron (default +4m → 4,34) so it
+        // clears courses (:00/:30) and the first post-boundary competitors tick
+        // (:03/:33) without colliding with competitors/generate_prices at :05/:35.
+        // Courses keep the operator cadence; whenBcIdle defers courses while
+        // artisan compiler:bestchange lives. withoutOverlapping TTL remains a
+        // FALLBACK only (15m > post-L1 hold, <30m cadence).
         $bestchange = $schedule->exec("{$compilerWrapper} compiler:bestchange")
             ->onOneServer()
             ->withoutOverlapping(self::BESTCHANGE_WITHOUT_OVERLAPPING_MINUTES)
