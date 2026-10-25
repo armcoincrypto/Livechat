@@ -1,12 +1,12 @@
 {
-    "version": 2,
-    "approved_at": "2026-08-09T16:19:02Z",
+    "version": 4,
+    "approved_at": "2026-10-25T19:00:00Z",
     "selection_basis": "live_public_status1_prefer_BestChange_then_ZELLE_then_DERIVED__highest_task_count_then_lowest_id",
-    "prior_version_defect": "v1 direction_ids pointed at status=0 bank variants; live public derived\/BC twins were excluded from XML",
+    "prior_version_defect": "v1 direction_ids pointed at status=0 bank variants; live public derived/BC twins were excluded from XML",
     "identities": {
         "CARDAMD": {
             "bestchange_currency_id": 5,
-            "display_name": "Visa\/MasterCard AMD",
+            "display_name": "Visa/MasterCard AMD",
             "internal_currency_ids": [
                 52,
                 53,
@@ -27,10 +27,8 @@
                 "DOT->CARDAMD": 2179,
                 "ETC->CARDAMD": 181,
                 "ETH->CARDAMD": 2080,
-                "GRAM->CARDAMD": 841,
                 "LTC->CARDAMD": 2082,
                 "NEO->CARDAMD": 2226,
-                "REVBUSD->CARDAMD": 1626,
                 "SHIBERC20->CARDAMD": 998,
                 "SOL->CARDAMD": 2024,
                 "TRX->CARDAMD": 2023,
@@ -45,7 +43,7 @@
                 "XRP->CARDAMD": 2340,
                 "XTZ->CARDAMD": 2353,
                 "ZEC->CARDAMD": 832,
-                "ZELLEUSD->CARDAMD": 1558
+                "ZELLEUSD->CARDAMD": 2111
             },
             "url_currency_ids_by_pair": {
                 "ADA->CARDAMD": [
@@ -84,10 +82,6 @@
                     7,
                     71
                 ],
-                "GRAM->CARDAMD": [
-                    10,
-                    54
-                ],
                 "LTC->CARDAMD": [
                     2,
                     71
@@ -95,10 +89,6 @@
                 "NEO->CARDAMD": [
                     36,
                     52
-                ],
-                "REVBUSD->CARDAMD": [
-                    88,
-                    71
                 ],
                 "SHIBERC20->CARDAMD": [
                     46,
@@ -158,8 +148,29 @@
                 ],
                 "ZELLEUSD->CARDAMD": [
                     87,
-                    56
+                    52
                 ]
+            }
+        }
+    },
+    "remediation_note": "2026-10-25 EXSWAPING_XML_EXPORT_FINAL_PRODUCTION_CLOSURE: ZELLEUSD->CARDAMD=2111; quarantine GRAM/REVBUSD CARDAMD claims (status=0, no live twin)",
+    "quarantined_claims": {
+        "CARDAMD": {
+            "GRAM->CARDAMD": {
+                "former_direction_id": 841,
+                "former_url_currency_ids": [
+                    10,
+                    54
+                ],
+                "reason": "mapped_direction_status0_no_orderable_replacement"
+            },
+            "REVBUSD->CARDAMD": {
+                "former_direction_id": 1626,
+                "former_url_currency_ids": [
+                    88,
+                    71
+                ],
+                "reason": "mapped_direction_status0_no_orderable_replacement"
             }
         }
     }

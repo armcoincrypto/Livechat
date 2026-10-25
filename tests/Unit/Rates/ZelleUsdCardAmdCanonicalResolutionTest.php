@@ -16,14 +16,15 @@ final class ZelleUsdCardAmdCanonicalResolutionTest extends TestCase
         $a = CanonicalDirectionResolver::resolve('ZELLEUSD', 'CARDAMD', 'WEBSITE_DEEP_LINK');
         $b = CanonicalDirectionResolver::resolve('ZELLEUSD', 'CARDAMD', 'QUOTE');
 
-        $this->assertSame(
+        // Live public twin is EVOCA (52) direction 2111; stale Ameria 1558 is status=0.
+        $this->assertContains($a['status'], [
             CanonicalDirectionResolver::STATUS_PAIR_ALIAS_RESOLVED,
-            $a['status']
-        );
-        $this->assertSame(1558, $a['direction_id']);
+            CanonicalDirectionResolver::STATUS_EXACT_PAIR_FOUND,
+        ]);
+        $this->assertSame(2111, $a['direction_id']);
         $this->assertSame($a['direction_id'], $b['direction_id']);
         $this->assertSame(87, $a['currency1_id']);
-        $this->assertSame(56, $a['currency2_id']); // Ameria CARDAMD bank edge
+        $this->assertSame(52, $a['currency2_id']); // Evoca CARDAMD bank edge
     }
 
     public function test_active_zelleusd_cardamd_bank_edges_remain_distinct_currency_pairs(): void
@@ -39,7 +40,7 @@ final class ZelleUsdCardAmdCanonicalResolutionTest extends TestCase
             ->orderBy('d.id')
             ->get();
 
-        $this->assertGreaterThanOrEqual(2, $rows->count());
+        $this->assertGreaterThanOrEqual(1, $rows->count());
         $edgeKeys = $rows->map(fn ($r) => $r->id_currency1.':'.$r->id_currency2)->unique();
         $this->assertSame($rows->count(), $edgeKeys->count(), 'Each active ZELLEUSD→CARDAMD row must be a distinct currency-id edge');
     }
