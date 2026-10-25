@@ -660,10 +660,6 @@ final class RateDirectionEligibility
     }
 
     /**
-     * True when the direction currently publishes under BestChange ownership.
-     * Zelle / DERIVED / MANUAL parser labels are excluded by parser_source_name.
-     */
-    /**
      * Pure surface applicator — single freshness authority for quote/order.
      *
      * @param  array<string,mixed>  $health  from BestChangeMarketBaseHealth
@@ -705,6 +701,10 @@ final class RateDirectionEligibility
         ];
     }
 
+    /**
+     * True when the direction currently publishes under BestChange ownership.
+     * Zelle / DERIVED / MANUAL parser labels are excluded by parser_source_name.
+     */
     private function isBestChangeRuntimeOwner(object $direction): bool
     {
         if ((string) ($direction->parser_source_name ?? '') !== 'BestChange') {
