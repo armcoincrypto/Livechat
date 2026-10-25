@@ -7,6 +7,16 @@ use Illuminate\Console\Scheduling\Schedule;
 class ExchangeSchedule
 {
     /**
+     * Laravel withoutOverlapping TTL for compiler:bestchange (minutes).
+     *
+     * Fallback safety bound only — normal release is schedule:finish after the
+     * background wrapper exits. Must stay above max observed BC wrapper hold
+     * (~6–7m post-L1 including POST_BC) and preferably below the operator
+     * rates cadence so a missed finish cannot skip the next due tick.
+     */
+    public const BESTCHANGE_WITHOUT_OVERLAPPING_MINUTES = 15;
+
+    /**
      * Регистрирует все cron-задачи обменника.
      *
      * Точка входа, вызываемая из app.php через withSchedule().
@@ -250,32 +260,30 @@ class ExchangeSchedule
         // POST_BC_XML_REFRESH still invokes scheme:files directly after BC completes.
         $whenBcIdle = static fn (): bool => ! self::bestchangeCompilerBusy();
 
-        // Wave3: heavy compilers MUST runInBackground. Observed BC runtime ~780–845s
-        // (~13–14m). Foreground execution pinned schedule:run (overlap pile-up).
+        // Wave3: heavy compilers MUST runInBackground. Foreground pinned schedule:run.
         // Dual lock (BOTH_REQUIRED):
         //   1) Laravel withoutOverlapping — schedule dispatch mutex (argument is MINUTES;
         //      CacheEventMutex uses expiresAt*60). Hard single-writer is NOT this lock.
         //   2) run_backend_compiler flock (bestchange-compiler.lock) — hard single-writer
         //      across schedule + odd-minute competitors-only cron.
-        // Incident 2026-09-26: withoutOverlapping(300) => 300 MINUTES (5h) TTL. If
-        // schedule:finish missed after runInBackground, dispatch stayed silent for tens
-        // of minutes while upstream parser stayed fresh. Cap TTL just above max runtime.
+        // Wave1 (2026-10-25): register BC BEFORE courses so both due ticks give BC first
+        // flock admission. Shared flock + DE serialization with courses preserved.
+        // withoutOverlapping TTL is a FALLBACK only — schedule:finish must release on
+        // completion. Post-L1 wrapper hold ~340–376s; TTL 15m (>max hold, <30m cadence
+        // setting) so a missed finish cannot skip the next due tick (was 60m → P50≈60m).
+        $bestchange = $schedule->exec("{$compilerWrapper} compiler:bestchange")
+            ->onOneServer()
+            ->withoutOverlapping(self::BESTCHANGE_WITHOUT_OVERLAPPING_MINUTES)
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/compiler_bestchange.log'));
+        self::applyMinuteCadence($bestchange, $ratesMinutes);
+
         $courses = $schedule->exec("{$compilerWrapper} compiler:courses --isUpdate=0")
             ->onOneServer()
             ->withoutOverlapping(120)
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/compiler_courses.log'));
         self::applyMinuteCadence($courses, $ratesMinutes);
-
-        // withoutOverlapping(60) = 60 minutes = 3600s (Laravel unit = minutes).
-        // Observed runtime 2026-10-02: avg ~20.6m, max ~29.2m. Prior TTL 20 expired
-        // while PID still live; flock still blocked overlap. Cap TTL above max runtime.
-        $bestchange = $schedule->exec("{$compilerWrapper} compiler:bestchange")
-            ->onOneServer()
-            ->withoutOverlapping(60)
-            ->runInBackground()
-            ->appendOutputTo(storage_path('logs/compiler_bestchange.log'));
-        self::applyMinuteCadence($bestchange, $ratesMinutes);
 
         // Close "silent skip" visibility: log due/dispatch/mutex/flock/heartbeat every minute.
         $schedule->command('rates:bestchange-dispatch-watch --format=json')

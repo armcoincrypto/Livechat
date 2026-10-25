@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
+use App\Console\Schedule\ExchangeSchedule;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Wave3 contract: heavy rate compilers must not pin schedule:run in the foreground.
+ * Wave1 contract: BC mutex TTL fallback + BC-before-courses admission fairness.
  */
 final class ExchangeScheduleBackgroundHeavyJobsTest extends TestCase
 {
@@ -40,19 +42,41 @@ final class ExchangeScheduleBackgroundHeavyJobsTest extends TestCase
             );
         }
 
-        // Laravel withoutOverlapping($n) is MINUTES (CacheEventMutex: expiresAt * 60).
-        // Observed BC runtime 2026-10-02: avg ~20.6m / max ~29.2m. TTL 60 covers that
-        // with headroom; must NOT be 300 minutes (5h) which caused silent gaps.
+        // Wave1: withoutOverlapping TTL is FALLBACK only (schedule:finish releases).
+        // 15m > max post-L1 wrapper hold (~6–7m) and < typical 30m rates cadence so a
+        // missed finish cannot skip the next due tick (60m TTL previously caused P50≈60m).
+        $this->assertSame(15, ExchangeSchedule::BESTCHANGE_WITHOUT_OVERLAPPING_MINUTES);
         $this->assertMatchesRegularExpression(
-            '/compiler:bestchange[\s\S]{0,500}withoutOverlapping\(\s*60\s*\)/',
+            '/compiler:bestchange[\s\S]{0,500}withoutOverlapping\(\s*self::BESTCHANGE_WITHOUT_OVERLAPPING_MINUTES\s*\)/',
             $src,
-            'compiler:bestchange mutex TTL must be 60 minutes (not 300)'
+            'compiler:bestchange must use BESTCHANGE_WITHOUT_OVERLAPPING_MINUTES'
         );
         $this->assertStringContainsString('rates:bestchange-dispatch-watch', $src);
         $this->assertDoesNotMatchRegularExpression(
             '/compiler:bestchange[\s\S]{0,500}withoutOverlapping\(\s*300\s*\)/',
             $src,
             'compiler:bestchange must not retain withoutOverlapping(300) minute TTL'
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '/compiler:bestchange[\s\S]{0,500}withoutOverlapping\(\s*60\s*\)/',
+            $src,
+            'compiler:bestchange must not retain withoutOverlapping(60) minute TTL'
+        );
+    }
+
+    public function test_bestchange_is_registered_before_courses_for_flock_admission(): void
+    {
+        $path = dirname(__DIR__, 2).'/app/Console/Schedule/ExchangeSchedule.php';
+        $src = (string) file_get_contents($path);
+
+        $bcPos = strpos($src, 'exec("{$compilerWrapper} compiler:bestchange")');
+        $coursesPos = strpos($src, 'exec("{$compilerWrapper} compiler:courses --isUpdate=0")');
+        $this->assertNotFalse($bcPos, 'missing compiler:bestchange registration');
+        $this->assertNotFalse($coursesPos, 'missing compiler:courses registration');
+        $this->assertLessThan(
+            $coursesPos,
+            $bcPos,
+            'Wave1: compiler:bestchange must be registered before compiler:courses'
         );
     }
 
