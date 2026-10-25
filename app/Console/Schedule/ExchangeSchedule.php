@@ -17,14 +17,12 @@ class ExchangeSchedule
     public const BESTCHANGE_WITHOUT_OVERLAPPING_MINUTES = 15;
 
     /**
-     * Minutes after the rates-cadence boundary when BC is admitted.
-     * Wave2 evidence (2026-10-25): courses P95 finish ≈116s / max ≈135s past
-     * :00/:30; competitors-only is 3-57/2 (holds P95 ≈34s); generate_prices is
-     * everyFiveMinutes (*\/5). Offset 4 → cron 4,34 sits after courses and after
-     * the :03/:33 competitor tick, and avoids :05/:35 (competitors + generate_prices).
-     * Blind 5,35 is NOT eligible (deterministic collision).
+     * Minutes after the rates-cadence boundary when BC is nominally admitted.
+     * Delegates to BestchangeAdmissionPolicy (Wave2 recovery: +6m — past courses
+     * P95/jitter and competitors/generate_prices :05; see policy). Live interim
+     * +4 geometry (64e650) is superseded: overdue catch-up + non-BC yield required.
      */
-    public const BESTCHANGE_ADMISSION_OFFSET_MINUTES = 4;
+    public const BESTCHANGE_ADMISSION_OFFSET_MINUTES = BestchangeAdmissionPolicy::ADMISSION_OFFSET_MINUTES;
 
     /**
      * Competitors-only cron minutes that must not start inside the BC admission
@@ -322,7 +320,16 @@ class ExchangeSchedule
         // shares bestchange-compiler.lock / owners/bestchange). Does not alter BC
         // flock / withoutOverlapping / runInBackground / FD hygiene.
         // POST_BC_XML_REFRESH still invokes scheme:files directly after BC completes.
-        $whenBcIdle = static fn (): bool => ! self::bestchangeCompilerBusy();
+        // Wave2 (P0 recovery): also yield while BC freshness is overdue so shared
+        // flock holders cannot starve catch-up admission.
+        $whenBcIdle = static function (): bool {
+            if (self::bestchangeCompilerBusy()) {
+                return false;
+            }
+            $age = BestchangeAdmissionPolicy::lastSuccessAgeSeconds();
+
+            return ! BestchangeAdmissionPolicy::shouldDeferNonBc($age);
+        };
 
         // Wave3: heavy compilers MUST runInBackground. Foreground pinned schedule:run.
         // Dual lock (BOTH_REQUIRED):
@@ -331,21 +338,24 @@ class ExchangeSchedule
         //   2) run_backend_compiler flock (bestchange-compiler.lock) — hard single-writer
         //      across schedule + odd-minute competitors-only cron.
         // Wave1 (2026-10-25): register BC BEFORE courses (dispatch order).
-        // Wave2 geometry: BC admitted on OFFSET cron (default +4m → 4,34) so it
-        // clears courses (:00/:30) and the first post-boundary competitors tick
-        // (:03/:33) without colliding with competitors/generate_prices at :05/:35.
-        // Courses keep the operator cadence; whenBcIdle defers courses while
-        // artisan compiler:bestchange lives. withoutOverlapping TTL remains a
-        // FALLBACK only (15m > post-L1 hold, <30m cadence).
-        $bestchange = $schedule->exec("{$compilerWrapper} compiler:bestchange")
+        // Wave2 (P0 recovery on 64e650): everyMinute + BestchangeAdmissionPolicy —
+        //   nominal offset +6m; overdue catch-up (≥900s) admits any free minute
+        //   without extending the 1800s financial policy. withoutOverlapping TTL
+        //   remains a FALLBACK only (15m > post-L1 hold, <30m cadence).
+        $whenBcAdmit = static function () use ($ratesMinutes): bool {
+            return BestchangeAdmissionPolicy::shouldAdmit(
+                (int) now()->minute,
+                BestchangeAdmissionPolicy::lastSuccessAgeSeconds(),
+                $ratesMinutes
+            );
+        };
+        $schedule->exec("{$compilerWrapper} compiler:bestchange")
+            ->everyMinute()
+            ->when($whenBcAdmit)
             ->onOneServer()
             ->withoutOverlapping(self::BESTCHANGE_WITHOUT_OVERLAPPING_MINUTES)
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/compiler_bestchange.log'));
-        $bestchange->cron(self::cronExpressionForMinutesWithOffset(
-            $ratesMinutes,
-            self::BESTCHANGE_ADMISSION_OFFSET_MINUTES
-        ));
 
         $courses = $schedule->exec("{$compilerWrapper} compiler:courses --isUpdate=0")
             ->onOneServer()

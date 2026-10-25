@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
+use App\Console\Schedule\BestchangeAdmissionPolicy;
 use App\Console\Schedule\ExchangeSchedule;
 use PHPUnit\Framework\TestCase;
 
@@ -11,9 +12,9 @@ final class ExchangeScheduleBcAdmissionTest extends TestCase
 {
     public function test_bc_admission_offset_clears_boundary_and_competitor_collision(): void
     {
-        $this->assertSame(4, ExchangeSchedule::BESTCHANGE_ADMISSION_OFFSET_MINUTES);
+        $this->assertSame(6, ExchangeSchedule::BESTCHANGE_ADMISSION_OFFSET_MINUTES);
         $this->assertSame(
-            '4,34 * * * *',
+            '6,36 * * * *',
             ExchangeSchedule::cronExpressionForMinutesWithOffset(
                 30,
                 ExchangeSchedule::BESTCHANGE_ADMISSION_OFFSET_MINUTES
@@ -23,7 +24,7 @@ final class ExchangeScheduleBcAdmissionTest extends TestCase
             '*/30 * * * *',
             ExchangeSchedule::cronExpressionForMinutes(30)
         );
-        // Courses stays on operator cadence; BC is offset — not the same instant.
+        // Courses stays on operator cadence; BC nominal offset is not the same instant.
         $this->assertNotSame(
             ExchangeSchedule::cronExpressionForMinutes(30),
             ExchangeSchedule::cronExpressionForMinutesWithOffset(
@@ -64,24 +65,35 @@ final class ExchangeScheduleBcAdmissionTest extends TestCase
             '5,35 * * * *',
             ExchangeSchedule::cronExpressionForMinutesWithOffset(30, $offset)
         );
+        // Interim live +4 superseded by +6 + overdue catch-up.
+        $this->assertNotSame(4, $offset);
     }
 
     public function test_competitors_expression_avoids_minute_59_and_29(): void
     {
         $this->assertSame('3-57/2 * * * *', ExchangeSchedule::COMPETITORS_CRON_EXPRESSION);
         $this->assertStringNotContainsString('1-59/2', ExchangeSchedule::COMPETITORS_CRON_EXPRESSION);
+        // Nominal BC (+6) must not collide with competitors :05.
+        $this->assertStringContainsString('3-57/2', ExchangeSchedule::COMPETITORS_CRON_EXPRESSION);
+        $this->assertFalse(BestchangeAdmissionPolicy::isNominalAdmissionMinute(5, 30, 6));
     }
 
-    public function test_register_compiler_source_uses_offset_and_when_bc_idle_for_courses(): void
+    public function test_register_compiler_source_uses_admission_policy_and_when_bc_idle(): void
     {
         $src = (string) file_get_contents(dirname(__DIR__, 2).'/app/Console/Schedule/ExchangeSchedule.php');
-        $this->assertStringContainsString('cronExpressionForMinutesWithOffset', $src);
+        $this->assertStringContainsString('BestchangeAdmissionPolicy', $src);
         $this->assertStringContainsString('BESTCHANGE_ADMISSION_OFFSET_MINUTES', $src);
         $this->assertStringContainsString('->when($whenBcIdle)', $src);
+        $this->assertStringContainsString('->when($whenBcAdmit)', $src);
         $this->assertStringContainsString('compiler:courses', $src);
-        // Geometry-only: shared flock + serialization markers unchanged.
+        $this->assertStringContainsString('->everyMinute()', $src);
         $this->assertStringContainsString('bestchange-compiler.lock', $src);
         $this->assertStringContainsString('register BC BEFORE courses', $src);
+        // Wave1/Wave2-interim hard cron offset alone is no longer the sole admission path.
+        $this->assertStringNotContainsString(
+            'cronExpressionForMinutesWithOffset($ratesMinutes',
+            $src
+        );
     }
 
     public function test_l1_and_book_reuse_markers_preserved(): void

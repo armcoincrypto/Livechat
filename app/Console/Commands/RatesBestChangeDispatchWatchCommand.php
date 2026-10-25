@@ -234,17 +234,9 @@ final class RatesBestChangeDispatchWatchCommand extends Command
     {
         $wrapper = '/opt/exswaping-owned-ops/current/scripts/ops/run_backend_compiler.sh';
         $command = $wrapper.' compiler:bestchange';
-        $minutes = 30;
-        try {
-            $minutes = (int) iEXSetting('cron_interval_minutes_update_rates', 30);
-        } catch (\Throwable) {
-            $minutes = 30;
-        }
-        // Must match ExchangeSchedule BC registration (cadence + admission offset).
-        $expression = ExchangeSchedule::cronExpressionForMinutesWithOffset(
-            $minutes,
-            ExchangeSchedule::BESTCHANGE_ADMISSION_OFFSET_MINUTES
-        );
+        // Must match ExchangeSchedule BC registration (everyMinute + when filter).
+        // Nominal offset / overdue catch-up are when() gates — not mutex identity.
+        $expression = \App\Console\Schedule\BestchangeAdmissionPolicy::mutexCronExpression();
         $computed = 'framework'.DIRECTORY_SEPARATOR.'schedule-'.sha1($expression.$command);
 
         // Prefer a live schedule:finish mutex if it matches the BC wrapper command.
