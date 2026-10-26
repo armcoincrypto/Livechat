@@ -8,6 +8,14 @@ Customer quotes/orders read persisted `bestchange_directions.rate_value` via
 `CalculatorFacade`. That value is written by `compiler:bestchange` (~15–25m).
 The ~60s BestChange XML parser does **not** feed the calculator.
 
+### Legacy “~30 seconds” (archaeology)
+
+True historical ~30s loop was **`/var/www/rates` dual cron** (`* * * * *` +
+`sleep 30` → `scripts/generate.php`) writing **XML only** (no `course_value`).
+Disabled **2026-04-09**. Separately, pre-`1d676d9` Laravel `scheduleMap` mapped
+setting value **4 → everyThirtySeconds**; live setting **30** now correctly means
+**everyThirtyMinutes**. Active XML daemon: `/opt/bestchange_parser` at **60s**.
+
 ## Rule
 
 `ONE_CANONICAL_PRICING_ENGINE`
