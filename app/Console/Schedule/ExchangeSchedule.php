@@ -442,6 +442,17 @@ class ExchangeSchedule
             ->withoutOverlapping(5)
             ->appendOutputTo(storage_path('logs/orders_payment_routing_health.log'));
 
+        // Fast market plane: shared BestChange snapshot refresh (no full compiler).
+        // Gated by FAST_MARKET_PLANE_ENABLED (default false). Does not replace
+        // compiler:bestchange reconciliation / catch-up (Phase 22).
+        $schedule->command('rates:fast-market-snapshot-refresh --format=json')
+            ->everyMinute()
+            ->onOneServer()
+            ->withoutOverlapping(2)
+            ->runInBackground()
+            ->when(static fn (): bool => \App\Services\Rates\FastMarket\FastMarketFlags::planeEnabled())
+            ->appendOutputTo(storage_path('logs/fast_market_snapshot_refresh.log'));
+
         // Генерация минимальной и максимальной цены
         $schedule->exec("{$compilerWrapper} compiler:generate_prices")
             ->everyFiveMinutes()

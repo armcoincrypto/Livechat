@@ -9,6 +9,8 @@ use App\Models\ExtraField;
 use App\Models\DirectionTemplate;
 use App\Models\CurrencyTemplate;
 use App\Models\Page;
+use App\Services\Rates\FastMarket\FastMarketFlags;
+use App\Services\Rates\FastMarket\FastMarketQuoteService;
 use App\Services\Rates\RateDirectionEligibility;
 use iEXPackages\Calculator\CalculatorFacade;
 use iEXPackages\TagProcessors\TagProcessors;
@@ -44,7 +46,7 @@ class DirectionDetailResource extends JsonResource
         try {
             $surface = RateDirectionEligibility::make()->evaluateDirection($this->resource);
             if (!empty($surface['quote_allowed'])) {
-                $baseCourse = CalculatorFacade::setDirectionExchange($this->resource)->calculate()->toArray();
+                $baseCourse = $this->resolveBaseCoursePayload();
                 // Release A: server provides fixed/floating/display; default display = floating (percent fee).
                 // Never pass CalculatorFacade rate as base override — that double-applies
                 // floating_fee / legacy profit+add_course and bypasses ZELLE USDTTRC20 resolveBaseRate.
@@ -748,5 +750,53 @@ class DirectionDetailResource extends JsonResource
             sprintf('exchange %s to %s', $fromLabel, $toLabel),
             'crypto exchange',
         ])));
+    }
+
+    /**
+     * Public quote base course: persisted Calculator path by default.
+     * Fast market plane / shadow are flag-gated (all default false).
+     *
+     * @return array<string, mixed>
+     */
+    private function resolveBaseCoursePayload(): array
+    {
+        // Authoritative customer output remains persisted Calculator unless
+        // FAST_PUBLIC_QUOTE_ENABLED is explicitly turned on after shadow cert.
+        if (FastMarketFlags::shadowEnabled() && ! FastMarketFlags::publicQuoteEnabled()) {
+            try {
+                app(FastMarketQuoteService::class)->shadowCompare($this->resource);
+            } catch (Throwable $e) {
+                Log::warning('fast_market_shadow_quote_failed', [
+                    'direction_id' => $this->id ?? null,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        if (FastMarketFlags::planeEnabled() && FastMarketFlags::publicQuoteEnabled()) {
+            try {
+                $fast = app(FastMarketQuoteService::class)->quote($this->resource);
+                if (! empty($fast['calculator_payload']) && is_array($fast['calculator_payload'])) {
+                    $payload = $fast['calculator_payload'];
+                    $payload['_fast_market'] = [
+                        'used_fast_path' => (bool) ($fast['used_fast_path'] ?? false),
+                        'snapshot_id' => $fast['snapshot_id'] ?? null,
+                        'market_age_seconds' => $fast['market_age_seconds'] ?? null,
+                        'freshness_state' => $fast['freshness_state'] ?? null,
+                        'calculated_at' => $fast['calculated_at'] ?? null,
+                        'fallback_used' => (bool) ($fast['fallback_used'] ?? false),
+                    ];
+
+                    return $payload;
+                }
+            } catch (Throwable $e) {
+                Log::warning('fast_market_public_quote_failed', [
+                    'direction_id' => $this->id ?? null,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return CalculatorFacade::setDirectionExchange($this->resource)->calculate()->toArray();
     }
 }

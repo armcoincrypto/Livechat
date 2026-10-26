@@ -4,10 +4,13 @@ namespace iEXPackages\Order;
 
 use App\Models\DirectionExchange;
 use App\Models\PromoCode;
+use App\Services\Rates\FastMarket\FastMarketFlags;
+use App\Services\Rates\FastMarket\FastMarketQuoteService;
 use iEXPackages\Calculator\CalculatorFacade;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class OrderCalculator
 {
@@ -89,7 +92,25 @@ class OrderCalculator
 
     public function run(): array
     {
-        $calculator = CalculatorFacade::setDirectionExchange($this->directionExchange)
+        // Order/public parity: recalculate from latest usable snapshot (model A).
+        // No signed quote token in v1. Flags default false → identical to live.
+        $directionForCalc = $this->directionExchange;
+        if (FastMarketFlags::planeEnabled() && FastMarketFlags::orderQuoteEnabled()) {
+            try {
+                $hydrated = app(FastMarketQuoteService::class)
+                    ->hydrateDirectionFromSnapshot($this->directionExchange);
+                if ($hydrated instanceof DirectionExchange) {
+                    $directionForCalc = $hydrated;
+                }
+            } catch (Throwable $e) {
+                Log::warning('fast_market_order_quote_failed', [
+                    'direction_id' => $this->directionExchange->id ?? null,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $calculator = CalculatorFacade::setDirectionExchange($directionForCalc)
             ->calculateWithOptions([
                 'exchange_city_id' => (int) ($this->options['city_id'] ?? 0),
                 'amount' => $this->fromAmount->toFloat(),
