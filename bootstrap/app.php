@@ -8,6 +8,7 @@ use App\Http\Middleware\LanguageMiddleware;
 use App\Http\Middleware\RecordVisit;
 use App\Http\Middleware\RequestIdMiddleware;
 use App\Http\Middleware\UserAllowedIdAddressMiddleware;
+use App\Support\AdminRouteGate;
 use iEXPackages\ExchangerApi\Http\Middleware\AccessRouteMiddleware;
 use iEXPackages\ExchangerApi\Http\Middleware\ApiLoggerMiddleware;
 use iEXPackages\OnlinePresence\Middleware\TrackOnlinePresence;
@@ -32,9 +33,27 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::permanentRedirect('/.well-known/security.txt', '/');
             Route::permanentRedirect('/error.log', '/');
 
-            Route::middleware('web')
-                ->prefix(config('iexexchanger.admin_folder'))
-                ->group(base_path('routes/admin-frontend.php'));
+            // Customer client-api must not register the heavy admin-frontend
+            // route table on every request (PHP-FPM saturation root cause).
+            $adminFolder = (string) config('iexexchanger.admin_folder', 'iexadmin');
+            $requestPath = '/';
+            if (! app()->runningInConsole()) {
+                try {
+                    $requestPath = '/'.ltrim((string) request()->path(), '/');
+                } catch (\Throwable) {
+                    // Request unavailable: fail-open so operators keep admin access.
+                    $requestPath = '/'.trim($adminFolder, '/');
+                }
+            }
+            if (AdminRouteGate::shouldLoadAdminFrontend(
+                app()->runningInConsole(),
+                $requestPath,
+                $adminFolder,
+            )) {
+                Route::middleware('web')
+                    ->prefix($adminFolder)
+                    ->group(base_path('routes/admin-frontend.php'));
+            }
 
             Route::middleware('web')
                 ->namespace('App\Http\Controllers')
