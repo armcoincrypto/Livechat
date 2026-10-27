@@ -77,3 +77,11 @@ is the snapshot usability window, not a locked customer promise.
 - Duplicate margin/position/rounding math
 - Remove overdue catch-up / locks yet
 - Deploy from this branch without owner approval
+
+## 30-second producer + config-cache-safe flags (2026-10-27)
+
+- Flags live in `config/fast_market.php`; runtime code uses `config('fast_market.*')` via `FastMarketFlags` (`DIRECT_RUNTIME_ENV_READS=0`).
+- Preferred cadence: systemd `exswaping-fast-market-producer.service` → `rates:fast-market-producer-loop` (monotonic ~30s boundaries).
+- Laravel `everyMinute` refresh is **opt-in fallback** only (`FAST_MARKET_SCHEDULER_FALLBACK=true`).
+- Snapshot age source: `fetched_at` (BestChange batch has no reliable per-book source clock; `SOURCE_TIMESTAMP_RELIABLE=NO`).
+- Setter: `scripts/ops/set_fast_market_runtime_flag.sh` updates shared `.env`, clears/rebuilds config cache, asserts effective values.

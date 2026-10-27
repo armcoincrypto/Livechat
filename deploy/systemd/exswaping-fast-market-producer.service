@@ -1,0 +1,23 @@
+[Unit]
+Description=Exswaping Fast Market BestChange Snapshot Producer (~30s)
+Documentation=file:///var/www/app_exswapin_usr/data/www/app.exswaping.com/docs/rates/FAST_MARKET_PLANE.md
+After=network.target redis-server.service mysql.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=app_exswapin_usr
+Group=app_exswapin_usr
+WorkingDirectory=/var/www/app_exswapin_usr/data/www/app.exswaping.com
+# LIVE symlink — always follows current release
+ExecStart=/usr/bin/php8.4 /var/www/app_exswapin_usr/data/www/app.exswaping.com/artisan rates:fast-market-producer-loop
+Restart=always
+RestartSec=5
+# Idle when plane disabled; active ~30s cadence when FAST_MARKET_PLANE_ENABLED=true
+Nice=5
+# Prevent unbounded log growth from stdout spam
+StandardOutput=append:/var/www/app_exswapin_usr/data/www/exswaping-backend-shared/storage/logs/fast_market_producer.log
+StandardError=append:/var/www/app_exswapin_usr/data/www/exswaping-backend-shared/storage/logs/fast_market_producer.log
+
+[Install]
+WantedBy=multi-user.target

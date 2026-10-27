@@ -46,12 +46,22 @@ final class MarketSnapshot
         public readonly int $buildMs,
     ) {}
 
+    /**
+     * SNAPSHOT_AGE_SOURCE policy:
+     * - Primary clock = fetched_at (when we obtained the BestChange batch).
+     * - BestChange /rates batch does not expose a reliable per-book source
+     *   wall clock, so sourceTimestamp is set equal to fetchedAt at build time
+     *   (SOURCE_TIMESTAMP_RELIABLE=NO). If sourceTimestamp ever lags fetch,
+     *   age uses the older of the two so we never claim fresher than source.
+     */
     public function ageSeconds(?int $now = null): int
     {
         $now ??= time();
+        $anchor = min($this->fetchedAt, $this->sourceTimestamp > 0 ? $this->sourceTimestamp : $this->fetchedAt);
 
-        return max(0, $now - $this->fetchedAt);
+        return max(0, $now - $anchor);
     }
+
 
     public function freshnessState(?int $now = null): string
     {

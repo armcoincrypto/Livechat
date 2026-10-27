@@ -7,8 +7,10 @@ namespace App\Services\Rates\FastMarket;
 /**
  * Independent feature flags for the fast market / quote plane.
  *
- * Distinct from BESTCHANGE_L1_* flags. All default false so production
- * behavior is unchanged until an authorized shadow/canary cutover.
+ * Values come from config/fast_market.php (env read once at config build).
+ * Do NOT call env() here — that silently defaults under config:cache.
+ *
+ * Distinct from BESTCHANGE_L1_*. All flags default false.
  */
 final class FastMarketFlags
 {
@@ -22,17 +24,17 @@ final class FastMarketFlags
 
     public static function planeEnabled(): bool
     {
-        return self::envBool(self::PLANE, false);
+        return (bool) config('fast_market.plane_enabled', false);
     }
 
     public static function publicQuoteEnabled(): bool
     {
-        return self::envBool(self::PUBLIC_QUOTE, false);
+        return (bool) config('fast_market.public_quote_enabled', false);
     }
 
     public static function orderQuoteEnabled(): bool
     {
-        return self::envBool(self::ORDER_QUOTE, false);
+        return (bool) config('fast_market.order_quote_enabled', false);
     }
 
     /**
@@ -41,73 +43,87 @@ final class FastMarketFlags
      */
     public static function shadowEnabled(): bool
     {
-        return self::planeEnabled() && self::envBool(self::SHADOW, false);
+        return self::planeEnabled() && (bool) config('fast_market.shadow_enabled', false);
+    }
+
+    public static function producerDaemonPreferred(): bool
+    {
+        return (bool) config('fast_market.producer_daemon', true);
+    }
+
+    public static function schedulerFallbackEnabled(): bool
+    {
+        return (bool) config('fast_market.scheduler_fallback', false);
+    }
+
+    /**
+     * Laravel everyMinute refresh runs only as explicit fallback when the
+     * systemd daemon is not the preferred cadence owner.
+     */
+    public static function schedulerRefreshAdmitted(): bool
+    {
+        if (! self::planeEnabled()) {
+            return false;
+        }
+        if (self::producerDaemonPreferred() && ! self::schedulerFallbackEnabled()) {
+            return false;
+        }
+
+        return true;
     }
 
     public static function freshnessThresholdSeconds(): int
     {
-        return max(15, self::envInt('FAST_MARKET_FRESH_SECONDS', 60));
+        return max(15, (int) config('fast_market.fresh_seconds', 60));
     }
 
     public static function graceThresholdSeconds(): int
     {
         $fresh = self::freshnessThresholdSeconds();
 
-        return max($fresh, self::envInt('FAST_MARKET_GRACE_SECONDS', 120));
+        return max($fresh, (int) config('fast_market.grace_seconds', 120));
     }
 
     public static function expiredThresholdSeconds(): int
     {
         $grace = self::graceThresholdSeconds();
 
-        return max($grace, self::envInt('FAST_MARKET_EXPIRED_SECONDS', 180));
+        return max($grace, (int) config('fast_market.expired_seconds', 180));
     }
 
     /**
      * Max age of persisted course_value/rate_value allowed as fallback when
-     * the fast snapshot is expired/missing. Aligns with financial BC heartbeat
-     * warning band (1200s) — not the 30–60s product target.
+     * the fast snapshot is expired/missing. Continuity only — never "fresh".
      */
     public static function maxFallbackRateAgeSeconds(): int
     {
-        return max(60, self::envInt('FAST_MARKET_MAX_FALLBACK_RATE_AGE_SECONDS', 1200));
+        return max(60, (int) config('fast_market.max_fallback_rate_age_seconds', 1200));
     }
 
     public static function snapshotRefreshSeconds(): int
     {
-        return max(15, min(60, self::envInt('FAST_MARKET_SNAPSHOT_REFRESH_SECONDS', 30)));
+        return max(15, min(60, (int) config('fast_market.snapshot_refresh_seconds', 30)));
     }
 
     public static function quoteTtlSeconds(): int
     {
-        return max(15, self::envInt('FAST_MARKET_QUOTE_TTL_SECONDS', 60));
+        return max(15, (int) config('fast_market.quote_ttl_seconds', 60));
     }
 
-    private static function envBool(string $key, bool $default): bool
+    public static function producerLockSeconds(): int
     {
-        $raw = function_exists('env') ? env($key, null) : null;
-        if ($raw === null) {
-            $g = getenv($key);
-            $raw = ($g === false) ? null : $g;
-        }
-        if ($raw === null) {
-            return $default;
-        }
-
-        return filter_var($raw, FILTER_VALIDATE_BOOLEAN);
+        return max(20, (int) config('fast_market.producer_lock_seconds', 55));
     }
 
-    private static function envInt(string $key, int $default): int
+    public static function failureBackoffSeconds(): int
     {
-        $raw = function_exists('env') ? env($key, null) : null;
-        if ($raw === null) {
-            $g = getenv($key);
-            $raw = ($g === false) ? null : $g;
-        }
-        if ($raw === null || $raw === '') {
-            return $default;
-        }
+        return max(5, min(120, (int) config('fast_market.failure_backoff_seconds', 15)));
+    }
 
-        return (int) $raw;
+    public static function failureBackoffMaxSeconds(): int
+    {
+        $base = self::failureBackoffSeconds();
+
+        return max($base, min(300, (int) config('fast_market.failure_backoff_max_seconds', 60)));
     }
 }
