@@ -62,10 +62,16 @@ final class FastMarketQuoteService
             return $this->persistedCalculatorQuote($direction, $base, 'family_not_bestchange_snapshot');
         }
 
-        $snapshot = $this->store->get();
-        if ($snapshot === null) {
+        // Pair-addressable read: meta + one book. Never deserialize full rates_by_pair.
+        $deId = (int) $direction->id;
+        $materials = $this->store->getQuoteMaterials($deId);
+        if ($materials === null) {
             return $this->persistedCalculatorQuote($direction, $base, 'snapshot_missing');
         }
+
+        $snapshot = $materials['snapshot'];
+        $pairKey = $materials['pair_key'];
+        $rawRows = $materials['raw_rows'];
 
         $base['snapshot_id'] = $snapshot->snapshotId;
         $base['market_age_seconds'] = $snapshot->ageSeconds($now);
@@ -75,11 +81,8 @@ final class FastMarketQuoteService
             return $this->persistedCalculatorQuote($direction, $base, 'snapshot_expired');
         }
 
-        $deId = (int) $direction->id;
-        $pairKey = $snapshot->pairKeyForDirectionExchange($deId);
-        $rawRows = $snapshot->rawRowsForDirectionExchange($deId);
         $bc = $direction->bestchange_directions;
-        if (! $bc instanceof BestChangeDirection || $pairKey === null || $rawRows === null) {
+        if (! $bc instanceof BestChangeDirection || $pairKey === '' || $rawRows === []) {
             return $this->persistedCalculatorQuote($direction, $base, 'direction_not_in_snapshot');
         }
 
@@ -128,15 +131,19 @@ final class FastMarketQuoteService
         if (! $route['use_bestchange_snapshot']) {
             return null;
         }
-        $snapshot = $this->store->get();
-        if ($snapshot === null || ! $snapshot->isUsable()) {
+        $deId = (int) $direction->id;
+        $materials = $this->store->getQuoteMaterials($deId);
+        if ($materials === null) {
             return null;
         }
-        $deId = (int) $direction->id;
-        $pairKey = $snapshot->pairKeyForDirectionExchange($deId);
-        $rawRows = $snapshot->rawRowsForDirectionExchange($deId);
+        $snapshot = $materials['snapshot'];
+        if (! $snapshot->isUsable()) {
+            return null;
+        }
+        $pairKey = $materials['pair_key'];
+        $rawRows = $materials['raw_rows'];
         $bc = $direction->bestchange_directions;
-        if (! $bc instanceof BestChangeDirection || $pairKey === null || $rawRows === null) {
+        if (! $bc instanceof BestChangeDirection || $pairKey === '' || $rawRows === []) {
             return null;
         }
         $computed = $this->bookRateComputer->compute(

@@ -18,7 +18,8 @@ final class RatesFastMarketProducerHealthCommand extends Command
     public function handle(MarketSnapshotStore $store): int
     {
         $health = FastMarketProducerHealth::read() ?? [];
-        $snap = $store->get();
+        // Meta-only: never HGETALL the full book from the health endpoint.
+        $snap = $store->getMeta();
         $payload = [
             'plane_enabled' => FastMarketFlags::planeEnabled(),
             'shadow_enabled' => FastMarketFlags::shadowEnabled(),

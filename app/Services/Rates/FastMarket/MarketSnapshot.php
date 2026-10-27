@@ -109,6 +109,18 @@ final class MarketSnapshot
      */
     public function toArray(): array
     {
+        return array_merge($this->toMetaArray(), [
+            'rates_by_pair' => $this->ratesByPair,
+        ]);
+    }
+
+    /**
+     * Metadata without rates_by_pair — safe for FPM request path.
+     *
+     * @return array<string, mixed>
+     */
+    public function toMetaArray(): array
+    {
         return [
             'source' => $this->source,
             'snapshot_id' => $this->snapshotId,
@@ -117,7 +129,6 @@ final class MarketSnapshot
             'normalized_at' => $this->normalizedAt,
             'expires_at' => $this->expiresAt,
             'fingerprint' => $this->fingerprint,
-            'rates_by_pair' => $this->ratesByPair,
             'pair_by_direction_exchange_id' => $this->pairByDirectionExchangeId,
             'bc_id_by_direction_exchange_id' => $this->bcIdByDirectionExchangeId,
             'external_rates' => $this->externalRates,
@@ -126,7 +137,33 @@ final class MarketSnapshot
             'mapped_direction_count' => $this->mappedDirectionCount,
             'fetch_ms' => $this->fetchMs,
             'build_ms' => $this->buildMs,
+            'schema' => 2,
         ];
+    }
+
+    /**
+     * @param  array<string, array<int, array<string, mixed>>>  $ratesByPair
+     */
+    public function withRatesByPair(array $ratesByPair): self
+    {
+        return new self(
+            source: $this->source,
+            snapshotId: $this->snapshotId,
+            sourceTimestamp: $this->sourceTimestamp,
+            fetchedAt: $this->fetchedAt,
+            normalizedAt: $this->normalizedAt,
+            expiresAt: $this->expiresAt,
+            fingerprint: $this->fingerprint,
+            ratesByPair: $ratesByPair,
+            pairByDirectionExchangeId: $this->pairByDirectionExchangeId,
+            bcIdByDirectionExchangeId: $this->bcIdByDirectionExchangeId,
+            externalRates: $this->externalRates,
+            exchangersMap: $this->exchangersMap,
+            pairCount: $this->pairCount > 0 ? $this->pairCount : count($ratesByPair),
+            mappedDirectionCount: $this->mappedDirectionCount,
+            fetchMs: $this->fetchMs,
+            buildMs: $this->buildMs,
+        );
     }
 
     /**
@@ -152,6 +189,16 @@ final class MarketSnapshot
             fetchMs: (int) ($data['fetch_ms'] ?? 0),
             buildMs: (int) ($data['build_ms'] ?? 0),
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function fromMetaArray(array $data): self
+    {
+        $data['rates_by_pair'] = [];
+
+        return self::fromArray($data);
     }
 
     /**

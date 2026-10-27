@@ -49,7 +49,7 @@ final class BestChangeMarketSnapshotProducer
         try {
             $lock = Cache::lock(MarketSnapshotStore::LOCK_KEY, FastMarketFlags::producerLockSeconds());
             if (! $lock->get()) {
-                $existing = $this->store->get();
+                $existing = $this->store->getMeta();
 
                 return [
                     'ok' => $existing !== null,

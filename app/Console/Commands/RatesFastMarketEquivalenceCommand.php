@@ -30,7 +30,7 @@ final class RatesFastMarketEquivalenceCommand extends Command
         MarketSnapshotStore $store,
         BestChangeBookRateComputer $computer,
     ): int {
-        $snapshot = $store->get();
+        $snapshot = $store->getMeta();
         if ($snapshot === null) {
             $this->error('No snapshot in store — run rates:fast-market-snapshot-refresh --force first');
 
@@ -58,8 +58,12 @@ final class RatesFastMarketEquivalenceCommand extends Command
         foreach ($dirs as $dir) {
             $deId = (int) $dir->id_direction_exchange;
             $pairKey = $snapshot->pairKeyForDirectionExchange($deId);
-            $raw = $snapshot->rawRowsForDirectionExchange($deId);
-            if ($pairKey === null || $raw === null) {
+            if ($pairKey === null) {
+                $skipped++;
+                continue;
+            }
+            $raw = $store->getPairRows($snapshot->snapshotId, $pairKey);
+            if ($raw === null) {
                 $skipped++;
                 continue;
             }

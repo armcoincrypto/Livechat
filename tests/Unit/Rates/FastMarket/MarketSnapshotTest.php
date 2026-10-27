@@ -65,6 +65,13 @@ final class MarketSnapshotTest extends TestCase
         $this->assertSame(MarketSnapshot::STATE_EXPIRED, $again->freshnessState($now + 200));
         $this->assertTrue($again->isUsable($now + 90));
         $this->assertFalse($again->isUsable($now + 200));
+
+        $meta = MarketSnapshot::fromMetaArray($snap->toMetaArray());
+        $this->assertSame('bc_test', $meta->snapshotId);
+        $this->assertSame([], $meta->ratesByPair);
+        $this->assertSame('1-2', $meta->pairKeyForDirectionExchange(10));
+        $with = $meta->withRatesByPair($snap->ratesByPair);
+        $this->assertSame([['changer' => 1, 'rate' => '2']], $with->rawRowsForDirectionExchange(10));
     }
 
     public function test_age_uses_older_of_fetched_and_source(): void
