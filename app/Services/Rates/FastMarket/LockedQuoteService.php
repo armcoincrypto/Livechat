@@ -49,18 +49,22 @@ final class LockedQuoteService
             return null;
         }
 
-        $calculatorRate = (string) ($payload['rate'] ?? $rateValue);
-        $courseDisplay = (string) ($fastQuote['course_display'] ?? '');
-        if ($courseDisplay === '') {
-            // Prefer full rate string captured during quote(); fall back to numeric.
-            $courseDisplay = (string) ($payload['full_rate'] ?? $calculatorRate);
+        // Customer-visible rate (post-canonical) is the financial lock authority.
+        $displayRate = (string) ($fastQuote['lock_rate'] ?? $fastQuote['display_rate'] ?? '');
+        if ($displayRate === '' || ! is_numeric($displayRate)) {
+            $displayRate = (string) ($payload['rate'] ?? $rateValue);
         }
-        $displayRate = (string) ($fastQuote['display_rate'] ?? $calculatorRate);
+        $calculatorRate = $displayRate;
+        $courseDisplay = $this->formatCourseDisplay($direction, $calculatorRate);
+        if ($courseDisplay === '') {
+            $courseDisplay = (string) ($fastQuote['course_display'] ?? $calculatorRate);
+        }
 
         $ttl = FastMarketFlags::quoteTtlSeconds();
         $now = time();
         $token = $this->newToken();
-        $canonical = $this->canonicalInput($direction, $route);
+        $orderOpts = is_array($fastQuote['order_binding'] ?? null) ? $fastQuote['order_binding'] : [];
+        $canonical = $this->canonicalInput($direction, $route, $orderOpts);
         $bindingHash = $this->bindingHash($canonical);
         $fingerprint = $this->pricingFingerprint($direction);
 
@@ -145,6 +149,13 @@ final class LockedQuoteService
         if ($record->isExpired($now)) {
             throw LockedQuoteException::expired();
         }
+        if ($record->status === LockedQuoteRecord::STATUS_CONSUMED) {
+            // Idempotent retry may re-resolve the same quote for the same order_id.
+            $reuseOrderId = (int) ($orderBinding['reuse_order_id'] ?? 0);
+            if ($reuseOrderId <= 0 || $record->orderId === null || (int) $record->orderId !== $reuseOrderId) {
+                throw LockedQuoteException::used();
+            }
+        }
         if (! $record->usedFastPath) {
             throw LockedQuoteException::unsupported();
         }
@@ -177,14 +188,8 @@ final class LockedQuoteService
     public function rememberOrderLinkage(LockedQuoteRecord $quote, int $orderId): void
     {
         try {
-            $remaining = max(1, $quote->expiresAt - time());
-            // Multi-use until expiry: keep status=issued; record last order for audit.
-            $updated = $quote->withStatus(
-                LockedQuoteRecord::STATUS_ISSUED,
-                consumedAt: time(),
-                orderId: $orderId,
-            );
-            $this->store->replace($updated, $remaining);
+            // One financial order per quote; idempotent retries reuse via order_attempt_id.
+            $this->consumeForOrder($quote, $orderId);
         } catch (Throwable $e) {
             Log::warning('locked_quote_linkage_failed', [
                 'quote_id' => $quote->quoteId,
@@ -234,9 +239,10 @@ final class LockedQuoteService
 
     /**
      * @param  array<string, mixed>  $route
-     * @return array{direction_id: int, currency_in_id: int, currency_out_id: int, pricing_family: string, source_owner: string}
+     * @param  array<string, mixed>  $orderOpts  rate-affecting order options at quote time (defaults for public)
+     * @return array<string, mixed>
      */
-    public function canonicalInput(DirectionExchange $direction, array $route = []): array
+    public function canonicalInput(DirectionExchange $direction, array $route = [], array $orderOpts = []): array
     {
         if ($route === []) {
             $route = $this->router->route($direction);
@@ -244,23 +250,47 @@ final class LockedQuoteService
         $family = (string) ($route['family'] ?? 'bestchange');
         $owner = (string) ($route['calculation_owner'] ?? $family);
 
+        // Public fast quote locks the website default display mode (floating).
+        $typeRate = array_key_exists('type_rate', $orderOpts)
+            ? $this->normalizeTypeRate($orderOpts['type_rate'])
+            : ((int) ($direction->is_type_rate ?? 0) === 1 ? '1' : '');
+        $cityId = (int) ($orderOpts['city_id'] ?? 0);
+        $selectedFees = $this->normalizeFeesList($orderOpts['selected_fees'] ?? []);
+        $checkboxFees = $this->normalizeFeesList($orderOpts['checkbox_fees'] ?? []);
+        $cardV = (bool) ($orderOpts['card_verification_required'] ?? false);
+        $promo = $this->normalizePromo($orderOpts['promo_code'] ?? null);
+        // Rate-only public quotes: amount unbound (give/receive scale from locked rate).
+        $amount = $orderOpts['income_amount'] ?? null;
+        $amountCanon = ($amount !== null && $amount !== '' && is_numeric((string) $amount))
+            ? $this->canonicalAmount((string) $amount)
+            : '';
+
         return [
             'direction_id' => (int) $direction->id,
             'currency_in_id' => (int) ($direction->id_currency1 ?? 0),
             'currency_out_id' => (int) ($direction->id_currency2 ?? 0),
             'pricing_family' => $family,
             'source_owner' => $owner,
+            'type_rate' => $typeRate,
+            'city_id' => $cityId,
+            'selected_fees' => $selectedFees,
+            'checkbox_fees' => $checkboxFees,
+            'card_verification_required' => $cardV ? 1 : 0,
+            'promo_code' => $promo,
+            'income_amount' => $amountCanon,
+            'amount_mode' => $amountCanon !== '' ? 'bound' : 'rate_only',
         ];
     }
 
     /**
-     * @param  array{direction_id: int, currency_in_id: int, currency_out_id: int, pricing_family: string, source_owner: string}  $canonical
+     * @param  array<string, mixed>  $canonical
      */
     public function bindingHash(array $canonical): string
     {
-        ksort($canonical);
+        $copy = $canonical;
+        ksort($copy);
 
-        return hash('sha256', json_encode($canonical, JSON_UNESCAPED_UNICODE));
+        return hash('sha256', json_encode($copy, JSON_UNESCAPED_UNICODE));
     }
 
     public function pricingFingerprint(DirectionExchange $direction): string
@@ -297,15 +327,154 @@ final class LockedQuoteService
             }
         }
         if (($orderBinding['pricing_family'] ?? null) !== null
-            && (string) $orderBinding['pricing_family'] !== $expected['pricing_family']
+            && (string) $orderBinding['pricing_family'] !== (string) ($expected['pricing_family'] ?? '')
         ) {
             throw LockedQuoteException::inputMismatch('pricing_family');
         }
+
+        // Rate-affecting order options must match the quote issuance binding.
+        // Missing type_rate on order inherits quote default (public floating).
+        $expectedType = (string) ($expected['type_rate'] ?? '');
+        $orderType = array_key_exists('type_rate', $orderBinding) && $orderBinding['type_rate'] !== null && $orderBinding['type_rate'] !== ''
+            ? $this->normalizeTypeRate($orderBinding['type_rate'])
+            : $expectedType;
+        if ($orderType !== $expectedType) {
+            throw LockedQuoteException::inputMismatch('type_rate');
+        }
+        if ((int) ($orderBinding['city_id'] ?? 0) !== (int) ($expected['city_id'] ?? 0)) {
+            throw LockedQuoteException::inputMismatch('city_id');
+        }
+        if ($this->normalizeFeesList($orderBinding['selected_fees'] ?? []) !== (string) ($expected['selected_fees'] ?? '')) {
+            throw LockedQuoteException::inputMismatch('selected_fees');
+        }
+        if ($this->normalizeFeesList($orderBinding['checkbox_fees'] ?? []) !== (string) ($expected['checkbox_fees'] ?? '')) {
+            throw LockedQuoteException::inputMismatch('checkbox_fees');
+        }
+        $card = ! empty($orderBinding['card_verification_required']) ? 1 : 0;
+        if ($card !== (int) ($expected['card_verification_required'] ?? 0)) {
+            throw LockedQuoteException::inputMismatch('card_verification_required');
+        }
+        $promo = $this->normalizePromo($orderBinding['promo_code'] ?? null);
+        if ($promo !== (string) ($expected['promo_code'] ?? '')) {
+            throw LockedQuoteException::inputMismatch('promo_code');
+        }
+        if (($expected['amount_mode'] ?? 'rate_only') === 'bound') {
+            $amt = $this->canonicalAmount((string) ($orderBinding['income_amount'] ?? ''));
+            if ($amt === '' || $amt !== (string) ($expected['income_amount'] ?? '')) {
+                throw LockedQuoteException::inputMismatch('income_amount');
+            }
+        }
+    }
+
+    /**
+     * Mark quote one-time consumed after a successful distinct order create.
+     */
+    public function consumeForOrder(LockedQuoteRecord $quote, int $orderId): void
+    {
+        if ($quote->status === LockedQuoteRecord::STATUS_CONSUMED
+            && $quote->orderId !== null
+            && (int) $quote->orderId !== $orderId
+        ) {
+            throw LockedQuoteException::used();
+        }
+        $remaining = max(1, $quote->expiresAt - time());
+        $updated = $quote->withStatus(
+            LockedQuoteRecord::STATUS_CONSUMED,
+            consumedAt: time(),
+            orderId: $orderId,
+        );
+        $this->store->replace($updated, $remaining);
     }
 
     private function newToken(): string
     {
         return rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
+    }
+
+    private function normalizeTypeRate(mixed $v): string
+    {
+        if ($v === null || $v === '') {
+            return '';
+        }
+        if ($v === 'fixed' || $v === 0 || $v === '0' || $v === false) {
+            return '0';
+        }
+        if ($v === 'floating' || $v === 1 || $v === '1' || $v === true) {
+            return '1';
+        }
+
+        return (string) $v;
+    }
+
+    /**
+     * @param  mixed  $fees
+     */
+    private function normalizeFeesList(mixed $fees): string
+    {
+        if (! is_array($fees) || $fees === []) {
+            return '';
+        }
+        $flat = [];
+        foreach ($fees as $k => $v) {
+            if (is_array($v)) {
+                $flat[] = json_encode($v, JSON_UNESCAPED_UNICODE);
+            } else {
+                $flat[] = (string) $k.':'.(string) $v;
+            }
+        }
+        sort($flat, SORT_STRING);
+
+        return hash('sha256', implode('|', $flat));
+    }
+
+    private function normalizePromo(mixed $code): string
+    {
+        if (! is_string($code)) {
+            return '';
+        }
+        $code = mb_strtolower(trim($code));
+
+        return $code;
+    }
+
+    private function canonicalAmount(string $amount): string
+    {
+        $amount = trim($amount);
+        if ($amount === '' || ! is_numeric($amount)) {
+            return '';
+        }
+        if (function_exists('bcadd')) {
+            return bcadd($amount, '0', 18);
+        }
+
+        return (string) $amount;
+    }
+
+    private function formatCourseDisplay(DirectionExchange $direction, string $rate): string
+    {
+        if ($rate === '' || ! is_numeric($rate)) {
+            return '';
+        }
+        try {
+            $c1 = $direction->currency1->code_currency->name ?? null;
+            $c2 = $direction->currency2->code_currency->name ?? null;
+            if (! is_string($c1) || $c1 === '' || ! is_string($c2) || $c2 === '') {
+                return $rate;
+            }
+            $maxDecimal = 18;
+            if (function_exists('bccomp') && bccomp($rate, '1', $maxDecimal) === -1) {
+                if (bccomp($rate, '0', $maxDecimal) <= 0) {
+                    return sprintf('1 %s = 0 %s', $c1, $c2);
+                }
+                $inv = bcdiv('1', $rate, $maxDecimal);
+
+                return sprintf('%s %s = 1 %s', rtrim(rtrim($inv, '0'), '.'), $c1, $c2);
+            }
+
+            return sprintf('1 %s = %s %s', $c1, rtrim(rtrim($rate, '0'), '.'), $c2);
+        } catch (Throwable) {
+            return $rate;
+        }
     }
 
     private function ratesEqual(string $a, string $b): bool

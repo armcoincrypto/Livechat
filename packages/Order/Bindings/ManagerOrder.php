@@ -733,14 +733,38 @@ trait ManagerOrder
 
     private function tryReuseRecentPendingTask(): ?Task
     {
+        $ttl = $this->orderCreateIdempotencyTtlMinutes();
+        $typeRate = $this->resolveOrderType();
+
+        // Attempt-id first: avoids re-resolving a one-time consumed quote_token on lost-response retry.
+        $attempt = $this->normalizedOrderAttemptId();
+        if ($attempt !== '') {
+            $attemptId = Cache::get('order_create_attempt:v1:'.$attempt);
+            if ($attemptId) {
+                $task = Task::query()->whereKey((int) $attemptId)->first();
+                if ($task instanceof Task) {
+                    $createdAt = $task->created_at;
+                    $withinTtl = $createdAt && $createdAt->greaterThanOrEqualTo(now()->subMinutes($ttl));
+                    $sameDir = (int) $task->id_direction_exchange === (int) $this->directionId->id;
+                    $sameUser = (int) $task->id_user === (int) ($this->authInfo->id ?? 0);
+                    if ($withinTtl && $sameDir && $sameUser) {
+                        Log::info('order_create_idempotent_reuse', [
+                            'task_id' => $task->id,
+                            'public_id' => $task->public_id,
+                            'via' => 'attempt_id_pre_pricing',
+                        ]);
+
+                        return $task;
+                    }
+                }
+            }
+        }
+
         $pricing = $this->computeReusePricing();
         $hash = $this->buildOrderCreateDedupHash($pricing);
         $cacheKey = $this->orderCreateIdempotencyCacheKey($hash);
-        $ttl = $this->orderCreateIdempotencyTtlMinutes();
-        $typeRate = $this->resolveOrderType();
         $promoLower = $this->resolveExpectedPromoCodeLower($pricing['response_fee']);
 
-        $attempt = $this->normalizedOrderAttemptId();
         if ($attempt !== '') {
             $attemptId = Cache::get('order_create_attempt:v1:'.$attempt);
             if ($attemptId) {

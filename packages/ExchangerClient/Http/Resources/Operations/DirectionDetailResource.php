@@ -63,12 +63,41 @@ class DirectionDetailResource extends JsonResource
                 $canonical = \App\Services\Rates\CanonicalDirectionRateCalculator::make()
                     ->websiteCoursePayload($this->resource, $fastBase);
                 $coursePayload = array_merge($baseCourse, $canonical);
-                // Preserve opaque lock metadata after canonical merge (additive).
-                foreach (['quote_token', 'quoted_at', 'expires_at', 'valid_for_seconds', '_fast_market'] as $lockKey) {
-                    if (array_key_exists($lockKey, $baseCourse)) {
-                        $coursePayload[$lockKey] = $baseCourse[$lockKey];
+                if (array_key_exists('_fast_market', $baseCourse)) {
+                    $coursePayload['_fast_market'] = $baseCourse['_fast_market'];
+                }
+                // Issue lock AFTER canonical merge so frozen rate == customer-visible rate.
+                if (! empty($coursePayload['_fast_market']['used_fast_path'])
+                    && FastMarketFlags::lockedQuoteEnabled()
+                ) {
+                    try {
+                        $fastMeta = is_array($baseCourse['_fast_issue_context'] ?? null)
+                            ? $baseCourse['_fast_issue_context']
+                            : [];
+                        $fastMeta['used_fast_path'] = true;
+                        $fastMeta['display_rate'] = (string) ($coursePayload['rate'] ?? '');
+                        $fastMeta['calculator_payload'] = $baseCourse;
+                        $fastMeta['rate'] = (string) ($baseCourse['rate'] ?? $fastMeta['display_rate']);
+                        $fastMeta['rate_value'] = (string) ($fastMeta['rate_value'] ?? $fastMeta['rate']);
+                        // Lock the displayed (canonical) rate, not pre-fee calculator-only rate.
+                        $fastMeta['course_display'] = '';
+                        $fastMeta['lock_rate'] = (string) ($coursePayload['rate'] ?? '');
+                        $meta = app(LockedQuoteService::class)
+                            ->issueFromFastQuote($this->resource, $fastMeta);
+                        if (is_array($meta)) {
+                            $coursePayload['quote_token'] = $meta['quote_token'];
+                            $coursePayload['quoted_at'] = $meta['quoted_at'];
+                            $coursePayload['expires_at'] = $meta['expires_at'];
+                            $coursePayload['valid_for_seconds'] = $meta['valid_for_seconds'];
+                        }
+                    } catch (Throwable $e) {
+                        Log::warning('locked_quote_public_issue_failed', [
+                            'direction_id' => $this->id ?? null,
+                            'message' => $e->getMessage(),
+                        ]);
                     }
                 }
+                unset($coursePayload['_fast_issue_context']);
             } else {
                 $rateUnavailable = true;
                 $rateUnavailableCode = RateDirectionEligibility::ERROR_DIRECTION_TEMPORARILY_UNAVAILABLE;
@@ -802,24 +831,19 @@ class DirectionDetailResource extends JsonResource
                         'calculated_at' => $fast['calculated_at'] ?? null,
                         'fallback_used' => (bool) ($fast['fallback_used'] ?? false),
                     ];
-
-                    // Same calculation as public result — issue opaque lock token (no second calc).
+                    // Stash issuance context for post-canonical lock (display rate is final there).
                     if (! empty($fast['used_fast_path'])) {
-                        try {
-                            $meta = app(LockedQuoteService::class)
-                                ->issueFromFastQuote($this->resource, $fast);
-                            if (is_array($meta)) {
-                                $payload['quote_token'] = $meta['quote_token'];
-                                $payload['quoted_at'] = $meta['quoted_at'];
-                                $payload['expires_at'] = $meta['expires_at'];
-                                $payload['valid_for_seconds'] = $meta['valid_for_seconds'];
-                            }
-                        } catch (Throwable $e) {
-                            Log::warning('locked_quote_public_issue_failed', [
-                                'direction_id' => $this->id ?? null,
-                                'message' => $e->getMessage(),
-                            ]);
-                        }
+                        $payload['_fast_issue_context'] = [
+                            'used_fast_path' => true,
+                            'snapshot_id' => $fast['snapshot_id'] ?? null,
+                            'snapshot_fetched_at' => $fast['snapshot_fetched_at'] ?? null,
+                            'market_age_seconds' => $fast['market_age_seconds'] ?? null,
+                            'freshness_state' => $fast['freshness_state'] ?? null,
+                            'rate_value' => $fast['rate_value'] ?? $fast['rate'] ?? null,
+                            'rate' => $fast['rate'] ?? null,
+                            'course_display' => $fast['course_display'] ?? null,
+                            'calculator_payload' => $fast['calculator_payload'] ?? null,
+                        ];
                     }
 
                     return $payload;

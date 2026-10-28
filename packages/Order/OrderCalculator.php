@@ -271,6 +271,15 @@ class OrderCalculator
             'direction_id' => (int) ($this->directionExchange->id ?? 0),
             'currency_in_id' => (int) ($this->directionExchange->id_currency1 ?? 0),
             'currency_out_id' => (int) ($this->directionExchange->id_currency2 ?? 0),
+            'type_rate' => $this->options['type_rate'] ?? null,
+            'city_id' => (int) ($this->options['city_id'] ?? 0),
+            'selected_fees' => (isset($this->options['selected_fees']) && is_array($this->options['selected_fees']))
+                ? $this->options['selected_fees']
+                : [],
+            'checkbox_fees' => $this->options['checkbox_fees'] ?? [],
+            'card_verification_required' => (bool) ($this->options['card_verification_required'] ?? false),
+            'promo_code' => $this->options['promo_code'] ?? null,
+            'income_amount' => $this->fromAmount->isZero() ? null : (string) $this->fromAmount,
         ];
 
         return app(LockedQuoteService::class)->resolveForOrder($token, $binding);
