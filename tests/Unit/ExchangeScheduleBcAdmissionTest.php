@@ -65,7 +65,7 @@ final class ExchangeScheduleBcAdmissionTest extends TestCase
             '5,35 * * * *',
             ExchangeSchedule::cronExpressionForMinutesWithOffset(30, $offset)
         );
-        // Interim live +4 superseded by +6 + overdue catch-up.
+        // Interim live +4 superseded by +6 + recovery-only catch-up.
         $this->assertNotSame(4, $offset);
     }
 

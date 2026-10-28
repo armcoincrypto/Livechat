@@ -320,15 +320,13 @@ class ExchangeSchedule
         // shares bestchange-compiler.lock / owners/bestchange). Does not alter BC
         // flock / withoutOverlapping / runInBackground / FD hygiene.
         // POST_BC_XML_REFRESH still invokes scheme:files directly after BC completes.
-        // Wave2 (P0 recovery): also yield while BC freshness is overdue so shared
-        // flock holders cannot starve catch-up admission.
+        // Reconciliation simplify (2026-10-28): yield on busy signal ONLY.
+        // Do NOT defer courses/competitors merely because BC generation age is
+        // past recovery threshold — that starved non-BC work while catch-up was
+        // steady-state. Ops flock yield during true recovery remains in
+        // run_backend_compiler (EXSWAPING_BC_FRESHNESS_PRIORITY_SECONDS).
         $whenBcIdle = static function (): bool {
-            if (self::bestchangeCompilerBusy()) {
-                return false;
-            }
-            $age = BestchangeAdmissionPolicy::lastSuccessAgeSeconds();
-
-            return ! BestchangeAdmissionPolicy::shouldDeferNonBc($age);
+            return ! self::bestchangeCompilerBusy();
         };
 
         // Wave3: heavy compilers MUST runInBackground. Foreground pinned schedule:run.
@@ -338,10 +336,10 @@ class ExchangeSchedule
         //   2) run_backend_compiler flock (bestchange-compiler.lock) — hard single-writer
         //      across schedule + odd-minute competitors-only cron.
         // Wave1 (2026-10-25): register BC BEFORE courses (dispatch order).
-        // Wave2 (P0 recovery on 64e650): everyMinute + BestchangeAdmissionPolicy —
-        //   nominal offset +6m; overdue catch-up (≥900s) admits any free minute
-        //   without extending the 1800s financial policy. withoutOverlapping TTL
-        //   remains a FALLBACK only (15m > post-L1 hold, <30m cadence).
+        // Wave2/reconcile-simplify: everyMinute + BestchangeAdmissionPolicy —
+        //   nominal offset +6m; recovery catch-up (≥2700s) only after a missed
+        //   30m nominal cycle. withoutOverlapping TTL remains a FALLBACK only
+        //   (15m > post-L1 hold, <30m cadence).
         $whenBcAdmit = static function () use ($ratesMinutes): bool {
             return BestchangeAdmissionPolicy::shouldAdmit(
                 (int) now()->minute,

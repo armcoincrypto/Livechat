@@ -10,11 +10,12 @@ use PHPUnit\Framework\TestCase;
 
 final class BestChangeDispatchWatchContractTest extends TestCase
 {
-    public function test_slo_constants_preserve_1800_critical(): void
+    public function test_slo_constants_align_nominal_and_recovery(): void
     {
-        $this->assertSame(900, RatesBestChangeDispatchWatchCommand::HEARTBEAT_TARGET_SECONDS);
-        $this->assertSame(1200, RatesBestChangeDispatchWatchCommand::HEARTBEAT_WARNING_SECONDS);
-        $this->assertSame(1800, RatesBestChangeDispatchWatchCommand::HEARTBEAT_CRITICAL_SECONDS);
+        // Target = operator 30m rates cadence; warning = recovery catch-up (45m).
+        $this->assertSame(1800, RatesBestChangeDispatchWatchCommand::HEARTBEAT_TARGET_SECONDS);
+        $this->assertSame(2700, RatesBestChangeDispatchWatchCommand::HEARTBEAT_WARNING_SECONDS);
+        $this->assertSame(3600, RatesBestChangeDispatchWatchCommand::HEARTBEAT_CRITICAL_SECONDS);
         $this->assertSame(
             ExchangeSchedule::BESTCHANGE_WITHOUT_OVERLAPPING_MINUTES,
             RatesBestChangeDispatchWatchCommand::BC_MUTEX_TTL_MINUTES
@@ -46,13 +47,13 @@ final class BestChangeDispatchWatchContractTest extends TestCase
         $this->assertNotSame($thirty, $admitted);
         $this->assertSame('*/30 * * * *', ExchangeSchedule::cronExpressionForMinutes(30));
         $this->assertSame(
-            '4,34 * * * *',
+            '6,36 * * * *',
             ExchangeSchedule::cronExpressionForMinutesWithOffset(
                 30,
                 ExchangeSchedule::BESTCHANGE_ADMISSION_OFFSET_MINUTES
             )
         );
-        $this->assertSame(4, ExchangeSchedule::BESTCHANGE_ADMISSION_OFFSET_MINUTES);
+        $this->assertSame(6, ExchangeSchedule::BESTCHANGE_ADMISSION_OFFSET_MINUTES);
     }
 
     public function test_mutex_ttl_covers_post_l1_wrapper_hold_not_legacy_30m_runtime(): void

@@ -7,15 +7,17 @@ namespace App\Console\Schedule;
 /**
  * BestChange scheduler admission and shared-flock yield policy.
  *
- * Wave1 (+2m offset) left BC inside the courses start-jitter + P95 hold envelope
- * and did not catch up when an admission minute was skipped (schedule-run.lock or
- * flock). This policy:
- *   - admits on a safer nominal offset (past courses + boundary schedule:run)
- *   - promotes every-minute catch-up once generation age exceeds the freshness
- *     target, without raising the 1800s financial policy or bypassing locks
- *   - tells non-BC shared-flock compilers to yield while BC is overdue
+ * Reconciliation role (post fast-market plane): persisted catalog / fallback /
+ * admin consistency — NOT the 30s customer freshness engine.
  *
- * Does not change rates math, book reuse, or the freshness order gate.
+ * This policy:
+ *   - admits on a safer nominal offset (past courses + boundary schedule:run)
+ *   - promotes every-minute catch-up ONLY as recovery after a missed nominal
+ *     30m cycle (threshold > rates cadence), never as steady-state freshness
+ *   - shouldDeferNonBc remains available for ops lock yield during recovery;
+ *     ExchangeSchedule customer-adjacent jobs use busy-signal yield only
+ *
+ * Does not change rates math, book reuse, locks, or the fast-market plane.
  */
 final class BestchangeAdmissionPolicy
 {
@@ -29,11 +31,11 @@ final class BestchangeAdmissionPolicy
     public const ADMISSION_OFFSET_MINUTES = 6;
 
     /**
-     * Catch-up threshold (seconds since last successful BC generation).
-     * Aligns with dispatch-watch HEARTBEAT_TARGET — headroom under the 1800s
-     * financial freshness policy, not a policy extension.
+     * Recovery-only catch-up threshold (seconds since last successful BC generation).
+     * Must exceed the operator rates cadence (1800s) so catch-up is not the
+     * steady-state admission path. MODEL B: 45m recovery after missed nominal.
      */
-    public const OVERDUE_CATCHUP_SECONDS = 900;
+    public const OVERDUE_CATCHUP_SECONDS = 2700;
 
     public const LAST_SUCCESS_PATH = '/var/lock/exswaping-compiler-guards/last-success.compiler_bestchange';
 

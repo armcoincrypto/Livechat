@@ -22,11 +22,13 @@ use Symfony\Component\Process\Process;
  */
 final class RatesBestChangeDispatchWatchCommand extends Command
 {
-    public const HEARTBEAT_TARGET_SECONDS = 900;
+    /** Aligns with operator rates cadence (cron_interval_minutes_update_rates=30). */
+    public const HEARTBEAT_TARGET_SECONDS = 1800;
 
-    public const HEARTBEAT_WARNING_SECONDS = 1200;
+    /** Aligns with BestchangeAdmissionPolicy::OVERDUE_CATCHUP_SECONDS (recovery). */
+    public const HEARTBEAT_WARNING_SECONDS = 2700;
 
-    public const HEARTBEAT_CRITICAL_SECONDS = 1800;
+    public const HEARTBEAT_CRITICAL_SECONDS = 3600;
 
     /**
      * Laravel withoutOverlapping unit for compiler:bestchange (minutes).

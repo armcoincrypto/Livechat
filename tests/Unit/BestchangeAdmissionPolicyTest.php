@@ -37,26 +37,33 @@ final class BestchangeAdmissionPolicyTest extends TestCase
         );
     }
 
-    public function test_overdue_catchup_admits_every_minute_without_raising_policy(): void
+    public function test_recovery_catchup_only_after_missed_nominal_cycle(): void
     {
-        $this->assertSame(900, BestchangeAdmissionPolicy::OVERDUE_CATCHUP_SECONDS);
-        $this->assertLessThan(1800, BestchangeAdmissionPolicy::OVERDUE_CATCHUP_SECONDS);
+        // Recovery threshold must exceed the 30m rates cadence so catch-up is
+        // not the steady-state admission path (MODEL B: 45m).
+        $this->assertSame(2700, BestchangeAdmissionPolicy::OVERDUE_CATCHUP_SECONDS);
+        $this->assertGreaterThan(1800, BestchangeAdmissionPolicy::OVERDUE_CATCHUP_SECONDS);
 
-        // Fresh: only nominal minutes.
-        $this->assertFalse(BestchangeAdmissionPolicy::shouldAdmit(4, 100, 30, 6, 900));
-        $this->assertTrue(BestchangeAdmissionPolicy::shouldAdmit(6, 100, 30, 6, 900));
+        // Fresh / mid-cycle: only nominal minutes (no 15m steady-state catch-up).
+        $this->assertFalse(BestchangeAdmissionPolicy::shouldAdmit(4, 100, 30, 6, 2700));
+        $this->assertTrue(BestchangeAdmissionPolicy::shouldAdmit(6, 100, 30, 6, 2700));
+        $this->assertFalse(BestchangeAdmissionPolicy::shouldAdmit(17, 900, 30, 6, 2700));
+        $this->assertFalse(BestchangeAdmissionPolicy::shouldAdmit(17, 1800, 30, 6, 2700));
+        $this->assertFalse(BestchangeAdmissionPolicy::shouldAdmit(17, 2699, 30, 6, 2700));
 
-        // Overdue: any minute (catch-up), still under 1800s policy ceiling.
-        $this->assertTrue(BestchangeAdmissionPolicy::shouldAdmit(4, 900, 30, 6, 900));
-        $this->assertTrue(BestchangeAdmissionPolicy::shouldAdmit(17, 901, 30, 6, 900));
-        $this->assertTrue(BestchangeAdmissionPolicy::shouldAdmit(0, 1800, 30, 6, 900));
+        // Recovery: any minute after missed nominal (+45m).
+        $this->assertTrue(BestchangeAdmissionPolicy::shouldAdmit(4, 2700, 30, 6, 2700));
+        $this->assertTrue(BestchangeAdmissionPolicy::shouldAdmit(17, 2701, 30, 6, 2700));
+        $this->assertTrue(BestchangeAdmissionPolicy::shouldAdmit(0, 3600, 30, 6, 2700));
     }
 
-    public function test_non_bc_defers_only_when_overdue(): void
+    public function test_non_bc_defers_only_when_recovery_overdue(): void
     {
         $this->assertFalse(BestchangeAdmissionPolicy::shouldDeferNonBc(null));
         $this->assertFalse(BestchangeAdmissionPolicy::shouldDeferNonBc(899));
-        $this->assertTrue(BestchangeAdmissionPolicy::shouldDeferNonBc(900));
+        $this->assertFalse(BestchangeAdmissionPolicy::shouldDeferNonBc(900));
+        $this->assertFalse(BestchangeAdmissionPolicy::shouldDeferNonBc(2699));
+        $this->assertTrue(BestchangeAdmissionPolicy::shouldDeferNonBc(2700));
         $this->assertTrue(BestchangeAdmissionPolicy::shouldDeferNonBc(5000));
     }
 
@@ -75,12 +82,18 @@ final class BestchangeAdmissionPolicyTest extends TestCase
         @rmdir($dir);
     }
 
-    public function test_schedule_uses_every_minute_expression_for_mutex_alignment(): void
+    public function test_schedule_uses_every_minute_expression_and_busy_only_yield(): void
     {
         $this->assertSame('* * * * *', BestchangeAdmissionPolicy::mutexCronExpression());
         $src = (string) file_get_contents(dirname(__DIR__, 2).'/app/Console/Schedule/ExchangeSchedule.php');
         $this->assertStringContainsString('BestchangeAdmissionPolicy::shouldAdmit', $src);
-        $this->assertStringContainsString('BestchangeAdmissionPolicy::shouldDeferNonBc', $src);
+        $this->assertStringContainsString('bestchangeCompilerBusy', $src);
         $this->assertStringContainsString('->everyMinute()', $src);
+        // Schedule must NOT defer non-BC jobs merely on generation age.
+        $this->assertStringNotContainsString('shouldDeferNonBc($age)', $src);
+        $this->assertStringNotContainsString(
+            'return ! BestchangeAdmissionPolicy::shouldDeferNonBc($age);',
+            $src
+        );
     }
 }
