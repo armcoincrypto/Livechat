@@ -19,6 +19,10 @@ return [
     'shadow_enabled' => (bool) filter_var(env('FAST_MARKET_SHADOW_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
     'public_quote_enabled' => (bool) filter_var(env('FAST_PUBLIC_QUOTE_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
     'order_quote_enabled' => (bool) filter_var(env('FAST_ORDER_QUOTE_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
+    // Issue opaque quote_token on public fast quotes (order authority stays separate).
+    'locked_quote_enabled' => (bool) filter_var(env('FAST_LOCKED_QUOTE_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
+    // Parallel validate locked quote vs legacy order pricing (no financial freeze).
+    'order_quote_shadow_enabled' => (bool) filter_var(env('FAST_ORDER_QUOTE_SHADOW_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
 
     /*
     |--------------------------------------------------------------------------
@@ -43,5 +47,6 @@ return [
     'grace_seconds' => max(15, (int) env('FAST_MARKET_GRACE_SECONDS', 120)),
     'expired_seconds' => max(15, (int) env('FAST_MARKET_EXPIRED_SECONDS', 180)),
     'max_fallback_rate_age_seconds' => max(60, (int) env('FAST_MARKET_MAX_FALLBACK_RATE_AGE_SECONDS', 1200)),
-    'quote_ttl_seconds' => max(15, (int) env('FAST_MARKET_QUOTE_TTL_SECONDS', 60)),
+    // Short-lived lock: 30s matches ~snapshot cadence; frontend should refresh ~15–20s.
+    'quote_ttl_seconds' => max(15, (int) env('FAST_MARKET_QUOTE_TTL_SECONDS', 30)),
 ];

@@ -153,11 +153,36 @@ class OrderPayController extends Controller
                 return response()->json($response);
             }
 
+            // Surface locked-quote domain codes when present on validation errors.
+            $quoteCode = null;
+            if (is_array($response)) {
+                foreach ($response as $err) {
+                    if (is_array($err) && isset($err['code']) && is_string($err['code'])
+                        && str_starts_with($err['code'], 'QUOTE_')
+                    ) {
+                        $quoteCode = $err['code'];
+                        break;
+                    }
+                }
+            }
+
             return response()->json([
                 'status' => 1,
+                'code' => $quoteCode,
                 'errors' => $response
             ], 422);
 
+        } catch (\App\Services\Rates\FastMarket\LockedQuoteException $e) {
+            return response()->json([
+                'status' => 1,
+                'code' => $e->errorCode,
+                'errors' => [[
+                    'field' => 'quote_token',
+                    'message' => $e->getMessage(),
+                    'modal' => false,
+                    'code' => $e->errorCode,
+                ]],
+            ], $e->httpStatus);
         } catch (\Throwable $e) {
             $message = $e->getMessage();
             $isDirectionMissing = str_contains($message, 'Направление не найдено')

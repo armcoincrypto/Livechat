@@ -24,6 +24,8 @@ final class FastMarketFlagsTest extends TestCase
                 'shadow_enabled' => false,
                 'public_quote_enabled' => false,
                 'order_quote_enabled' => false,
+                'locked_quote_enabled' => false,
+                'order_quote_shadow_enabled' => false,
                 'producer_daemon' => true,
                 'scheduler_fallback' => false,
                 'snapshot_refresh_seconds' => 30,
@@ -34,7 +36,7 @@ final class FastMarketFlagsTest extends TestCase
                 'grace_seconds' => 120,
                 'expired_seconds' => 180,
                 'max_fallback_rate_age_seconds' => 1200,
-                'quote_ttl_seconds' => 60,
+                'quote_ttl_seconds' => 30,
             ],
         ]));
         // Ensure helper resolves our container
@@ -62,7 +64,22 @@ final class FastMarketFlagsTest extends TestCase
         $this->assertFalse(FastMarketFlags::planeEnabled());
         $this->assertFalse(FastMarketFlags::publicQuoteEnabled());
         $this->assertFalse(FastMarketFlags::orderQuoteEnabled());
+        $this->assertFalse(FastMarketFlags::lockedQuoteEnabled());
+        $this->assertFalse(FastMarketFlags::orderQuoteShadowEnabled());
         $this->assertFalse(FastMarketFlags::shadowEnabled());
+    }
+
+    public function test_locked_quote_requires_plane_and_public(): void
+    {
+        $this->setFast(['locked_quote_enabled' => true]);
+        $this->assertFalse(FastMarketFlags::lockedQuoteEnabled());
+
+        $this->setFast([
+            'plane_enabled' => true,
+            'public_quote_enabled' => true,
+            'locked_quote_enabled' => true,
+        ]);
+        $this->assertTrue(FastMarketFlags::lockedQuoteEnabled());
     }
 
     public function test_shadow_requires_plane(): void

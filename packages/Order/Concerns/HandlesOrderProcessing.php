@@ -130,6 +130,11 @@ trait HandlesOrderProcessing
             'card_verification_required' => (bool)($this->options['card_verification_required'] ?? false),
         ];
 
+        $quoteToken = $this->options['quote_token'] ?? null;
+        if (is_string($quoteToken) && trim($quoteToken) !== '') {
+            $options['quote_token'] = trim($quoteToken);
+        }
+
 
         // Добавляем комиссии из чекбоксов, если они отмечены и содержат метку {fee=...}
         if (!empty($this->options['checkbox_agreements'])) {

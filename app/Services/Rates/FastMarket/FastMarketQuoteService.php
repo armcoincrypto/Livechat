@@ -102,13 +102,20 @@ final class FastMarketQuoteService
         }
 
         try {
-            $hydrated = $this->hydrateDirectionForQuote($direction, (string) $computed['rate_value']);
-            $payload = CalculatorFacade::setDirectionExchange($hydrated)->calculate()->toArray();
+            $rateValue = (string) $computed['rate_value'];
+            $hydrated = $this->hydrateDirectionForQuote($direction, $rateValue);
+            $calculator = CalculatorFacade::setDirectionExchange($hydrated)->calculate();
+            $payload = $calculator->toArray();
             $rate = (string) ($payload['rate'] ?? '');
+            $courseDisplay = (string) $calculator->getFullRate();
 
             return array_merge($base, [
                 'used_fast_path' => true,
                 'rate' => $rate,
+                'rate_value' => $rateValue,
+                'course_display' => $courseDisplay,
+                'display_rate' => $rate,
+                'snapshot_fetched_at' => $snapshot->fetchedAt ?? ($now - (int) ($base['market_age_seconds'] ?? 0)),
                 'calculator_payload' => $payload,
             ]);
         } catch (Throwable $e) {
@@ -254,6 +261,14 @@ final class FastMarketQuoteService
         }
 
         return (time() - $ts) <= FastMarketFlags::maxFallbackRateAgeSeconds();
+    }
+
+    /**
+     * Public hydrate helper for locked-quote order apply (no live snapshot read).
+     */
+    public function hydrateDirectionForLockedRate(DirectionExchange $direction, string $rateValue): DirectionExchange
+    {
+        return $this->hydrateDirectionForQuote($direction, $rateValue);
     }
 
     private function hydrateDirectionForQuote(DirectionExchange $direction, string $rateValue): DirectionExchange

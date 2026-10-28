@@ -22,6 +22,10 @@ final class FastMarketFlags
 
     public const SHADOW = 'FAST_MARKET_SHADOW_ENABLED';
 
+    public const LOCKED_QUOTE = 'FAST_LOCKED_QUOTE_ENABLED';
+
+    public const ORDER_QUOTE_SHADOW = 'FAST_ORDER_QUOTE_SHADOW_ENABLED';
+
     public static function planeEnabled(): bool
     {
         return (bool) config('fast_market.plane_enabled', false);
@@ -35,6 +39,27 @@ final class FastMarketFlags
     public static function orderQuoteEnabled(): bool
     {
         return (bool) config('fast_market.order_quote_enabled', false);
+    }
+
+    /**
+     * Issue opaque short-lived locked quote tokens on public fast quotes.
+     * Independent of order authority — tokens may be issued while order still
+     * uses the legacy financial path.
+     */
+    public static function lockedQuoteEnabled(): bool
+    {
+        return self::planeEnabled()
+            && self::publicQuoteEnabled()
+            && (bool) config('fast_market.locked_quote_enabled', false);
+    }
+
+    /**
+     * Validate locked quote in parallel with legacy order pricing (no freeze).
+     */
+    public static function orderQuoteShadowEnabled(): bool
+    {
+        return self::planeEnabled()
+            && (bool) config('fast_market.order_quote_shadow_enabled', false);
     }
 
     /**

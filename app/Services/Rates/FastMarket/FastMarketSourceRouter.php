@@ -14,7 +14,7 @@ use iEXPackages\Calculator\SourceChecks;
  * ZELLE stays Zelle-owned, DERIVED uses its baseline, BESTCHANGE uses
  * the shared market snapshot when available.
  */
-final class FastMarketSourceRouter
+class FastMarketSourceRouter
 {
     public const FAMILY_BESTCHANGE = 'BESTCHANGE';
 

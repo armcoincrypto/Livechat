@@ -6,6 +6,9 @@ use App\Models\DirectionExchange;
 use App\Models\PromoCode;
 use App\Services\Rates\FastMarket\FastMarketFlags;
 use App\Services\Rates\FastMarket\FastMarketQuoteService;
+use App\Services\Rates\FastMarket\LockedQuoteException;
+use App\Services\Rates\FastMarket\LockedQuoteRecord;
+use App\Services\Rates\FastMarket\LockedQuoteService;
 use iEXPackages\Calculator\CalculatorFacade;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
@@ -32,6 +35,8 @@ class OrderCalculator
 
     protected int $defaultScale = 18;
 
+    protected ?LockedQuoteRecord $appliedLockedQuote = null;
+
     /**
      * Объявляем класс для расчета комиссий
      */
@@ -43,6 +48,11 @@ class OrderCalculator
         $this->fromAmount = BigDecimal::zero();
         $this->toAmount = BigDecimal::zero();
         $this->userDiscount = BigDecimal::zero();
+    }
+
+    public function getAppliedLockedQuote(): ?LockedQuoteRecord
+    {
+        return $this->appliedLockedQuote;
     }
 
     public function withOptions(array $options = []): static
@@ -92,10 +102,27 @@ class OrderCalculator
 
     public function run(): array
     {
-        // Order/public parity: recalculate from latest usable snapshot (model A).
-        // No signed quote token in v1. Flags default false → identical to live.
         $directionForCalc = $this->directionExchange;
-        if (FastMarketFlags::planeEnabled() && FastMarketFlags::orderQuoteEnabled()) {
+        $shadowLockedQuote = null;
+        $token = isset($this->options['quote_token']) ? trim((string) $this->options['quote_token']) : '';
+
+        // Locked quote authority: freeze exact public rate (no live snapshot reprice).
+        if ($token !== '' && FastMarketFlags::planeEnabled() && FastMarketFlags::orderQuoteEnabled()) {
+            $locked = $this->resolveLockedQuoteOrThrow($token);
+            $directionForCalc = app(LockedQuoteService::class)
+                ->hydrateDirectionFromLockedQuote($this->directionExchange, $locked);
+            $this->appliedLockedQuote = $locked;
+        } elseif ($token !== '' && FastMarketFlags::orderQuoteShadowEnabled()) {
+            try {
+                $shadowLockedQuote = $this->resolveLockedQuoteOrThrow($token);
+            } catch (LockedQuoteException $e) {
+                Log::info('fast_market_order_quote_shadow_token_invalid', [
+                    'code' => $e->errorCode,
+                    'direction_id' => $this->directionExchange->id ?? null,
+                ]);
+            }
+        } elseif (FastMarketFlags::planeEnabled() && FastMarketFlags::orderQuoteEnabled()) {
+            // Legacy model A: latest usable snapshot when no token supplied.
             try {
                 $hydrated = app(FastMarketQuoteService::class)
                     ->hydrateDirectionFromSnapshot($this->directionExchange);
@@ -127,6 +154,12 @@ class OrderCalculator
         [$fromOtherFee, $fromPayFee] = $this->fromFee();
 
         $currentRate = BigDecimal::of($calculator->getRateValue());
+        if ($this->appliedLockedQuote instanceof LockedQuoteRecord
+            && $this->appliedLockedQuote->calculatorRate !== ''
+            && is_numeric($this->appliedLockedQuote->calculatorRate)
+        ) {
+            $currentRate = BigDecimal::of($this->appliedLockedQuote->calculatorRate);
+        }
         $toAmount = $this->fromAmount->multipliedBy($currentRate);
 
         // PROMO: usePromoCode() возвращает BONUS в percent_value
@@ -156,8 +189,13 @@ class OrderCalculator
 
         $promoApplied = !empty($promoCodeResult) && ($promoBonus->isGreaterThan(0)) && ((int) ($promoCodeResult['id'] ?? 0) > 0);
 
-        return [
-            'course_display' => $calculator->getFullRate(),
+        $courseDisplay = $calculator->getFullRate();
+        if ($this->appliedLockedQuote instanceof LockedQuoteRecord) {
+            $courseDisplay = $this->appliedLockedQuote->courseDisplay;
+        }
+
+        $result = [
+            'course_display' => $courseDisplay,
             'course_float' => $this->toHumanDecimal($currentRate, $this->defaultScale),
 
             // Отдаю
@@ -193,6 +231,49 @@ class OrderCalculator
                 ? (string) $promoCodeResult['discount_value']
                 : null
         ];
+
+        if ($this->appliedLockedQuote instanceof LockedQuoteRecord) {
+            $q = $this->appliedLockedQuote;
+            $result['_locked_quote'] = [
+                'quote_id' => $q->quoteId,
+                'snapshot_id' => $q->snapshotId,
+                'quoted_at' => $q->createdAt,
+                'expires_at' => $q->expiresAt,
+                'locked_course_display' => $q->courseDisplay,
+                'locked_calculator_rate' => $q->calculatorRate,
+                'locked_display_rate' => $q->displayRate,
+                'pricing_family' => $q->pricingFamily,
+                'source_owner' => $q->sourceOwner,
+                'pricing_fingerprint' => $q->pricingFingerprint,
+                'calculation_version' => LockedQuoteRecord::CALC_VERSION,
+            ];
+        } elseif ($shadowLockedQuote instanceof LockedQuoteRecord) {
+            app(LockedQuoteService::class)->shadowCompareOrder(
+                (string) $result['course_display'],
+                $shadowLockedQuote
+            );
+            $result['_locked_quote_shadow'] = [
+                'quote_id' => $shadowLockedQuote->quoteId,
+                'locked_course_display' => $shadowLockedQuote->courseDisplay,
+                'legacy_course_display' => $result['course_display'],
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * @throws LockedQuoteException
+     */
+    private function resolveLockedQuoteOrThrow(string $token): LockedQuoteRecord
+    {
+        $binding = [
+            'direction_id' => (int) ($this->directionExchange->id ?? 0),
+            'currency_in_id' => (int) ($this->directionExchange->id_currency1 ?? 0),
+            'currency_out_id' => (int) ($this->directionExchange->id_currency2 ?? 0),
+        ];
+
+        return app(LockedQuoteService::class)->resolveForOrder($token, $binding);
     }
 
     /**

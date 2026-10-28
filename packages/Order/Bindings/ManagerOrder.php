@@ -94,7 +94,16 @@ trait ManagerOrder
         }
 
         // Создаём заявку
-        $order = $this->addToDatabase();
+        try {
+            $order = $this->addToDatabase();
+        } catch (\App\Services\Rates\FastMarket\LockedQuoteException $e) {
+            return [[
+                'field' => 'quote_token',
+                'message' => $e->getMessage(),
+                'modal' => false,
+                'code' => $e->errorCode,
+            ]];
+        }
 
         $this->applyValidationEffects($order);
 
@@ -128,15 +137,35 @@ trait ManagerOrder
     {
         $resultInPrice = $this->formatIncomeAmount($this->options['income_amount'] ?? 0);
 
+        // Quote validity check point: immediately before financial freeze + persist.
+        // Expired/mismatched tokens throw LockedQuoteException (no silent reprice).
         $fees = new OrderCalculator($this->directionId);
         $responseFee = $fees
             ->setFromAmount($resultInPrice)
             ->withOptions($this->getCalculationOptions())
             ->run();
 
-        $newOrder = \App\Services\Orders\TaskPublicIdGenerator::createTaskWithRetry(
-            $this->prepareOrderData($responseFee)
-        );
+        $orderPayload = $this->prepareOrderData($responseFee);
+        if (! empty($responseFee['_locked_quote']) && is_array($responseFee['_locked_quote'])) {
+            $existingOpt = is_array($orderPayload['opt_params'] ?? null) ? $orderPayload['opt_params'] : [];
+            $orderPayload['opt_params'] = array_merge($existingOpt, [
+                'locked_quote' => $responseFee['_locked_quote'],
+            ]);
+        }
+
+        $newOrder = \App\Services\Orders\TaskPublicIdGenerator::createTaskWithRetry($orderPayload);
+
+        if ($fees->getAppliedLockedQuote() !== null) {
+            try {
+                app(\App\Services\Rates\FastMarket\LockedQuoteService::class)
+                    ->rememberOrderLinkage($fees->getAppliedLockedQuote(), (int) $newOrder->id);
+            } catch (\Throwable $e) {
+                Log::warning('locked_quote_post_create_link_failed', [
+                    'order_id' => $newOrder->id,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
 
         $this->logReferralCaptureForTask($newOrder);
 

@@ -11,6 +11,7 @@ use App\Models\CurrencyTemplate;
 use App\Models\Page;
 use App\Services\Rates\FastMarket\FastMarketFlags;
 use App\Services\Rates\FastMarket\FastMarketQuoteService;
+use App\Services\Rates\FastMarket\LockedQuoteService;
 use App\Services\Rates\RateDirectionEligibility;
 use iEXPackages\Calculator\CalculatorFacade;
 use iEXPackages\TagProcessors\TagProcessors;
@@ -48,11 +49,26 @@ class DirectionDetailResource extends JsonResource
             if (!empty($surface['quote_allowed'])) {
                 $baseCourse = $this->resolveBaseCoursePayload();
                 // Release A: server provides fixed/floating/display; default display = floating (percent fee).
-                // Never pass CalculatorFacade rate as base override — that double-applies
+                // Never pass CalculatorFacade rate as base override for Zelle/manual — that double-applies
                 // floating_fee / legacy profit+add_course and bypasses ZELLE USDTTRC20 resolveBaseRate.
+                // When fast public quote supplied rate_value, feed it as canonical base so the
+                // customer-visible rate matches the locked quote artifact.
+                $fastBase = null;
+                if (! empty($baseCourse['_fast_market']['used_fast_path'])) {
+                    $candidate = (string) ($baseCourse['rate'] ?? '');
+                    if ($candidate !== '' && is_numeric($candidate)) {
+                        $fastBase = $candidate;
+                    }
+                }
                 $canonical = \App\Services\Rates\CanonicalDirectionRateCalculator::make()
-                    ->websiteCoursePayload($this->resource);
+                    ->websiteCoursePayload($this->resource, $fastBase);
                 $coursePayload = array_merge($baseCourse, $canonical);
+                // Preserve opaque lock metadata after canonical merge (additive).
+                foreach (['quote_token', 'quoted_at', 'expires_at', 'valid_for_seconds', '_fast_market'] as $lockKey) {
+                    if (array_key_exists($lockKey, $baseCourse)) {
+                        $coursePayload[$lockKey] = $baseCourse[$lockKey];
+                    }
+                }
             } else {
                 $rateUnavailable = true;
                 $rateUnavailableCode = RateDirectionEligibility::ERROR_DIRECTION_TEMPORARILY_UNAVAILABLE;
@@ -786,6 +802,25 @@ class DirectionDetailResource extends JsonResource
                         'calculated_at' => $fast['calculated_at'] ?? null,
                         'fallback_used' => (bool) ($fast['fallback_used'] ?? false),
                     ];
+
+                    // Same calculation as public result — issue opaque lock token (no second calc).
+                    if (! empty($fast['used_fast_path'])) {
+                        try {
+                            $meta = app(LockedQuoteService::class)
+                                ->issueFromFastQuote($this->resource, $fast);
+                            if (is_array($meta)) {
+                                $payload['quote_token'] = $meta['quote_token'];
+                                $payload['quoted_at'] = $meta['quoted_at'];
+                                $payload['expires_at'] = $meta['expires_at'];
+                                $payload['valid_for_seconds'] = $meta['valid_for_seconds'];
+                            }
+                        } catch (Throwable $e) {
+                            Log::warning('locked_quote_public_issue_failed', [
+                                'direction_id' => $this->id ?? null,
+                                'message' => $e->getMessage(),
+                            ]);
+                        }
+                    }
 
                     return $payload;
                 }
