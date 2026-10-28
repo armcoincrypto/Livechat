@@ -100,6 +100,14 @@ final class LockedQuoteRecord
             }
         }
 
+        // Preserve full binding document (identity + rate-affecting options).
+        $canonicalNorm = $canonical;
+        $canonicalNorm['direction_id'] = (int) ($canonical['direction_id'] ?? 0);
+        $canonicalNorm['currency_in_id'] = (int) ($canonical['currency_in_id'] ?? 0);
+        $canonicalNorm['currency_out_id'] = (int) ($canonical['currency_out_id'] ?? 0);
+        $canonicalNorm['pricing_family'] = (string) ($canonical['pricing_family'] ?? '');
+        $canonicalNorm['source_owner'] = (string) ($canonical['source_owner'] ?? '');
+
         return new self(
             quoteId: (string) $data['quote_id'],
             createdAt: (int) ($data['created_at'] ?? 0),
@@ -110,13 +118,7 @@ final class LockedQuoteRecord
             pricingFamily: (string) $data['pricing_family'],
             sourceOwner: (string) $data['source_owner'],
             inputBindingHash: (string) $data['input_binding_hash'],
-            canonicalInput: [
-                'direction_id' => (int) ($canonical['direction_id'] ?? 0),
-                'currency_in_id' => (int) ($canonical['currency_in_id'] ?? 0),
-                'currency_out_id' => (int) ($canonical['currency_out_id'] ?? 0),
-                'pricing_family' => (string) ($canonical['pricing_family'] ?? ''),
-                'source_owner' => (string) ($canonical['source_owner'] ?? ''),
-            ],
+            canonicalInput: $canonicalNorm,
             rateValue: (string) $data['rate_value'],
             calculatorRate: (string) $data['calculator_rate'],
             courseDisplay: (string) $data['course_display'],
