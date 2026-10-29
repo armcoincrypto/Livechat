@@ -319,7 +319,10 @@ class ExchangeSchedule
         // actual compiler:bestchange process is active (not compiler:courses, which
         // shares bestchange-compiler.lock / owners/bestchange). Does not alter BC
         // flock / withoutOverlapping / runInBackground / FD hygiene.
-        // POST_BC_XML_REFRESH still invokes scheme:files directly after BC completes.
+        // POST_BC_XML_REFRESH still invokes scheme:files after BC completes, but
+        // ops run_backend_compiler releases bestchange-compiler.lock BEFORE that
+        // nested export (MODEL B post-bc-flock-decouple): financial writers may
+        // proceed while scheme:files holds only scheme-files.lock.
         // Reconciliation simplify (2026-10-28): yield on busy signal ONLY.
         // Do NOT defer courses/competitors merely because BC generation age is
         // past recovery threshold — that starved non-BC work while catch-up was
