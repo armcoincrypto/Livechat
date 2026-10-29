@@ -28,6 +28,9 @@ final class LockedQuoteException extends RuntimeException
 
     public const USED = 'QUOTE_USED';
 
+    /** Snapshot unavailable and persisted catalog rate older than fallback max age. */
+    public const RATE_UNAVAILABLE = 'RATE_UNAVAILABLE';
+
     public function __construct(
         public readonly string $errorCode,
         string $message = '',
@@ -78,5 +81,14 @@ final class LockedQuoteException extends RuntimeException
     public static function used(): self
     {
         return new self(self::USED, 'Quote token already consumed', 422);
+    }
+
+    public static function rateUnavailable(string $detail = ''): self
+    {
+        return new self(
+            self::RATE_UNAVAILABLE,
+            $detail !== '' ? 'Rate unavailable: '.$detail : 'Rate unavailable: snapshot expired and persisted fallback too old',
+            503
+        );
     }
 }

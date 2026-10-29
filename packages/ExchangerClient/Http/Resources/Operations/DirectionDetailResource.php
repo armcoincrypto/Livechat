@@ -848,6 +848,36 @@ class DirectionDetailResource extends JsonResource
 
                     return $payload;
                 }
+
+                // P0: never fall through to unchecked CalculatorFacade when the fast
+                // plane already decided persisted catalog is too old / unusable.
+                // Silent outer fallthrough would price from multi-hour-old rates.
+                if (($fast['error'] ?? null) === 'no_usable_rate'
+                    || str_contains((string) ($fast['fallback_reason'] ?? ''), 'persisted_too_old')
+                ) {
+                    Log::warning('fast_market_public_quote_fail_closed', [
+                        'direction_id' => $this->id ?? null,
+                        'fallback_reason' => $fast['fallback_reason'] ?? null,
+                        'error' => $fast['error'] ?? null,
+                    ]);
+
+                    return [
+                        'rate' => '0',
+                        'full_rate' => '0',
+                        'unavailable' => true,
+                        '_fast_market' => [
+                            'used_fast_path' => false,
+                            'fallback_used' => false,
+                            'fail_closed' => true,
+                            'error' => $fast['error'] ?? 'no_usable_rate',
+                            'fallback_reason' => $fast['fallback_reason'] ?? null,
+                            'snapshot_id' => $fast['snapshot_id'] ?? null,
+                            'market_age_seconds' => $fast['market_age_seconds'] ?? null,
+                            'freshness_state' => $fast['freshness_state'] ?? null,
+                            'calculated_at' => $fast['calculated_at'] ?? time(),
+                        ],
+                    ];
+                }
             } catch (Throwable $e) {
                 Log::warning('fast_market_public_quote_failed', [
                     'direction_id' => $this->id ?? null,

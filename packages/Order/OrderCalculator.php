@@ -6,6 +6,7 @@ use App\Models\DirectionExchange;
 use App\Models\PromoCode;
 use App\Services\Rates\FastMarket\FastMarketFlags;
 use App\Services\Rates\FastMarket\FastMarketQuoteService;
+use App\Services\Rates\FastMarket\FastMarketSourceRouter;
 use App\Services\Rates\FastMarket\LockedQuoteException;
 use App\Services\Rates\FastMarket\LockedQuoteRecord;
 use App\Services\Rates\FastMarket\LockedQuoteService;
@@ -123,12 +124,24 @@ class OrderCalculator
             }
         } elseif (FastMarketFlags::planeEnabled() && FastMarketFlags::orderQuoteEnabled()) {
             // Legacy model A: latest usable snapshot when no token supplied.
+            // If snapshot is unusable, only fall back to persisted catalog when age ≤ max.
             try {
-                $hydrated = app(FastMarketQuoteService::class)
-                    ->hydrateDirectionFromSnapshot($this->directionExchange);
+                $quoteSvc = app(FastMarketQuoteService::class);
+                $hydrated = $quoteSvc->hydrateDirectionFromSnapshot($this->directionExchange);
                 if ($hydrated instanceof DirectionExchange) {
                     $directionForCalc = $hydrated;
+                } else {
+                    $route = app(FastMarketSourceRouter::class)->route($this->directionExchange);
+                    if (! empty($route['use_bestchange_snapshot'])
+                        && ! $quoteSvc->persistedFallbackAcceptable($this->directionExchange)
+                    ) {
+                        throw LockedQuoteException::rateUnavailable(
+                            'snapshot unusable and persisted BestChange rate older than fallback max age'
+                        );
+                    }
                 }
+            } catch (LockedQuoteException $e) {
+                throw $e;
             } catch (Throwable $e) {
                 Log::warning('fast_market_order_quote_failed', [
                     'direction_id' => $this->directionExchange->id ?? null,

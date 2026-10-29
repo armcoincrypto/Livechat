@@ -247,6 +247,15 @@ final class FastMarketQuoteService
         }
     }
 
+    /**
+     * True when persisted BestChange/catalog rate is young enough to use as
+     * snapshot-unavailable fallback. Missing timestamps fail closed.
+     */
+    public function persistedFallbackAcceptable(DirectionExchange $direction): bool
+    {
+        return $this->persistedRateAgeAcceptable($direction);
+    }
+
     private function persistedRateAgeAcceptable(DirectionExchange $direction): bool
     {
         $bc = $direction->bestchange_directions;
@@ -256,8 +265,9 @@ final class FastMarketQuoteService
         } elseif (! empty($direction->updated_at)) {
             $ts = $direction->updated_at->getTimestamp();
         }
+        // Fail closed: unknown age must not authorize financial use.
         if ($ts === null) {
-            return true;
+            return false;
         }
 
         return (time() - $ts) <= FastMarketFlags::maxFallbackRateAgeSeconds();
