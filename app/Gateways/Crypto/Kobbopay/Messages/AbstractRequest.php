@@ -25,7 +25,7 @@ abstract class AbstractRequest extends BaseAbstractRequest
             return rtrim($fromVault, '/');
         }
 
-        $fromEnv = trim((string) env('KOBBOPAY_API_BASE', ''));
+        $fromEnv = trim((string) config('kobbopay.api_base', ''));
         if ($fromEnv !== '') {
             return rtrim($fromEnv, '/');
         }

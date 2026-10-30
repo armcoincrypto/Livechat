@@ -169,6 +169,8 @@ return [
      */
     'ai' => [
         'enabled' => filter_var(env('SUPPORT_AI_ENABLED', '0'), FILTER_VALIDATE_BOOLEAN),
+        // CC1: bake SUPPORT_AI_LEARNING_ENABLED (default on) for config:cache safety
+        'learning_enabled' => filter_var(env('SUPPORT_AI_LEARNING_ENABLED', '1'), FILTER_VALIDATE_BOOLEAN),
         'provider' => env('SUPPORT_AI_PROVIDER', 'openai'),
         'model' => env('OPENAI_SUPPORT_MODEL', 'gpt-4o-mini'),
         'openai_api_key' => env('OPENAI_API_KEY', ''),

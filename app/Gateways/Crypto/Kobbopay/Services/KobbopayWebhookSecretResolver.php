@@ -13,7 +13,7 @@ use Throwable;
  *
  * Order:
  * 1) Merchant vault field webhook_secret (via gateway inputs)
- * 2) Env KOBBOPAY_WEBHOOK_SECRET
+ * 2) config(kobbopay.webhook_secret) / KOBBOPAY_WEBHOOK_SECRET
  *
  * Never logs the secret value.
  */
@@ -35,7 +35,7 @@ final class KobbopayWebhookSecretResolver
             return $fromVault;
         }
 
-        $fromEnv = trim((string) env('KOBBOPAY_WEBHOOK_SECRET', ''));
+        $fromEnv = trim((string) config('kobbopay.webhook_secret', ''));
         if ($fromEnv !== '') {
             return $fromEnv;
         }

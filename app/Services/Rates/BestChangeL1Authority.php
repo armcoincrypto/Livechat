@@ -18,6 +18,8 @@ namespace App\Services\Rates;
  * - BESTCHANGE_L1_SKIP_IDENTICAL_DE_UPSERT (upsert heartbeat optimization)
  *
  * Fail-safe: unavailable/empty generation book → marketForDirection.
+ *
+ * CC1: prefer process getenv (artisan/ops session override), else config/bestchange_l1.php.
  */
 final class BestChangeL1Authority
 {
@@ -25,20 +27,25 @@ final class BestChangeL1Authority
 
     public static function enabled(): bool
     {
-        return self::envBool(self::FLAG, false);
+        return self::flagBool(self::FLAG, 'bestchange_l1.authority_enabled', false);
     }
 
-    private static function envBool(string $key, bool $default): bool
+    /**
+     * @param  non-empty-string  $envKey
+     * @param  non-empty-string  $configKey
+     */
+    private static function flagBool(string $envKey, string $configKey, bool $default): bool
     {
-        $raw = function_exists('env') ? env($key, null) : null;
-        if ($raw === null) {
-            $g = getenv($key);
-            $raw = ($g === false) ? null : $g;
-        }
-        if ($raw === null) {
-            return $default;
+        $g = getenv($envKey);
+        if ($g !== false && $g !== '') {
+            return filter_var($g, FILTER_VALIDATE_BOOLEAN);
         }
 
-        return filter_var($raw, FILTER_VALIDATE_BOOLEAN);
+        $cfg = config($configKey, null);
+        if ($cfg !== null) {
+            return filter_var($cfg, FILTER_VALIDATE_BOOLEAN);
+        }
+
+        return $default;
     }
 }

@@ -44,7 +44,7 @@ final class BestChangeL1SameSnapshotDiagnostic
 
     public static function enabled(): bool
     {
-        return self::envBool(self::FLAG, false);
+        return self::envBool(self::FLAG, false, 'bestchange_l1.same_snapshot_diagnostic');
     }
 
     /**
@@ -559,26 +559,28 @@ final class BestChangeL1SameSnapshotDiagnostic
         }
     }
 
-    private static function envBool(string $key, bool $default): bool
+    private static function envBool(string $key, bool $default, ?string $configKey = null): bool
     {
-        // Prefer process environment (putenv/Dotenv) over Laravel env() helper,
-        // which can return a stale cached value after putenv changes in the same process.
+        // Prefer process environment (putenv) for same-process diagnostic toggles.
         $g = getenv($key);
-        if ($g !== false) {
+        if ($g !== false && $g !== '') {
             return filter_var($g, FILTER_VALIDATE_BOOLEAN);
         }
-        if (array_key_exists($key, $_ENV)) {
+        if (array_key_exists($key, $_ENV) && (string) $_ENV[$key] !== '') {
             return filter_var((string) $_ENV[$key], FILTER_VALIDATE_BOOLEAN);
         }
-        if (array_key_exists($key, $_SERVER)) {
+        if (array_key_exists($key, $_SERVER) && (string) $_SERVER[$key] !== '') {
             return filter_var((string) $_SERVER[$key], FILTER_VALIDATE_BOOLEAN);
         }
-        $raw = function_exists('env') ? env($key, null) : null;
-        if ($raw === null) {
-            return $default;
+        // CC1: config bake when .env is not loaded under config:cache
+        if ($configKey !== null) {
+            $cfg = config($configKey, null);
+            if ($cfg !== null) {
+                return filter_var($cfg, FILTER_VALIDATE_BOOLEAN);
+            }
         }
 
-        return filter_var($raw, FILTER_VALIDATE_BOOLEAN);
+        return $default;
     }
 
     /**

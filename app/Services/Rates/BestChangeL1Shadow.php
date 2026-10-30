@@ -19,7 +19,7 @@ final class BestChangeL1Shadow
 {
     public static function shadowEnabled(): bool
     {
-        return self::envBool('BESTCHANGE_L1_SHADOW_ENABLED', false);
+        return self::flagBool('BESTCHANGE_L1_SHADOW_ENABLED', 'bestchange_l1.shadow_enabled', false);
     }
 
     /**
@@ -29,21 +29,25 @@ final class BestChangeL1Shadow
      */
     public static function skipIdenticalDeUpsertEnabled(): bool
     {
-        return self::envBool('BESTCHANGE_L1_SKIP_IDENTICAL_DE_UPSERT', false);
+        return self::flagBool('BESTCHANGE_L1_SKIP_IDENTICAL_DE_UPSERT', 'bestchange_l1.skip_identical_de_upsert', false);
     }
 
-    private static function envBool(string $key, bool $default): bool
+    /**
+     * Process getenv wins (ops/artisan session); else config/bestchange_l1.php (CC1-safe).
+     */
+    private static function flagBool(string $envKey, string $configKey, bool $default): bool
     {
-        $raw = function_exists('env') ? env($key, null) : null;
-        if ($raw === null) {
-            $g = getenv($key);
-            $raw = ($g === false) ? null : $g;
-        }
-        if ($raw === null) {
-            return $default;
+        $g = getenv($envKey);
+        if ($g !== false && $g !== '') {
+            return filter_var($g, FILTER_VALIDATE_BOOLEAN);
         }
 
-        return filter_var($raw, FILTER_VALIDATE_BOOLEAN);
+        $cfg = config($configKey, null);
+        if ($cfg !== null) {
+            return filter_var($cfg, FILTER_VALIDATE_BOOLEAN);
+        }
+
+        return $default;
     }
 
     /**

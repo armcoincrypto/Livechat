@@ -31,7 +31,8 @@ final class SupportAiLearningService
 
     public function isEnabled(): bool
     {
-        if (! filter_var(env('SUPPORT_AI_LEARNING_ENABLED', '1'), FILTER_VALIDATE_BOOLEAN)) {
+        // CC1: config/support_chat.php ai.learning_enabled (default on)
+        if (! filter_var(config('support_chat.ai.learning_enabled', true), FILTER_VALIDATE_BOOLEAN)) {
             return false;
         }
 

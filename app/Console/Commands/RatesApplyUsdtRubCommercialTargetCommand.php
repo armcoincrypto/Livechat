@@ -427,6 +427,6 @@ final class RatesApplyUsdtRubCommercialTargetCommand extends Command
 
     private function legacyProfitBootstrapAllowed(): bool
     {
-        return (string) env('EXSWAPING_ALLOW_LEGACY_RUB_PROFIT_BOOTSTRAP', '') === '1';
+        return (string) config('rates_ops.allow_legacy_rub_profit_bootstrap', '') === '1';
     }
 }

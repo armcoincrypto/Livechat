@@ -22,7 +22,7 @@ final class KobbopayWebhookSignatureVerifier
 
     public function __construct(?int $toleranceSeconds = null)
     {
-        $resolved = $toleranceSeconds ?? (int) env('KOBBOPAY_WEBHOOK_TOLERANCE_SECONDS', 300);
+        $resolved = $toleranceSeconds ?? (int) config('kobbopay.webhook_tolerance_seconds', 300);
         $this->toleranceSeconds = $resolved > 0 ? $resolved : 300;
     }
 

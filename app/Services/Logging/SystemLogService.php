@@ -56,7 +56,8 @@ class SystemLogService
 
     private function useStateCache(): bool
     {
-        $val = env('SYSTEM_LOGS_CACHE_STATE', true);
+        // CC1: config/system_logs.php (default true) — config:cache safe
+        $val = config('system_logs.cache_state', true);
         if (is_string($val)) {
             $val = strtolower($val);
             return in_array($val, ['1','true','yes','on'], true);

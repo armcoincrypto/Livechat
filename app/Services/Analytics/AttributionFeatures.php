@@ -7,22 +7,25 @@ namespace App\Services\Analytics;
 /**
  * Feature flags for Batch 11 attribution dark-launch.
  * Default OFF — attribution must never be required for orders.
+ *
+ * CC1: values come from config/attribution.php (env read at config build).
+ * Do NOT call env() here — that silently defaults under config:cache.
  */
 final class AttributionFeatures
 {
     public static function ingestEnabled(): bool
     {
-        return filter_var(env('EXS_ATTRIBUTION_INGEST_ENABLED', false), FILTER_VALIDATE_BOOLEAN);
+        return (bool) config('attribution.ingest_enabled', false);
     }
 
     public static function orderLinkEnabled(): bool
     {
-        return filter_var(env('EXS_ATTRIBUTION_ORDER_LINK_ENABLED', false), FILTER_VALIDATE_BOOLEAN);
+        return (bool) config('attribution.order_link_enabled', false);
     }
 
     public static function eventsEnabled(): bool
     {
-        return filter_var(env('EXS_ATTRIBUTION_EVENTS_ENABLED', false), FILTER_VALIDATE_BOOLEAN);
+        return (bool) config('attribution.events_enabled', false);
     }
 
     public static function anyEnabled(): bool
@@ -36,12 +39,12 @@ final class AttributionFeatures
      */
     public static function canaryOnly(): bool
     {
-        return filter_var(env('EXS_ATTRIBUTION_CANARY_ONLY', false), FILTER_VALIDATE_BOOLEAN);
+        return (bool) config('attribution.canary_only', false);
     }
 
     public static function canaryMaxRows(): int
     {
-        $n = (int) env('EXS_ATTRIBUTION_CANARY_MAX_ROWS', 20);
+        $n = (int) config('attribution.canary_max_rows', 20);
 
         return max(1, min($n, 20));
     }
