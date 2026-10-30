@@ -37,7 +37,8 @@ final class ConfigCacheEnvCompatTest extends TestCase
         $src = file_get_contents((new ReflectionMethod(FastMarketFlags::class, 'planeEnabled'))->getFileName());
         $this->assertIsString($src);
         $this->assertStringContainsString("config('fast_market.", $src);
-        $this->assertStringNotContainsString('env(', $src);
+        // Docblocks may mention env(); assert no callable env('...') / env("...") sites.
+        $this->assertDoesNotMatchRegularExpression("/env\s*\(\s*['\"]/", $src);
     }
 
     public function test_shadow_source_uses_config_keys(): void
