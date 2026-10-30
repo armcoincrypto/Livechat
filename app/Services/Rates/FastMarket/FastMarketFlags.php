@@ -8,7 +8,7 @@ namespace App\Services\Rates\FastMarket;
  * Independent feature flags for the fast market / quote plane.
  *
  * Values come from config/fast_market.php (env read once at config build).
- * Do NOT call env() here — that silently defaults under config:cache.
+ * Do NOT call the env helper here — that silently defaults under config:cache.
  *
  * Distinct from BESTCHANGE_L1_*. All flags default false.
  */
