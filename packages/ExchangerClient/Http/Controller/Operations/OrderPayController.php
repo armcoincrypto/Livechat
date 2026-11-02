@@ -233,9 +233,10 @@ class OrderPayController extends Controller
     /**
      * Полная информация о заявке
      */
-    public function process(int $public_id, CheckoutInvoiceRecoveryService $invoiceRecovery): OrderProcessResource
+    public function process(string|int $public_id, CheckoutInvoiceRecoveryService $invoiceRecovery): OrderProcessResource
     {
-        $order = Task::where('public_id', $public_id)->firstOrFail();
+        $publicId = $this->requireDigitPublicId($public_id);
+        $order = Task::where('public_id', $publicId)->firstOrFail();
 
         try {
             $invoiceRecovery->recoverIfEligible($order, 'order_page');
@@ -284,8 +285,9 @@ class OrderPayController extends Controller
      *
      * @throws InvalidArgumentException
      */
-    public function status(int $public_id): OrderStatusResource|JsonResponse
+    public function status(string|int $public_id): OrderStatusResource|JsonResponse
     {
+        $publicId = $this->requireDigitPublicId($public_id);
         $order = Task::select([
             'id',
             'status',
@@ -300,7 +302,7 @@ class OrderPayController extends Controller
             'method_request_payment',
             'is_run_process',
         ])
-            ->where('public_id', $public_id)
+            ->where('public_id', $publicId)
             ->first();
 
         if (!$order) {
@@ -315,8 +317,9 @@ class OrderPayController extends Controller
      *
      * @throws \Exception
      */
-    public function cancel(int $public_id): JsonResponse
+    public function cancel(string|int $public_id): JsonResponse
     {
+        $publicId = $this->requireDigitPublicId($public_id);
         $order = Task::select([
             'id',
             'public_id',
@@ -326,7 +329,7 @@ class OrderPayController extends Controller
             'give_price',
             'receiving_price'
         ])
-            ->where('public_id', $public_id)
+            ->where('public_id', $publicId)
             ->firstOrFail();
 
         // Если заявка уже отменена, ничего не делаем.
@@ -355,8 +358,10 @@ class OrderPayController extends Controller
      *
      * @throws \Exception
      */
-    public function confirm(int $public_id, Request $request): JsonResponse
+    public function confirm(string|int $public_id, Request $request): JsonResponse
     {
+        $publicId = $this->requireDigitPublicId($public_id);
+
         // Валидация запроса
         $validate = validator($request->all(), [
             'type' => 'required|in:paid,unpaid',
@@ -378,7 +383,7 @@ class OrderPayController extends Controller
         }
 
         // Поиск заявки
-        $task = Task::with('task_info')->where('public_id', $public_id)->firstOrFail();
+        $task = Task::with('task_info')->where('public_id', $publicId)->firstOrFail();
         $previousStatus = (int) $task->status;
         $wantsPaid = $request->type === 'paid';
 
@@ -492,5 +497,18 @@ class OrderPayController extends Controller
                 'exception_class' => $e::class,
             ]);
         }
+    }
+
+    /**
+     * Route params are strings; public_id is bigint. Reject non-digits under strict_types.
+     */
+    private function requireDigitPublicId(string|int $public_id): string
+    {
+        $publicId = trim((string) $public_id);
+        if ($publicId === '' || ! ctype_digit($publicId)) {
+            abort(404);
+        }
+
+        return $publicId;
     }
 }

@@ -1,6 +1,9 @@
 # Fast Market Plane (30–60s customer rate freshness)
 
-Source-only design for Exswaping. **Not deployed.** Flags default `false`.
+Live flags are read from `config/fast_market.php` / env (`FAST_MARKET_*`).
+As of 2026-11 production cutovers, plane + public/order quote are **enabled**;
+treat this doc as architecture + ops reference, and verify live flags before changes.
+Defaults in repo examples remain `false` for safe fresh installs.
 
 ## Problem
 
