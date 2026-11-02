@@ -102,12 +102,16 @@ abstract class AbstractGateway implements GatewayInterface
             $result[$key] = is_array($value) ? reset($value) : $value;
         }
 
-        // ⚠️ логируем, но НЕ падаем
+        // Log shape only — never raw merchant secrets (private_key/public_key/…).
         if ($ignored !== []) {
+            $masker = new \iEXPackages\Payments\Logging\SensitiveDataMasker();
             \Log::warning('Merchant config normalized with ignored keys', [
+                'gateway' => static::class,
                 'ignored_keys' => $ignored,
-                'original'     => $parameters,
-                'normalized'   => $result,
+                'ignored_count' => count($ignored),
+                'normalized_keys' => array_keys($result),
+                'original_redacted' => $masker->mask($parameters),
+                'normalized_redacted' => $masker->mask($result),
             ]);
         }
 

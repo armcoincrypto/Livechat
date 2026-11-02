@@ -386,7 +386,8 @@ final class DirectionExchangeRecalculateService
                                     );
                                     if (self::courseStrictlyGreater($proposed, $courseValue) && $clampTopNToCalculator) {
                                         // Keep the Calculator course. Do not record a Top-N write.
-                                        Log::warning('BestChangeExternalTopNController profit_floor_blocked', [
+                                        // Expected protective path at high volume — debug, not WARNING flood.
+                                        Log::debug('BestChangeExternalTopNController profit_floor_blocked', [
                                             'direction_exchange_id' => $directionId,
                                             'calculator' => $courseValue,
                                             'topn' => $proposed,

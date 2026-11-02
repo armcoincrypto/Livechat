@@ -225,7 +225,8 @@ final class CompilerCompetitorsOnlyCommand extends Command
 
                 if (!isset($response[$key])) {
                     $stats['missing']++;
-                    Log::warning("Пропущено: нет курса для {$key}", [
+                    // Dead/missing competitor pairs (e.g. USDTARBTM) are routine — avoid WARNING flood.
+                    Log::debug("Пропущено: нет курса для {$key}", [
                         'competitor' => $link->name,
                         'command' => 'compiler:competitors-only',
                     ]);

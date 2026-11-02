@@ -44,7 +44,7 @@ class CompilerCompetitorService
 
                     // Проверяем, существует ли ключ в ответе API
                     if (!isset($response[$key])) {
-                        Log::warning("Пропущено: нет курса для {$key}");
+                        Log::debug("Пропущено: нет курса для {$key}");
                         continue;
                     }
 
