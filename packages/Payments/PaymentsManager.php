@@ -57,6 +57,16 @@ final class PaymentsManager
 
     public function forMerchant(GatewayMerchant $merchant): GatewayInterface
     {
+        // Inactive merchants should not be on hot paths; keep loadable for admin
+        // inspection, but emit a single debug breadcrumb per process cache miss.
+        if ((int) ($merchant->status ?? 0) !== 1) {
+            Log::debug('[Payment] forMerchant on inactive merchant', [
+                'alias' => $merchant->alias,
+                'status' => (int) ($merchant->status ?? 0),
+                'filename' => $merchant->filename,
+            ]);
+        }
+
         $gateway = $this->fromFile($merchant->alias, $merchant->filename);
 
         if (method_exists($gateway, 'withMerchant')) {

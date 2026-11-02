@@ -103,16 +103,28 @@ abstract class AbstractGateway implements GatewayInterface
         }
 
         // Log shape only — never raw merchant secrets (private_key/public_key/…).
+        // Numeric-only ignored keys are legacy vault junk (duplicate of named keys);
+        // keep at debug so disabled/legacy merchants do not WARN-flood production.
         if ($ignored !== []) {
             $masker = new \iEXPackages\Payments\Logging\SensitiveDataMasker();
-            \Log::warning('Merchant config normalized with ignored keys', [
+            $numericOnly = array_reduce(
+                $ignored,
+                static fn (bool $carry, mixed $key): bool => $carry && (is_int($key) || (is_string($key) && ctype_digit($key))),
+                true
+            );
+            $payload = [
                 'gateway' => static::class,
                 'ignored_keys' => $ignored,
                 'ignored_count' => count($ignored),
                 'normalized_keys' => array_keys($result),
                 'original_redacted' => $masker->mask($parameters),
                 'normalized_redacted' => $masker->mask($result),
-            ]);
+            ];
+            if ($numericOnly) {
+                \Log::debug('Merchant config normalized with ignored keys', $payload);
+            } else {
+                \Log::warning('Merchant config normalized with ignored keys', $payload);
+            }
         }
 
         return $result;
