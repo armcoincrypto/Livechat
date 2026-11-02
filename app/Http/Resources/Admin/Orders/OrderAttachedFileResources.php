@@ -24,8 +24,8 @@ class OrderAttachedFileResources extends ResourceCollection
                 'text' => $item->text,
                 'created_at' => $item->created_at->translatedFormat('d M Y H:i'),
                 'user' => [
-                    'id' => $item->user->id,
-                    'name' => $item->user->name
+                    'id' => $item->user?->id,
+                    'name' => $item->user?->name,
                 ]
             ];
         });

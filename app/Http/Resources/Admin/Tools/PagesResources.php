@@ -46,11 +46,11 @@ class PagesResources extends ResourceCollection
                     ]
                 ];
 
-                if($item->user_id > 0) {
+                if ($item->user_id > 0) {
                     $response['attributes']['user'] = [
-                        'id' => $item->user->id,
-                        'name' => $item->user->name,
-                        'email' => $item->user->email,
+                        'id' => $item->user?->id,
+                        'name' => $item->user?->name,
+                        'email' => $item->user?->email,
                     ];
                 }
 

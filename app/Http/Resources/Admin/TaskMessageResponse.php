@@ -38,12 +38,12 @@ class TaskMessageResponse extends ResourceCollection
                     'id' => $item->id,
                     'attributes' => [
                         'user' => [
-                            'id' => $item->user->id,
+                            'id' => $item->user?->id,
                         ],
                         'last_updated' => $item->created_at,
-                        'order_id' => $item->task->id,
-                        'public_id' => $item->task->public_id,
-                        'display_id' => current_order_id($item->task),
+                        'order_id' => $item->task?->id,
+                        'public_id' => $item->task?->public_id,
+                        'display_id' => $item->task ? current_order_id($item->task) : null,
                         'message' => $item->message,
                         'unread_count' => $item->unread_count,
                     ]

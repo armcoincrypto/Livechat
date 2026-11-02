@@ -50,10 +50,10 @@ class ReferralListResources extends ResourceCollection
                         ] : [],
 
                         'referral' => isset($item->referral_link) ? [
-                            'id' => $item->referral_link->user->id,
+                            'id' => $item->referral_link->user?->id,
                             'attributes' => [
-                                'name' => $item->referral_link->user->name,
-                                'email' => $item->referral_link->user->email,
+                                'name' => $item->referral_link->user?->name,
+                                'email' => $item->referral_link->user?->email,
                             ]
                         ] : [],
                         'created_at' => $item->created_at->format('c'),

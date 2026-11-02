@@ -52,8 +52,8 @@ final class OrdersListRowMapper
             'display_id' => self::safeDisplayId($item),
             'attributes' => [
                 'user' => [
-                    'id' => $item->user->id ?? null,
-                    'name' => $item->user->name ?? null,
+                    'id' => $item->user?->id,
+                    'name' => $item->user?->name,
                     'language' => $item->meta?->user_flag ?? null,
                 ],
                 'operators' => $operators,

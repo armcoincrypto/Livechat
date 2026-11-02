@@ -206,6 +206,27 @@ class Currency extends Model
     ];
 
     /**
+     * Soft-deleted currencies leave active requisites with a null relation in admin lists.
+     * Mirror RequisitesController::destroy so those rows move to history instead of crashing or blanking.
+     */
+    protected static function booted(): void
+    {
+        static::deleted(function (Currency $currency): void {
+            if (method_exists($currency, 'isForceDeleting') && $currency->isForceDeleting()) {
+                return;
+            }
+
+            Requisites::query()
+                ->where('id_currency', $currency->getKey())
+                ->where('is_history', 0)
+                ->update([
+                    'is_history' => 1,
+                    'history_at' => now(),
+                ]);
+        });
+    }
+
+    /**
      * Фильтры
      */
     public function modelFilter()

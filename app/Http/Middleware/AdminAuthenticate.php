@@ -13,11 +13,14 @@ class AdminAuthenticate extends Authenticate
      */
     protected function redirectTo(Request $request): ?string
     {
-        if (! $request->expectsJson()) {
-            return route('logins');
+        if ($request->expectsJson()) {
+            return null;
         }
 
-        return null;
+        // Never route('login') / route('logins') — those names are not registered and 500 the request.
+        $folder = trim((string) config('iexexchanger.admin_folder', 'iexadmin'), '/');
+
+        return '/'.$folder.'/login';
     }
 
     /**
