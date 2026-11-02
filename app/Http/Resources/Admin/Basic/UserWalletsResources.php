@@ -38,12 +38,12 @@ class UserWalletsResources extends ResourceCollection
                     'id' => $item->id,
                     'attributes' => [
                         'wallet' => $item->to_shot,
-                        'name' => $item->direction_exchange->currency2->tech_name,
+                        'name' => $item->direction_exchange?->currency2?->tech_name,
                         'is_blacklisted' => $isExists,
                         'user' => [
-                            'id' => $item->user->id,
-                            'name' => $item->user->name,
-                            'email' => $item->user->email,
+                            'id' => $item->user?->id,
+                            'name' => $item->user?->name,
+                            'email' => $item->user?->email,
                         ],
                         'created_at' => $item->created_at->translatedFormat('d M Y H:i'),
                         'created_at_human' => $item->created_at->diffForHumans(),

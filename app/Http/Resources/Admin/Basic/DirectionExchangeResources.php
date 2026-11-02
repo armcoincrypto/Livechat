@@ -108,13 +108,13 @@ class DirectionExchangeResources extends ResourceCollection
                             }) ?? [],
 
                         'currency_in' => [
-                            'name' => $item->currency1->tech_name,
-                            'icon' => '/storage/payment_systems/' . ($item->currency1->payment?->logo ?? '')
+                            'name' => $item->currency1?->tech_name,
+                            'icon' => '/storage/payment_systems/' . ($item->currency1?->payment?->logo ?? '')
                         ],
 
                         'currency_out' => [
-                            'name' => $item->currency2->tech_name,
-                            'icon' => '/storage/payment_systems/' . ($item->currency2->payment?->logo ?? '')
+                            'name' => $item->currency2?->tech_name,
+                            'icon' => '/storage/payment_systems/' . ($item->currency2?->payment?->logo ?? '')
                         ],
 
                         'min_price1' => $item->min_price1,
