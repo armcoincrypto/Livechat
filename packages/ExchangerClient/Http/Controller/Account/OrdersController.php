@@ -63,22 +63,18 @@ class OrdersController
     }
 
     /**
-     * Информация о заявки в личном кабинете
-     *
-     * @param Request $request
-     * @param int $public_id
-     * @return OrderAccountResource|JsonResponse
-     */
-    /**
      * Информация о заявке в личном кабинете
      *
-     * @param Request $request
-     * @param int $public_id
-     * @return OrderAccountResource|JsonResponse
+     * Route params arrive as strings; public_id is a bigint that must not TypeError.
      */
-    public function show(Request $request, int $public_id): OrderAccountResource|JsonResponse
+    public function show(Request $request, string|int $public_id): OrderAccountResource|JsonResponse
     {
-        $order = Task::where('public_id', '=', $public_id)->firstOrFail();
+        $publicId = trim((string) $public_id);
+        if ($publicId === '' || ! ctype_digit($publicId)) {
+            abort(404);
+        }
+
+        $order = Task::where('public_id', '=', $publicId)->firstOrFail();
 
         /** @var \App\Models\User|null $user */
         $user = $request->user();

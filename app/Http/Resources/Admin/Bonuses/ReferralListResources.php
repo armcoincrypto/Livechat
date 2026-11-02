@@ -42,10 +42,10 @@ class ReferralListResources extends ResourceCollection
                     'id' => $item->id,
                     'attributes' => [
                         'user' => isset($item->user) ? [
-                            'id' => $item->user->id,
+                            'id' => $item->user?->id,
                             'attributes' => [
-                                'name' => $item->user->name,
-                                'email' => $item->user->email,
+                                'name' => $item->user?->name,
+                                'email' => $item->user?->email,
                             ]
                         ] : [],
 

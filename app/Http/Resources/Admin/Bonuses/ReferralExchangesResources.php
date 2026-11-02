@@ -36,18 +36,18 @@ class ReferralExchangesResources extends ResourceCollection
                     'id' => $item->id,
                     'attributes' => [
                         'user' => isset($item->user) ? [
-                            'id' => $item->user->id,
+                            'id' => $item->user?->id,
                             'attributes' => [
-                                'name' => $item->user->name,
-                                'email' => $item->user->email,
+                                'name' => $item->user?->name,
+                                'email' => $item->user?->email,
                             ]
                         ] : [],
 
                         'partner' => isset($item->user_admin) ? [
-                            'id' => $item->user_admin->id,
+                            'id' => $item->user_admin?->id,
                             'attributes' => [
-                                'name' => $item->user_admin->name,
-                                'email' => $item->user_admin->email,
+                                'name' => $item->user_admin?->name,
+                                'email' => $item->user_admin?->email,
                             ]
                         ] : [],
 

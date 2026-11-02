@@ -53,11 +53,15 @@ final class ZelleUsdUsdtBenchmarkAuthority
         if (!$result->eligible || $result->benchmarkRate === null) {
             if (!$dryRun && $this->owns($direction)) {
                 // Fail closed: do not retain stale prior ZELLE market rate as public base.
+                // Also deactivate + quarantine so status=1 + course=0 cannot stay orderable
+                // (rates:health treats that as critical invalid_active_rate).
                 DB::table('direction_exchange')->where('id', $direction->id)->update([
                     'course_value' => '0',
                     'is_error_rate' => 1,
                     'error_rate_text' => $result->reasonCode,
                     'parser_source_name' => self::PARSER_SOURCE_NAME,
+                    'status' => 0,
+                    'allow_export' => 2,
                     'updated_at' => now(),
                 ]);
             }
