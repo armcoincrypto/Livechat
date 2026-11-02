@@ -38,8 +38,8 @@ class RequisitesArchiveResources extends ResourceCollection
                         'name' => $item->name,
                         'account_number' => $item->account_number,
                         'currency' => [
-                            'id' => $item->currency->id,
-                            'name' => $item->currency->tech_name,
+                            'id' => $item->currency?->id,
+                            'name' => $item->currency?->tech_name,
                         ]
                     ],
                 ];

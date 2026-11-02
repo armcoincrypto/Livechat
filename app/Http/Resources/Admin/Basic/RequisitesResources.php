@@ -42,8 +42,8 @@ class RequisitesResources extends ResourceCollection
                         'is_unique_shot' => $item->is_unique_shot,
                         'name' => $item->name,
                         'currency' => [
-                            'id' => $item->currency->id,
-                            'name' => $item->currency->tech_name,
+                            'id' => $item->currency?->id,
+                            'name' => $item->currency?->tech_name,
 
                             'logo' => $item->currency?->payment?->logo,
                             'logo_url' => (isset($item->currency?->payment) and !empty($item->currency?->payment->logo)) ? '/storage/payment_systems/' . $item->currency?->payment->logo : '',
