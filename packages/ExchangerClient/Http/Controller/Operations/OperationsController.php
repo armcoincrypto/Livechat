@@ -84,7 +84,9 @@ class OperationsController
         $item = $this->findActiveDirection($buy, $sell);
 
         if (!$item) {
-            Log::warning('Direction exchange not found', compact('buy', 'sell'));
+            // Expected client/bot probes of inactive or non-existent pairs → 404.
+            // Keep at debug so production WARNING budget stays for real faults.
+            Log::debug('Direction exchange not found', compact('buy', 'sell'));
 
             return response()->json([
                 'errors' => [

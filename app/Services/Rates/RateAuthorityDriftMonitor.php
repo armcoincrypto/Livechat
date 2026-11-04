@@ -414,7 +414,17 @@ final class RateAuthorityDriftMonitor
             if (($ev['type'] ?? '') === 'RECOVERED') {
                 Log::info('rates.authority_drift_recovered', $ev);
             } else {
-                Log::warning('rates.authority_drift_alert', $ev);
+                // Shadow/no-impact WARNING drifts are remediation backlog, not live incidents.
+                // Keep WARNING/CRITICAL when any public/order/XML impact flag is true.
+                $noImpact = empty($ev['public_impact'])
+                    && empty($ev['order_impact'])
+                    && empty($ev['xml_impact']);
+                $severity = strtoupper((string) ($ev['severity'] ?? 'WARNING'));
+                if ($noImpact && $severity === 'WARNING') {
+                    Log::debug('rates.authority_drift_alert', $ev);
+                } else {
+                    Log::warning('rates.authority_drift_alert', $ev);
+                }
             }
         }
 
