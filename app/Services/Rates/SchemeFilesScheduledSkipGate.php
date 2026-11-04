@@ -25,7 +25,12 @@ final class SchemeFilesScheduledSkipGate
 {
     public const FLAG = 'SCHEME_FILES_SCHEDULED_SKIP_UNCHANGED';
 
-    public const FP_VERSION = 1;
+    /**
+     * v2: drop absolute clock_hm from the fingerprint. v1 hashed gmdate/app H:i every
+     * minute, so scheduled skip could never match across ticks even when inputs and
+     * time-window open/closed masks were unchanged. Open-state bits remain hashed.
+     */
+    public const FP_VERSION = 2;
 
     public const META_CACHE_KEY = 'scheme_files.scheduled_skip.meta.v1';
 
@@ -592,14 +597,14 @@ final class SchemeFilesScheduledSkipGate
     /** @param resource $h */
     private function hashTimeWindowOpenMask($h): void
     {
+        // Hash only the open/closed mask for timed directions — not absolute H:i.
+        // Absolute clock made v1 fingerprints unique every minute (skip never hit).
+        // When a window opens/closes, $open flips and the fingerprint changes → rebuild.
         $nowHm = gmdate('H:i');
-        // Use app timezone if available for consistency with configureDirectionRates.
         try {
             $nowHm = \Carbon\Carbon::now()->format('H:i');
         } catch (Throwable) {
         }
-
-        hash_update($h, "clock_hm={$nowHm}\n");
 
         if (! Schema::hasColumn('direction_exchange', 'is_enabled_exchange')) {
             return;
@@ -618,6 +623,7 @@ final class SchemeFilesScheduledSkipGate
                 if ($from !== '' && $to !== '') {
                     $open = ($nowHm < $from || $nowHm > $to) ? '0' : '1';
                 }
+                // from/to bounds + open bit; no wall-clock minute string.
                 hash_update($h, "tw|{$row->id}|{$from}|{$to}|{$open}\n");
             }
         } catch (Throwable $e) {

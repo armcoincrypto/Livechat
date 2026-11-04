@@ -271,4 +271,27 @@ final class SchemeFilesScheduledSkipGateTest extends TestCase
         $f['monitor_failed'] = true;
         $this->assertFalse(SchemeFilesScheduledSkipGate::decideFromFacts($f)['skip']);
     }
+
+    public function test_fp_version_is_v2_without_absolute_clock_hm(): void
+    {
+        $this->assertSame(2, SchemeFilesScheduledSkipGate::FP_VERSION);
+        $src = (string) file_get_contents(
+            dirname(__DIR__, 3).'/app/Services/Rates/SchemeFilesScheduledSkipGate.php'
+        );
+        $this->assertStringNotContainsString(
+            'clock_hm=',
+            $src,
+            'v2 fingerprint must not hash absolute H:i (prevents cross-minute skip)'
+        );
+        $this->assertStringContainsString('tw|{$row->id}|{$from}|{$to}|{$open}', $src);
+    }
+
+    public function test_fp_version_mismatch_does_not_skip(): void
+    {
+        $f = $this->baseOkFacts();
+        $f['meta']['fp_version'] = 1;
+        $d = SchemeFilesScheduledSkipGate::decideFromFacts($f);
+        $this->assertFalse($d['skip']);
+        $this->assertSame('fp_version_mismatch', $d['reason']);
+    }
 }

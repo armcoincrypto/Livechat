@@ -430,8 +430,10 @@ class ExchangeSchedule
         // After 2026-08-24 ownership-guard + staged first-sync: scheduled --apply.
         // Hard skip: bestchange_directions.status=1 (health cannot steal ownership),
         // Zelle outgoing, and |Δ|>25% safety cap.
+        // W2: stagger off scheme:files / grates_cron_timer decade (:00,:10,…).
+        // Offset :05 keeps BC-idle derived BASE refresh off the export minute.
         $schedule->command('directions:derived-baseline-refresh --apply')
-            ->everyTenMinutes()
+            ->cron('5,15,25,35,45,55 * * * *')
             ->onOneServer()
             ->withoutOverlapping(9)
             ->runInBackground()
