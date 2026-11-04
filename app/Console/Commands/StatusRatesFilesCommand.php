@@ -33,78 +33,108 @@ class StatusRatesFilesCommand extends Command
     protected $description = 'Check and update courses files and exchange directions';
 
     /**
+     * Same path as ops scoped_locks.sh EXS_LOCK_SCHEME_FILES.
+     * Manual --force-publish (StartModeOperation) bypasses run_backend_compiler.sh,
+     * so this process must take the same flock or fail closed — never race a
+     * scheduled/post-bc export that already holds scheme-files.lock.
+     */
+    public const SCHEME_FILES_LOCK_PATH = '/var/lock/build/scheme-files.lock';
+
+    /**
      * Execute the console command.
      */
     public function handle(): int
     {
         $gate = app(SchemeFilesScheduledSkipGate::class);
         $xmlPath = public_path('static/exports/currencies.xml');
+        $forcePublish = (bool) $this->option('force-publish');
 
-        $decision = $gate->evaluate([
-            'invocation' => SchemeFilesScheduledSkipGate::processInvocation(),
-            'force_publish' => (bool) $this->option('force-publish'),
-            'skip_export' => (bool) $this->option('skip-export'),
-            'xml_path' => $xmlPath,
-        ]);
-
-        if ($decision['skip'] === true) {
-            $this->info('scheme:files scheduled skip — complete inputs unchanged ('.$decision['reason'].')');
-            Log::info('scheme_files_scheduled_skip', [
-                'reason' => $decision['reason'],
-                'fingerprint' => $decision['fingerprint'],
-            ]);
-            // History row keeps ops visibility without implying a full rebuild cost.
-            $this->logHistory('export_files', 0, 0, 0.0);
-            $this->logHistory('export_exchange', 0, 0, 0.0);
-
-            return self::SUCCESS;
-        }
-
-        if ($decision['enabled'] === true) {
-            Log::info('scheme_files_scheduled_skip_bypass', [
-                'reason' => $decision['reason'],
-            ]);
-        }
-
-        $exportOk = true;
-        if (! $this->option('skip-export')) {
-            $ok = $this->updateCoursesFile();
-            if ($ok === false) {
-                $gate->recordFailure('xml_export_failed');
+        // Force-publish coordinates with scheduled/post-bc via scheme-files.lock.
+        // Scheduled ticks already hold that lock in the compiler wrapper — do not
+        // re-acquire here (child would always see LOCK_NB fail).
+        $sfLock = false;
+        if ($forcePublish) {
+            $sfLock = $this->acquireSchemeFilesLock();
+            if ($sfLock === false) {
+                Log::warning('scheme_files_force_publish_scheme_lock_busy', [
+                    'path' => self::SCHEME_FILES_LOCK_PATH,
+                ]);
+                $this->error('scheme-files.lock busy — force-publish refused (fail closed).');
+                $gate->recordFailure('force_publish_scheme_lock_busy');
 
                 return self::FAILURE;
             }
-            $exportOk = $ok !== false;
         }
 
-        $directionsOk = $this->updateExchangeDirections();
+        try {
+            $decision = $gate->evaluate([
+                'invocation' => SchemeFilesScheduledSkipGate::processInvocation(),
+                'force_publish' => $forcePublish,
+                'skip_export' => (bool) $this->option('skip-export'),
+                'xml_path' => $xmlPath,
+            ]);
 
-        if ($exportOk && $directionsOk) {
-            try {
-                $fp = $decision['fingerprint'] ?? $gate->computeInputFingerprint();
-                $xmlMeta = [];
-                if (is_file($xmlPath)) {
-                    $xml = (string) file_get_contents($xmlPath);
-                    $xmlMeta = [
-                        'xml_sha256' => hash('sha256', $xml),
-                        'xml_items' => substr_count($xml, '<item>'),
-                        'xml_bytes' => strlen($xml),
-                        'dr_snapshot_id' => Cache::get('dr_snapshot_id'),
-                    ];
-                }
-                $gate->recordSuccess((string) $fp, $xmlMeta);
-            } catch (\Throwable $e) {
-                // Fail-open for next tick: do not leave a false success meta.
-                $gate->recordFailure('success_meta_failed:'.$e->getMessage());
-                Log::warning('scheme_files_skip_meta_record_failed', [
-                    'message' => $e->getMessage(),
+            if ($decision['skip'] === true) {
+                $this->info('scheme:files scheduled skip — complete inputs unchanged ('.$decision['reason'].')');
+                Log::info('scheme_files_scheduled_skip', [
+                    'reason' => $decision['reason'],
+                    'fingerprint' => $decision['fingerprint'],
+                ]);
+                // History row keeps ops visibility without implying a full rebuild cost.
+                $this->logHistory('export_files', 0, 0, 0.0);
+                $this->logHistory('export_exchange', 0, 0, 0.0);
+
+                return self::SUCCESS;
+            }
+
+            if ($decision['enabled'] === true) {
+                Log::info('scheme_files_scheduled_skip_bypass', [
+                    'reason' => $decision['reason'],
                 ]);
             }
-        } else {
-            $gate->recordFailure($directionsOk ? 'export_partial' : 'directions_failed');
-        }
 
-        return self::SUCCESS;
+            $exportOk = true;
+            if (! $this->option('skip-export')) {
+                $ok = $this->updateCoursesFile();
+                if ($ok === false) {
+                    $gate->recordFailure('xml_export_failed');
+
+                    return self::FAILURE;
+                }
+                $exportOk = $ok !== false;
+            }
+
+            $directionsOk = $this->updateExchangeDirections();
+
+            if ($exportOk && $directionsOk) {
+                try {
+                    $fp = $decision['fingerprint'] ?? $gate->computeInputFingerprint();
+                    $xmlMeta = [];
+                    if (is_file($xmlPath)) {
+                        $xml = (string) file_get_contents($xmlPath);
+                        $xmlMeta = [
+                            'xml_sha256' => hash('sha256', $xml),
+                            'xml_items' => substr_count($xml, '<item>'),
+                            'xml_bytes' => strlen($xml),
+                            'dr_snapshot_id' => Cache::get('dr_snapshot_id'),
+                        ];
+                    }
+                    $gate->recordSuccess((string) $fp, $xmlMeta);
+                } catch (\Throwable $e) {
+                    // Fail-open for next tick: do not leave a false success meta.
+                    $gate->recordFailure('success_meta_failed:'.$e->getMessage());
+                    Log::warning('scheme_files_skip_meta_record_failed', [
+                        'message' => $e->getMessage(),
+                    ]);
+                }
+            } else {
+                $gate->recordFailure($directionsOk ? 'export_partial' : 'directions_failed');
+            }
+
+            return self::SUCCESS;
+        } finally {
+            $this->releaseSchemeFilesLock($sfLock);
+        }
     }
 
     /**
@@ -123,7 +153,14 @@ class StatusRatesFilesCommand extends Command
         if ($lockFh === false) {
             Log::warning('scheme_files_xml_publish_lock_busy', [
                 'path' => RatesXmlPublicFeedHealth::PUBLISH_LOCK_PATH,
+                'force_publish' => $forcePublish,
             ]);
+            if ($forcePublish) {
+                // operation:start must not report success without publishing.
+                $this->error('XML publish lock busy — force-publish refused (fail closed).');
+
+                return false;
+            }
             $this->warn('XML publish lock busy — skipping export this tick (last-good remains).');
 
             return true;
@@ -213,6 +250,41 @@ class StatusRatesFilesCommand extends Command
      * @param  resource|false  $fh
      */
     private function releaseXmlPublishLock($fh): void
+    {
+        if ($fh === false) {
+            return;
+        }
+        flock($fh, LOCK_UN);
+        fclose($fh);
+    }
+
+    /**
+     * @return resource|false
+     */
+    private function acquireSchemeFilesLock()
+    {
+        $path = self::SCHEME_FILES_LOCK_PATH;
+        $dir = dirname($path);
+        if (! is_dir($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+        $fh = @fopen($path, 'c+');
+        if ($fh === false) {
+            return false;
+        }
+        if (! flock($fh, LOCK_EX | LOCK_NB)) {
+            fclose($fh);
+
+            return false;
+        }
+
+        return $fh;
+    }
+
+    /**
+     * @param  resource|false  $fh
+     */
+    private function releaseSchemeFilesLock($fh): void
     {
         if ($fh === false) {
             return;

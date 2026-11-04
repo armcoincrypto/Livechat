@@ -26,11 +26,12 @@ final class SchemeFilesScheduledSkipGate
     public const FLAG = 'SCHEME_FILES_SCHEDULED_SKIP_UNCHANGED';
 
     /**
-     * v2: drop absolute clock_hm from the fingerprint. v1 hashed gmdate/app H:i every
-     * minute, so scheduled skip could never match across ticks even when inputs and
-     * time-window open/closed masks were unchanged. Open-state bits remain hashed.
+     * v3: drop absolute clock_hm (v2) and hash allow_export time windows with the same
+     * midnight-crossing open/closed semantics as ExportFormatHelpers::isNowInTimeWindow.
+     * v1 hashed gmdate/app H:i every minute so skip never matched across ticks.
+     * Open-state bits remain hashed; wall-clock minute strings do not.
      */
-    public const FP_VERSION = 2;
+    public const FP_VERSION = 3;
 
     public const META_CACHE_KEY = 'scheme_files.scheduled_skip.meta.v1';
 
@@ -280,8 +281,10 @@ final class SchemeFilesScheduledSkipGate
 
     /**
      * Complete input fingerprint covering XML + RU/EN catalog rebuild inputs.
-     * Intentionally excludes cs.created_at (always changes) and wall-clock except
-     * time-window open-state for directions with is_enabled_exchange=1.
+     * Intentionally excludes cs.created_at (always changes) and absolute wall-clock.
+     * Time dependence is represented only as open/closed masks for:
+     * - is_enabled_exchange windows (catalog ConfiguresAttributes semantics)
+     * - allow_export=1 windows (ExportFormatHelpers midnight-crossing semantics)
      */
     public function computeInputFingerprint(): string
     {
@@ -297,6 +300,54 @@ final class SchemeFilesScheduledSkipGate
         $this->hashPublicationState($h);
 
         return hash_final($h);
+    }
+
+    /**
+     * Midnight-safe window check matching ExportFormatHelpers::isNowInTimeWindow.
+     * $nowHm/$from/$to are "H:i" (1–2 digit hour accepted).
+     */
+    public static function isAllowExportWindowOpen(string $nowHm, string $from, string $to): bool
+    {
+        $nowM = self::hmToMinutes($nowHm);
+        $fromM = self::hmToMinutes($from);
+        $toM = self::hmToMinutes($to);
+        if ($nowM === null || $fromM === null || $toM === null) {
+            return false;
+        }
+        if ($fromM <= $toM) {
+            return $nowM >= $fromM && $nowM <= $toM;
+        }
+
+        // Overnight window: now >= from OR now <= to
+        return $nowM >= $fromM || $nowM <= $toM;
+    }
+
+    /**
+     * Catalog exchange window (ConfiguresAttributes): simple non-crossing string compare.
+     */
+    public static function isExchangeHoursOpen(string $nowHm, string $from, string $to): bool
+    {
+        if ($from === '' || $to === '') {
+            return true;
+        }
+
+        // Match ConfiguresAttributes: if ($nowHm < $from || $nowHm > $to) skip.
+        return ! ($nowHm < $from || $nowHm > $to);
+    }
+
+    private static function hmToMinutes(string $hm): ?int
+    {
+        $hm = trim($hm);
+        if (! preg_match('/^(\d{1,2}):(\d{2})$/', $hm, $m)) {
+            return null;
+        }
+        $h = (int) $m[1];
+        $min = (int) $m[2];
+        if ($h > 23 || $min > 59) {
+            return null;
+        }
+
+        return $h * 60 + $min;
     }
 
     public static function flagEnabled(): bool
@@ -468,6 +519,8 @@ final class SchemeFilesScheduledSkipGate
             'exchange_rate',
             'profit',
             'allow_export',
+            'allow_export_from',
+            'allow_export_to',
             'parser_source_name',
             'sorting_2',
             'is_enabled_exchange',
@@ -597,7 +650,7 @@ final class SchemeFilesScheduledSkipGate
     /** @param resource $h */
     private function hashTimeWindowOpenMask($h): void
     {
-        // Hash only the open/closed mask for timed directions — not absolute H:i.
+        // Hash only open/closed masks — never absolute H:i.
         // Absolute clock made v1 fingerprints unique every minute (skip never hit).
         // When a window opens/closes, $open flips and the fingerprint changes → rebuild.
         $nowHm = gmdate('H:i');
@@ -606,25 +659,43 @@ final class SchemeFilesScheduledSkipGate
         } catch (Throwable) {
         }
 
-        if (! Schema::hasColumn('direction_exchange', 'is_enabled_exchange')) {
-            return;
-        }
-
         try {
-            $q = DirectionExchange::query()
-                ->where('status', 1)
-                ->where('is_enabled_exchange', 1)
-                ->orderBy('id')
-                ->select(['id', 'from_on_time', 'to_on_time']);
-            foreach ($q->cursor() as $row) {
-                $from = (string) ($row->from_on_time ?? '');
-                $to = (string) ($row->to_on_time ?? '');
-                $open = '1';
-                if ($from !== '' && $to !== '') {
-                    $open = ($nowHm < $from || $nowHm > $to) ? '0' : '1';
+            if (Schema::hasColumn('direction_exchange', 'is_enabled_exchange')) {
+                $q = DirectionExchange::query()
+                    ->where('status', 1)
+                    ->where('is_enabled_exchange', 1)
+                    ->orderBy('id')
+                    ->select(['id', 'from_on_time', 'to_on_time']);
+                foreach ($q->cursor() as $row) {
+                    $from = (string) ($row->from_on_time ?? '');
+                    $to = (string) ($row->to_on_time ?? '');
+                    $open = self::isExchangeHoursOpen($nowHm, $from, $to) ? '1' : '0';
+                    // Catalog hours: bounds + open bit (ConfiguresAttributes semantics).
+                    hash_update($h, "tw|{$row->id}|{$from}|{$to}|{$open}\n");
                 }
-                // from/to bounds + open bit; no wall-clock minute string.
-                hash_update($h, "tw|{$row->id}|{$from}|{$to}|{$open}\n");
+            }
+
+            // Export allow_export=1 windows (ExportFormatHelpers midnight-crossing).
+            // Column values are also hashed in hashDirections; open bit forces rebuild
+            // at window boundaries without embedding absolute clock_hm.
+            if (Schema::hasColumn('direction_exchange', 'allow_export')
+                && Schema::hasColumn('direction_exchange', 'allow_export_from')
+                && Schema::hasColumn('direction_exchange', 'allow_export_to')
+            ) {
+                $aq = DirectionExchange::query()
+                    ->where('status', 1)
+                    ->where('allow_export', 1)
+                    ->orderBy('id')
+                    ->select(['id', 'allow_export_from', 'allow_export_to']);
+                foreach ($aq->cursor() as $row) {
+                    $from = trim((string) ($row->allow_export_from ?? ''));
+                    $to = trim((string) ($row->allow_export_to ?? ''));
+                    $open = '0';
+                    if ($from !== '' && $to !== '') {
+                        $open = self::isAllowExportWindowOpen($nowHm, $from, $to) ? '1' : '0';
+                    }
+                    hash_update($h, "aew|{$row->id}|{$from}|{$to}|{$open}\n");
+                }
             }
         } catch (Throwable $e) {
             throw new \RuntimeException('time_window_hash_failed: '.$e->getMessage(), 0, $e);

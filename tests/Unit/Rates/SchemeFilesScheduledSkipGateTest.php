@@ -272,18 +272,40 @@ final class SchemeFilesScheduledSkipGateTest extends TestCase
         $this->assertFalse(SchemeFilesScheduledSkipGate::decideFromFacts($f)['skip']);
     }
 
-    public function test_fp_version_is_v2_without_absolute_clock_hm(): void
+    public function test_fp_version_is_v3_without_absolute_clock_hm(): void
     {
-        $this->assertSame(2, SchemeFilesScheduledSkipGate::FP_VERSION);
+        $this->assertSame(3, SchemeFilesScheduledSkipGate::FP_VERSION);
         $src = (string) file_get_contents(
             dirname(__DIR__, 3).'/app/Services/Rates/SchemeFilesScheduledSkipGate.php'
         );
         $this->assertStringNotContainsString(
             'clock_hm=',
             $src,
-            'v2 fingerprint must not hash absolute H:i (prevents cross-minute skip)'
+            'v3 fingerprint must not hash absolute H:i (prevents cross-minute skip)'
         );
         $this->assertStringContainsString('tw|{$row->id}|{$from}|{$to}|{$open}', $src);
+        $this->assertStringContainsString('aew|{$row->id}|{$from}|{$to}|{$open}', $src);
+        $this->assertStringContainsString("'allow_export_from'", $src);
+        $this->assertStringContainsString("'allow_export_to'", $src);
+    }
+
+    public function test_allow_export_window_midnight_crossing_semantics(): void
+    {
+        // Same overnight rule as ExportFormatHelpers::isNowInTimeWindow.
+        $this->assertTrue(SchemeFilesScheduledSkipGate::isAllowExportWindowOpen('23:30', '23:00', '02:00'));
+        $this->assertTrue(SchemeFilesScheduledSkipGate::isAllowExportWindowOpen('01:00', '23:00', '02:00'));
+        $this->assertFalse(SchemeFilesScheduledSkipGate::isAllowExportWindowOpen('12:00', '23:00', '02:00'));
+        $this->assertTrue(SchemeFilesScheduledSkipGate::isAllowExportWindowOpen('10:00', '09:00', '17:00'));
+        $this->assertFalse(SchemeFilesScheduledSkipGate::isAllowExportWindowOpen('08:00', '09:00', '17:00'));
+        $this->assertFalse(SchemeFilesScheduledSkipGate::isAllowExportWindowOpen('10:00', 'bad', '17:00'));
+    }
+
+    public function test_exchange_hours_match_catalog_non_crossing(): void
+    {
+        $this->assertTrue(SchemeFilesScheduledSkipGate::isExchangeHoursOpen('10:00', '09:00', '17:00'));
+        $this->assertFalse(SchemeFilesScheduledSkipGate::isExchangeHoursOpen('08:00', '09:00', '17:00'));
+        // Empty bounds ⇒ always open (ConfiguresAttributes).
+        $this->assertTrue(SchemeFilesScheduledSkipGate::isExchangeHoursOpen('03:00', '', ''));
     }
 
     public function test_fp_version_mismatch_does_not_skip(): void
@@ -293,5 +315,20 @@ final class SchemeFilesScheduledSkipGateTest extends TestCase
         $d = SchemeFilesScheduledSkipGate::decideFromFacts($f);
         $this->assertFalse($d['skip']);
         $this->assertSame('fp_version_mismatch', $d['reason']);
+    }
+
+    public function test_force_publish_lock_path_matches_ops_scheme_files_lock(): void
+    {
+        $this->assertSame(
+            '/var/lock/build/scheme-files.lock',
+            \App\Console\Commands\StatusRatesFilesCommand::SCHEME_FILES_LOCK_PATH
+        );
+        $src = (string) file_get_contents(
+            dirname(__DIR__, 3).'/app/Console/Commands/StatusRatesFilesCommand.php'
+        );
+        $this->assertStringContainsString('acquireSchemeFilesLock', $src);
+        $this->assertStringContainsString('force_publish_scheme_lock_busy', $src);
+        // force-publish must fail closed on XML lock busy (not pretend success).
+        $this->assertStringContainsString('force-publish refused (fail closed)', $src);
     }
 }
