@@ -73,10 +73,12 @@ class ExchangeSchedule
             ->withoutOverlapping();
 
         // Пересчёт заявок по cron (OrderRecount)
-        // Команда сама проверяет настройку type_recalculation_order и ничего не сделает, если cron-режим выключен.
+        // Command also self-checks type_recalculation_order; W1A skips dispatch entirely
+        // when cron mode is off so schedule:run does not pay a full Artisan boot for a no-op.
         // Wave3: background so schedule:run is not pinned by recount duration.
         $schedule->command('order-recount:run --details')
             ->everyMinute()
+            ->when(static fn (): bool => self::orderRecountScheduleAdmitted())
             ->onOneServer()
             ->withoutOverlapping(50)
             ->runInBackground()
@@ -293,6 +295,47 @@ class ExchangeSchedule
     }
 
     /**
+     * W1A: admit order-recount:run schedule ticks only when cron recount mode is on.
+     * type_recalculation_order=0 ⇒ command no-ops after a full Artisan boot; skip dispatch.
+     */
+    public static function orderRecountScheduleAdmitted(?int $typeRecalculationOrder = null): bool
+    {
+        if ($typeRecalculationOrder === null) {
+            $typeRecalculationOrder = (int) iEXSetting('type_recalculation_order', 0);
+        }
+
+        return $typeRecalculationOrder !== 0;
+    }
+
+    /**
+     * W1A: authority-drift full-catalog cadence in minutes.
+     * Default 15m when rate Telegram alerts are off (CPU-heavy ops visibility).
+     * Keep 5m when alerts are enabled, or EXSWAPING_AUTHORITY_DRIFT_EVERY_FIVE forces it.
+     */
+    public static function authorityDriftCadenceMinutes(bool $rateTelegramAlertsEnabled, bool $forceEveryFive = false): int
+    {
+        if ($forceEveryFive || $rateTelegramAlertsEnabled) {
+            return 5;
+        }
+
+        return 15;
+    }
+
+    /**
+     * Whether the current clock minute is a due tick for the given cadence.
+     */
+    public static function authorityDriftDueAtMinute(int $minute, int $cadenceMinutes): bool
+    {
+        $cadenceMinutes = max(1, $cadenceMinutes);
+        $minute = $minute % 60;
+        if ($minute < 0) {
+            $minute += 60;
+        }
+
+        return ($minute % $cadenceMinutes) === 0;
+    }
+
+    /**
      * True when an actual compiler:bestchange run is active.
      *
      * H1 observation signal only — delegates to BestchangeCompilerBusySignal.
@@ -422,12 +465,34 @@ class ExchangeSchedule
 
         // Owner-authority rate drift (read-only; never mutates economics).
         // Per-job withoutOverlapping only — no global flock. Must not block BC/merchant.
+        // W1A: conditional cadence — everyMinute registration + due-minute gate.
+        // Default 15m when rate Telegram alerts are off; 5m when alerts on or
+        // EXSWAPING_AUTHORITY_DRIFT_EVERY_FIVE=1. Still yields while BC busy.
+        $whenAuthorityDriftDue = static function () use ($whenBcIdle): bool {
+            if (! $whenBcIdle()) {
+                return false;
+            }
+            $forceFive = filter_var(
+                env('EXSWAPING_AUTHORITY_DRIFT_EVERY_FIVE', false),
+                FILTER_VALIDATE_BOOLEAN
+            );
+            $alertsEnabled = false;
+            try {
+                $alertsEnabled = app(\App\Services\Ops\TelegramOpsAlertRouter::class)
+                    ->rateTelegramAlertsEnabled();
+            } catch (\Throwable) {
+                $alertsEnabled = false;
+            }
+            $cadence = self::authorityDriftCadenceMinutes($alertsEnabled, $forceFive);
+
+            return self::authorityDriftDueAtMinute((int) now()->minute, $cadence);
+        };
         $schedule->command('rates:authority-drift-monitor --format=summary')
-            ->everyFiveMinutes()
+            ->everyMinute()
             ->onOneServer()
-            ->withoutOverlapping(8)
+            ->withoutOverlapping(14)
             ->runInBackground()
-            ->when($whenBcIdle)
+            ->when($whenAuthorityDriftDue)
             ->appendOutputTo(storage_path('logs/rates_authority_drift_monitor.log'));
 
         $schedule->command('orders:waiting-deposit-health --format=json')
