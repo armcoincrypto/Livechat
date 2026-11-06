@@ -257,16 +257,30 @@ final class BestChangeHttpClient implements BestChangeHttpClientInterface
     }
 
     /**
-     * Close the Laravel HTTP response body so Guzzle php://temp sinks under
-     * /tmp/php* are released. Safe to call more than once; never deletes paths
-     * we do not own.
+     * Release the HTTP body stream after the response has been fully consumed.
+     *
+     * Concrete type from sendGet(): Illuminate\Http\Client\Response.
+     * That wrapper exposes close() which calls PSR-7 getBody()->close().
+     * Guzzle's PSR ResponseInterface itself has no close() — only StreamInterface does.
+     *
+     * Must never throw: cleanup runs in finally and must not mask request/JSON errors.
+     * Safe if already closed / body detached. Never mass-unlinks /tmp paths.
      */
     private function releaseHttpResponse(Response $response): void
     {
         try {
+            // Prefer Laravel helper (documented API on Illuminate\Http\Client\Response).
             $response->close();
+
+            return;
         } catch (\Throwable) {
-            // Best-effort cleanup only — never mask the original request outcome.
+            // fall through to direct body close
+        }
+
+        try {
+            $response->toPsrResponse()->getBody()->close();
+        } catch (\Throwable) {
+            // Best-effort only — never replace the original request outcome.
         }
     }
 
