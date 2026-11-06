@@ -200,38 +200,46 @@ final class BestChangeHttpClient implements BestChangeHttpClientInterface
 
                 $latencyMs = (int) ((microtime(true) - $startedAt) * 1000);
 
-                if ($response->successful()) {
-                    $this->hostCircuitBreaker->markSuccess($host);
+                try {
+                    if ($response->successful()) {
+                        $this->hostCircuitBreaker->markSuccess($host);
 
-                    if ($proxyId > 0) {
-                        ProxyFacade::markResultById($proxyId, $ctx, true, $response->status(), null, $latencyMs);
+                        if ($proxyId > 0) {
+                            ProxyFacade::markResultById($proxyId, $ctx, true, $response->status(), null, $latencyMs);
+                        }
+
+                        // Consume body before close so large /rates sinks (php://temp → /tmp/php*)
+                        // are unlinked instead of accumulating in the long-lived producer loop.
+                        return (array) $response->json();
                     }
 
-                    return (array) $response->json();
-                }
+                    $status = $response->status();
 
-                $status = $response->status();
+                    if (in_array($status, [401, 403], true)) {
+                        if ($proxyId > 0) {
+                            ProxyFacade::markResultById($proxyId, $ctx, false, $status, null, $latencyMs);
+                        }
+                        throw new \RuntimeException("BestChange API: доступ запрещен (HTTP {$status}). Проверь API ключ.");
+                    }
 
-                if (in_array($status, [401, 403], true)) {
+                    if ($status === 429) {
+                        if ($proxyId > 0) {
+                            ProxyFacade::markResultById($proxyId, $ctx, false, $status, null, $latencyMs);
+                        }
+                        continue;
+                    }
+
+                    if ($status >= 500) {
+                        $this->hostCircuitBreaker->markFail($host);
+                    }
+
                     if ($proxyId > 0) {
                         ProxyFacade::markResultById($proxyId, $ctx, false, $status, null, $latencyMs);
                     }
-                    throw new \RuntimeException("BestChange API: доступ запрещен (HTTP {$status}). Проверь API ключ.");
-                }
-
-                if ($status === 429) {
-                    if ($proxyId > 0) {
-                        ProxyFacade::markResultById($proxyId, $ctx, false, $status, null, $latencyMs);
-                    }
-                    continue;
-                }
-
-                if ($status >= 500) {
-                    $this->hostCircuitBreaker->markFail($host);
-                }
-
-                if ($proxyId > 0) {
-                    ProxyFacade::markResultById($proxyId, $ctx, false, $status, null, $latencyMs);
+                } finally {
+                    // Always release the PSR body / php://temp sink for this attempt.
+                    // Never unlink arbitrary /tmp paths — only close our response handle.
+                    $this->releaseHttpResponse($response);
                 }
 
             } catch (ConnectionException $e) {
@@ -246,6 +254,20 @@ final class BestChangeHttpClient implements BestChangeHttpClientInterface
         }
 
         throw new ConnectionException('BestChange API: все зеркала недоступны');
+    }
+
+    /**
+     * Close the Laravel HTTP response body so Guzzle php://temp sinks under
+     * /tmp/php* are released. Safe to call more than once; never deletes paths
+     * we do not own.
+     */
+    private function releaseHttpResponse(Response $response): void
+    {
+        try {
+            $response->close();
+        } catch (\Throwable) {
+            // Best-effort cleanup only — never mask the original request outcome.
+        }
     }
 
     /**
