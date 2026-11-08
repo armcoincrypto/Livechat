@@ -19,7 +19,9 @@ final class KobbopayPurchaseIdempotencyContractTest extends TestCase
         $this->assertStringContainsString("'token' => (string) \$this->getMerchantNetworkCode()", $src);
         $this->assertStringContainsString("'client_transaction_id' => (string) \$this->getTransactionId()", $src);
         $this->assertStringContainsString("'/api/crypto/invoice/create'", $src);
-        $this->assertStringContainsString('$maxAttempts = 3', $src);
+        $this->assertStringContainsString('$maxAttempts = 2', $src);
+        $this->assertStringContainsString("'timeout' => 8", $src);
+        $this->assertStringContainsString("'retries' => 1", $src);
         $this->assertStringContainsString("\$this->sendRequest('post', '/api/crypto/invoice/create', \$data", $src);
         $this->assertStringNotContainsString('Idempotency-Key', $src);
         $this->assertStringNotContainsString('uniqid', $src);
