@@ -95,11 +95,13 @@ final class RatesZelleCryptoUnifyCommand extends Command
                 continue;
             }
 
+            // Prefer active (status=1). Never prefer status=2 over status=1
+            // (orderByDesc(status) wrongly ranks disabled above active).
             $in = DB::table('direction_exchange')
                 ->whereNull('deleted_at')
                 ->where('id_currency1', $cid)
                 ->where('id_currency2', $zid)
-                ->orderByDesc('status')
+                ->orderByRaw('CASE WHEN status = 1 THEN 0 ELSE 1 END')
                 ->orderByDesc('id')
                 ->first();
 
