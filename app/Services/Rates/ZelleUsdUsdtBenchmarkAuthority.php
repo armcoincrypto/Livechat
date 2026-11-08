@@ -19,10 +19,17 @@ final class ZelleUsdUsdtBenchmarkAuthority
 {
     public const PARSER_SOURCE_NAME = 'ZELLE_USDTTRC20_BENCHMARK';
 
-    /** Canonical commercial pins (admin «Прибыль» +6 ⇔ floating_fee=-6). */
+    /**
+     * Outgoing ZELLEUSD→dest commercial pins (admin «Прибыль» +6 ⇔ floating_fee=-6).
+     * Inbound crypto→ZELLEUSD intentionally has no margin (BASE inverse only).
+     */
     public const CANONICAL_FLOATING_FEE = '-6';
 
     public const CANONICAL_FIX_FEE = '-3';
+
+    public const INBOUND_FLOATING_FEE = '0';
+
+    public const INBOUND_FIX_FEE = '0';
 
     public function __construct(
         private readonly ZelleUsdBenchmarkResolver $resolver = new ZelleUsdBenchmarkResolver(),
@@ -32,6 +39,18 @@ final class ZelleUsdUsdtBenchmarkAuthority
     public static function make(): self
     {
         return new self();
+    }
+
+    /**
+     * @return array{0:string,1:string} [floating_fee, fix_fee]
+     */
+    public function feePinsFor(DirectionExchange $direction): array
+    {
+        if ($this->resolver->isZelleIncoming($direction)) {
+            return [self::INBOUND_FLOATING_FEE, self::INBOUND_FIX_FEE];
+        }
+
+        return [self::CANONICAL_FLOATING_FEE, self::CANONICAL_FIX_FEE];
     }
 
     public function owns(DirectionExchange $direction): bool
@@ -100,8 +119,9 @@ final class ZelleUsdUsdtBenchmarkAuthority
         }
 
         $course = $result->benchmarkRate;
+        [$floatingFee, $fixFee] = $this->feePinsFor($direction);
         if (!$dryRun) {
-            CommercialAdjustmentWriteGate::run('zelle:ZelleUsdUsdtBenchmarkAuthority', function () use ($direction, $course): void {
+            CommercialAdjustmentWriteGate::run('zelle:ZelleUsdUsdtBenchmarkAuthority', function () use ($direction, $course, $floatingFee, $fixFee): void {
                 DB::table('direction_exchange')->where('id', $direction->id)->update([
                     'course_value' => $course,
                     'manual_rate_value' => $course,
@@ -114,8 +134,8 @@ final class ZelleUsdUsdtBenchmarkAuthority
                     'add_course2' => 0,
                     'your_add_course1' => 0,
                     'your_add_course2' => 0,
-                    'floating_fee' => self::CANONICAL_FLOATING_FEE,
-                    'fix_fee' => self::CANONICAL_FIX_FEE,
+                    'floating_fee' => $floatingFee,
+                    'fix_fee' => $fixFee,
                     'is_type_rate' => 1,
                     'updated_at' => now(),
                 ]);
@@ -126,6 +146,8 @@ final class ZelleUsdUsdtBenchmarkAuthority
                 'course' => $course,
                 'source' => $result->benchmarkSource,
                 'leg' => $this->resolver->isZelleIncoming($direction) ? 'inbound' : 'outgoing',
+                'floating_fee' => $floatingFee,
+                'fix_fee' => $fixFee,
             ]);
         }
 
@@ -145,14 +167,17 @@ final class ZelleUsdUsdtBenchmarkAuthority
      */
     public function refreshAll(bool $dryRun = true): array
     {
+        // Active only — do not rewrite quarantined/disabled duplicates (e.g. ETH 1534).
         $outgoing = DirectionExchange::query()
             ->where('id_currency1', ZelleUsdBenchmarkResolver::ZELLE_CURRENCY_ID)
+            ->where('status', 1)
             ->whereNull('deleted_at')
             ->get();
 
         $inbound = DirectionExchange::query()
             ->where('id_currency2', ZelleUsdBenchmarkResolver::ZELLE_CURRENCY_ID)
             ->where('id_currency1', '!=', ZelleUsdBenchmarkResolver::ZELLE_CURRENCY_ID)
+            ->where('status', 1)
             ->whereNull('deleted_at')
             ->get();
 

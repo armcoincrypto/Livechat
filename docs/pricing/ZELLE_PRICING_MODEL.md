@@ -22,9 +22,12 @@ Canonical USDT six rows (freeze pin):
 
 ## Mapping (admin control)
 
-- Admin «Прибыль» **+6** ⇔ storage `floating_fee=-6` ⇔ floating multiplier **0.94** at BASE.
-- Floating mode uses `floating_fee` only.
-- Fixed mode applies floating then `fix_fee` (canonical pin `fix_fee=-3`).
+| Leg | `floating_fee` | `fix_fee` | Meaning |
+|---|---|---|---|
+| **ZELLEUSD → dest** | `-6` | `-3` | Admin «Прибыль» +6 (0.94×) + fixed pin |
+| **coin → ZELLEUSD** | `0` | `0` | No commercial margin — BASE inverse only |
+
+- Floating mode uses `floating_fee` only; fixed mode then applies `fix_fee`.
 - `profit` must stay **0** on Zelle BENCHMARK rows (profit column is not the Zelle knob).
 - Preview: `php artisan rates:zelleusd-usdt-preview --all --json`
 - Refresh / unify: `php artisan rates:zelle-crypto-unify --apply --enable-usdc-xml`

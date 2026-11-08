@@ -124,8 +124,8 @@ final class RatesZelleCryptoUnifyCommand extends Command
 
             $needsClaim = (int) $in->status !== 1
                 || (string) ($in->parser_source_name ?? '') !== ZelleUsdUsdtBenchmarkAuthority::PARSER_SOURCE_NAME
-                || (string) ($in->floating_fee ?? '') !== ZelleUsdUsdtBenchmarkAuthority::CANONICAL_FLOATING_FEE
-                || (string) ($in->fix_fee ?? '') !== ZelleUsdUsdtBenchmarkAuthority::CANONICAL_FIX_FEE;
+                || (string) ($in->floating_fee ?? '') !== ZelleUsdUsdtBenchmarkAuthority::INBOUND_FLOATING_FEE
+                || (string) ($in->fix_fee ?? '') !== ZelleUsdUsdtBenchmarkAuthority::INBOUND_FIX_FEE;
 
             if ($needsClaim) {
                 $plan['claim_inbound'][] = [
@@ -192,8 +192,8 @@ final class RatesZelleCryptoUnifyCommand extends Command
         $data['deleted_at'] = null;
         $data['parser_source_name'] = ZelleUsdUsdtBenchmarkAuthority::PARSER_SOURCE_NAME;
         $data['profit'] = 0;
-        $data['floating_fee'] = ZelleUsdUsdtBenchmarkAuthority::CANONICAL_FLOATING_FEE;
-        $data['fix_fee'] = ZelleUsdUsdtBenchmarkAuthority::CANONICAL_FIX_FEE;
+        $data['floating_fee'] = ZelleUsdUsdtBenchmarkAuthority::INBOUND_FLOATING_FEE;
+        $data['fix_fee'] = ZelleUsdUsdtBenchmarkAuthority::INBOUND_FIX_FEE;
         $data['is_type_rate'] = 1;
         $data['is_error_rate'] = 0;
         $data['error_rate_text'] = null;
@@ -239,8 +239,8 @@ final class RatesZelleCryptoUnifyCommand extends Command
                 'deleted_at' => null,
                 'parser_source_name' => ZelleUsdUsdtBenchmarkAuthority::PARSER_SOURCE_NAME,
                 'profit' => 0,
-                'floating_fee' => ZelleUsdUsdtBenchmarkAuthority::CANONICAL_FLOATING_FEE,
-                'fix_fee' => ZelleUsdUsdtBenchmarkAuthority::CANONICAL_FIX_FEE,
+                'floating_fee' => ZelleUsdUsdtBenchmarkAuthority::INBOUND_FLOATING_FEE,
+                'fix_fee' => ZelleUsdUsdtBenchmarkAuthority::INBOUND_FIX_FEE,
                 'is_type_rate' => 1,
                 'is_error_rate' => 0,
                 'error_rate_text' => null,
