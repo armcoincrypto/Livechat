@@ -55,6 +55,9 @@ class ResetPasswordController extends Controller
     {
         $this->setUserPassword($user, $password);
         $user->setRememberToken(Str::random(60));
+        if ($user instanceof User && !empty($user->oauth_password_is_placeholder)) {
+            $user->oauth_password_is_placeholder = false;
+        }
         $user->save();
 
         // Mailbox control proven by reset token — recover stale deactivation and

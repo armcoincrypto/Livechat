@@ -40,6 +40,7 @@ class User extends Authenticatable implements BannableContract, HasLocalePrefere
         'name',
         'email',
         'password',
+        'oauth_password_is_placeholder',
         'phone',
         'telegram',
         'last_login_at', // Последний вход
@@ -120,6 +121,7 @@ class User extends Authenticatable implements BannableContract, HasLocalePrefere
         'last_logout_at' => 'datetime',
         'last_activity_at' => 'datetime',
         'password' => 'hashed',
+        'oauth_password_is_placeholder' => 'boolean',
     ];
 
     protected $dates = [

@@ -261,17 +261,26 @@ final class OAuthIdentityResolver
                     $name = strstr($profile->email, '@', true) ?: 'User';
                 }
 
+                // Google: trust verified claim. Yandex: email is required but no verified
+                // claim is exposed — treat present IdP email as mailbox ownership for signup.
                 $emailVerifiedAt = null;
-                if ($profile->provider === OAuthProviders::GOOGLE && $profile->emailVerified === true) {
-                    $emailVerifiedAt = Carbon::now();
+                if ($profile->email) {
+                    if ($profile->provider === OAuthProviders::GOOGLE) {
+                        if ($profile->emailVerified === true) {
+                            $emailVerifiedAt = Carbon::now();
+                        }
+                    } elseif ($profile->provider === OAuthProviders::YANDEX) {
+                        $emailVerifiedAt = Carbon::now();
+                    }
                 }
 
                 /** @var User $user */
                 $user = User::create([
                     'name' => mb_substr($name, 0, 191),
                     'email' => $profile->email,
-                    // password column is NOT NULL — random unusable secret (user can set via reset).
+                    // password column is NOT NULL — random unusable secret (user can set via reset/set-password).
                     'password' => Hash::make(Str::random(64)),
+                    'oauth_password_is_placeholder' => true,
                     'ip_address' => $request->ip(),
                     'last_login_at' => Carbon::now(),
                     'last_activity_at' => Carbon::now(),

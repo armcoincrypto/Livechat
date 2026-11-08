@@ -65,7 +65,12 @@ Route::middleware(['throttle:60,1'])->prefix('auth')->group(function () {
         Route::middleware(['auth'])->group(function () {
             Route::post('/reauth', [OAuthController::class, 'confirmReauth'])
                 ->middleware(['throttle:10,1']);
+            Route::post('/set-password', [OAuthController::class, 'setPassword'])
+                ->middleware(['throttle:10,1']);
             Route::get('/identities', [OAuthController::class, 'identities']);
+            Route::delete('/{provider}/unlink', [OAuthController::class, 'unlink'])
+                ->where('provider', 'google|yandex')
+                ->middleware(['throttle:10,1']);
         });
     });
 });

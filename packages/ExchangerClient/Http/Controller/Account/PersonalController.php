@@ -111,9 +111,11 @@ class PersonalController extends AbstractController
         }
 
         $user = $request->user();
+        $placeholder = !empty($user->oauth_password_is_placeholder);
 
         $validate = Validator::make($request->all(), [
-            'current_password' => 'required',
+            // OAuth-only accounts never learned the random placeholder hash.
+            'current_password' => $placeholder ? 'nullable' : 'required',
             'password' => 'required|string|min:6|confirmed',
         ], [
             'password.confirmed' => __('Пароли не совпадают'),
@@ -125,25 +127,24 @@ class PersonalController extends AbstractController
                 'message' => $validate->errors()->first(),
             ], 422);
         }
-        $current_password = null;
-        if (! Hash::check($request->get('current_password'), $user->password)) {
-            $current_password = __('Неверный старый пароль');
-        }
 
-        if ($current_password == null) {
-            $user->password = bcrypt($request->get('password'));
-            $user->save();
-
+        if (!$placeholder && ! Hash::check($request->get('current_password'), $user->password)) {
             return response()->json([
-                'status' => 0,
-                'message' => __('Данные успешно изменены')
-            ]);
+                'status' => 1,
+                'message' => __('Неверный старый пароль'),
+            ], 422);
         }
+
+        $user->password = bcrypt($request->get('password'));
+        if ($placeholder) {
+            $user->oauth_password_is_placeholder = false;
+        }
+        $user->save();
 
         return response()->json([
-            'status' => 1,
-            'message' => $current_password
-        ], 422);
+            'status' => 0,
+            'message' => __('Данные успешно изменены')
+        ]);
     }
 
     /**

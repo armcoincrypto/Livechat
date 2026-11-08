@@ -109,6 +109,7 @@ final class OAuthSqliteHarness
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
+            $table->boolean('oauth_password_is_placeholder')->default(false);
             $table->timestamp('email_verified_at')->nullable();
             $table->string('provider')->nullable();
             $table->string('provider_id')->nullable();

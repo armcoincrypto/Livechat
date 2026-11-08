@@ -21,6 +21,9 @@ final class OAuthSessionIssuer
         Auth::guard()->login($user);
         $request->session()->regenerate();
 
+        // Fresh OAuth login counts as reauth for linking another provider (TTL-bound).
+        app(OAuthReauthGuard::class)->markFresh($request);
+
         $user->update(['is_frontend' => 1]);
         event(new SuccessAuthenticatorEvent($user));
 
