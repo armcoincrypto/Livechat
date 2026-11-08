@@ -21,9 +21,23 @@ final class PurchaseRequest extends AbstractRequest
         ];
     }
 
+    /**
+     * Invoice create sits on the synchronous order path. Keep HTTP tight so the
+     * owned FE can return a calm error (or succeed) instead of waiting past its
+     * create timeout while PHP-FPM still retries for minutes.
+     */
+    protected function httpConfig(): array
+    {
+        return array_merge(parent::httpConfig(), [
+            'timeout' => 8,
+            'retries' => 1,
+            'retryDelayMs' => 250,
+        ]);
+    }
+
     protected function sendData(array $data): ResponseInterface
     {
-        $maxAttempts = 3;
+        $maxAttempts = 2;
         $lastThrowable = null;
 
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
