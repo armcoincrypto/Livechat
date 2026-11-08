@@ -27,9 +27,9 @@ final class OAuthSessionIssuer
         $user->update(['is_frontend' => 1]);
         event(new SuccessAuthenticatorEvent($user));
 
+        // Cookie/session auth only — do not mint unused Sanctum PATs (orphan tokens).
         return response()->json([
             'status' => 0,
-            'token' => $user->createToken('frontend')->plainTextToken,
             'user' => new SessionResource($user),
         ]);
     }

@@ -312,12 +312,16 @@ final class OAuthIdentityResolver
                 return $user->fresh();
             });
         } catch (QueryException $e) {
-            // Race: another request created the same provider subject or email.
+            // Race: another request won the insert — log that user in instead of failing.
             $identity = UserOAuthIdentity::query()
                 ->where('provider', $profile->provider)
                 ->where('provider_subject', $profile->subject)
                 ->first();
             if ($identity) {
+                $winner = User::query()->find($identity->user_id);
+                if ($winner) {
+                    return $winner;
+                }
                 throw new RuntimeException('OAUTH_SUBJECT_CONFLICT', 0, $e);
             }
             throw new RuntimeException('OAUTH_REGISTER_CONFLICT', 0, $e);

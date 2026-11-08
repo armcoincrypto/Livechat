@@ -52,3 +52,4 @@ resources/deploy/*.sha256
 iexexchanger_license*
 iexexchanger_docs.txt
 iex-config.json
+/vendor

@@ -91,24 +91,60 @@ final class GoogleIdTokenVerifier
 
     private function pemForKid(string $kid): string
     {
-        $jwks = Cache::remember('exs_google_jwks_v3', 3600, function () {
-            $response = Http::timeout(8)
-                ->acceptJson()
-                ->get(self::JWKS_URL);
+        $pem = $this->findPemInJwks($kid, $this->cachedJwks());
+        if ($pem !== null) {
+            return $pem;
+        }
 
-            if (!$response->successful()) {
-                throw new RuntimeException('OAUTH_GOOGLE_JWKS_FETCH');
-            }
+        // Key rotation: cached JWKS may lag. Refetch once before failing.
+        Cache::forget('exs_google_jwks_v3');
+        $fresh = $this->fetchJwks();
+        $pem = $this->findPemInJwks($kid, $fresh);
+        if ($pem !== null) {
+            Cache::put('exs_google_jwks_v3', $fresh, 3600);
 
-            $json = $response->json();
-            if (!is_array($json) || !isset($json['keys']) || !is_array($json['keys'])) {
-                throw new RuntimeException('OAUTH_GOOGLE_JWKS_INVALID');
-            }
+            return $pem;
+        }
 
-            return $json;
-        });
+        throw new RuntimeException('OAUTH_GOOGLE_JWKS_KID');
+    }
 
-        foreach ($jwks['keys'] as $key) {
+    /**
+     * @return array{keys: list<array<string, mixed>>}
+     */
+    private function cachedJwks(): array
+    {
+        /** @var array{keys: list<array<string, mixed>>} */
+        return Cache::remember('exs_google_jwks_v3', 3600, fn () => $this->fetchJwks());
+    }
+
+    /**
+     * @return array{keys: list<array<string, mixed>>}
+     */
+    private function fetchJwks(): array
+    {
+        $response = Http::timeout(8)
+            ->acceptJson()
+            ->get(self::JWKS_URL);
+
+        if (!$response->successful()) {
+            throw new RuntimeException('OAUTH_GOOGLE_JWKS_FETCH');
+        }
+
+        $json = $response->json();
+        if (!is_array($json) || !isset($json['keys']) || !is_array($json['keys'])) {
+            throw new RuntimeException('OAUTH_GOOGLE_JWKS_INVALID');
+        }
+
+        return $json;
+    }
+
+    /**
+     * @param  array{keys?: list<array<string, mixed>>}  $jwks
+     */
+    private function findPemInJwks(string $kid, array $jwks): ?string
+    {
+        foreach ($jwks['keys'] ?? [] as $key) {
             if (!is_array($key) || ($key['kid'] ?? '') !== $kid) {
                 continue;
             }
@@ -119,8 +155,7 @@ final class GoogleIdTokenVerifier
             return $this->jwkToPem((string) $key['n'], (string) $key['e']);
         }
 
-        Cache::forget('exs_google_jwks_v3');
-        throw new RuntimeException('OAUTH_GOOGLE_JWKS_KID');
+        return null;
     }
 
     private function jwkToPem(string $n, string $e): string

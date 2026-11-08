@@ -17,7 +17,9 @@ class AuthSystemController extends Controller
                     'name' => $item->name,
                     'alias' => $item->alias,
                     'client_id' => $item->client_id,
-                    'client_secret' => $item->client_secret,
+                    // Never return raw secrets in list payloads.
+                    'client_secret' => $this->maskSecret((string) $item->client_secret),
+                    'client_secret_set' => trim((string) $item->client_secret) !== '',
                     'created_at' => $item->created_at->translatedFormat('d M Y H:i'),
                     'created_at_human' => $item->created_at->diffForHumans(),
                     'updated_at' => $item->updated_at->translatedFormat('d M Y H:i'),
@@ -106,7 +108,9 @@ class AuthSystemController extends Controller
                 'name' => $item->name,
                 'alias' => $item->alias,
                 'client_id' => $item->client_id,
-                'client_secret' => $item->client_secret,
+                // Empty string means "leave unchanged" in the admin edit form.
+                'client_secret' => '',
+                'client_secret_set' => trim((string) $item->client_secret) !== '',
                 'created_at' => $item->created_at->translatedFormat('d M Y H:i'),
                 'created_at_human' => $item->created_at->diffForHumans(),
                 'updated_at' => $item->updated_at->translatedFormat('d M Y H:i'),
@@ -138,18 +142,43 @@ class AuthSystemController extends Controller
             ]);
         }
 
-            $item->update([
-                'name' => $request->get('name'),
-                'alias' => $request->get('alias'),
-                'status' => ($request->has('status') ? (int)$request->get('status') : 0),
-                'client_id' => $request->has('client_id') ? $request->get('client_id') : null,
-                'client_secret' => $request->has('client_secret') ? $request->get('client_secret') : null,
-            ]);
+        $payload = [
+            'name' => $request->get('name'),
+            'alias' => $request->get('alias'),
+            'status' => ($request->has('status') ? (int)$request->get('status') : 0),
+        ];
+
+        // Only overwrite client_id when a non-empty value is provided.
+        $clientId = trim((string) $request->get('client_id', ''));
+        if ($clientId !== '') {
+            $payload['client_id'] = $clientId;
+        }
+
+        // Never null an existing secret by omission/empty — admin SoT footgun.
+        $clientSecret = trim((string) $request->get('client_secret', ''));
+        if ($clientSecret !== '') {
+            $payload['client_secret'] = $clientSecret;
+        }
+
+        $item->update($payload);
 
         return response()->json([
             'status' => 0,
             'message' => 'Сервис '.$item->name.' успешно обновлен'
         ]);
+    }
+
+    private function maskSecret(string $secret): string
+    {
+        $secret = trim($secret);
+        if ($secret === '') {
+            return '';
+        }
+        if (strlen($secret) <= 8) {
+            return str_repeat('*', strlen($secret));
+        }
+
+        return substr($secret, 0, 4).str_repeat('*', max(4, strlen($secret) - 8)).substr($secret, -4);
     }
 
     /**
