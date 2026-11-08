@@ -47,6 +47,11 @@ final class SourceChecks
             return $bcActive && $parser === 'BestChange';
         }
 
+        // Crypto→ZELLEUSD under BENCHMARK: BestChange must not compete.
+        if (self::isZelleIncomingBenchmark($dir)) {
+            return false;
+        }
+
         // Derived-owned rails may use healthy BestChange as primary BASE.
         if (self::isDerivedOwned($dir)) {
             return self::isHealthyBestChangeBase($dir);
@@ -56,18 +61,25 @@ final class SourceChecks
     }
 
     /**
-     * Exclusive ZELLEUSD→* ownership — must win before derived/manual inside courses,
-     * unless BestChange is the intentional runtime owner for that direction.
+     * Exclusive Zelle-leg ownership — must win before derived/manual inside courses,
+     * unless BestChange is the intentional runtime owner for an outgoing direction.
      */
     public static function zelle(object $dir): bool
     {
-        if (!self::isZelleOutgoing($dir)) {
-            return false;
+        if (self::isZelleOutgoing($dir)) {
+            $bcActive = isset($dir->bestchange_directions)
+                && (int) ($dir->bestchange_directions->status ?? 0) === 1;
+            if ($bcActive && (string) ($dir->parser_source_name ?? '') === 'BestChange') {
+                return false;
+            }
+
+            $course = trim((string) ($dir->course_value ?? ''));
+            $mirror = trim((string) ($dir->manual_rate_value ?? ''));
+
+            return self::isPositiveNumeric($course) || self::isPositiveNumeric($mirror);
         }
 
-        $bcActive = isset($dir->bestchange_directions)
-            && (int) ($dir->bestchange_directions->status ?? 0) === 1;
-        if ($bcActive && (string) ($dir->parser_source_name ?? '') === 'BestChange') {
+        if (!self::isZelleIncomingBenchmark($dir)) {
             return false;
         }
 
@@ -198,6 +210,20 @@ final class SourceChecks
         } catch (Throwable) {
             return false;
         }
+    }
+
+    private static function isZelleIncomingBenchmark(object $dir): bool
+    {
+        $currency2 = (int) ($dir->id_currency2 ?? 0);
+        $currency1 = (int) ($dir->id_currency1 ?? 0);
+        if ($currency2 !== ZelleOutgoingRateWriteGuard::ZELLE_CURRENCY_ID
+            || $currency1 <= 0
+            || $currency1 === ZelleOutgoingRateWriteGuard::ZELLE_CURRENCY_ID
+        ) {
+            return false;
+        }
+
+        return (string) ($dir->parser_source_name ?? '') === ZelleUsdUsdtBenchmarkAuthority::PARSER_SOURCE_NAME;
     }
 
     private static function isDerivedOwned(object $dir): bool

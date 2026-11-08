@@ -18,7 +18,10 @@ final class ZelleUsdBenchmarkResult
     public const REASON_NOT_QUOTEABLE = 'ZELLE_BENCHMARK_NOT_QUOTEABLE';
     public const REASON_SOURCE_ERROR = 'ZELLE_BENCHMARK_SOURCE_ERROR';
     public const REASON_NOT_ZELLE_OUTGOING = 'ZELLE_NOT_OUTGOING';
+    public const REASON_NOT_ZELLE_LEG = 'ZELLE_NOT_LEG';
+    public const REASON_INBOUND_PEER_MISSING = 'ZELLE_INBOUND_PEER_MISSING';
     public const REASON_STABLE_PEG = 'ZELLE_BENCHMARK_FOUND';
+    public const REASON_INBOUND_INVERSE = 'ZELLE_BENCHMARK_INBOUND_INVERSE';
 
     public function __construct(
         public readonly bool $eligible,

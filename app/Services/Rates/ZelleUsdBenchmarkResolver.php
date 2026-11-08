@@ -47,8 +47,29 @@ final class ZelleUsdBenchmarkResolver
         return (int) ($direction->id_currency1 ?? 0) === self::ZELLE_CURRENCY_ID;
     }
 
+    /** Crypto/fiat → ZELLEUSD (receive Zelle). */
+    public function isZelleIncoming(DirectionExchange $direction): bool
+    {
+        return (int) ($direction->id_currency2 ?? 0) === self::ZELLE_CURRENCY_ID
+            && (int) ($direction->id_currency1 ?? 0) > 0
+            && (int) ($direction->id_currency1 ?? 0) !== self::ZELLE_CURRENCY_ID;
+    }
+
+    public function isZelleLeg(DirectionExchange $direction): bool
+    {
+        return $this->isZelleOutgoing($direction) || $this->isZelleIncoming($direction);
+    }
+
+    /**
+     * Resolve BASE course for any Zelle leg.
+     * Outgoing: USDTTRC20→dest hierarchy. Incoming: exact inverse of outgoing peer BASE.
+     */
     public function resolve(DirectionExchange $zelleDirection): ZelleUsdBenchmarkResult
     {
+        if ($this->isZelleIncoming($zelleDirection)) {
+            return $this->resolveIncomingInverse($zelleDirection);
+        }
+
         $zelleId = (int) ($zelleDirection->id ?? 0);
         if (!$this->isZelleOutgoing($zelleDirection)) {
             return new ZelleUsdBenchmarkResult(
@@ -60,7 +81,7 @@ final class ZelleUsdBenchmarkResolver
                 benchmarkTimestamp: null,
                 benchmarkSource: null,
                 fresh: false,
-                reasonCode: ZelleUsdBenchmarkResult::REASON_NOT_ZELLE_OUTGOING,
+                reasonCode: ZelleUsdBenchmarkResult::REASON_NOT_ZELLE_LEG,
             );
         }
 
@@ -362,6 +383,102 @@ final class ZelleUsdBenchmarkResolver
         } catch (Throwable) {
             return null;
         }
+    }
+
+    /**
+     * Crypto→ZELLEUSD BASE = 1 / (ZELLEUSD→crypto BASE).
+     * Uses the same outgoing resolver so both legs share one authority tree.
+     */
+    private function resolveIncomingInverse(DirectionExchange $incoming): ZelleUsdBenchmarkResult
+    {
+        $inId = (int) ($incoming->id ?? 0);
+        $coinId = (int) ($incoming->id_currency1 ?? 0);
+        if ($coinId <= 0) {
+            return $this->fail($inId, null, ZelleUsdBenchmarkResult::REASON_SOURCE_ERROR);
+        }
+
+        try {
+            $outRow = DB::table('direction_exchange')
+                ->where('id_currency1', self::ZELLE_CURRENCY_ID)
+                ->where('id_currency2', $coinId)
+                ->whereNull('deleted_at')
+                ->where('status', 1)
+                ->orderByDesc('id')
+                ->first();
+        } catch (Throwable) {
+            return $this->fail($inId, $coinId, ZelleUsdBenchmarkResult::REASON_SOURCE_ERROR);
+        }
+
+        if ($outRow === null) {
+            return $this->fail($inId, $coinId, ZelleUsdBenchmarkResult::REASON_INBOUND_PEER_MISSING);
+        }
+
+        $outgoing = DirectionExchange::query()->find((int) $outRow->id);
+        if ($outgoing === null) {
+            return $this->fail($inId, $coinId, ZelleUsdBenchmarkResult::REASON_INBOUND_PEER_MISSING);
+        }
+
+        $outResolved = $this->resolve($outgoing);
+        if (!$outResolved->eligible || $outResolved->benchmarkRate === null) {
+            return new ZelleUsdBenchmarkResult(
+                eligible: false,
+                zelleDirectionId: $inId,
+                destinationCurrencyId: $coinId,
+                benchmarkDirectionId: (int) $outgoing->id,
+                benchmarkRate: null,
+                benchmarkTimestamp: $outResolved->benchmarkTimestamp,
+                benchmarkSource: $outResolved->benchmarkSource,
+                fresh: false,
+                reasonCode: $outResolved->reasonCode,
+                matchMethod: 'inbound_inverse_peer_unresolved',
+            );
+        }
+
+        $outRate = trim((string) $outResolved->benchmarkRate);
+        if ($outRate === '' || !is_numeric($outRate) || (float) $outRate <= 0.0) {
+            return $this->fail($inId, $coinId, ZelleUsdBenchmarkResult::REASON_ZERO);
+        }
+
+        try {
+            // High-precision inverse: inbound Zelle per 1 coin.
+            $inverse = $this->bcInvert($outRate, 18);
+        } catch (Throwable) {
+            return $this->fail($inId, $coinId, ZelleUsdBenchmarkResult::REASON_SOURCE_ERROR);
+        }
+
+        if ($inverse === null || (float) $inverse <= 0.0) {
+            return $this->fail($inId, $coinId, ZelleUsdBenchmarkResult::REASON_ZERO);
+        }
+
+        return new ZelleUsdBenchmarkResult(
+            eligible: true,
+            zelleDirectionId: $inId,
+            destinationCurrencyId: $coinId,
+            benchmarkDirectionId: (int) $outgoing->id,
+            benchmarkRate: $inverse,
+            benchmarkTimestamp: $outResolved->benchmarkTimestamp ?? gmdate('c'),
+            benchmarkSource: 'INVERSE_OF_OUTGOING:'.((string) ($outResolved->benchmarkSource ?? 'OUT')),
+            fresh: $outResolved->fresh,
+            reasonCode: ZelleUsdBenchmarkResult::REASON_INBOUND_INVERSE,
+            matchMethod: 'inbound_inverse_of_zelle_outgoing',
+        );
+    }
+
+    private function bcInvert(string $rate, int $scale): ?string
+    {
+        if (!function_exists('bcdiv') || !function_exists('bccomp')) {
+            $f = (float) $rate;
+            if ($f <= 0.0) {
+                return null;
+            }
+
+            return sprintf('%.'.$scale.'F', 1.0 / $f);
+        }
+        if (bccomp($rate, '0', $scale) !== 1) {
+            return null;
+        }
+
+        return bcdiv('1', $rate, $scale);
     }
 
     private function fail(int $zelleId, ?int $destId, string $reason): ZelleUsdBenchmarkResult

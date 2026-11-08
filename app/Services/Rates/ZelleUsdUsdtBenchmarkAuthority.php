@@ -9,12 +9,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Durable writer: ZELLEUSD outgoing course_value = USDTTRC20→dest benchmark base.
+ * Durable writer for both Zelle legs:
+ * - ZELLEUSD → dest BASE = USDTTRC20→dest benchmark hierarchy
+ * - coin → ZELLEUSD BASE = exact inverse of the outgoing peer BASE
+ *
  * Fee is NOT baked in — CanonicalDirectionRateCalculator applies floating_fee/fix_fee once.
  */
 final class ZelleUsdUsdtBenchmarkAuthority
 {
     public const PARSER_SOURCE_NAME = 'ZELLE_USDTTRC20_BENCHMARK';
+
+    /** Canonical commercial pins (admin «Прибыль» +6 ⇔ floating_fee=-6). */
+    public const CANONICAL_FLOATING_FEE = '-6';
+
+    public const CANONICAL_FIX_FEE = '-3';
 
     public function __construct(
         private readonly ZelleUsdBenchmarkResolver $resolver = new ZelleUsdBenchmarkResolver(),
@@ -28,7 +36,13 @@ final class ZelleUsdUsdtBenchmarkAuthority
 
     public function owns(DirectionExchange $direction): bool
     {
-        return $this->resolver->isZelleOutgoing($direction);
+        if ($this->resolver->isZelleOutgoing($direction)) {
+            return true;
+        }
+
+        // Incoming owns only when already labeled BENCHMARK (or being migrated).
+        return $this->resolver->isZelleIncoming($direction)
+            && (string) ($direction->parser_source_name ?? '') === self::PARSER_SOURCE_NAME;
     }
 
     /**
@@ -36,13 +50,25 @@ final class ZelleUsdUsdtBenchmarkAuthority
      */
     public function apply(DirectionExchange $direction, bool $dryRun = true): array
     {
-        // Owner policy: when BestChange is the intentional runtime owner, do not compete.
-        if (ZelleOutgoingRateWriteGuard::yieldsToBestChange((int) $direction->id)) {
+        // Owner policy: when BestChange is the intentional runtime owner on outgoing, do not compete.
+        if ($this->resolver->isZelleOutgoing($direction)
+            && ZelleOutgoingRateWriteGuard::yieldsToBestChange((int) $direction->id)
+        ) {
             return [
                 'ok' => true,
                 'written' => false,
                 'course' => null,
                 'reason' => 'bestchange_active_owner',
+                'benchmark' => null,
+            ];
+        }
+
+        if (!$this->resolver->isZelleLeg($direction)) {
+            return [
+                'ok' => false,
+                'written' => false,
+                'course' => null,
+                'reason' => ZelleUsdBenchmarkResult::REASON_NOT_ZELLE_LEG,
                 'benchmark' => null,
             ];
         }
@@ -53,8 +79,6 @@ final class ZelleUsdUsdtBenchmarkAuthority
         if (!$result->eligible || $result->benchmarkRate === null) {
             if (!$dryRun && $this->owns($direction)) {
                 // Fail closed: do not retain stale prior ZELLE market rate as public base.
-                // Also deactivate + quarantine so status=1 + course=0 cannot stay orderable
-                // (rates:health treats that as critical invalid_active_rate).
                 DB::table('direction_exchange')->where('id', $direction->id)->update([
                     'course_value' => '0',
                     'is_error_rate' => 1,
@@ -77,8 +101,6 @@ final class ZelleUsdUsdtBenchmarkAuthority
 
         $course = $result->benchmarkRate;
         if (!$dryRun) {
-            // profit=0 is ZELLE family invariant (Прибыль lives in floating_fee).
-            // Gate marks this as an approved compiler neutralization, not RUB magic profit.
             CommercialAdjustmentWriteGate::run('zelle:ZelleUsdUsdtBenchmarkAuthority', function () use ($direction, $course): void {
                 DB::table('direction_exchange')->where('id', $direction->id)->update([
                     'course_value' => $course,
@@ -87,12 +109,14 @@ final class ZelleUsdUsdtBenchmarkAuthority
                     'error_rate_text' => null,
                     'parser_source_name' => self::PARSER_SOURCE_NAME,
                     'exchange_rate' => $course,
-                    // Neutralize legacy Calculator profit/add_course so fees apply only via floating_fee/fix_fee.
                     'profit' => 0,
                     'add_course1' => 0,
                     'add_course2' => 0,
                     'your_add_course1' => 0,
                     'your_add_course2' => 0,
+                    'floating_fee' => self::CANONICAL_FLOATING_FEE,
+                    'fix_fee' => self::CANONICAL_FIX_FEE,
+                    'is_type_rate' => 1,
                     'updated_at' => now(),
                 ]);
             });
@@ -101,6 +125,7 @@ final class ZelleUsdUsdtBenchmarkAuthority
                 'benchmark_direction_id' => $result->benchmarkDirectionId,
                 'course' => $course,
                 'source' => $result->benchmarkSource,
+                'leg' => $this->resolver->isZelleIncoming($direction) ? 'inbound' : 'outgoing',
             ]);
         }
 
@@ -114,36 +139,47 @@ final class ZelleUsdUsdtBenchmarkAuthority
     }
 
     /**
+     * Refresh outgoing first, then inbound inverses (depends on outgoing BASE).
+     *
      * @return array{scanned:int,ok:int,failed:int,rows:list<array<string,mixed>>}
      */
     public function refreshAll(bool $dryRun = true): array
     {
-        $dirs = DirectionExchange::query()
+        $outgoing = DirectionExchange::query()
             ->where('id_currency1', ZelleUsdBenchmarkResolver::ZELLE_CURRENCY_ID)
+            ->whereNull('deleted_at')
+            ->get();
+
+        $inbound = DirectionExchange::query()
+            ->where('id_currency2', ZelleUsdBenchmarkResolver::ZELLE_CURRENCY_ID)
+            ->where('id_currency1', '!=', ZelleUsdBenchmarkResolver::ZELLE_CURRENCY_ID)
             ->whereNull('deleted_at')
             ->get();
 
         $ok = 0;
         $failed = 0;
         $rows = [];
-        foreach ($dirs as $dir) {
-            $r = $this->apply($dir, $dryRun);
-            $rows[] = [
-                'direction_id' => (int) $dir->id,
-                'ok' => $r['ok'],
-                'course' => $r['course'],
-                'reason' => $r['reason'],
-                'benchmark_direction_id' => $r['benchmark']['benchmark_direction_id'] ?? null,
-            ];
-            if ($r['ok']) {
-                $ok++;
-            } else {
-                $failed++;
+
+        foreach ([$outgoing, $inbound] as $batch) {
+            foreach ($batch as $dir) {
+                $r = $this->apply($dir, $dryRun);
+                $rows[] = [
+                    'direction_id' => (int) $dir->id,
+                    'ok' => $r['ok'],
+                    'course' => $r['course'],
+                    'reason' => $r['reason'],
+                    'benchmark_direction_id' => $r['benchmark']['benchmark_direction_id'] ?? null,
+                ];
+                if ($r['ok']) {
+                    $ok++;
+                } else {
+                    $failed++;
+                }
             }
         }
 
         return [
-            'scanned' => $dirs->count(),
+            'scanned' => $outgoing->count() + $inbound->count(),
             'ok' => $ok,
             'failed' => $failed,
             'rows' => $rows,

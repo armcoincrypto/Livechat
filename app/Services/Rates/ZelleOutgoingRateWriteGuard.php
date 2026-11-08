@@ -101,11 +101,39 @@ final class ZelleOutgoingRateWriteGuard
     }
 
     /**
+     * True when direction is crypto→ZELLEUSD already labeled BENCHMARK.
+     */
+    public static function isZelleIncomingBenchmarkId(?int $directionId): bool
+    {
+        if ($directionId === null || $directionId <= 0) {
+            return false;
+        }
+        $row = DB::table('direction_exchange')->where('id', $directionId)->first([
+            'id_currency1', 'id_currency2', 'parser_source_name',
+        ]);
+        if ($row === null) {
+            return false;
+        }
+        if ((int) $row->id_currency2 !== self::ZELLE_CURRENCY_ID
+            || (int) $row->id_currency1 === self::ZELLE_CURRENCY_ID
+            || (int) $row->id_currency1 <= 0
+        ) {
+            return false;
+        }
+
+        return (string) ($row->parser_source_name ?? '') === self::AUTHORITY;
+    }
+
+    /**
      * Generic/derived writers must not mutate ZELLE outgoing rate fields,
      * unless BestChange is the active runtime owner (then BC/compiler may write).
+     * Also blocks crypto→ZELLEUSD once labeled BENCHMARK.
      */
     public static function blocksGenericWrite(?int $directionId): bool
     {
+        if (self::isZelleIncomingBenchmarkId($directionId)) {
+            return true;
+        }
         if (!self::isZelleOutgoingId($directionId)) {
             return false;
         }

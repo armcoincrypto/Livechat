@@ -9,7 +9,8 @@ use iEXPackages\Calculator\Contracts\StrategyInterface;
 use iEXPackages\Calculator\Traits\InteractsWithNumbers;
 
 /**
- * Retains ZELLE_USDTTRC20_BENCHMARK automatic BASE for ZELLEUSD outgoing directions.
+ * Retains ZELLE_USDTTRC20_BENCHMARK automatic BASE for both Zelle legs
+ * (ZELLEUSD→* and crypto→ZELLEUSD when parser is BENCHMARK).
  *
  * Prevents the ionCube courses compiler from falling through to ManualStrategy
  * (or other sources) and rewriting the exclusive ZELLE ownership label.
