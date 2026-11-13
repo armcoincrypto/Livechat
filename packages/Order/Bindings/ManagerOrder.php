@@ -420,7 +420,9 @@ trait ManagerOrder
                     sendable: 'order_created_job',
                     model: $order,
                     delaySeconds: 5,
-                    queue: 'high'
+                    queue: 'high',
+                    cacheKey: 'order_created_mail:'.$order->id,
+                    cacheMinutes: 30
                 );
             }
         } catch (\Throwable $e) {

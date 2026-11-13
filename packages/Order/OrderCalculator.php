@@ -103,6 +103,24 @@ class OrderCalculator
 
     public function run(): array
     {
+        // Defense-in-depth: same order surface gate as ValidatesOrderRules (DEF-003 residual).
+        // Fail closed if eligibility cannot be evaluated.
+        try {
+            $surface = \App\Services\Rates\RateDirectionEligibility::make()
+                ->evaluateDirection($this->directionExchange);
+            if (empty($surface['order_allowed'])) {
+                throw new \RuntimeException('direction temporarily unavailable for order calculation');
+            }
+        } catch (\RuntimeException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            Log::error('rate_order_calculator_eligibility_gate_failed', [
+                'direction_id' => $this->directionExchange->id ?? null,
+                'message' => $e->getMessage(),
+            ]);
+            throw new \RuntimeException('direction temporarily unavailable for order calculation', 0, $e);
+        }
+
         $directionForCalc = $this->directionExchange;
         $shadowLockedQuote = null;
         $token = isset($this->options['quote_token']) ? trim((string) $this->options['quote_token']) : '';
