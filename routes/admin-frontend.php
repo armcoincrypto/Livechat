@@ -169,7 +169,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('frontend-api')->middleware(['frontend', 'force-json'])->group(function ()
 {
-    Route::post('/uploads', [UploadController::class, 'upload']);
+    // Uploads intentionally NOT here — must require admin.auth (XSS/RCE probes via public SVG/ZIP).
     Route::prefix('auth')->group(function ()
     {
         Route::post('/2faGoogleVerify', [Google2FaController::class, 'verify'])->name('2faGoogleVerify');
@@ -185,6 +185,9 @@ Route::prefix('frontend-api')->middleware(['frontend', 'force-json'])->group(fun
 
     Route::middleware(['2fa', 'is_reading_mode', 'admin.auth', 'admin'])->group(function ()
     {
+        Route::post('/uploads', [UploadController::class, 'upload'])
+            ->middleware('throttle:30,1');
+
         Route::get('/ping', [HomeController::class, 'getPing'])->name('ping');
         Route::get('/initialConfig', [HomeController::class, 'getInitialConfig'])->name('initialConfig');
 

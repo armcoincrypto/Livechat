@@ -1,104 +1,101 @@
 <?php
 namespace iEXPackages\ExchangerClient\Http\Controller\SendImage;
 
-use App\Mail\Admin\AdminNewVerificationCard;
-use App\Models\NotificationEvent;
 use App\Models\Task;
-use App\Models\TaskField;
 use App\Models\TasksCheckImage;
-use App\Models\VerificationCard;
-use App\Support\Facades\iEXApp;
+use iEXPackages\ExchangerClient\Support\AssertOrderVerificationAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 
 class ImageAttachCheckController
 {
     /**
      * Проверка загружаемого чека
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function validate(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'file' => 'required|file|mimetypes:image/jpeg,image/png,application/pdf|max:10000'
+            'file' => 'required|file|mimetypes:image/jpeg,image/png,application/pdf|max:10000',
         ]);
 
-        // Если есть ошибки, то дальше не пускаем
         if ($validator->fails()) {
             return Response::json([
                 'message' => $validator->messages()->first(),
             ], 422);
         }
 
-        return \response()->json([
-            'status' => 0
+        return response()->json([
+            'status' => 0,
         ]);
     }
 
     /**
-     * Прикрепить чек к заявке
-     *
-     * @param Request $request
-     * @return JsonResponse
+     * Прикрепить чек к заявке (possession-gated — public_id alone is never enough).
      */
     public function store(Request $request): JsonResponse
     {
+        // Do NOT use exists:tasks,public_id — that enumerates valid order IDs.
         $validator = Validator::make($request->all(), [
             'file' => 'required|file|mimetypes:image/jpeg,image/png,application/pdf|max:10000',
-            'order_id' => 'required|numeric|exists:tasks,public_id',
+            'order_id' => 'required|numeric',
         ]);
 
-        // Если есть ошибки, то дальше не пускаем
         if ($validator->fails()) {
+            Log::warning('attach_check_upload_validation_failed', [
+                'errors' => $validator->errors()->keys(),
+                'ip' => $request->ip(),
+            ]);
+
             return Response::json([
                 'message' => $validator->messages()->first(),
             ], 422);
         }
 
+        $order = Task::wherePublicId((int) $request->order_id)->first();
+        if (!$order || !AssertOrderVerificationAccess::allows($request, $order)) {
+            return AssertOrderVerificationAccess::denyResponse();
+        }
 
-        // Получаем по заявке
-        $order = Task::wherePublicId((int) $request->order_id)->firstOrFail();
+        $uploaded = $request->file('file');
+        $mime = strtolower((string) ($uploaded->getMimeType() ?: ''));
+        $ext = match ($mime) {
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'application/pdf' => 'pdf',
+            default => '',
+        };
+        if ($ext === '') {
+            return Response::json(['message' => 'Invalid file type'], 422);
+        }
 
-        // Получаем новые имена для файлов
-        $newFileName = sprintf('%s-%s.%s',
-            Str::random(5), Str::uuid()->toString(),
-            Str::lower($request->file('file')->getClientOriginalExtension())
-        );
+        $newFileName = sprintf('%s-%s.%s', Str::random(5), Str::uuid()->toString(), $ext);
 
-
-        if($request->file('file')->getMimeType() == 'application/pdf')
-        {
-            $request->file('file')
-                ->storeAs('/order_check/', $newFileName, 'iexexchanger-disk');
+        if ($mime === 'application/pdf') {
+            $uploaded->storeAs('/order_check/', $newFileName, 'iexexchanger-disk');
         } else {
-            Image::read($request->file('file')->getRealPath())
+            Image::read($uploaded->getRealPath())
                 ->scaleDown(width: config('image.resizes.order_check'))
                 ->save(
-                    sprintf('%s/order_check/%s',
+                    sprintf(
+                        '%s/order_check/%s',
                         config('filesystems.disks.iexexchanger-disk.root'),
                         $newFileName
                     )
                 );
         }
 
-        // Записываем чек в лог
         TasksCheckImage::create([
             'id_order' => (int) $order->id,
             'image' => $newFileName,
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
-            'mimetype' => $request->file('file')->getMimeType(),
-            'size' => $request->file('file')->getSize(),
+            'mimetype' => $mime,
+            'size' => $uploaded->getSize(),
         ]);
 
         $order->update([

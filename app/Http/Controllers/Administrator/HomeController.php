@@ -144,6 +144,22 @@ class HomeController extends Controller
         $filename = $validated->validated()['filename'];
         $path = $validated->validated()['path'];
 
+        // Allowlist private folders only (no arbitrary disk reads).
+        $allowedRoots = [
+            'user_verification',
+            'card_verification',
+            'order_check',
+            'payment_systems',
+            'contests',
+        ];
+        $root = explode('/', trim($path, '/'))[0] ?? '';
+        if ($root === '' || !in_array($root, $allowedRoots, true)) {
+            return Response::json([
+                'success' => false,
+                'message' => 'Path is not allowed.',
+            ], 403);
+        }
+
         $fullPath = "{$path}/{$filename}";
 
         if (!Storage::disk('iexexchanger-disk')->exists($fullPath)) {
@@ -153,7 +169,28 @@ class HomeController extends Controller
             ], 404);
         }
 
+        $mime = (string) Storage::disk('iexexchanger-disk')->mimeType($fullPath);
+        $lowerMime = strtolower($mime);
+        // Never inline scriptable types.
+        if (
+            str_contains($lowerMime, 'svg')
+            || str_contains($lowerMime, 'html')
+            || str_contains($lowerMime, 'javascript')
+            || str_contains($lowerMime, 'xml')
+        ) {
+            return Response::json([
+                'success' => false,
+                'message' => 'File type is not allowed.',
+            ], 415);
+        }
+
+        $safeMime = in_array($lowerMime, ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'], true)
+            ? $lowerMime
+            : 'application/octet-stream';
+
         return Response::make(Storage::disk('iexexchanger-disk')->get($fullPath))
-            ->header("Content-Type", Storage::disk('iexexchanger-disk')->mimeType($fullPath));
+            ->header('Content-Type', $safeMime)
+            ->header('X-Content-Type-Options', 'nosniff')
+            ->header('Content-Disposition', 'inline; filename="'.basename($filename).'"');
     }
 }

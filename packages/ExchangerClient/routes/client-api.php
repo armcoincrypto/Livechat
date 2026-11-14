@@ -190,10 +190,12 @@ Route::prefix('send')->group(function ()
         Route::get('/{order_id}/status-verification', [ImageVerificationCardController::class, 'status'])
             ->middleware('throttle:60,1');
 
-        // Прикрепляем чек к заявке
-        Route::post('/attach-file', [ImageAttachCheckController::class, 'store']);
+        // Прикрепляем чек к заявке (possession-gated in controller)
+        Route::post('/attach-file', [ImageAttachCheckController::class, 'store'])
+            ->middleware('throttle:20,1');
         // Проверка загруженного файла
-        Route::post('/validate-attach-file', [ImageAttachCheckController::class, 'validate']);
+        Route::post('/validate-attach-file', [ImageAttachCheckController::class, 'validate'])
+            ->middleware('throttle:30,1');
 
         // Отправляем на верификацию через личный кабинет
         Route::post('/upload-verification-account', [ImageVerificationAccountController::class, 'store'])->middleware(['auth']);

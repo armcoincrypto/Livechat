@@ -24,7 +24,8 @@ final class OrderChatController
     {
         $request->validate([
             'message' => 'nullable|string',
-            'file' => 'nullable|file|mimetypes:image/png,image/jpeg,image/svg+xml,application/pdf|max:10240',
+            // SVG banned — public webroot XSS if served same-origin.
+            'file' => 'nullable|file|mimetypes:image/png,image/jpeg,application/pdf|max:10240',
         ]);
 
         $this->chat->clientSendMessage(
