@@ -35,6 +35,7 @@ use iEXPackages\ExchangerClient\Http\Controller\StartController;
 use iEXPackages\ExchangerClient\Http\Controller\TechController;
 use iEXPackages\ExchangerClient\Http\Controller\Telegram\TelegramOrdersController;
 use iEXPackages\OrderChat\Http\Controllers\Client\OrderChatController;
+use iEXPackages\OrderChat\Http\Controllers\Client\OrderChatFileController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -214,6 +215,10 @@ Route::prefix('order')->group(function ()
     Route::get('/{public_id}',[OrdersController::class, 'show']);
     Route::get('/{public_id}/chat', [OrderChatController::class, 'index']);
     Route::post('/{public_id}/chat', [OrderChatController::class, 'store']);
+    // Private chat attachment download (possession-gated; not webroot)
+    Route::get('/{public_id}/chat/files/{filename}', [OrderChatFileController::class, 'show'])
+        ->where('filename', '[\w.\-]+')
+        ->middleware('throttle:60,1');
 });
 
 // Конкурсы

@@ -57,6 +57,10 @@ final class DiditWebhookSignature
             if ($timestamp === '' && is_string($timestampHeader) && $timestampHeader !== '') {
                 $timestamp = $timestampHeader;
             }
+            // Replay window for simple signatures (no body binding beyond HMAC fields).
+            if ($timestamp !== '' && !self::timestampWithinSkew($timestamp, 300)) {
+                return false;
+            }
             $sessionId = (string) ($decodedJson['session_id'] ?? '');
             $status = (string) ($decodedJson['status'] ?? '');
             $webhookType = (string) ($decodedJson['webhook_type'] ?? '');
@@ -159,5 +163,34 @@ final class DiditWebhookSignature
         }
 
         return array_keys($value) === range(0, count($value) - 1);
+    }
+
+    /**
+     * Accept unix seconds/ms or parseable datetime strings within ±$skewSeconds.
+     */
+    private static function timestampWithinSkew(string $timestamp, int $skewSeconds): bool
+    {
+        $timestamp = trim($timestamp);
+        if ($timestamp === '') {
+            return false;
+        }
+
+        $ts = null;
+        if (ctype_digit($timestamp)) {
+            $n = (int) $timestamp;
+            // ms vs seconds
+            $ts = $n > 10_000_000_000 ? intdiv($n, 1000) : $n;
+        } else {
+            $parsed = strtotime($timestamp);
+            if ($parsed !== false) {
+                $ts = $parsed;
+            }
+        }
+
+        if ($ts === null) {
+            return false;
+        }
+
+        return abs(time() - $ts) <= $skewSeconds;
     }
 }

@@ -149,6 +149,7 @@ class HomeController extends Controller
             'user_verification',
             'card_verification',
             'order_check',
+            'order_chat',
             'payment_systems',
             'contests',
         ];

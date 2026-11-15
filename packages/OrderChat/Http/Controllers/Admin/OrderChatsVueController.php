@@ -51,7 +51,9 @@ final class OrderChatsVueController
                     'is_read' => $item->is_read,
                     'created_at' => $item->created_at->format('H:i'),
                     'user' => $user,
-                    'file' => $item->file_path ? url('images/order_chat/' . $item->file_path) : null,
+                    'file' => $item->file_path
+                        ? url(config('iexexchanger.admin_folder', 'iexadmin').'/frontend-api/private-image/default?path=order_chat&filename='.rawurlencode($item->file_path))
+                        : null,
                 ]
             ];
         });

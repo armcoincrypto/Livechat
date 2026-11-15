@@ -69,7 +69,25 @@ final class UploadSecurityHardenContractTest extends TestCase
     {
         $src = file_get_contents($this->root().'/app/Http/Controllers/Administrator/HomeController.php');
         $this->assertStringContainsString('user_verification', $src);
+        $this->assertStringContainsString('order_chat', $src);
         $this->assertStringContainsString('Path is not allowed', $src);
         $this->assertStringContainsString('X-Content-Type-Options', $src);
+    }
+
+    public function test_order_chat_stores_on_private_disk(): void
+    {
+        $store = file_get_contents($this->root().'/packages/OrderChat/Support/OrderChatFileStorage.php');
+        $routes = file_get_contents($this->root().'/packages/ExchangerClient/routes/client-api.php');
+        $this->assertStringContainsString("DISK_FOLDER = 'order_chat'", $store);
+        $this->assertStringContainsString("disk('iexexchanger-disk')", $store);
+        $this->assertStringNotContainsString('public_path(', $store);
+        $this->assertStringContainsString("chat/files/{filename}", $routes);
+    }
+
+    public function test_didit_simple_signature_enforces_timestamp_skew(): void
+    {
+        $src = file_get_contents($this->root().'/packages/KYCPlugin/Drivers/Didit/DiditWebhookSignature.php');
+        $this->assertStringContainsString('timestampWithinSkew', $src);
+        $this->assertStringContainsString('300', $src);
     }
 }

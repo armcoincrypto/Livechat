@@ -17,7 +17,7 @@ final class OrderChatController
     {
         $items = $this->chat->getClientMessages($public_id, (string)$request->ip());
 
-        return new OrderChatResources($items);
+        return (new OrderChatResources($items))->withPublicId($public_id);
     }
 
     public function store(int $public_id, Request $request): JsonResponse
