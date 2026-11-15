@@ -7,6 +7,7 @@ use iEXPackages\ExchangerClient\Http\Resources\Account\UserResource;
 use iEXPackages\ExchangerClient\Http\Resources\SessionResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Session;
@@ -140,6 +141,16 @@ class PersonalController extends AbstractController
             $user->oauth_password_is_placeholder = false;
         }
         $user->save();
+
+        // Keep the current device signed in. AuthenticateSession compares the
+        // session password_hash_* to the DB hash; without this refresh the next
+        // account click logs the user out and strands them on login?returnTo=.
+        if ($request->hasSession()) {
+            $request->session()->put(
+                'password_hash_'.Auth::getDefaultDriver(),
+                $user->getAuthPassword()
+            );
+        }
 
         return response()->json([
             'status' => 0,

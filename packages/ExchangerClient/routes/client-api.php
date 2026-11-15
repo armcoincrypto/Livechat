@@ -50,7 +50,10 @@ Route::get('/ping', function () {
 });
 
 Route::middleware(['throttle:60,1'])->prefix('auth')->group(function () {
-    Route::post('/login', [LoginController::class, 'login'])->middleware(['guest']);
+    // Login must stay guest-free for JSON/BFF: RedirectIfAuthenticated used to
+    // HTML-302 already-authed POSTs, which the owned BFF mapped to 502 and left
+    // users stuck on /auth/login?returnTo=/account after password rotation.
+    Route::post('/login', [LoginController::class, 'login']);
     Route::post('/register', [RegisterController::class, 'store'])->middleware(['guest']);
 
     Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware(['guest'])->name('password.email');

@@ -18,6 +18,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -299,11 +300,28 @@ class UserController extends Controller
             $data['allowed_ip_addresses'] = $request->allowed_ip_addresses ?: null;
         }
 
+        $passwordRotated = false;
         if ($manager->can('admin_account_change_password') && $request->filled('password')) {
             $data['password'] = Hash::make($request->password);
+            $passwordRotated = true;
         }
 
         $user->update($data);
+
+        // Admin + public Account share the same users table + session cookie.
+        // Refresh password_hash for the current device so AuthenticateSession
+        // does not immediately kick the operator onto login?returnTo=/account.
+        if (
+            $passwordRotated
+            && $request->hasSession()
+            && (int) Auth::id() === (int) $user->id
+        ) {
+            $user->refresh();
+            $request->session()->put(
+                'password_hash_'.Auth::getDefaultDriver(),
+                $user->getAuthPassword()
+            );
+        }
 
         if ($manager->can('admin_bonuses_program') && $request->filled('referral_program_id')) {
             $referralLink = ReferralLink::where('user_id', $id)->first();
