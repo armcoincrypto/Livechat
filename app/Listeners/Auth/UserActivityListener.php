@@ -167,18 +167,24 @@ final class UserActivityListener
         // Инфо об устройстве
         $deviceInfo = $this->deviceDetector->getInfo();
 
-        // 1) Обновляем данные пользователя
-        $user->forceFill([
+        // 1) Обновляем данные пользователя.
+        // logged_ip_address drives admin IP-change control — only stamp it on
+        // admin-panel logins so Account (site) logins cannot poison it and
+        // lock the operator out of /iexadmin with a Forbidden wait page.
+        $fill = [
             'num_auth'          => (int) $user->num_auth + 1,
             'ip_address'        => $ip,
-            'logged_ip_address' => $ip,
             'user_agent'        => $ua,
             'last_activity_at'  => $now,
             'last_login_at'     => $now,
             'language'          => app()->getLocale(),
             'user_browser'      => $deviceInfo['browser']     ?? null,
             'user_device'       => $deviceInfo['device_type'] ?? null,
-        ])->save();
+        ];
+        if ($this->isAdminPath()) {
+            $fill['logged_ip_address'] = $ip;
+        }
+        $user->forceFill($fill)->save();
 
         // 2) Пишем audit login_success
         $authEvent = $this->audit->log(new AuditData(
@@ -225,8 +231,9 @@ final class UserActivityListener
             return;
         }
 
-        // Только для реальных админов: путь админки + permission allow_admin
-        if (! $this->isAdminUserArea($user)) {
+        // Real admin panel session only — Account (is_frontend=1) shares the
+        // cookie but must not trigger admin IP lockdown / Forbidden pages.
+        if (! $this->isAdminPanelSession($user)) {
             return;
         }
 
@@ -264,7 +271,30 @@ final class UserActivityListener
             Auth::logout();
             Google2Fa::logout();
 
-            abort(403, 'Изменение IP-адреса. Авторизация сброшена.');
+            $request = request();
+            if ($request->hasSession()) {
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
+
+            $loginUrl = '/'.trim((string) config('iexexchanger.admin_folder', 'iexadmin'), '/').'/login';
+
+            // Never leave the operator on a dead 403 "wait" page — send them
+            // back to admin login so they can sign in from the new IP.
+            if ($request->expectsJson() || $request->ajax() || str_contains('/'.$request->path(), '/frontend-api/')) {
+                throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                    response()->json([
+                        'status' => 1,
+                        'code' => 'IP_CHANGED',
+                        'message' => 'Изменение IP-адреса. Авторизация сброшена.',
+                        'isAuthenticated' => false,
+                    ], 401)
+                );
+            }
+
+            throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                redirect()->to($loginUrl)
+            );
         }
     }
 
@@ -389,6 +419,18 @@ final class UserActivityListener
     private function isAdminUserArea(?User $user): bool
     {
         return $this->isAdminPath() && $user !== null && $user->can('allow_admin');
+    }
+
+    /**
+     * Admin panel session (not Account/site frontend session).
+     */
+    private function isAdminPanelSession(?User $user): bool
+    {
+        if (! $this->isAdminUserArea($user)) {
+            return false;
+        }
+
+        return (int) ($user->is_frontend ?? 0) !== 1;
     }
 
     /**
