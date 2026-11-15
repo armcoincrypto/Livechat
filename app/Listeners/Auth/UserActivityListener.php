@@ -250,52 +250,62 @@ final class UserActivityListener
         $currentIp = (string) Request::ip();
         $previousIp = (string) ($user->logged_ip_address ?? '');
 
-        if ($previousIp !== '' && $previousIp !== $currentIp) {
-            $this->audit->log(new AuditData(
-                user: $user,
-                email: $user->email ?? null,
-                guard: Auth::getDefaultDriver(),
-                channel: 'admin',
-                event: AuditEvent::IpChangedAdminLogout,
-                result: AuditResult::Blocked,
-                reasonCode: 'ip_change_control',
-                message: 'Смена IP, авторизация сброшена',
-                ip: $currentIp,
-                ipPrev: $previousIp,
-                userAgent: Request::userAgent(),
-                meta: [
-                    'admin_folder' => (string) config('iexexchanger.admin_folder'),
-                ],
-            ));
+        if ($previousIp === '' || $previousIp === $currentIp) {
+            return;
+        }
 
-            Auth::logout();
-            Google2Fa::logout();
+        // Residential / CGNAT churn (e.g. 87.241.145 → 87.241.148) must not
+        // kick the operator out. Only treat a different /16 as a real IP change.
+        if ($this->sameIpv4Slash16($previousIp, $currentIp)) {
+            $user->forceFill(['logged_ip_address' => $currentIp])->save();
 
-            $request = request();
-            if ($request->hasSession()) {
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-            }
+            return;
+        }
 
-            $loginUrl = '/'.trim((string) config('iexexchanger.admin_folder', 'iexadmin'), '/').'/login';
+        $this->audit->log(new AuditData(
+            user: $user,
+            email: $user->email ?? null,
+            guard: Auth::getDefaultDriver(),
+            channel: 'admin',
+            event: AuditEvent::IpChangedAdminLogout,
+            result: AuditResult::Blocked,
+            reasonCode: 'ip_change_control',
+            message: 'Смена IP, авторизация сброшена',
+            ip: $currentIp,
+            ipPrev: $previousIp,
+            userAgent: Request::userAgent(),
+            meta: [
+                'admin_folder' => (string) config('iexexchanger.admin_folder'),
+            ],
+        ));
 
-            // Never leave the operator on a dead 403 "wait" page — send them
-            // back to admin login so they can sign in from the new IP.
-            if ($request->expectsJson() || $request->ajax() || str_contains('/'.$request->path(), '/frontend-api/')) {
-                throw new \Illuminate\Http\Exceptions\HttpResponseException(
-                    response()->json([
-                        'status' => 1,
-                        'code' => 'IP_CHANGED',
-                        'message' => 'Изменение IP-адреса. Авторизация сброшена.',
-                        'isAuthenticated' => false,
-                    ], 401)
-                );
-            }
+        Auth::logout();
+        Google2Fa::logout();
 
+        $request = request();
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
+        $loginUrl = '/'.trim((string) config('iexexchanger.admin_folder', 'iexadmin'), '/').'/login';
+
+        // Never leave the operator on a dead 403 / white wait page — send them
+        // back to admin login so they can sign in from the new IP.
+        if ($request->expectsJson() || $request->ajax() || str_contains('/'.$request->path(), '/frontend-api/')) {
             throw new \Illuminate\Http\Exceptions\HttpResponseException(
-                redirect()->to($loginUrl)
+                response()->json([
+                    'status' => 1,
+                    'code' => 'IP_CHANGED',
+                    'message' => 'Изменение IP-адреса. Авторизация сброшена.',
+                    'isAuthenticated' => false,
+                ], 401)
             );
         }
+
+        throw new \Illuminate\Http\Exceptions\HttpResponseException(
+            redirect()->to($loginUrl)
+        );
     }
 
     /**
@@ -431,6 +441,24 @@ final class UserActivityListener
         }
 
         return (int) ($user->is_frontend ?? 0) !== 1;
+    }
+
+    /**
+     * True when both values are IPv4 addresses in the same /16 network.
+     */
+    private function sameIpv4Slash16(string $a, string $b): bool
+    {
+        if (! filter_var($a, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)
+            || ! filter_var($b, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)
+        ) {
+            return false;
+        }
+
+        $aParts = explode('.', $a);
+        $bParts = explode('.', $b);
+
+        return ($aParts[0] ?? null) === ($bParts[0] ?? null)
+            && ($aParts[1] ?? null) === ($bParts[1] ?? null);
     }
 
     /**
