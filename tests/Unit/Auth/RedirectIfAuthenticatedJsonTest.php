@@ -13,9 +13,9 @@ use Tests\TestCase;
 use Tests\Unit\Auth\OAuth\OAuthSqliteHarness;
 
 /**
- * Guard against guest middleware HTML 302s on JSON / client-api auth POSTs.
- * Those 302s were mapped by the owned BFF to AUTH_BAD_GATEWAY and stranded
- * operators on /auth/login?returnTo=/account after password rotation.
+ * Guard against guest middleware HTML 302s on client-api auth POSTs, and
+ * against ALREADY_AUTHENTICATED short-circuits on admin frontend-api login
+ * (shared Account cookie must be allowed to re-login as admin).
  */
 final class RedirectIfAuthenticatedJsonTest extends TestCase
 {
@@ -31,7 +31,7 @@ final class RedirectIfAuthenticatedJsonTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_json_accept_returns_already_authenticated_instead_of_redirect(): void
+    public function test_client_api_returns_already_authenticated_instead_of_redirect(): void
     {
         $user = User::create([
             'name' => 'Admin',
@@ -53,6 +53,29 @@ final class RedirectIfAuthenticatedJsonTest extends TestCase
         $this->assertSame(0, $payload['status'] ?? null);
         $this->assertSame('ALREADY_AUTHENTICATED', $payload['code'] ?? null);
         $this->assertFalse($response->isRedirection());
+    }
+
+    public function test_admin_frontend_api_passes_through_when_already_authenticated(): void
+    {
+        $user = User::create([
+            'name' => 'Admin',
+            'email' => 'guest-admin-api@example.com',
+            'password' => Hash::make('secret'),
+        ]);
+        Auth::login($user);
+
+        $request = Request::create('/iexadmin/frontend-api/login', 'POST', [], [], [], [
+            'HTTP_ACCEPT' => 'application/json',
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+        ]);
+
+        $middleware = new RedirectIfAuthenticated();
+        $response = $middleware->handle($request, static fn () => response('admin-login-next', 200));
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('admin-login-next', $response->getContent());
+        $payload = json_decode((string) $response->getContent(), true);
+        $this->assertNotSame('ALREADY_AUTHENTICATED', $payload['code'] ?? null);
     }
 
     public function test_browser_request_still_redirects_home(): void

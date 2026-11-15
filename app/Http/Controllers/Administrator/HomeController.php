@@ -50,7 +50,10 @@ class HomeController extends Controller
         ]);
 
 
-        if(\Auth::check()) {
+        // Account (is_frontend=1) shares the session cookie. Do not tell the
+        // admin SPA it is already signed in — AdminControlMiddleware will 400
+        // and the UI hangs on a wait/Forbidden screen.
+        if ($this->isAdminPanelSession()) {
             $authenticator = app(Authenticator::class)->boot($request);
 
             $frontAPI->put('user', new SessionResource(auth()->user()));
@@ -90,7 +93,7 @@ class HomeController extends Controller
         ]);
 
 
-        if(\Auth::check()) {
+        if ($this->isAdminPanelSession()) {
             $authenticator = app(Authenticator::class)->boot($request);
 
             $frontAPI->put('user', new SessionResource(auth()->user()));
@@ -193,5 +196,23 @@ class HomeController extends Controller
             ->header('Content-Type', $safeMime)
             ->header('X-Content-Type-Options', 'nosniff')
             ->header('Content-Disposition', 'inline; filename="'.basename($filename).'"');
+    }
+
+    /**
+     * True only when the shared cookie is an admin-panel session.
+     * Account logins set is_frontend=1 on the same user/cookie domain.
+     */
+    private function isAdminPanelSession(): bool
+    {
+        if (!\Auth::check()) {
+            return false;
+        }
+
+        $user = auth()->user();
+        if ($user === null) {
+            return false;
+        }
+
+        return (int) ($user->is_frontend ?? 0) !== 1;
     }
 }
