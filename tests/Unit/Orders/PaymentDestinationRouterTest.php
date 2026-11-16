@@ -155,5 +155,10 @@ final class PaymentDestinationRouterTest extends TestCase
         $this->assertStringContainsString('verification_required', $src);
         $this->assertStringContainsString('verification_url', $src);
         $this->assertStringContainsString('payment_routing_owner', $src);
+        // Zelle gate: omitting is_verify_account from select made verified users look unverified.
+        $this->assertMatchesRegularExpression(
+            "/User::select\([^)]*is_verify_account/",
+            $src
+        );
     }
 }

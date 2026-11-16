@@ -781,7 +781,7 @@ class OrderProcessResource extends JsonResource
             ->get()
             ->keyBy('id');
 
-        $this->userInfo = User::select('id', 'email', 'name')
+        $this->userInfo = User::select('id', 'email', 'name', 'is_verify_account')
             ->where('id', '=', $this->id_user)
             ->first();
     }
